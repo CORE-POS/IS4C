@@ -194,7 +194,7 @@ class OverShortMAS extends FannieRESTfulPage {
         $salesP = $dbc->prepare($salesQ);
         $salesR = $dbc->execute($salesP, $args);
         while($w = $dbc->fetch_row($salesR)){
-            if ($w['store_id'] == '50' && $w['salesCode'] == '41201') {
+            if ($w['store_id'] == 50 && $w['salesCode'] == '41201') {
                 $amts = array(
                     1 => 0,
                     2 => 0,
@@ -208,16 +208,16 @@ class OverShortMAS extends FannieRESTfulPage {
                     INNER JOIN departments as t ON d.department = t.dept_no
                     INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
                     WHERE d.trans_type IN ('I','D')
-                    AND " . DTrans::isStoreID($store, 'd') . "
-                    AND tdate BETWEEN ? AND ?
-                    AND m.superID > 0
-                    AND salesCode = '41201'
-                    AND register_no <> 20
+                        AND d.store_id=50
+                        AND tdate BETWEEN ? AND ?
+                        AND m.superID > 0
+                        AND salesCode = '41201'
+                        AND register_no <> 20
                     GROUP BY emp_no, register_no, trans_no";
                 $salesP = $dbc->prepare($salesQ);
-                $innerR = $dbc->execute($salesP, $args);
+                $innerR = $dbc->execute($salesP, array($args[1], $args[2]));
                 while ($innerW = $dbc->fetchRow($innerR)) {
-                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $args[0]);
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $w['store_id']);
                     $storeR = $dbc->getValue($storeP, $storeArgs);
                     list(,$storeID) = explode(' ', $storeR);
                     if ($storeID == 1) {
@@ -271,16 +271,16 @@ class OverShortMAS extends FannieRESTfulPage {
                     INNER JOIN departments as t ON d.department = t.dept_no
                     INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
                     WHERE d.trans_type IN ('I','D')
-                    AND " . DTrans::isStoreID($store, 'd') . "
+                    AND d.store_id=50
                     AND tdate BETWEEN ? AND ?
                     AND m.superID > 0
                     AND salesCode = '41205'
                     AND register_no <> 20
                     GROUP BY emp_no, register_no, trans_no";
                 $salesP = $dbc->prepare($salesQ);
-                $innerR = $dbc->execute($salesP, $args);
+                $innerR = $dbc->execute($salesP, array($args[1], $args[2]));
                 while ($innerW = $dbc->fetchRow($innerR)) {
-                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $args[0]);
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $w['store_id']);
                     $storeR = $dbc->getValue($storeP, $storeArgs);
                     list(,$storeID) = explode(' ', $storeR);
                     if ($storeID == 1) {
