@@ -74,19 +74,21 @@ function Soup_Signs_4UP($data,$offset=0)
 
 function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
+    $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
     $upc = $row['upc'];
     $brand = $row['description'];
 
-    $args = array($row['upc']);
+    $args = array($row['upc'], $store);
     $row = array();
     $prep = $dbc->prepare("
-        SELECT text
-        FROM scaleItems
-        WHERE plu = ?");
+        SELECT ingredients 
+        FROM ScaleIngredients 
+        WHERE upc = ?
+            AND storeID = ?");
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
     
-    $desc = $row['text'];
+    $desc = $row['ingredients'];
     $brand = strtolower($brand);
     $brand = ucwords($brand);
     $brand = str_replace("Qt", "", $brand);
