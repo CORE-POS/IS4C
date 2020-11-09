@@ -176,10 +176,23 @@ HTML;
 
         return <<<HTML
 {$this->form($upcStr)} 
-<div class="form-group">
-    <button class="btn btn-default" onclick="window.location.href = '$URI'">Print</button>
+<div class="row">
+    <div class="col-lg-1">
+        <div class="form-group">
+            <button class="btn btn-primary form-control" onclick="window.location.href = '$URI'">Print</button>
+        </div>
+    </div>
 </div>
-<table class="table table-bordered"><thead></thead><tbody>$td</tbody></table>
+<div class="row">
+    <div class="col-lg-1">
+        <div class="form-group">
+            <button class="btn btn-default form-control" onclick="window.location.href= 'http://key/git/fannie/item/vendors/PrintOrderedSigns.php'">Clear</button>
+        </div>
+    </div>
+</div>
+<div class="table-responsive">
+    <table class="table table-bordered"><thead></thead><tbody>$td</tbody></table>
+</div>
 HTML;
     }
 
