@@ -1,10 +1,14 @@
 <?php
 
+use League\Flysystem\Sftp\SftpAdapter;
+use League\Flysystem\Filesystem;
+
 class MercatoTask extends FannieTask
 {
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $settings = $this->config->get('PLUGIN_SETTINGS');
 
         if (!class_exists('InstaFileV3')) {
             include(__DIR__ . '/InstaFileV3.php');
@@ -16,7 +20,7 @@ class MercatoTask extends FannieTask
         $storeID = $this->config->get('STORE_ID');
         $deptP = $dbc->prepare("SELECT modified, last_sold FROM products AS p WHERE p.upc=? AND p.store_id=?");
 
-        $outputFile = "/tmp/wfc_" . date('Ymd_Hi') . ".csv";
+        $outputFile = "/tmp/" . $settings['MercatoFtpUser'] . '_' . date('Ymd_Hi') . ".csv";
         $out = fopen($outputFile, 'w');
 
         $fp = fopen($csvfile, 'r');
@@ -57,6 +61,20 @@ class MercatoTask extends FannieTask
         unlink($csvfile);
 
         echo $outputFile . "\n";
+
+        if (class_exists('League\\Flysystem\\Sftp\\SftpAdapter')) {
+            $adapter = new SftpAdapter(array(
+                'host' => $settings['MercatoFtpHost'],
+                'username' => $settings['MercatoFtpUser'],
+                'password' => $settings['MercatoFtpPw'],
+                'port' => 22,
+            ));
+            $filesystem = new Filesystem($adapter);
+            $success = $filesystem->put('inventory/' . $outputFile, file_get_contents($outputFile));
+            if ($success) echo "Upload succeeded\n";
+        }
+
+        unlink($outputFile);
     }
 }
 
