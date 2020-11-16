@@ -208,7 +208,7 @@ class TenderEditor extends FannieRESTfulPage
         $ret = '<table class="table">
             <tr><th>Code</th><th>Name</th><th>Change Type</th>
             <th>Change Msg</th><th>Min</th><th>Max</th>
-            <th>Refund Limit</th><th>Account #</th></tr>';
+            <th>Refund Limit</th><th>TenderModule</th><th>Account #</th></tr>';
 
         foreach($model->find('TenderID') as $row){
             $ret .= sprintf('<tr>
