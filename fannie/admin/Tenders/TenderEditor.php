@@ -44,6 +44,7 @@ class TenderEditor extends FannieRESTfulPage
         $this->addRoute('post<id><saveMin>');
         $this->addRoute('post<id><saveMax>');
         $this->addRoute('post<id><saveRLimit>');
+        $this->addRoute('post<id><saveModule>');
         $this->addRoute('post<id><saveSalesCode>');
         $this->addRoute('post<newTender>');
 
@@ -147,6 +148,19 @@ class TenderEditor extends FannieRESTfulPage
         return false;
     }
 
+    protected function post_id_saveModule_handler()
+    {
+        if (is_numeric($this->saveModule)) {
+            echo "Error: Module must be text";
+        } else {
+            $model = $this->getTenderModel($this->id);
+            $model->TenderModule($this->saveModule);
+            $model->save();
+        }
+
+        return false;
+    }
+
     protected function post_id_saveSalesCode_handler()
     {
         if (!is_numeric($this->saveSalesCode)) {
@@ -226,7 +240,9 @@ class TenderEditor extends FannieRESTfulPage
                     <input size="6" maxlength="10" value="%.2f"
                     class="form-control price-field"
                     onchange="tenderEditor.saveRLimit.call(this, this.value,%d);" />
-                </div></td>
+                <td><input size="10" maxlength="50" value="%s"
+                    class="form-control"
+                    onchange="tenderEditor.saveModule.call(this, this.value,%d);" /></td>
                 <td><input size="10" value="%s"
                     class="form-control"
                     onchange="tenderEditor.saveSalesCode.call(this, this.value, %d);" /></td>
@@ -238,6 +254,7 @@ class TenderEditor extends FannieRESTfulPage
                 $row->MinAmount(),$row->TenderID(),
                 $row->MaxAmount(),$row->TenderID(),
                 $row->MaxRefund(),$row->TenderID(),
+				$row->TenderModule(),$row->TenderID(),
                 $row->SalesCode(),$row->TenderID()
             );
         }
