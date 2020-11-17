@@ -104,8 +104,8 @@ class PickupOrdersReport extends FannieReportPage
         $baseR = $this->connection->execute($baseP, array($date1, $date2 . ' 23:59:59', $store));
         $data = array();
         while ($baseW = $this->connection->fetchRow($baseR)) {
-            $name = strrev($baseW['name']);
-            $names = explode(' ', $name);
+            $name = strrev(trim($baseW['name']));
+            $names = explode(' ', $name, 2);
             $names = array_map(function($i) { return strrev(trim($i)); }, $names);
             list($baseW['pDate'],) = explode(' ', $baseW['pDate']);
             $record = array(
