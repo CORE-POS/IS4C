@@ -129,14 +129,14 @@ HTML;
         $i = 0;
         foreach ($upcs as $k => $upc) {
             $args = array($upc);
-            $prep = $dbc->prepare("SELECT * FROM products AS p LEFT JOIN vendorItems AS v ON    
+            $prep = $dbc->prepare("SELECT *, p.brand AS pbrand, p.description AS pdesc FROM products AS p LEFT JOIN vendorItems AS v ON    
                 p.default_vendor_id=v.vendorID AND p.upc=v.upc WHERE p.upc = ? 
                 GROUP BY p.upc");
             $res = $dbc->execute($prep, $args);
             while ($row = $dbc->fetchRow($res)) {
                 $price = $row['normal_price'];
-                $desc = $row['description'];
-                $brand = $row['brand'];
+                $desc = $row['pdesc'];
+                $brand = $row['pbrand'];
                 $units = $row['units'];
                 $size = $row['size'];
                 $sku = $row['sku'];
