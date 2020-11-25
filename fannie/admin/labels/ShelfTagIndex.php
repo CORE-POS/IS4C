@@ -140,7 +140,13 @@ function printMany(){
         $this->layouts = array_reverse($this->layouts);
         foreach($this->layouts as $k => $l){
             if (!in_array($l, $tagEnabled) && count($tagEnabled) > 0) continue;
-            echo ($l == $sel) ? "<option selected>".$l."</option>" : "<option>".$l."</option>";
+            if ($l == $sel) {
+                echo "<option selected>".$l."</option>";
+            } elseif ($l == 'WFC Hybrid') {
+                echo "<option selected>".$l."</option>";
+            } else {
+                echo "<option>".$l."</option>";
+            }
         }
         ?>
         </select>
