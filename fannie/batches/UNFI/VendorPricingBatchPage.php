@@ -170,6 +170,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             | <button class="btn btn-default btn-xs multi-filter active" data-filter-type="multiple">
                 <span class="glyphicon glyphicon-exclamation-sign" title="View only rows containing multiple SKUs"> </span>
             </button> 
+            | <input type="" class="date-field" id="reviewed" placeholder="Reviewed on" style="border: 1px solid lightgrey; border-radius: 3px;"/>
             <br/><br/>';
 
         $batchUPCs = array();
@@ -536,6 +537,24 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $('.btn-filter').each(function(){
                     $(this).addClass('active');
                 });
+           }
+       });
+
+       $('#reviewed').change(function(){
+           var date = $(this).val();
+           $('tr').each(function(){
+                $(this).show();
+           });
+           if (date != '') {
+               $('td').each(function(){
+                   if ($(this).hasClass('reviewed')) {
+                       var text = $(this).text();
+                       if (!date.includes(text)) {
+                           $(this).closest('tr').hide();
+                       }
+                   }
+               });
+
            }
        });
         <?php
