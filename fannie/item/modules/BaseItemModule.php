@@ -1149,11 +1149,18 @@ HTML;
                     WHERE sku=? AND vendorID=? AND upc <> ?");
                 $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
                 if ($chk) {
+                    // bail out. same sku cannot be assigned to multiple items
                     return true;
                 }
             }
 
-            if (count($vitem->find()) > 0 && $sku != '') {
+            $vrecords = $vitem->find();
+            if (count($vrecords) > 1 && $sku != '') {
+                // bail out. multiple matching records will cause ambiguity
+                return true;
+            }
+
+            if (count($vrecords) > 0 && $sku != '') {
                 $editP = $dbc->prepare('
                     UPDATE vendorItems
                     SET sku=?
@@ -1161,27 +1168,6 @@ HTML;
                         AND vendorID=? 
                 '); 
                 $editR = $dbc->execute($editP, array($sku, $upc, $vendorID));
-            } elseif (!empty($sku) && $sku != $upc) {
-                /**
-                  If a SKU is provided, update any
-                  old record that used the UPC as a
-                  placeholder SKU.
-                */
-                $existsP = $dbc->prepare('
-                    SELECT sku
-                    FROM vendorItems
-                    WHERE sku=?
-                        AND upc=?
-                        AND vendorID=?');
-                $exists = $dbc->getValue($existsP, array($upc, $upc, $vendorID));
-                if ($exists && $sku != $upc && $sku != $exists) {
-                    $fixSkuP = $dbc->prepare('
-                        UPDATE vendorItems
-                        SET sku=?
-                        WHERE sku=?
-                            AND vendorID=?');
-                    $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
-                }
             } else {
                 $sku = $upc;
             }
@@ -1222,6 +1208,14 @@ HTML;
                 if ($chk) {
                     $ret[] = '<th class="danger">Error</th>
                         <td class="danger" colspan="3">SKU already assigned to <a href="ItemEditorPage.php?searchupc=' . $chk . '">' . $chk . '</a>.
+                        Other changes saved.</td>';
+                }
+
+                $multiP = $dbc->prepare("SELECT upc FROM vendorItems WHERE upc=? AND vendorID=?");
+                $multiR = $dbc->execute($multiP, array($upc, $vendorID));
+                if ($dbc->numRows($multiR) > 1) {
+                    $ret[] = '<th class="danger">Error</th>
+                        <td class="danger" colspan="3">Could not save SKU due to too many catalog entries.
                         Other changes saved.</td>';
                 }
             }
