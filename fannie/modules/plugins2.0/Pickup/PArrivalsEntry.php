@@ -81,7 +81,7 @@ class PArrivalsEntry extends FannieRESTfulPage
 <br />
 <div class="row">
     <div class="col-sm-10">
-    <b>Notes</b>:
+    <b>Vehicle Info (for curbside)</b>:
     <textarea id="notes" class="form-control" rows="5"></textarea>
     </div>
 </div>

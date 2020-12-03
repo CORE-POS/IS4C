@@ -31,6 +31,7 @@ class ViewPickups extends FannieRESTfulPage
         $posX = 0;
         $posY = 0;
         $date = date("m/d/Y");
+        $multi = false;
         if (!is_array($this->id)) {
             $multi = FormLib::get('multi', 1);
             $arr = array();
