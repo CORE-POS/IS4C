@@ -1144,6 +1144,15 @@ HTML;
             if ($alias) {
                 return true;
             }
+            if ($sku != '') {
+                $chkP = $dbc->prepare("SELECT upc FROM vendorItems
+                    WHERE sku=? AND vendorID=? AND upc <> ?");
+                $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
+                if ($chk) {
+                    return true;
+                }
+            }
+
             if (count($vitem->find()) > 0 && $sku != '') {
                 $editP = $dbc->prepare('
                     UPDATE vendorItems
@@ -1203,8 +1212,21 @@ HTML;
                 </td>';
             $row2 = '<th>Description</th><td>' . $model->description() . '</td>
                      <th>Price</th><td>$' . $model->normal_price() . '</td>';
+            $ret = array($row1, $row2);
+            $vendorID = $model->default_vendor_id();
+            $sku = FormLib::get('vendorSKU');
+            if ($vendorID != 0 && $sku != '') {
+                $chkP = $dbc->prepare("SELECT upc FROM vendorItems
+                    WHERE sku=? AND vendorID=? AND upc <> ?");
+                $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
+                if ($chk) {
+                    $ret[] = '<th class="danger">Error</th>
+                        <td class="danger" colspan="3">SKU already assigned to <a href="ItemEditorPage.php?searchupc=' . $chk . '">' . $chk . '</a>.
+                        Other changes saved.</td>';
+                }
+            }
 
-            return array($row1, $row2);
+            return $ret;
         } else {
             return array('<td colspan="4">Error saving. <a href="ItemEditorPage.php?searchupc=' . $upc . '">Try Again</a>?</td>');
         }
