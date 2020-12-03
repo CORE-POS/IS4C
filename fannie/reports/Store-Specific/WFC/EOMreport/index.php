@@ -354,32 +354,34 @@ if (!$output || isset($_REQUEST['recache'])){
     GROUP BY m.memDesc,
         YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
     ORDER BY m.memDesc";
-    $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE trans_subtype='CM' AND description LIKE '%STORE%'
-        AND tdate BETWEEN ? AND ? AND emp_no=? AND register_no=? AND trans_no=?");
-    $prep = $dbc->prepare($query13);
-    $res = $dbc->execute($prep, $args);
-    $mSums = array();
-    $mCounts = array();
-    while ($w = $dbc->fetchRow($res)) {
-        $key = $w['memDesc'];
-        $tdate = date('Y-m-d', mktime(0, 0, 0, $w[3], $w[4], $w[2]));
-        $storeCM = $dbc->getValue($storeP, array($tdate, $tdate . ' 23:59:59', $w['emp_no'], $w['register_no'], $w['trans_no']));
-        list(,$storeID) = explode(' ', $storeCM);
-        if ($storeID == 1) {
-            $key .= ' HS';
-        } elseif ($storeID == 2) {
-            $key .= ' DN';
+    if ($store == 50) {
+        $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE trans_subtype='CM' AND description LIKE '%STORE%'
+            AND tdate BETWEEN ? AND ? AND emp_no=? AND register_no=? AND trans_no=?");
+        $prep = $dbc->prepare($query13);
+        $res = $dbc->execute($prep, $args);
+        $mSums = array();
+        $mCounts = array();
+        while ($w = $dbc->fetchRow($res)) {
+            $key = $w['memDesc'];
+            $tdate = date('Y-m-d', mktime(0, 0, 0, $w[3], $w[4], $w[2]));
+            $storeCM = $dbc->getValue($storeP, array($tdate, $tdate . ' 23:59:59', $w['emp_no'], $w['register_no'], $w['trans_no']));
+            list(,$storeID) = explode(' ', $storeCM);
+            if ($storeID == 1) {
+                $key .= ' HS';
+            } elseif ($storeID == 2) {
+                $key .= ' DN';
+            }
+            if (!isset($mSums[$key])) {
+                $mSums[$key] = 0;
+                $mCounts[$key] = 0;
+            }
+            $mSums[$key] += $w[1];
+            $mCounts[$key] += 1;
         }
-        if (!isset($mSums[$key])) {
-            $mSums[$key] = 0;
-            $mCounts[$key] = 0;
+        $mems = array();
+        foreach ($mSums as $k => $v) {
+            $mems[] = array($k, $v, $mCounts[$k]);
         }
-        $mSums[$key] += $w[1];
-        $mCounts[$key] += 1;
-    }
-    $mems = array();
-    foreach ($mSums as $k => $v) {
-        $mems[] = array($k, $v, $mCounts[$k]);
     }
     select_to_table3($mems,3,0,'ffffff');
     select_to_table3(array(array($ttl)),1,0,'ffffff');
