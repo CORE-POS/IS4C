@@ -1138,29 +1138,35 @@ HTML;
         $vitem->vendorID($vendorID);
         $vitem->upc($upc);
         try {
-            $sku = $this->form->vendorSKU;
+            $sku = trim($this->form->vendorSKU);
             $caseSize = $this->form->caseSize;
             $alias = $this->form->isAlias;
             if ($alias) {
                 return true;
             }
-            if ($sku != '') {
-                $chkP = $dbc->prepare("SELECT upc FROM vendorItems
-                    WHERE sku=? AND vendorID=? AND upc <> ?");
-                $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
-                if ($chk) {
-                    // bail out. same sku cannot be assigned to multiple items
-                    return true;
-                }
+
+            /**
+             * Always require a sku. use upc if none available
+             */
+            if ($sku == '') {
+                $sku = $upc;
+            }
+
+            $chkP = $dbc->prepare("SELECT upc FROM vendorItems
+                WHERE sku=? AND vendorID=? AND upc <> ?");
+            $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
+            if ($chk) {
+                // bail out. same sku cannot be assigned to multiple items
+                return true;
             }
 
             $vrecords = $vitem->find();
-            if (count($vrecords) > 1 && $sku != '') {
+            if (count($vrecords) > 1) {
                 // bail out. multiple matching records will cause ambiguity
                 return true;
             }
 
-            if (count($vrecords) > 0 && $sku != '') {
+            if (count($vrecords) > 0) {
                 $editP = $dbc->prepare('
                     UPDATE vendorItems
                     SET sku=?
@@ -1168,8 +1174,6 @@ HTML;
                         AND vendorID=? 
                 '); 
                 $editR = $dbc->execute($editP, array($sku, $upc, $vendorID));
-            } else {
-                $sku = $upc;
             }
         } catch (Exception $ex) {
             $sku = $upc;
