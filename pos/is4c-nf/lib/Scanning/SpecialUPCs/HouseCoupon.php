@@ -815,8 +815,8 @@ class HouseCoupon extends SpecialUPC
                 $giftW = $transDB->fetchRow($giftR);
                 $freeCards = floor($giftW['ttl'] / $infoW['minValue']);
                 $value = $infoW['discountValue'] * $freeCards;
-                if ($value > 100) {
-                    $value = 100;
+                if ($value > 80) {
+                    $value = 80;
                 }
                 $discountable = 0;
                 $curR = $transDB->prepare("SELECT SUM(-1 * total) AS ttl FROM translog.localtemptrans WHERE upc='0049999900370'");
