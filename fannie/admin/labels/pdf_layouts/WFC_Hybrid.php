@@ -157,7 +157,7 @@ foreach($data as $row) {
         $ppu = isset($row['pricePerUnit']) ? $row['pricePerUnit'] : '';
         $upc = ltrim($row['upc'],0);
         $check = $pdf->GetCheckDigit($upc);
-        $vendor = substr($row['vendor'],0,7);
+        $vendor = substr(isset($row['vendor']) ? $row['vendor'] : '',0,7);
 
         /**
          * Full tags are further sub-divided.
