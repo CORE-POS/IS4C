@@ -337,7 +337,7 @@ class InstaFileV3
         $override = $this->dbc->getValue($overP, array($upc));
         if ($override) {
             echo "OVERRIDE!!!\n";
-            return true;
+            return false;
         }
 
         if ($created) {
