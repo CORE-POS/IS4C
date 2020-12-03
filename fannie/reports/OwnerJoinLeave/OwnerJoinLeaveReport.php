@@ -282,6 +282,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
                         list($note,) = explode('<br />', $note, 2);
                     }
 */
+                    if ($this->report_format != 'html') {
+                        $note = str_replace('<br />', ' ', $note);
+                    }
                     $record[] = $note;
                 } else {
                     $record[] = '?';
