@@ -225,7 +225,7 @@ class SalesTodayReport2 extends \COREPOS\Fannie\API\FannieReportTool
         echo '<div id="chartDiv"><canvas id="chartCanvas"></canvas></div>';
 
         $mapper = function($i) { return array('x'=>(int)$i['hr'], 'y'=>$i['ttl']); };
-        $filter = function ($i) { return $i['x'] >= 9; };
+        $filter = function ($i) { return $i['x'] >= 7; };
         $points = array(
             'avg' => array_map($mapper, $avg),
             'today' => array_map($mapper, $today),
