@@ -139,7 +139,9 @@ HTML;
         $nonce = $dbc->getValue($prep);
         $dbc->query("UPDATE " . FannieDB::fqn('ScreeningNonce', 'plugin:HrWebDB') . " SET nonce=''");
         if ($nonce === false || strlen($nonce) == 0 || $nonce != FormLib::get('nonce')) {
-            return '<div class="alert alert-danger">Session expired</div>' . $this->get_view();
+            // disabled to allow for dual stations. the way the ipads handle history & back button
+            // it isn't really effective anyway.
+            //return '<div class="alert alert-danger">Session expired</div>' . $this->get_view();
         }
 
         $this->addOnloadCommand("\$('input[name=temp]').focus();");
