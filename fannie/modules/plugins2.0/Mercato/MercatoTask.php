@@ -18,14 +18,14 @@ class MercatoTask extends FannieTask
         $insta->getFile($csvfile);
 
         $storeID = $this->config->get('STORE_ID');
-        $deptP = $dbc->prepare("SELECT modified, last_sold FROM products AS p WHERE p.upc=? AND p.store_id=?");
+        $deptP = $dbc->prepare("SELECT modified, last_sold,department FROM products AS p WHERE p.upc=? AND p.store_id=?");
 
         $outputFile = "/tmp/" . $settings['MercatoFtpUser'] . '_' . date('Ymd_Hi') . ".csv";
         $out = fopen($outputFile, 'w');
 
         $fp = fopen($csvfile, 'r');
         fgetcsv($fp); // discard headers
-        fwrite($out,"product-code,product-name,sku,price,price-type,price-quantity,last-updated,instock,last-sold-date,taxable\r\n");
+        fwrite($out,"product-code,product-name,sku,price,price-type,price-quantity,last-updated,instock,last-sold-date,taxable,department-id\r\n");
         while (!feof($fp)) {
             $data = fgetcsv($fp);
             $upc = $data[0];
@@ -55,7 +55,8 @@ class MercatoTask extends FannieTask
             fwrite($out, "Y,");
             $soldTS = strtotime($info['last_sold']);
             fwrite($out, ($soldTS ? date('Ymd', $soldTS) : '') . ",");
-            fwrite($out, ($data[11] > 0 ? 'Y' : 'N') . "\r\n");
+            fwrite($out, ($data[11] > 0 ? 'Y' : 'N') . ",");
+            fwrite($out, $info['department'] . "\r\n");
         }
 
         unlink($csvfile);
@@ -70,11 +71,11 @@ class MercatoTask extends FannieTask
                 'port' => 22,
             ));
             $filesystem = new Filesystem($adapter);
-            $success = $filesystem->put('inventory/' . $outputFile, file_get_contents($outputFile));
+            $success = $filesystem->put('inventory/uploaded/' . $outputFile, file_get_contents($outputFile));
             if ($success) echo "Upload succeeded\n";
         }
 
-        unlink($outputFile);
+        //unlink($outputFile);
     }
 }
 
