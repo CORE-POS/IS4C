@@ -26,6 +26,7 @@ class KeyboardView extends FannieRESTfulPage
         $this->__routes[] = "post<position>"; 
         $this->__routes[] = "post<keyboard>"; 
         $this->__routes[] = "post<rgb>"; 
+        $this->__routes[] = "get<singleid>"; 
 
         return parent::preprocess();
     }
@@ -101,6 +102,18 @@ class KeyboardView extends FannieRESTfulPage
         return false;
     }
 
+    public function get_singleid_handler()
+    {
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $id = FormLib::get('singleid');
+        $n = FormLib::get('n');
+
+        $keyboard = new PosKeyboard($dbc);
+        $keyboard->drawSingleKey($dbc, $id, $n);
+
+        return false;
+    }
+
     public function drawKeyboard()
     {
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
@@ -127,6 +140,18 @@ class KeyboardView extends FannieRESTfulPage
                     <label>Print Labels for Keys</label>
                     <button class="btn btn-default" type="submit">Generate PDF</button>
                 </div>
+        </form>
+    </div>
+    <div class="col-lg-4">
+        <form type="get" name="generate-single-pdf-form" class="form-inline">
+            <input type="hidden" name="singleid" id="singleid" value="" />
+            <div class="form-group">
+                <label>Print Multiples of Selected Label</label>
+                <div>
+                    <input type="number" class="form-control" name="n" id="n" value="1" />
+                    <button class="btn btn-default" type="submit">Print</button>
+                </div>
+            </div>
         </form>
     </div>
     <form method="post" name="update-keys-form">
@@ -170,7 +195,7 @@ class KeyboardView extends FannieRESTfulPage
     </div>
 </div>
 <div class="row">
-    <div class="col-lg-12">
+    <div class="col-lg-8">
         <label>Underline</label> -  
         <label for="check_0">Line 1</label>: 
         <input type="checkbox" name="check_0" id="check_0" class="" />
@@ -178,6 +203,8 @@ class KeyboardView extends FannieRESTfulPage
         <input type="checkbox" name="check_1" id="check_1" class="" />
         <label for="check_2">Line 3: </label>
         <input type="checkbox" name="check_2" id="check_2" class="" />
+    </div>
+    <div class="col-lg-4">
     </div>
     </form>
 </div>
@@ -204,6 +231,7 @@ var id = null;
 $('.cell').click(function(){
     id = $(this).attr('id');
     id = id.substr(3);
+    $('#singleid').val(id);
     var label = $(this).attr('data-string');
     var cmd = $(this).attr('data-command');
     var rgb = $(this).attr('data-rgb');
@@ -252,15 +280,15 @@ var rgbToHex = function(rgb){
     });
     return hex.toUpperCase();
 }
+var printMultiple = function(x) {
+    // id = PosKeys.pos
+}
 JAVASCRIPT;
     }
 
-    public function helpContent()
+    public function help_content()
     {
         return <<<HTML
-Define custom POS keyboard layouts and save as a printable PDF 
-document. In <strong>cmd </strong> and <strong>Label</strong>, 
-fields, use pipes ( "|" ) to delimit new lines.
 HTML;
     }
 

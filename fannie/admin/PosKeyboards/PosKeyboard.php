@@ -111,7 +111,96 @@ class PosKeyboard extends FanniePage
                     $pdf->cell($keySize - 5, 0.1, null, 'B', 0, 'C', 1);
                 }
                 if ($text == 'Baked') {
-                    $pdf->Image("http://key/git/fannie/admin/PosKeyboards/muffin-icon.jpg", $left, $top, 15, 15, 'JPG');
+                    $pdf->Image("http://key/git/fannie/admin/PosKeyboards/noauto/images/muffin-icon.jpg", $left, $top, 15, 15, 'JPG');
+                }
+            }
+            $i++;
+        }
+
+        $pdf->Output('PosKeyLabel.pdf', 'I', 0);
+
+        return false;
+    }
+
+    public function drawSingleKey($dbc, $id, $n)
+    {
+        $keySize = 15;
+
+        $pdf = new FPDF('P', 'mm', 'Letter');
+        $pdf->AddPage('L');
+        $pdf->SetMargins(10,10,10);
+        define('FPDF_FONTPATH', __DIR__. '/../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+        $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
+        $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
+        $pdf->SetFont('Gill','B', 7);
+        $pdf->SetXY(0, 0);
+
+        $args = array($id);
+        $prep = $dbc->prepare("SELECT * FROM PosKeys WHERE print = 1 AND pos = ?");
+        $res = $dbc->execute($prep, $args);
+        $positionKeys = array();
+        $row = $dbc->fetchRow($res);
+
+        $i = 0;
+        $j = 0;
+
+        for ($n; $n>0; $n--) {
+            if ($i % 16 == 0) {
+                $j++;
+                $i = 0;
+            }
+            $x = ($position - floor($position)) * 100;
+            $y = floor($position);
+            $top = $keySize;
+            $left = $keySize * ($n + 1);
+
+            $bkgC = $row['rgb'];
+            $bkg = array(
+                "r" => substr($bkgC, 0, 3),
+                "g" => substr($bkgC, 4, 3),
+                "b" => substr($bkgC, 8, 3)
+            );
+            $fgC = $row['labelRgb'];
+            $color = array(
+                "r" => substr($fgC, 0, 3),
+                "g" => substr($fgC, 4, 3),
+                "b" => substr($fgC, 8, 3)
+            );
+
+            $text = $row['label'];
+            $lines = substr_count($text, "<br/>");
+            $labels = explode("|", $text);
+            $text = str_replace("<br/>", "", $text);
+            $text = str_replace("<u>", "-", $text);
+            $text = str_replace("</u>", "-", $text);
+            $text = str_replace("<i>", "", $text);
+            $text = str_replace("</i>", "", $text);
+            foreach ($labels as $k => $label) {
+                $labels[$k] = str_replace("<u>", "", $label);
+                $labels[$k] = str_replace("</u>", "", $labels[$k]);
+                $labels[$k] = str_replace("<i>", "", $labels[$k]);
+                $labels[$k] = str_replace("</i>", "", $labels[$k]);
+            }
+
+            // set bkg, color, top, left
+            $pdf->SetFillColor($bkg['r'], $bkg['g'], $bkg['b']);
+            $pdf->SetTextColor($color['r'], $color['g'], $color['b']);
+            $pdf->SetDrawColor($color['r'], $color['g'], $color['b']);
+            $pdf->SetXY($left, $top);
+            $pdf->cell($keySize, $keySize, "", 1, 0, 'C', 1);
+            foreach ($labels as $ln => $text) {
+                $mod = 6;
+                $border = 0;
+                if (count($labels) == 2) {
+                    $mod = 5;
+                } elseif (count($labels) == 3) {
+                    $mod = 3; 
+                }
+                $pdf->SetXY($left, $top + (4 * $ln) + $mod);
+                $pdf->cell($keySize, 2, $text, 0, 0, 'C', 1);
+                if (($row['underline'] & (1 << $ln)) != 0) {
+                    $pdf->SetXY($left + 2.5, $top + (4 * $ln) + $mod + 2.5);
+                    $pdf->cell($keySize - 5, 0.1, null, 'B', 0, 'C', 1);
                 }
             }
             $i++;
