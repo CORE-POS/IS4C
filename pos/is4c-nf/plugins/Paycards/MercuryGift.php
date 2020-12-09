@@ -90,6 +90,19 @@ class MercuryGift extends BasicCCModule
             if ($validate) {
                 $this->dialogs->validateCard($this->conf->get('paycard_PAN'), false, false);
             }
+
+            if ($this->conf->get("paycard_mode") == PaycardLib::PAYCARD_MODE_AUTH) {
+                $dbc = Database::tDataConnect();
+                $res = $dbc->query("SELECT SUM(total) AS ttl FROM localtemptrans WHERE department=902");
+                $row = $dbc->fetchRow($res);
+                if ($row && abs($row['ttl']) > 0.005) {
+                    throw new Exception(PaycardLib::paycardErrBox("Gift Card Error",
+                                                     "cannot pay for gift card with a gift card",
+                                                     "[clear] to cancel"
+                                                 ));
+                }
+            }
+
         } catch (Exception $ex) {
             $json['output'] = $ex->getMessage();
             return $json;
