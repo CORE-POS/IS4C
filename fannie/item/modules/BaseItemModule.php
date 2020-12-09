@@ -175,7 +175,8 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                 LEFT JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
                 LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID AND c.mostRecent=1
-            WHERE p.upc=?';
+            WHERE p.upc=?
+            ORDER BY v.modified DESC';
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
             $itemQ = str_replace('p.last_sold', 'NULL as last_sold', $itemQ);
@@ -185,7 +186,13 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($dbc->numRows($res) > 0) {
             $items = array();
             while ($row = $dbc->fetchRow($res)) {
-                $items[$row['store_id']] = $row;
+                // make sure we only use the *first* record for each store.
+                // this is done specifically to ensure we have the "correct"
+                // (deterministic) pseudo-default vendorItems record, for those
+                // cases where it matters
+                if (!array_key_exists($row['store_id'], $items)) {
+                    $items[$row['store_id']] = $row;
+                }
             }
             return $items;
         }

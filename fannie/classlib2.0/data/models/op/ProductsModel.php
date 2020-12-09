@@ -128,6 +128,10 @@ class ProductsModel extends BasicModel
             return $obj->getTagData($this->connection, $this->upc(), $price);
         }
 
+        // note that we only use the first result row from the query below,
+        // however it is possible for there to be multiple results due to the
+        // vendorItems join.  so here we sort by timestamp to get a
+        // deterministic pseudo-default, in cases where it is ambiguous
         $query = '
             SELECT p.upc,
                 p.description,
@@ -142,7 +146,8 @@ class ProductsModel extends BasicModel
             FROM products AS p
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN vendorItems AS i ON p.upc=i.upc AND v.vendorID=i.vendorID
-            WHERE p.upc=?';
+            WHERE p.upc=?
+            ORDER BY i.modified DESC';
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array($this->upc()));
 
