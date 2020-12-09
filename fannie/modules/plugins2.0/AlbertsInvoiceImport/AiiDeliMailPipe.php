@@ -52,6 +52,7 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                         $order->placed(1);
                         $order->placedDate($date);
                         $order->vendorInvoiceID($data[0]);
+                        $order->inventoryIgnore(1);
                         $orderID = $order->save();
                     }
                     $isBulk = false;
