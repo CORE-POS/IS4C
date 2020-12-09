@@ -103,6 +103,35 @@ class ViewPickups extends FannieRESTfulPage
         return false;
     }
 
+    protected function post_id_handler()
+    {
+        $model = new PickupOrdersModel($this->connection);
+        $model->pickupOrderID($this->id);
+        $model->load();
+
+        $name = trim(FormLib::get('name'));
+        $phone = trim(FormLib::get('phone'));
+        $email = trim(FormLib::get('email'));
+        $pickupDT = trim(FormLib::get('pickupDT'));
+        list($pDate, $pTime) = explode(' ', $pickupDT, 2);
+
+        if ($model->name() != $name || $model->phone() != $phone || $model->email() != $email || $model->pDate() != $pDate . ' 00:00:00' || $model->pTime() != $pTime) {
+            $prep = $this->connection->prepare("INSERT INTO PickupHistoryOrders (modified, pickupOrderID, orderNumber, name, phone, email, vehicle,
+                pDate, pTime, notes, closed, deleted, storeID, status, cardNo, placedDate, curbside)
+                SELECT NOW(), p.* FROM PickupOrders AS p WHERE pickupOrderID=?");
+            $this->connection->execute($prep, array($this->id));
+
+            $model->name($name);
+            $model->email($email);
+            $model->phone($phone);
+            $model->pDate($pDate);
+            $model->pTime($pTime);
+            $model->save();
+        }
+
+        return 'ViewPickups.php?id=' . $this->id;
+    }
+
     protected function post_id_status_handler()
     {
         $order = new PickupOrdersModel($this->connection);
@@ -214,6 +243,8 @@ class ViewPickups extends FannieRESTfulPage
     <a href="PickupOrders.php" class="btn btn-default">Main Menu</a>
 </p>
 <div class="col-sm-6">
+<form action="ViewPickups.php" method="post">
+<input type="hidden" name="id" value="{$this->id}" />
 <table class="table table-bordered table-striped">
     <tr>
         <th>Order Number</th>
@@ -221,7 +252,7 @@ class ViewPickups extends FannieRESTfulPage
     </tr>
     <tr>
         <th>Name</th>
-        <td>{$order->name}</td>
+        <td><input type="text" name="name" class="form-control" value="{$order->name}" /></td>
     </tr>
     <tr>
         <th>Owner #</th>
@@ -229,7 +260,11 @@ class ViewPickups extends FannieRESTfulPage
     </tr>
     <tr>
         <th>Phone</th>
-        <td>{$order->phone}</td>
+        <td><input type="text" name="phone" class="form-control" value="{$order->phone}" /></td>
+    </tr>
+    <tr>
+        <th>Email</th>
+        <td><input type="text" name="email" class="form-control" value="{$order->email}" /></td>
     </tr>
     <tr>
         <th>Vehicle Info</th>
@@ -237,13 +272,17 @@ class ViewPickups extends FannieRESTfulPage
     </tr>
     <tr>
         <th>Pickup Date+Time</th>
-        <td>{$order->pDate} {$order->pTime}</td>
+        <td><input type="text" name="pickupDT" class="form-control" value="{$order->pDate} {$order->pTime}" /></td>
     </tr>
     <tr>
         <th>Notes</th>
         <td>{$order->notes}</td>
     </tr>
 </table>
+<p>
+    <button type="submit" class="btn btn-default">Update Order Info</button>
+</p>
+</form>
 </div>
 <p>
 {$listHTML}
