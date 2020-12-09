@@ -171,8 +171,8 @@ class PickupOrdersReport extends FannieReportPage
     {
         $stores = FormLib::storePicker();
         $dates = FormLib::standardDateFields();
-        $this->addOnloadCommand("\$('#date1').val('2020-10-26');");
-        $this->addOnloadCommand("\$('#date2').val('2020-11-26');");
+        $this->addOnloadCommand("\$('#date1').val('2020-12-09');");
+        $this->addOnloadCommand("\$('#date2').val('2020-12-17');");
 
         return <<<HTML
 <form method="get">
