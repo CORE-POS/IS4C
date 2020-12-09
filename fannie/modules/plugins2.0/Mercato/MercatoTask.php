@@ -23,9 +23,14 @@ class MercatoTask extends FannieTask
         $outputFile = "/tmp/" . $settings['MercatoFtpUser'] . '_' . date('Ymd_Hi') . ".csv";
         $out = fopen($outputFile, 'w');
 
+        /**
+         * Generate CSV lines for available items. Utilizes Instacart logic
+         * for deciding which items are available.
+         */
         $fp = fopen($csvfile, 'r');
         fgetcsv($fp); // discard headers
         fwrite($out,"product-code,product-name,sku,price,price-type,price-quantity,last-updated,instock,last-sold-date,taxable,department-id\r\n");
+        $upcs = array();
         while (!feof($fp)) {
             $data = fgetcsv($fp);
             $upc = $data[0];
@@ -57,6 +62,51 @@ class MercatoTask extends FannieTask
             fwrite($out, ($soldTS ? date('Ymd', $soldTS) : '') . ",");
             fwrite($out, ($data[11] > 0 ? 'Y' : 'N') . ",");
             fwrite($out, $info['department'] . "\r\n");
+
+            $upcs[] = $data[8];
+        }
+
+        /**
+         * Update table of all UPCs ever submitted to Mercato
+         */
+        $chkP = $dbc->prepare("SELECT upc FROM MercatoItems WHERE upc=?");
+        $addP = $dbc->prepare("INSERT INTO MercatoItems (upc) VALUES (?)");
+        $dbc->startTransaction();
+        foreach ($upcs as $upc) {
+            if (!$dbc->getValue($chkP, array($upc))) {
+                $dbc->execute($addP, array($upc));
+            }
+        }
+        $dbc->commitTransaction();
+
+        /**
+         * Lookup previously submitted items that are no longer available. Include them
+         * in the upload with the in-stock flag set to "no".
+         */
+        list($inStr, $args) = $dbc->safeInClause($upcs);
+        $oosP = $dbc->prepare("SELECT upc FROM MercatoItems WHERE upc NOT IN ({$inStr})");
+        $oosR = $dbc->execute($oosP, $args);
+        $prodP = $dbc->prepare("SELECT * FROM products WHERE upc=? AND store_id=?");
+        while ($oosW = $dbc->fetchRow($oosR)) {
+            $upc = $oosW['upc'];
+            $row = $dbc->getRow($prodP, array($upc, $storeID));
+            fwrite($out, $upc . ',');
+            $name = $row['description'];
+            if ($row['brand']) {
+                $name = $row['brand'] . ' ' . $name;
+            }
+            fwrite($out, '"' . $name . '",');
+            fwrite($out, $upc . ',');
+            fwrite($out, sprintf('%.2f', $row['normal_price']) . ",");
+            fwrite($out, ($row['scale'] == 1 ? 'P' : 'U') . ",");
+            fwrite($out, "1,");
+            $modTS = strtotime($row['modified']);
+            fwrite($out, ($modTS ? date('Ymd', $modTS) : '') . ",");
+            fwrite($out, "N,");
+            $soldTS = strtotime($row['last_sold']);
+            fwrite($out, ($soldTS ? date('Ymd', $soldTS) : '') . ",");
+            fwrite($out, ($row['tax'] > 0 ? 'Y' : 'N') . ",");
+            fwrite($out, $row['department'] . "\r\n");
         }
 
         unlink($csvfile);
@@ -71,11 +121,11 @@ class MercatoTask extends FannieTask
                 'port' => 22,
             ));
             $filesystem = new Filesystem($adapter);
-            $success = $filesystem->put('inventory/uploaded/' . $outputFile, file_get_contents($outputFile));
+            $success = $filesystem->put('inventory/' . basename($outputFile), file_get_contents($outputFile));
             if ($success) echo "Upload succeeded\n";
         }
 
-        //unlink($outputFile);
+        unlink($outputFile);
     }
 }
 
