@@ -28,6 +28,7 @@ class PickTagsPage extends FannieRESTfulPage
             $map[$this->id[$i]] = $this->form->qty[$i];
         }
         $priced = FormLib::get('priced', false);
+        $offset = FormLib::get('offset', false);
         $lifeP = $this->connection->prepare("SELECT shelflife FROM scaleItems WHERE plu=?");
         $dDate = FormLib::get('dDate', false);
 
@@ -201,6 +202,7 @@ class PickTagsPage extends FannieRESTfulPage
     <p class="form-inline">
         <button type="submit" class="btn btn-default">Get Tags</button>
         <label><input type="checkbox" name="priced" value="1" /> Include prices</label>
+        <label><input type="checkbox" name="offset" value="1" /> Offset Tags</label>
         <div class="input-group">
             <span class="input-group-addon">Delivery Date</span>
             <input type="text" class="form-control date-field" name="dDate" value="{$today}" />
