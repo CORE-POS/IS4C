@@ -727,6 +727,7 @@ HTML;
             onchange="$('#vsku{$jsVendorID}').val(this.value);" 
             {$vFieldsDisabled} {$aliasDisabled} />
         <input type="hidden" name="isAlias" value="{$rowItem['isAlias']}" />
+        <input type="hidden" name="origSKU" value="{$rowItem['sku']}" {$vFieldsDisabled} />
     </td>
 </tr>
 <tr>
@@ -1222,12 +1223,14 @@ HTML;
                         Other changes saved.</td>';
                 }
 
-                $multiP = $dbc->prepare("SELECT upc FROM vendorItems WHERE upc=? AND vendorID=?");
-                $multiR = $dbc->execute($multiP, array($upc, $vendorID));
-                if ($dbc->numRows($multiR) > 1) {
-                    $ret[] = '<th class="danger">Error</th>
-                        <td class="danger" colspan="3">Could not save SKU due to too many catalog entries.
-                        Other changes saved.</td>';
+                if ($sku != FormLib::get('origSKU')) {
+                    $multiP = $dbc->prepare("SELECT upc FROM vendorItems WHERE upc=? AND vendorID=?");
+                    $multiR = $dbc->execute($multiP, array($upc, $vendorID));
+                    if ($dbc->numRows($multiR) > 1) {
+                        $ret[] = '<th class="danger">Error</th>
+                            <td class="danger" colspan="3">Could not save SKU due to too many catalog entries.
+                            Other changes saved.</td>';
+                    }
                 }
             }
 
