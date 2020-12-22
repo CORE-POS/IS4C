@@ -9,6 +9,10 @@ class Mercato extends \COREPOS\Fannie\API\FanniePlugin
             'description'=>'Mercato SFTP credentials'), 
     'MercatoFtpPw' => array('default'=>'', 'label'=>'SFTP Password',
             'description'=>'Mercato credentials'), 
+    'MercatoBotUser' => array('default'=>'', 'label'=>'Bot Username',
+            'description'=>'Mercato dashboard credentials'), 
+    'MercatoBotPw' => array('default'=>'', 'label'=>'Bot Password',
+            'description'=>'Mercato credentials'), 
     );
 
     public $plugin_description = 'Plugin for submitting Mercato data. You may need
