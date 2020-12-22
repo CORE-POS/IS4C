@@ -74,7 +74,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
             FROM is4c_op.batches
             WHERE batchType = 1
                 '.$Qcycle.'
-                AND SUBSTR(startDate,1,4) = ?
+                AND SUBSTR(DATE_ADD(startDate, INTERVAL 7 DAY), 1, 4) = ?
                 '.$Qdealset.'
         ';
         $prep = $dbc->prepare($query);
