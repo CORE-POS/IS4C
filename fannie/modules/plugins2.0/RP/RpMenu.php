@@ -35,6 +35,7 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="RpFileManager.php">Import from RP</a> - reload data from the RP Excel file</li>
         <li><a href="RpSegmentation.php">Sales Segmentation</a> - projected day-by-day sales for a week</li>
         <li><a href="RpMarginEst.php">Estimate Margin</a> - drop in pricing from RP and preview applied margin</li>
+        <li><a href="RpPreBookPage.php">Enter Pre-Books</a> - input pre-books so they appear in the order guide.</a></li>
     </ul>
 </ul>
 HTML;

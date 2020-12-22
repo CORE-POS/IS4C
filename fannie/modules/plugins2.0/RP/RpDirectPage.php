@@ -50,11 +50,11 @@ class RpDirectPage extends FannieRESTfulPage
             $args[2] = $date3;
         }
 
-        $prep = $this->connection->prepare("SELECT receivedDate, internalUPC AS upc, brand, quantity AS qty,
+        $prep = $this->connection->prepare("SELECT receivedDate, internalUPC AS upc, brand, quantity AS qty, caseSize,
                 {$ignore}
             FROM PurchaseOrderItems AS i
                 INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
-            WHERE o.vendorID=-2
+            WHERE (o.vendorID=-2 OR o.vendorInvoiceID LIKE 'PREBOOK %')
                 AND o.userID=-99
                 AND o.placed=1
                 AND o.storeID=?
@@ -71,6 +71,9 @@ class RpDirectPage extends FannieRESTfulPage
         foreach ($qtys as $row) {
             if (!isset($ret[$row['upc']])) {
                 $ret[$row['upc']] = array('upc' => $row['upc'], 'qty' => 0, 'text' => '');
+            }
+            if ($row['caseSize'] > 1) {
+                $row['qty'] *= $row['caseSize'];
             }
             if ($row['ignored'] != 1) {
                 $ret[$row['upc']]['qty'] += $row['qty'];
