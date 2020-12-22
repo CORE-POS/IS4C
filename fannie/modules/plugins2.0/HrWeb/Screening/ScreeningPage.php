@@ -170,7 +170,7 @@ HTML;
 </p>
 <hr />
 <p>
-<h3>Are you experiencing any COVID-19 related symptoms?</h3>
+<h3>Are you experiencing any <span class="collapse" style="color: #e00; font-weight: bold;">new</span> COVID-19 related symptoms?</h3>
 </p>
 <table class="table" style="font-size: 200%;">
 <tr>
