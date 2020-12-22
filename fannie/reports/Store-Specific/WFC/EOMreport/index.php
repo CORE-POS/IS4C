@@ -242,8 +242,10 @@ if (!$output || isset($_REQUEST['recache'])){
         $amts = array(
             '41201-1' => 0,
             '41201-2' => 0,
-            '41201-5' => 0,
-            '41201-5' => 0,
+            '41205-1' => 0,
+            '41205-2' => 0,
+            '41600-1' => 0,
+            '41600-2' => 0,
         );
         $webQ="select t.department,
         s.superID,
@@ -280,6 +282,8 @@ if (!$output || isset($_REQUEST['recache'])){
             array(80, 3, '41205-02-20', 'DOutsideBakery', $amts['41205-2']),
             array(83, 3, '41201-01-20', 'DTHANKSGIVING', $amts['41201-1']),
             array(83, 3, '41201-02-20', 'DTHANKSGIVING', $amts['41201-2']),
+            array(83, 3, '41600-01-20', 'BREAD', $amts['41600-1']),
+            array(83, 3, '41600-02-20', 'BREAD', $amts['41600-2']),
         );
     }
     unset($supers[0]);
