@@ -312,10 +312,73 @@ class OverShortMAS extends FannieRESTfulPage {
                 if ($amts['??'] != 0) {
                     $records[] = array(
                         $dateID, $dateStr,
-                        '41201??00',
+                        '41205??00',
                         ($amts['??'] < 0 ? -1*$amts['??'] : 0),
                         ($amts['??'] > 0 ? $amts['??'] : 0),
                         $names['41205'],
+                    );
+                }
+                continue;
+            }
+            if ($w['store_id'] == '50' && $w['salesCode'] == '41600') {
+                $amts = array(
+                    1 => 0,
+                    2 => 0,
+                    '??' => 0,
+                );
+                $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_subtype='CM'
+                    AND description LIKE 'STORE%' AND emp_no=? AND register_no=? AND trans_no=?
+                    AND store_id=?"); 
+                $salesQ = "SELECT emp_no, register_no, trans_no, sum(total) as amount, min(tdate) as tdate
+                    FROM $dlog AS d 
+                    INNER JOIN departments as t ON d.department = t.dept_no
+                    INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.trans_type IN ('I','D')
+                    AND d.store_id=50
+                    AND tdate BETWEEN ? AND ?
+                    AND m.superID > 0
+                    AND salesCode = '41600'
+                    AND register_no <> 20
+                    GROUP BY emp_no, register_no, trans_no";
+                $salesP = $dbc->prepare($salesQ);
+                $innerR = $dbc->execute($salesP, array($args[1], $args[2]));
+                while ($innerW = $dbc->fetchRow($innerR)) {
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $w['store_id']);
+                    $storeR = $dbc->getValue($storeP, $storeArgs);
+                    list(,$storeID) = explode(' ', $storeR);
+                    if ($storeID == 1) {
+                        $amts[1] += $innerW['amount'];
+                    } elseif ($storeID == 2) {
+                        $amts[2] += $innerW['amount'];
+                    } else {
+                        $amts['??'] += $innerW['amount'];
+                    }
+                }
+                if ($amts[1] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '416000120',
+                        ($amts[1] < 0 ? -1*$amts[1] : 0),
+                        ($amts[1] > 0 ? $amts[1] : 0),
+                        $names['41600'],
+                    );
+                }
+                if ($amts[2] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '416000220',
+                        ($amts[2] < 0 ? -1*$amts[2] : 0),
+                        ($amts[2] > 0 ? $amts[2] : 0),
+                        $names['41600'],
+                    );
+                }
+                if ($amts['??'] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '41600??00',
+                        ($amts['??'] < 0 ? -1*$amts['??'] : 0),
+                        ($amts['??'] > 0 ? $amts['??'] : 0),
+                        $names['41600'],
                     );
                 }
                 continue;
