@@ -36,6 +36,7 @@ class GiftCardTracker extends FannieRESTfulPage
 
     protected $header = "Fannie :: Gift Card Tracker";
     protected $title = "Gift Card Tracker";
+    protected $must_authenticate = true;
 
     public function preprocess()
     {
