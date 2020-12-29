@@ -38,6 +38,7 @@ class ScreeningPage extends FannieRESTfulPage
     <link rel="stylesheet" type="text/css" href="../../../../src/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css">
     <meta name="viewport" content="width=device-width, user-scalable=no" />
 </head>
+<body style="background: #ffefcc">
 <body>
     <div class="container">
         <div class="row" align="center">
@@ -170,7 +171,7 @@ HTML;
 </p>
 <hr />
 <p>
-<h3>Are you experiencing any <span class="collapse" style="color: #e00; font-weight: bold;">new</span> COVID-19 related symptoms?</h3>
+<h3>Are you experiencing any <span class="" style="color: #e00; font-weight: bold;">new</span> COVID-19 related symptoms?</h3>
 </p>
 <table class="table" style="font-size: 200%;">
 <tr>
