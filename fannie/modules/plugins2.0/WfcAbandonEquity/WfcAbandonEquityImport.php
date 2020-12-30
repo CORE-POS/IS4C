@@ -201,7 +201,7 @@ class WfcAbandonEquityImport extends \COREPOS\Fannie\API\FannieUploadPage
             $record['emp_no'] = $EMP_NO;
             $record['trans_no'] = $trans;
             $record['upc'] = '0';
-            $record['description'] = '63350';
+            $record['description'] = '21000';
             $record['trans_type'] = 'C';
             $record['trans_subtype'] = 'CM';
             $record['card_no'] = $card_no;
