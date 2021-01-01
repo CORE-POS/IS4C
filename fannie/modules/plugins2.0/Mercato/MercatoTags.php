@@ -37,7 +37,7 @@ class MercatoTags extends FannieRESTfulPage
             $pdf->Cell(100,10,FormLib::get('name'),0,1,'C');
             $pdf->SetFont('Arial','','16');
             $pdf->SetX($posX);
-            $pDate = FormLib::get('pDate');
+            $pDate = FormLib::get('pdate');
             $pdf->Cell(100,10,date('D, M j', strtotime($pDate)),0,1,'C');
 
             $pdf->SetXY($posX, $posY + 80);
@@ -51,6 +51,7 @@ class MercatoTags extends FannieRESTfulPage
     protected function get_view()
     {
         $today = date('Y-m-d');
+
         return <<<HTML
 <form method="post" action="MercatoTags.php" id="mtagform"
     onsubmit="setTimeout(function() { document.getElementById('mtagform').reset(); }, 500);">
