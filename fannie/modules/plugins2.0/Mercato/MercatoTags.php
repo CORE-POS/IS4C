@@ -43,7 +43,8 @@ class MercatoTags extends FannieRESTfulPage
             $pdf->SetXY($posX, $posY + 80);
             $pdf->Cell(100,10,($i+1) . '/' . $multi,0,1,'C');
         }
-        $pdf->Output('PickupOrder.pdf', 'I');
+        $fileName = FormLib::get('name') . '_' . $date;
+        $pdf->Output($fileName.'.pdf', 'I');
 
         return false;
     }
