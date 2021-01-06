@@ -300,7 +300,7 @@ class EpScaleLib
             // so duplicates can be skipped
             if ($scale_model === false) {
                 continue;
-            } elseif (in_array($scale_model->epDeptNo(), $depts)) {
+            } elseif ($scale_model->epDeptNo() == 0 || in_array($scale_model->epDeptNo(), $depts)) {
                 continue;
             } else {
                 $depts[] = $scale_model->epDeptNo();
