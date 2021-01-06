@@ -32,16 +32,20 @@ class RoundUpAccountReport extends FannieReportPage
         $end = date('Y-m-d', mktime(0,0,0,12,31,$year));
         $dlog = DTransactionsModel::selectDlog($start, $end);
 
+        // yes, embedding into the query is bad, but passing the
+        // variable in via prepared statement gives the wrong result.
+        // casting to int is safe enough although the behavior is weird
         $query = "SELECT MONTH(tdate) AS month, SUM(total) AS ttl
             FROM {$dlog}
             WHERE tdate BETWEEN ? AND ?
-                AND card_no=?
+                AND card_no= " . ((int)$cardNo) . "
                 AND department=?
             GROUP BY MONTH(tdate)";
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep,
-                array($start . ' 00:00:00', $end . ' 23:59:59', $cardNo, $this->guessDepartment()));
+                array($start . ' 00:00:00', $end . ' 23:59:59', $this->guessDepartment()));
         $data = array();
+        var_dump($this->connection->numRows($res));
         while ($row = $this->connection->fetchRow($res)) {
             $time = mktime(0,0,0,$row['month'],1,$year);
             $data[] = array(
