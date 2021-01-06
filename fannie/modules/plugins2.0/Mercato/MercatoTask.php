@@ -18,10 +18,12 @@ class MercatoTask extends FannieTask
         $insta->getFile($csvfile);
 
         $storeID = $this->config->get('STORE_ID');
-        $deptP = $dbc->prepare("SELECT modified, last_sold,department FROM products AS p WHERE p.upc=? AND p.store_id=?");
+        $deptP = $dbc->prepare("SELECT modified, last_sold,department, special_price, start_date, end_date, batchID FROM products AS p WHERE p.upc=? AND p.store_id=?");
 
         $outputFile = "/tmp/" . $settings['MercatoFtpUser'] . '_' . date('Ymd_Hi') . ".csv";
+        $saleFile = "/tmp/_" . $settings['MercatoFtpUser'] . '_' . date('Ymd_Hi') . ".csv";
         $out = fopen($outputFile, 'w');
+        $saleOut = fopen($saleFile, 'w');
 
         /**
          * Generate CSV lines for available items. Utilizes Instacart logic
@@ -30,6 +32,7 @@ class MercatoTask extends FannieTask
         $fp = fopen($csvfile, 'r');
         fgetcsv($fp); // discard headers
         fwrite($out,"product-code,product-name,sku,price,price-type,price-quantity,last-updated,instock,last-sold-date,taxable,department-id\r\n");
+        fwrite($saleOut, "SKU,START DATE,END DATE,PRICE,QTY\r\n");
         $upcs = array();
         while (!feof($fp)) {
             $data = fgetcsv($fp);
@@ -62,6 +65,14 @@ class MercatoTask extends FannieTask
             fwrite($out, ($soldTS ? date('Ymd', $soldTS) : '') . ",");
             fwrite($out, ($data[11] > 0 ? 'Y' : 'N') . ",");
             fwrite($out, $info['department'] . "\r\n");
+
+            if ($info['special_price'] < $data[1]) {
+                fwrite($saleOut, $upc . ",");
+                fwrite($saleOut, date('n/j/Y', strtotime($info['start_date'])) . ",");
+                fwrite($saleOut, date('n/j/Y', strtotime($info['end_date'])) . ",");
+                fwrite($saleOut, sprintf('%.2f', $info['special_price']) . ",");
+                fwrite($saleOut, "1\r\n");
+            }
 
             $upcs[] = $data[8];
         }
@@ -123,9 +134,13 @@ class MercatoTask extends FannieTask
             $filesystem = new Filesystem($adapter);
             $success = $filesystem->put('inventory/' . basename($outputFile), file_get_contents($outputFile));
             if ($success) echo "Upload succeeded\n";
+
+            $success = $filesystem->put('ad-tpr/' . substr(basename($saleFile), 1), file_get_contents($saleFile));
+            if ($success) echo "Upload succeeded\n";
         }
 
         unlink($outputFile);
+        unlink($saleFile);
     }
 }
 
