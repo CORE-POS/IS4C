@@ -35,6 +35,7 @@ class MercatoTaxMapsModel extends BasicModel
     'mercatoTaxMapID' => array('type'=>'INT', 'increment' => true, 'index' => true),
     'rateID' => array('type'=>'INT', 'primary_key'=>true),
     'mercatoID' => array('type'=>'INT'),
+    'storeID' => array('type'=>'INT', 'primary_key'=>true),
     );
 
 }
