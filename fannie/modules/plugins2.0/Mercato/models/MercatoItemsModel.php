@@ -32,6 +32,7 @@ class MercatoItemsModel extends BasicModel
 
     protected $columns = array(
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
+    'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'altFlag' => array('type'=>'TINYINT', 'default'=>0),
     'altSKU' => array('type'=>'VARCHAR(14)'),
     );

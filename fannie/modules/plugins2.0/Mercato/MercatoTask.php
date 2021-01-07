@@ -80,12 +80,12 @@ class MercatoTask extends FannieTask
         /**
          * Update table of all UPCs ever submitted to Mercato
          */
-        $chkP = $dbc->prepare("SELECT upc FROM MercatoItems WHERE upc=?");
-        $addP = $dbc->prepare("INSERT INTO MercatoItems (upc) VALUES (?)");
+        $chkP = $dbc->prepare("SELECT upc FROM MercatoItems WHERE upc=? AND storeID=?");
+        $addP = $dbc->prepare("INSERT INTO MercatoItems (upc, storeID) VALUES (?, ?)");
         $dbc->startTransaction();
         foreach ($upcs as $upc) {
-            if (!$dbc->getValue($chkP, array($upc))) {
-                $dbc->execute($addP, array($upc));
+            if (!$dbc->getValue($chkP, array($upc, $storeID))) {
+                $dbc->execute($addP, array($upc, $storeID));
             }
         }
         $dbc->commitTransaction();
@@ -95,7 +95,8 @@ class MercatoTask extends FannieTask
          * in the upload with the in-stock flag set to "no".
          */
         list($inStr, $args) = $dbc->safeInClause($upcs);
-        $oosP = $dbc->prepare("SELECT upc FROM MercatoItems WHERE upc NOT IN ({$inStr})");
+        $oosP = $dbc->prepare("SELECT upc FROM MercatoItems WHERE upc NOT IN ({$inStr}) AND storeID=?");
+        $args[] = $storeID;
         $oosR = $dbc->execute($oosP, $args);
         $prodP = $dbc->prepare("SELECT * FROM products WHERE upc=? AND store_id=?");
         while ($oosW = $dbc->fetchRow($oosR)) {
