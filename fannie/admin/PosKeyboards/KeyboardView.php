@@ -45,7 +45,7 @@ class KeyboardView extends FannieRESTfulPage
 
         $rgb = FormLib::get('rgb');
         $temp = '';
-        $temp .= str_pad(hexdec(substr($rgb, 2, 2)), 3, '0', STR_PAD_LEFT) . ",";
+        $temp .= str_pad(hexdec(substr($rgb, 1, 2)), 3, '0', STR_PAD_LEFT) . ",";
         $temp .= str_pad(hexdec(substr($rgb, 3, 2)), 3, '0', STR_PAD_LEFT) . ",";
         $temp .= str_pad(hexdec(substr($rgb, 5, 2)), 3, '0', STR_PAD_LEFT);
         $rgb = $temp;
