@@ -39,8 +39,10 @@ class MercatoTags extends FannieRESTfulPage
             $pdf->SetX($posX);
             $pDate = FormLib::get('pdate');
             $pdf->Cell(100,10,date('D, M j', strtotime($pDate)),0,1,'C');
+            $pdf->SetX($posX);
+            $pdf->Cell(100,10,'Order #' . FormLib::get('order'),0,1,'C');
 
-            $pdf->SetXY($posX, $posY + 80);
+            $pdf->SetXY($posX, $posY + 70);
             $pdf->Cell(100,10,($i+1) . '/' . $multi,0,1,'C');
         }
         $fileName = FormLib::get('name') . '_' . $date;
@@ -66,6 +68,12 @@ class MercatoTags extends FannieRESTfulPage
     <div class="input-group">
         <span class="input-group-addon">Pickup Date</span>
         <input type="text" name="pdate" class="form-control date-field" value="$today" required>
+    </div>
+</p>
+<p>
+    <div class="input-group">
+        <span class="input-group-addon">Order #</span>
+        <input type="number" value="" name="order" class="form-control">
     </div>
 </p>
 <p>
