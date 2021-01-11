@@ -142,7 +142,6 @@ class MercatoIntake
                     $total = $data[14];
                     $item = $this->dbc->getRow($itemP, array($upc));
                     if ($item['tax']) {
-                        echo "Tax on $mOrderID $upc is $total\n";
                         $taxable[$item['tax']] += $total;
                     }
                     $dtrans['upc'] = $upc;
@@ -164,6 +163,7 @@ class MercatoIntake
                     break;
                 case 'SALE FEE': // intentional fallthrough
                 case 'PROCESSING FEE':
+                case 'SALE REFUND':
                     $total = $data[14];
                     $dtrans['upc'] = $total . 'DP802';
                     $dtrans['description'] = substr($data[7], 0, 30);
@@ -182,7 +182,6 @@ class MercatoIntake
                 case 'SALES TAX':
                     $total = $data[14];
                     $currentOrder['tax'] += $total;
-                    echo $currentOrder['tax'] . ' tax set to ' . $total . "\n";
                     break;
             }
 
@@ -209,8 +208,6 @@ class MercatoIntake
 
             $estOne = $taxable[1] * $rates[1]['rate'];
             $estTwo = $taxable[2] * $rates[2]['rate'];
-                    print_r($taxable);
-                    echo "$estOne $estTwo\n";
             $estTotal = $estOne + $estTwo;
 
             $actualOne = 0;
@@ -219,8 +216,6 @@ class MercatoIntake
                 $actualOne = round(($estOne / $estTotal) * $currentOrder['tax'], 2);
                 $actualTwo = $currentOrder['tax'] - $actualOne;
             }
-            echo "$actualOne $actualTwo\n";
-            echo $currentOrder['id'] . ' ' . $currentOrder['tax'] . "\n";
 
             $dtrans = DTrans::defaults();
             $dtrans['store_id'] = $storeID;
