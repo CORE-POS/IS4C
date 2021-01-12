@@ -4,9 +4,27 @@ class MercatoIntake
 {
     private $dbc = null;
 
+    private $COL_STORE_ID = 3;
+    private $COL_UTC_DATE = 1;
+    private $COL_ROWTYPE = 5;
+    private $COL_ORDER_ID = 6;
+    private $COL_AMT = 14;
+    private $COL_UPC = 9;
+    private $COL_QTY = 12;
+    private $COL_ITEM = 7;
+
     public function __construct($dbc)
     {
         $this->dbc = $dbc;
+    }
+
+    public function shift()
+    {
+        $this->COL_ORDER_ID = 7;
+        $this->COL_AMT = 17;
+        $this->COL_UPC = 10;
+        $this->COL_QTY = 13;
+        $this->COL_ITEM = 8;
     }
 
     public function process($filename)
@@ -24,18 +42,17 @@ class MercatoIntake
             $rates[$row['id']] = $row;
         }
 
-        print_r($rates);
         $itemP = $this->dbc->prepare("SELECT description, department, tax, cost, scale FROM products WHERE upc=?");
         while (!feof($fp)) {
             $data = fgetcsv($fp);
-            if (!is_numeric($data[6])) {
+            if (!is_numeric($data[$this->COL_ORDER_ID])) {
                 continue;
             }
-            $mStoreID = $data[3];
+            $mStoreID = $data[$this->COL_STORE_ID];
             $storeID = $mStoreID == 1692 ? 1 : 2;
-            $utc = new DateTime($data[1] . ' UTC');
+            $utc = new DateTime($data[$this->COL_UTC_DATE] . ' UTC');
             $local = $utc->setTimeZone(new DateTimeZone('America/Chicago'));
-            $mOrderID = $data[6];
+            $mOrderID = $data[$this->COL_ORDER_ID];
             if ($mOrderID != $currentOrder['id']) {
                 if ($currentOrder['total'] != 0) {
 
@@ -125,7 +142,7 @@ class MercatoIntake
                 $taxable = array(1 => 0, 2 => 0);
                 $trans_id = 1;
             }
-            $currentOrder['total'] += $data[14];
+            $currentOrder['total'] += $data[$this->COL_AMT];
 
             $dtrans = DTrans::defaults();
             $dtrans['store_id'] = $storeID;
@@ -135,11 +152,11 @@ class MercatoIntake
             $dtrans['trans_id'] = $trans_id;
             $dtrans['card_no'] = 11;
 
-            switch (strtoupper($data[5])) {
+            switch (strtoupper($data[$this->COL_ROWTYPE])) {
                 case 'SALE ITEM':
-                    $upc = BarcodeLib::padUPC($data[9]);
-                    $qty = $data[12];
-                    $total = $data[14];
+                    $upc = BarcodeLib::padUPC($data[$this->COL_UPC]);
+                    $qty = $data[$this->COL_QTY];
+                    $total = $data[$this->COL_AMT];
                     $item = $this->dbc->getRow($itemP, array($upc));
                     if ($item['tax']) {
                         $taxable[$item['tax']] += $total;
@@ -164,9 +181,9 @@ class MercatoIntake
                 case 'SALE FEE': // intentional fallthrough
                 case 'PROCESSING FEE':
                 case 'SALE REFUND':
-                    $total = $data[14];
+                    $total = $data[$this->COL_AMT];
                     $dtrans['upc'] = $total . 'DP802';
-                    $dtrans['description'] = substr($data[7], 0, 30);
+                    $dtrans['description'] = substr($data[$this->COL_ITEM], 0, 30);
                     $dtrans['trans_type'] = 'D';
                     $dtrans['department'] = 802;
                     $dtrans['quantity'] = 1;
@@ -180,7 +197,7 @@ class MercatoIntake
                     $trans_id++;
                     break;
                 case 'SALES TAX':
-                    $total = $data[14];
+                    $total = $data[$this->COL_AMT];
                     $currentOrder['tax'] += $total;
                     break;
             }
