@@ -39,7 +39,7 @@ class MercatoImportTask extends FannieTask
                     file_put_contents($filename, $csv);
                     echo "Processing {$c['basename']}\n";
                     $intake->shift();
-                    //$intake->process($filename);
+                    $intake->process($filename);
                 }
             }
         }
