@@ -30,7 +30,7 @@ class MercatoImportTask extends FannieTask
             $filesystem = new Filesystem($adapter);
             $contents = $filesystem->listContents('outbound/orders');
             foreach ($contents as $c) {
-                if ($c['extension'] == 'csv') {
+                if (isset($c['extension']) && $c['extension'] == 'csv') {
                     $filename = __DIR__ . '/noauto/archive/' . $c['basename'];
                     if (file_exists($filename)) {
                         continue; // already imported
