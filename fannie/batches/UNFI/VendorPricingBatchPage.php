@@ -340,6 +340,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $brand = rtrim(substr($row['brand'], 0, 15));
             $symb = ($row['difference'] > 0) ? "+" : "";
             $row['date'] = ($row['date']) ? "<span class='grey'> <i>on</i> </span> ".$row['date'] : "";
+            $change = $row['srp'] - $row['normal_price'];
+            $change = (abs($change) < 1.99) ? 0 : round($change / 2);
+            $row['srp'] = $row['srp'] - $change;
+            $row['srp'] = $rounder->round($row['srp']);
             $ret .= sprintf("<tr id=row%s class='%s %s'>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
                 <td class=\"sub sku\">%s</td>
