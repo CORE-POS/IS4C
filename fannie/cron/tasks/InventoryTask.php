@@ -206,6 +206,12 @@ class InventoryTask extends FannieTask
             SET onHand = baseCount + ordered - sold - shrunk
         ');
 
+        $dbc->query('
+            UPDATE InventoryCache
+            SET onHand = 0, negative=1
+            WHERE onHand < 0
+        ');
+
         $this->trimCounts($dbc, $this->store_id, $this->vendor_id);
     }
 

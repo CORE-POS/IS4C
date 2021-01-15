@@ -39,6 +39,7 @@ class InventoryCacheModel extends BasicModel
     'sold' => array('type'=>'DECIMAL(10,2)'),
     'shrunk' => array('type'=>'DECIMAL(10,2)', 'default'=>0),
     'onHand' => array('type'=>'DECIMAL(10,2)'),
+    'negative' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function __construct($con)
