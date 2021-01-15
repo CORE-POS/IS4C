@@ -43,6 +43,7 @@ class OverShortMAS extends FannieRESTfulPage {
         global $FANNIE_OP_DB;
         $dlog = DTransactionsModel::selectDlog($this->startDate, $this->endDate);
         $dtrans = DTransactionsModel::selectDtrans($this->startDate, $this->endDate);
+        $mc = FormLib::get('mercato');
 
         $records = array();
         $dateID = date('ymd', strtotime($this->endDate));
@@ -126,6 +127,8 @@ class OverShortMAS extends FannieRESTfulPage {
                 WHERE trans_type='T'
                 AND " . DTrans::isStoreID($store, 'd') . "
                 AND tdate BETWEEN ? AND ?
+                " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
+                " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
                 AND department <> 703
                 GROUP BY type HAVING SUM(total) <> 0 ORDER BY type";
         $tenderP = $dbc->prepare($tenderQ);
@@ -162,6 +165,8 @@ class OverShortMAS extends FannieRESTfulPage {
             FROM $dlog AS d WHERE upc='DISCOUNT'
                 AND " . DTrans::isStoreID($store, 'd') . "
             AND total <> 0 AND tdate BETWEEN ? AND ?
+            " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
+            " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
             GROUP BY name, d.store_id ORDER BY name";
         $discountP = $dbc->prepare($discountQ);
         $discountR = $dbc->execute($discountP, $args);
@@ -189,6 +194,8 @@ class OverShortMAS extends FannieRESTfulPage {
             AND tdate BETWEEN ? AND ?
             AND m.superID > 0
             AND register_no <> 20
+            " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
+            " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
             GROUP BY salesCode, d.store_id HAVING sum(total) <> 0 
             ORDER BY salesCode";
         $salesP = $dbc->prepare($salesQ);
@@ -398,6 +405,8 @@ class OverShortMAS extends FannieRESTfulPage {
         WHERE 
             " . DTrans::isStoreID($store, 'd') . "
             AND tdate BETWEEN ? AND ?
+            " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
+            " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
             AND upc='TAX'";
         $taxP = $dbc->prepare($taxQ);
         $taxR = $dbc->execute($taxP, $args);
@@ -419,6 +428,8 @@ class OverShortMAS extends FannieRESTfulPage {
             AND m.superID = 0
             AND d.department <> 703
             AND register_no <> 20
+            " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
+            " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
             GROUP BY salesCode HAVING sum(total) <> 0 
             ORDER BY salesCode";
         $salesP = $dbc->prepare($salesQ);
@@ -592,6 +603,14 @@ class OverShortMAS extends FannieRESTfulPage {
             <div class="form-group">
                 <label>Store</label>
                 ' . $stores['html'] . '
+            </div>
+            <div class="form-group">
+                <label>Mercato</label>
+                <select name="mercato" class="form-control">
+                    <option value="1">Included</option>
+                    <option value="2">Excluded</option>
+                    <option value="3">Only</option>
+                </select>
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Get Data</button>
