@@ -198,7 +198,7 @@ please see that for settings to control behavior.';
             if (!$this->identifyOwner($owner)) {
                 return false;
             }
-            exec("sudo -u $owner {$this->git} fetch $remote", $output, $return_var);
+            exec("sudo -u $owner -H {$this->git} fetch $remote", $output, $return_var);
         } else {
             exec("{$this->git} fetch $remote", $output, $return_var);
         }
