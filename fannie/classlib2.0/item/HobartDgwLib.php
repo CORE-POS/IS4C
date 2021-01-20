@@ -36,6 +36,10 @@ class HobartDgwLib
         // first write fields that are present
         foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($item_info[$key])) {
+                if ($key == 'Label') {
+                    $labelInfo = ServiceScaleLib::labelTranslate($item_info['Label'], 'HOBART_QUANTUMTCP');
+                    $item_info['Label'] = $labelInfo['labelType'];
+                }
                 if (isset($field_info['quoted']) && $field_info['quoted']) {
                     $line .= '"' . $item_info[$key] . '",';
                 } else {
