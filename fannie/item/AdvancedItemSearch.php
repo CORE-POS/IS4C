@@ -170,7 +170,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         if ($form->description !== '') {
             if (isset($form->serviceScale)) {
-                $search->where .= ' AND (p.description LIKE ? OR h.itemdesc LIKE ?) ';
+                $search->where .= ' AND (p.description LIKE ? OR h.itemdesc LIKE ? OR j.ingredients LIKE ? OR h.text LIKE ?) ';
+                $search->args[] = '%' . $form->description . '%';
+                $search->args[] = '%' . $form->description . '%';
                 $search->args[] = '%' . $form->description . '%';
                 $search->args[] = '%' . $form->description . '%';
             } else {
@@ -280,6 +282,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         if ($form->serviceScale !== '') {
             $search->from .= ' INNER JOIN scaleItems AS h ON h.plu=p.upc ';
+            $search->from .= ' LEFT JOIN ScaleIngredients AS j ON j.upc=p.upc ';
             $search->where = str_replace('p.modified', 'h.modified', $search->where);
         }
 
