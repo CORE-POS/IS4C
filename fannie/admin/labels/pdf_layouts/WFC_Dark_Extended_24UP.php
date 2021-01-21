@@ -22,7 +22,7 @@ class WFC_Dark_Extended_24UP_PDF extends FpdfWithBarcode
 
 }
 
-function WFC_Dark_Extended_24UP($data,$offset=0)
+function WFC_Dark_Extended_24UP($data,$offset=0,$showPrice=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
     $pdf = new WFC_Dark_Extended_24UP_PDF('L','mm','Letter');
@@ -58,7 +58,7 @@ function WFC_Dark_Extended_24UP($data,$offset=0)
             $i = 0;
         }
         if ($i == 0) {
-            $pdf = generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+            $pdf = generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
             //can't get UPC_A to work, get FPDF error: Could not include font metric file
             //if (strlen($upc) <= 11)
             //    $pdf->UPC_A($x,$y,$upc,7);  //generate barcode and place on label
@@ -70,7 +70,7 @@ function WFC_Dark_Extended_24UP($data,$offset=0)
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $pdf = generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
         $i++;
     }
 
@@ -178,7 +178,7 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 
 }
 
-function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset)
 {
     $upc = $row['upc'];
     $desc = $row['description'];
@@ -251,7 +251,8 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
     */
     $pdf->SetFont('Gill','B', 19);  //Set the font 
     $pdf->SetXY($x,$y+27);
-    $pdf->Cell($width, 5, "$".$price, 0, 1, 'C', true); 
+    if ($showPrice == 1 ) 
+        $pdf->Cell($width, 5, "$".$price, 0, 1, 'C', true); 
 
     /*
         Create Guide-Lines

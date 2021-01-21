@@ -370,6 +370,11 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret .= '<button type="submit" name="pdf" value="Print"
                     class="btn btn-default">Print</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="offset" value="1" /> Offset</label>';
+
+        $darkExtendOnly = '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="showPrice" value="1" checked />Show Price</label>';
+        $signmod = FormLib::get('signmod');
+        if (FormLib::get('signmod') == 'Legacy:WFC Dark Extended 24UP') 
+            $ret .= $darkExtendOnly;
         $ret .= '</div>';
         $ret .= '<hr />';
 
