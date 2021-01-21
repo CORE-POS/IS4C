@@ -504,23 +504,25 @@ those same items revert to normal pricing.
 
             $updateP = $lane_sql->prepare($updateQ);
             foreach ($upcs as $upc => $data) {
-                $args = array(
-                    $data['normal_price'],
-                    $data['special_price'],
-                    $data['modified'],
-                    $data['specialpricemethod'],
-                    $data['specialquantity'],
-                    $data['specialgroupprice'],
-                    $data['discounttype'],
-                    $data['mixmatchcode'],
-                    $data['start_date'],
-                    $data['end_date'],
-                );
-                if ($has_limit) {
-                    $args[] = $data['special_limit'];
+                if (intval($upc) < 1000000000000) {
+                    $args = array(
+                        $data['normal_price'],
+                        $data['special_price'],
+                        $data['modified'],
+                        $data['specialpricemethod'],
+                        $data['specialquantity'],
+                        $data['specialgroupprice'],
+                        $data['discounttype'],
+                        $data['mixmatchcode'],
+                        $data['start_date'],
+                        $data['end_date'],
+                    );
+                    if ($has_limit) {
+                        $args[] = $data['special_limit'];
+                    }
+                    $args[] = $upc;
+                    $lane_sql->execute($updateP, $args);
                 }
-                $args[] = $upc;
-                $lane_sql->execute($updateP, $args);
             }
         }
 
