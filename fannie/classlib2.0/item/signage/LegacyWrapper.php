@@ -63,7 +63,8 @@ class LegacyWrapper extends \COREPOS\Fannie\API\item\FannieSignage
             return 'No legacy layout selected';
         }
         $offset = \FormLib::get('offset', 0);
-        $layout($data, $offset);
+        $showPrice = \FormLib::get('showPrice', 0);
+        $layout($data, $offset, $showPrice);
     }
 }
 
