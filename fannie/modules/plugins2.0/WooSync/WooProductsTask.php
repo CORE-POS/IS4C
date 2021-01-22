@@ -63,8 +63,9 @@ class WooProductsTask extends FannieTask
         $exists = array();
         $page = 1;
         do {
-            $json = $woo->get('products', array('per_page' => 20, 'page'=>$page));
-            $headers = $woo->headers();
+            $json = $woo->get('products', array('per_page' => 100, 'page'=>$page));
+            $response = $woo->http->getResponse();
+            $headers = $response->getHeaders();
             foreach ($json as $p) {
                 if (substr($p['sku'], -3) == '-CS') {
                     $exists[$p['sku']] = $p['id'];
@@ -109,7 +110,7 @@ class WooProductsTask extends FannieTask
             } else {
                 $create[] = $item;
             }
-            if (count($update) > 100 || count($create) > 100) {
+            if ((count($update) + count($create)) >= 100) {
                 $woo->post('products/batch', array(
                     'create' => $create,
                     'update' => $update,
