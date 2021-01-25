@@ -19,6 +19,7 @@ class MercatoTask extends FannieTask
 
         $storeID = $this->config->get('STORE_ID');
         $deptP = $dbc->prepare("SELECT modified, last_sold,department, special_price, start_date, end_date, batchID FROM products AS p WHERE p.upc=? AND p.store_id=?");
+        $pieceP = $dbc->prepare("SELECT pieceWeight FROM MercatoItems WHERE upc=?");
 
         $outputFile = "/tmp/" . $settings['MercatoFtpUser'] . '_' . date('Ymd_Hi') . ".csv";
         $saleFile = "/tmp/_" . $settings['MercatoFtpUser'] . '_' . date('Ymd_Hi') . ".csv";
@@ -31,7 +32,7 @@ class MercatoTask extends FannieTask
          */
         $fp = fopen($csvfile, 'r');
         fgetcsv($fp); // discard headers
-        fwrite($out,"product-code,product-name,sku,price,price-type,price-quantity,last-updated,instock,last-sold-date,taxable,department-id\r\n");
+        fwrite($out,"product-code,product-name,sku,price,price-type,weight,price-quantity,last-updated,instock,last-sold-date,taxable,department-id\r\n");
         fwrite($saleOut, "SKU,START DATE,END DATE,PRICE,QTY\r\n");
         $upcs = array();
         while (!feof($fp)) {
@@ -57,6 +58,8 @@ class MercatoTask extends FannieTask
             }
             fwrite($out, sprintf('%.2f', $data[1]) . ",");
             fwrite($out, ($data[2] == 'lb' ? 'P' : 'U') . ",");
+            $weight = $dbc->getValue($pieceP, array($upc));
+            fwrite($out, $weight . ',');
             fwrite($out, "1,");
             $modTS = strtotime($info['modified']);
             fwrite($out, ($modTS ? date('Ymd', $modTS) : '') . ",");
@@ -95,7 +98,7 @@ class MercatoTask extends FannieTask
          * in the upload with the in-stock flag set to "no".
          */
         list($inStr, $args) = $dbc->safeInClause($upcs);
-        $oosP = $dbc->prepare("SELECT upc FROM MercatoItems WHERE upc NOT IN ({$inStr}) AND storeID=?");
+        $oosP = $dbc->prepare("SELECT upc, pieceWeight FROM MercatoItems WHERE upc NOT IN ({$inStr}) AND storeID=?");
         $args[] = $storeID;
         $oosR = $dbc->execute($oosP, $args);
         $prodP = $dbc->prepare("SELECT * FROM products WHERE upc=? AND store_id=?");
@@ -111,6 +114,7 @@ class MercatoTask extends FannieTask
             fwrite($out, $upc . ',');
             fwrite($out, sprintf('%.2f', $row['normal_price']) . ",");
             fwrite($out, ($row['scale'] == 1 ? 'P' : 'U') . ",");
+            fwrite($out, $oosW['pieceWeight'] . ',');
             fwrite($out, "1,");
             $modTS = strtotime($row['modified']);
             fwrite($out, ($modTS ? date('Ymd', $modTS) : '') . ",");
@@ -140,7 +144,7 @@ class MercatoTask extends FannieTask
             if ($success) echo "Upload succeeded\n";
         }
 
-        unlink($outputFile);
+        //unlink($outputFile);
         unlink($saleFile);
     }
 }

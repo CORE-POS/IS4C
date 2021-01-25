@@ -35,6 +35,7 @@ class MercatoItemsModel extends BasicModel
     'storeID' => array('type'=>'INT', 'primary_key'=>true),
     'altFlag' => array('type'=>'TINYINT', 'default'=>0),
     'altSKU' => array('type'=>'VARCHAR(14)'),
+    'pieceWeight' => array('type'=>'VARCHAR(10)'),
     );
 }
 
