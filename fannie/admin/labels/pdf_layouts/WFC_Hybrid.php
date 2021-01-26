@@ -210,7 +210,7 @@ foreach($data as $row) {
         $upc = ltrim($row['upc'],0);
         $check = $pdf->GetCheckDigit($upc);
         $tagdate = date('m/d/y');
-        $vendor = substr($row['vendor'],0,7);
+        $vendor = substr(isset($row['vendor']) ? $row['vendor'] : '',0,7);
 
         //Start laying out a label
         $pdf->SetFont('Arial','',8);  //Set the font
