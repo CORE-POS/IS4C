@@ -66,17 +66,26 @@ HTML;
     public function get_data_view()
     {
         $dbc = Fanniedb::get($this->config->get('op_db'));
-        $storeID = FormLib::get('store');
 
-        $args = array($storeID);
+        $storeID = FormLib::get('store', false);
+        $upc = FormLib::get('upc', false);
+        $upc = ($upc != false) ? BarcodeLib::padUPC($upc) : null;
+        $date1 = FormLib::get('date1', false);
+        $date2 = FormLib::get('date2', false);
+        $brand = FormLib::get('brand', false);
+        $desc = FormLib::get('desc', false);
+
+        $args = array();
         $td = '';
         $th = '';
-        $cols = array('count', 'upc', 'brand', 'description', 'dept', 'storeID',
+        $cols = array('upc', 'brand', 'description', 'dept', 'storeID',
             'auto_par', 'adjustment', 'modified', 'loc');
         foreach ($cols as $col) {
             $th.= "<th>$col</th>";
         }
-        $prep = $dbc->prepare("SELECT m.*, DATE(m.modified) as modified, m.updateID as count,
+
+        $query = "
+            SELECT m.*, DATE(m.modified) as modified, m.updateID as count,
                 p.brand, p.description,
                 CONCAT(d.dept_no, ' ', d.dept_name) AS dept,
                 f.name AS loc
@@ -85,69 +94,93 @@ HTML;
                 LEFT JOIN departments AS d ON p.department=d.dept_no
                 LEFT JOIN FloorSectionProductMap AS fspm ON m.upc=fspm.upc
                 LEFT JOIN FloorSections AS f ON fspm.floorSectionID=f.floorSectionID
+            WHERE p.upc IS NOT NULL
+            ";
+
+        if ($upc != false) {
+            $query .= " AND p.upc = ? ";
+            $args[] = $upc;
+        }
+        if ($date1 != false) {
+            $query .= " AND DATE(m.modified) >= ?";
+            $args[] = $date1;
+        }
+        if ($date2 != false) {
+            $query .= " AND DATE(m.modified) <= ?";
+            $args[] = $date2;
+        }
+        if ($brand != false) {
+            $query .= " AND brand LIKE '%$brand%' ";
+        }
+        if ($desc != false) {
+            $query .= " AND description LIKE '%$desc%' ";
+        }
+        if ($storeID != false) {
+            $query .= " AND m.storeID = ? ";
+            $args[] = $storeID;
+        }
+
+        $query .= "
             GROUP BY m.upc, DATE(m.modified)
             ORDER BY m.updateID DESC
-            ");
+        ";
+
+        $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
-        while ($row = $dbc->fetchRow($res)) {
-            $td .= "<tr>";
-            foreach ($cols as $col) {
-                $td .= "<td data-column=\"$col\">{$row[$col]}</td>";
+        if ($upc != false || $date1 != false || $date2 != false || $brand != false || $desc != false) {
+            while ($row = $dbc->fetchRow($res)) {
+                $td .= "<tr>";
+                foreach ($cols as $col) {
+                    $td .= "<td data-column=\"$col\" class=\"col-$col\">{$row[$col]}</td>";
+                }
+                $td .= "</tr>";
             }
-            $td .= "</tr>";
         }
+
+        echo ($dbc->error()) ? "<div class=\"alert alert-danger\">{$dbc->error()}</div>" : null;
 
         $stores = FormLib::storePicker();
         $this->addOnloadCommand("$('#datepicker1').datepicker({dateFormat: 'yy-mm-dd'});");
         $this->addOnloadCommand("$('#datepicker2').datepicker({dateFormat: 'yy-mm-dd'});");
-        $this->addScript("movementTag.js");
-        $this->addOnloadcommand("movementTableFilter.filter_table();");
-        $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
-        $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
-        $this->addOnloadCommand("$('#mu-table').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
         return <<<HTML
 <h2>Shelftag Replacement History</h2>
+<form name="history" id="history" action="MovementTagTracker.php" method="get">
 <div class="row">
     <ul><li><a href="ShelfTagIndex.php">Shelftag Index</a></li></ul>
     <div class="col-lg-2"><div class="form-group">{$stores['html']}</div></div>
     <div class="col-lg-2"><div class="form-group">
-        <input class="form-control" id="datepicker1" data-var="from"  type="text" placeholder="From"/>
+        <input type="hidden" value="view" name="data" />
+        <input class="form-control" id="datepicker1" data-var="from" name="date1" value="$date1" type="text" placeholder="From"/>
     </div></div>
     <div class="col-lg-2"><div class="form-group">
-        <input class="form-control" id="datepicker2" data-var="to"  type="text" placeholder="To"/>
+        <input class="form-control" id="datepicker2" data-var="to" name="date2" value="$date2" type="text" placeholder="To"/>
     </div></div>
     <div class="col-lg-2"><div class="form-group">
-        <input class="form-control" id="upc-filter" data-var="upc" type="text" placeholder="UPC"/>
+        <input class="form-control" id="upc-filter" data-var="upc" name="upc" value="$upc" type="text" placeholder="UPC"/>
     </div></div>
     <div class="col-lg-2"><div class="form-group">
-        <input class="form-control" id="brand-filter" data-var="brand"  type="text" placeholder="Brand"/>
+        <input class="form-control" id="brand-filter" data-var="brand" name="brand" value="$brand" type="text" placeholder="Brand"/>
     </div></div>
     <div class="col-lg-2"><div class="form-group">
-        <input class="form-control" id="desc-filter" data-var="desc"  type="text" placeholder="Description"/>
+        <input class="form-control" id="desc-filter" data-var="desc" name="desc" value="$desc" type="text" placeholder="Description"/>
     </div></div>
 </div>
 <div class="row">
     <div class="col-lg-2"><div class="form-group">
         <button class="btn btn-default" style="width: 45%">Submit</button>
-        <button class="btn btn-default" style="width: 45%" onclick="
-            $('input').each(function(){ $(this).val(''); $(this).trigger('change') });
-            $('#dept-filter').val($('#dept-filter option:first').val());
-            $('#dept-filter').trigger('change');
-            $('#loc-filter').val($('#loc-filter option:first').val());
-            $('#loc-filter').trigger('change');
-            "
-        >Clear</button>
-    </div></div>
-    <div class="col-lg-2"><div class="form-group">
-        <select class="form-control" name="dept-filter" id="dept-filter" data-var="dept">
-        </select>
-    </div></div>
-    <div class="col-lg-2"><div class="form-group">
-        <select class="form-control" name="loc-filter" id="loc-filter" data-var="loc">
-        </select>
+        <a class="btn btn-default" style="width: 45%" onclick=" 
+            $('#upc-filter').val(null);
+            $('#datepicker1').val(null);
+            $('#datepicker2').val(null);
+            $('#brand-filter').val(null);
+            $('#desc-filter').val(null);
+            $('#upc-filter').val(null);
+            document.forms['history'].submit();
+            ">Clear</a >
     </div></div>
 </div>
+</form>
 <table id="mu-table" class="table table-bordered table-sm small"><thead>$th</thead><tbody>$td</tbody></table>
 HTML;
     }
@@ -692,12 +725,20 @@ HTML;
     background: linear-gradient(#F2F2F2, #FAFAFA);
     border-radius: 5px;
 }
+.col-upc {
+    cursor: pointer;
+}
 HTML;
     }
 
     public function javascript_content()
     {
         return <<<JAVASCRIPT
+$('.col-upc').click(function(){
+    let upc = $(this).text();
+    $('#upc-filter').val(upc);
+    document.forms['history'].submit();
+});
 $('.glyphicon').click(function()
 {
     var c = confirm("Delete row?");
