@@ -94,6 +94,8 @@ class Watcher
         Console.CancelKeyPress += new ConsoleCancelEventHandler(ctrlC);
         AppDomain.CurrentDomain.ProcessExit += new EventHandler(eventWrapper);
 
+        var stopwatch = new Stopwatch();
+
         // restart pos.exe minimized whenever it exits
         Console.WriteLine(DateTime.Now.ToString() + ": starting driver");
         while (true) {
@@ -129,14 +131,23 @@ class Watcher
             si.wShowWindow = SW_SHOWMINNOACTIVE;
             PROCESS_INFORMATION pi = new PROCESS_INFORMATION();
             CreateProcess(null, my_location + sep + "pos.exe", IntPtr.Zero, IntPtr.Zero, true, CREATE_NEW_CONSOLE, IntPtr.Zero, null, ref si, out pi);
+            stopwatch.Reset();
+            stopwatch.Start();
             Watcher.current = Process.GetProcessById(pi.dwProcessId);
             Watcher.maintainFocus(browserName);
             Watcher.current.WaitForExit();
             CloseHandle(pi.hProcess);
             CloseHandle(pi.hThread);
+            stopwatch.Stop();
+            if (stopwatch.ElapsedMilliseconds < 5000) {
+                Console.WriteLine(DateTime.Now.ToString() + ": exiting - child process seems to be crashing");
+                break;
+            }
             Console.WriteLine(DateTime.Now.ToString() + ": re-starting driver (C++ build)");
             // END SECOND IMPLEMENTATION
         }
+
+        return 0;
     }
 
     /**
