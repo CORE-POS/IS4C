@@ -804,6 +804,14 @@ class MercuryDC extends MercuryE2E
         $cardType = $better->query('/RStream/TranResponse/CardType');
         if ($cardType == 'EWIC') {
             $this->wicReceiptHandler($dbc, $better, $this->conf->get('LastID'));
+            $receipt = new COREPOS\pos\lib\ReceiptBuilding\Messages\WicReceiptMessage();
+            $items = $receipt->potentialItems($this->conf->get('EWicBalance'));
+            if ($items === '') {
+                // bail out if no eligible items are found
+                $this->conf->set("boxMsg","Error: No eligible items");
+                TransRecord::addcomment("");
+                return PaycardLib::PAYCARD_ERR_PROC;
+            }
             $balance = 'WIC';
             $last4 = $better->query('/RStream/TranResponse/AcctNo');
             if ($last4) {
