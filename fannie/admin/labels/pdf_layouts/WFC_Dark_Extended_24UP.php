@@ -111,12 +111,12 @@ function WFC_Dark_Extended_24UP($data,$offset=0,$showPrice=0)
 
 function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
-    $upc = $row['upc'];
-    $desc = $row['description'];
-    $brand = $row['brand'];
-    $price = $row['normal_price'];
-    $vendor = $row['vendor'];
-    $size = $row['size'];
+    $upc = isset($row['upc']) ? $row['upc'] : '';
+    $desc = isset($row['description']) ? $row['description'] : '';
+    $brand = isset($row['brand']) ? $row['brand'] : '';
+    $price = isset($row['normal_price']) ? $row['normal_price'] : '';
+    $vendor = isset($row['vendor']) ? $row['vendor'] : '';
+    $size = isset($row['size']) ? $row['size'] : '';
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Gill','', 9);
