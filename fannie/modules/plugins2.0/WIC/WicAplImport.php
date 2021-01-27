@@ -28,7 +28,7 @@ class WicAplImport extends FannieRESTfulPage
         $dbc->query("CREATE TABLE EWicBackup LIKE EWicItems");
         $dbc->query("INSERT INTO EWicBackup SELECT * FROM EWicItems");
         $dbc->query("TRUNCATE TABLE EWicItems");
-        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID, broadband) VALUES (?, ?, ?, ?, ?)');
+        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID, broadband, multiplier) VALUES (?, ?, ?, ?, ?, ?)');
         $catP = $dbc->prepare("UPDATE EWicCategories SET units=? WHERE eWicCategoryID=?");
         $subP = $dbc->prepare("UPDATE EWicSubCategories SET units=? WHERE eWicCategoryID=? AND eWicSubCategoryID=?");
         $dbc->startTransaction();
@@ -47,6 +47,9 @@ class WicAplImport extends FannieRESTfulPage
             $subID = substr($line, 131, 4);
             $sub = rtrim(substr($line, 134, 50));
             $unit = substr($line, 184, 3);
+            $mult = substr($line, 197, 7);
+            $mult = ltrim($mult, '0');
+            $mult /= 100;
 
             $end = trim(substr($line, -21));
             $broadband = substr($end, -1);
@@ -63,7 +66,7 @@ class WicAplImport extends FannieRESTfulPage
             if ($now < $startTS || $now > $endTS) {
                 $this->stats['skipped']++;
             } else {
-                $dbc->execute($addItem, array($upc, $upcCheck, $catID, $subID, $broadband));
+                $dbc->execute($addItem, array($upc, $upcCheck, $catID, $subID, $broadband, $mult));
                 $dbc->execute($catP, array($unit, ltrim($catID, '0')));
                 $dbc->execute($subP, array($unit, ltrim($catID, '0'), ltrim($subID, '0')));
                 $this->stats['imported']++;

@@ -69,7 +69,7 @@ class WicMnAplTask extends FannieTask
         }
 
         $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID, broadband) VALUES (?, ?, ?, ?, ?)');
+        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID, broadband, multiplier) VALUES (?, ?, ?, ?, ?, ?)');
 
         $count = 0;
         $dbc->query("DROP TABLE IF EXISTS EWicBackup");
@@ -93,6 +93,9 @@ class WicMnAplTask extends FannieTask
             $subID = substr($line, 131, 4);
             $sub = rtrim(substr($line, 134, 50));
             $unit = substr($line, 184, 3);
+            $mult = substr($line, 197, 7);
+            $mult = ltrim($mult, '0');
+            $mult /= 100;
 
             $end = trim(substr($line, -21));
             $broadband = substr($end, -1);
@@ -103,7 +106,7 @@ class WicMnAplTask extends FannieTask
             if ($now < $startTS || $now > $endTS) {
                 // not currently valid
             } else {
-                $dbc->execute($addItem, array($upc, $upcCheck, $catID, $subID, $broadband));
+                $dbc->execute($addItem, array($upc, $upcCheck, $catID, $subID, $broadband, $mult));
             }
 
 
