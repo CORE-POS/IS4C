@@ -38,6 +38,7 @@ class EWicItemsModel extends BasicModel
     'eWicCategoryID' => array('type'=>'INT'),
     'eWicSubCategoryID' => array('type'=>'INT'),
     'broadband' => array('type'=>'TINYINT', 'default'=>1),
+    'multiplier' => array('type'=>'MONEY', 'default'=>1),
     );
 
     public function doc()
