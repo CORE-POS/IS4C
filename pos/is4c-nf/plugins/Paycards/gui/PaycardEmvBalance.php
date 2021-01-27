@@ -40,6 +40,7 @@ class PaycardEmvBalance extends PaycardProcessPage
             // CL always exits
             if ($input == "CL") {
                 $this->conf->reset();
+                $this->conf->set('msgrepeat', '0');
                 $this->change_page($this->page_url."gui-modules/pos2.php");
                 return false;
             } elseif ($input == "" || $input == 'MANUAL' || $input === 'M') {
