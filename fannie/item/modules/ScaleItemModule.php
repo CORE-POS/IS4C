@@ -93,7 +93,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 ($reg_description == $scale['itemdesc'] ? '': $scale['itemdesc']));
 
         $ret .= "<tr><th>Weight</th><th>By Count</th><th>Tare</th><th>Shelf Life</th>";
-        $ret .= "<th>Net Wt (oz)</th><th>Label</th><th>Safehandling</th></tr>";         
+        $ret .= "<th>Net Wt (oz)</th><th>Label</th></tr>";         
 
         $ret .= '<tr><td><select name="s_type" class="form-control" size="2">';
         if ($scale['weight']==0){
@@ -117,19 +117,22 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= sprintf("<td align=center><input type=text class=\"form-control\" name=s_netwt value=\"%s\" /></td>",
                 $scale['netWeight']);
 
-        $ret .= "<td><select name=s_label size=2 class=\"form-control\">";
+        $ret .= "<td><select name=s_label size=4 class=\"form-control\">";
+        $labels = array(
+            103 => 'Random Wt',
+            23 => 'Fixed Wt',
+            53 => 'Safehandling',
+            105 => 'Long',
+            
+        );
         $label_attr = \COREPOS\Fannie\API\item\ServiceScaleLib::labelToAttributes($scale['label']);
-        if ($label_attr['align'] == 'horizontal') {
-            $ret .= "<option value=horizontal selected>Horizontal</option>";
-            $ret .= "<option value=vertical>Vertical</option>";
-        } else {
-            $ret .= "<option value=horizontal>Horizontal</option>";
-            $ret .= "<option value=vertical selected>Vertical</option>";
+        foreach ($labels as $labelID => $labelName) {
+            $ret .= sprintf('<option %s value="%d">%s (%d)</option>',
+                ($labelID == $scale['label'] ? 'selected' : ''),
+                $labelID, $labelName, $labelID);
         }
         $ret .= '</select></td>';
 
-        $ret .= sprintf("<td align=center><input type=checkbox value=1 name=s_graphics %s /></td>",
-                ($scale['graphics']>0?'checked':''));
         $ret .= '</tr>';    
 
         $ret .= "<tr><td colspan=7>";
@@ -249,21 +252,14 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $tare = FormLib::get('s_tare',0);
         $shelf = FormLib::get('s_shelflife',0);
         $bycount = FormLib::get('s_bycount',0);
-        $graphics = FormLib::get('s_graphics',0);
         $type = FormLib::get('s_type','Random Weight');
         $weight = ($type == 'Random Weight') ? 0 : 1;
         $text = FormLib::get('s_text',array());
         $textID = FormLib::get('s_text_id', array());
-        $align = FormLib::get('s_label','horizontal');
+        $label = FormLib::get('s_label', 103);
         $netWeight = FormLib::get('s_netwt', 0);
         $linkedPLU = FormLib::get('s_linkedPLU', null);
         $inUse = FormLib::get('prod-in-use', array());
-
-        $label = \COREPOS\Fannie\API\item\ServiceScaleLib::attributesToLabel(
-            $align,
-            ($type == 'Fixed Weight') ? true : false,
-            ($graphics != 0) ? true : false
-        );
 
         $dbc = $this->db();
 
@@ -310,7 +306,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $scaleItem->shelflife($shelf);
         $scaleItem->text(isset($text[0]) ? $text[0] : '');
         $scaleItem->label($label);
-        $scaleItem->graphics( ($graphics) ? 121 : 0 );
+        $scaleItem->graphics( ($label == 53) ? 121 : 0 );
         $scaleItem->netWeight($netWeight);
         $scaleItem->linkedPLU(BarcodeLib::padUPC($linkedPLU));
         $scaleItem->mosaStatement(FormLib::get('scale_mosa',false) ? 1 : 0);
@@ -335,7 +331,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             'inUse' => count($inUse) == 0 ? 0 : 1,
         );
         $item_info['NetWeight'] = $netWeight;
-        if ($graphics) {
+        if ($label == 53) {
             $item_info['Graphics'] = 121;
         }
         // normalize type + bycount; they need to match
