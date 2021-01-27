@@ -210,6 +210,7 @@ HTML;
         $hour = $dbc->hour('tdate');
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        $nabs = DTrans::memTypeIgnore($dbc);
 
         if (FormLib::get('externalOnly')) {
             $where .= ' AND memType NOT IN (3,4,9) ';
@@ -225,10 +226,10 @@ HTML;
         }
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
+                    AND d.memType NOT IN {$nabs}
                     AND $where
                     AND " . DTrans::isStoreID($store, 'd') . "
                    GROUP BY $date_selector, $hour
-                   {$having}
                    ORDER BY $date_selector, $hour";
 
         $prep = $dbc->prepare($query);

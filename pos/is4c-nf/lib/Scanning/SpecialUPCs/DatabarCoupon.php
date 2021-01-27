@@ -157,6 +157,16 @@ class DatabarCoupon extends SpecialUPC
         if (isset($upc[$pos]) && $upc[$pos] == "1") {
             $pos += 1;
 
+            $coupon->requiredRulesCode = $upc[$pos];
+            /**
+             * I cannot find any clear specification of what this rule is supposed to do.
+             * All real-life coupons seem to use it identically to rule #0
+             */
+            if ($coupon->requiredRulesCode == 3) {
+                $coupon->requiredRulesCode = 0;
+            }
+            $pos += 1;
+
             $srLength = (int)$upc[$pos];        
             $pos += 1;
             $coupon->secondReq->value = substr($upc,$pos,$srLength);
@@ -315,7 +325,7 @@ class DatabarCoupon extends SpecialUPC
         }
 
         list($coupon->secondReq, $json) = $this->validateRequirement($coupon->secondReq, $json);
-        if (!$coupon->secondReq->valid && (!property_exists($coupon->thirdReq, 'value') || $coupon->requiredRulesCode == 1)) {
+        if (!$coupon->secondReq->valid && !$coupon->firstReq->valid && (!property_exists($coupon->thirdReq, 'value') || $coupon->requiredRulesCode == 1)) {
             // if the secondary requirment isn't valid and
             //    a) there are no more requirments, or
             //    b) all requirements are mandatory
@@ -347,7 +357,7 @@ class DatabarCoupon extends SpecialUPC
                 }
                 break;
             case '3': // either second or third. seems odd, may
-                  // be misreading documentation on this one
+                      // be misreading documentation on this one
                 if (!$coupon->secondReq->valid && !$coupon->thirdReq->valid) {
                     return $json;
                 }
@@ -420,7 +430,7 @@ class DatabarCoupon extends SpecialUPC
 
         TransRecord::addCoupon($couponUPC, $coupon->firstReq->department, -1*$value);
         $json['output'] = DisplayLib::lastpage();
-    
+
         return $json;
     }
 

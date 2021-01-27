@@ -40,6 +40,23 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $found = true;
         }
 
+        $ingP = $dbc->prepare("SELECT s.storeID, s.description, i.ingredients
+            FROM Stores AS s
+                LEFT JOIN ScaleIngredients AS i ON s.storeID=i.storeID AND i.upc=?
+            WHERE s.hasOwnItems = 1");
+        $ingR = $dbc->execute($ingP, array($upc));
+        $storeIngredients = array();
+        $stores = array();
+        while ($ingW = $dbc->fetchRow($ingR)) {
+            $storeIngredients[$ingW['storeID']] = empty($ingW['ingredients']) ? $scale['text'] : $ingW['ingredients'];
+            $stores[$ingW['storeID']] = $ingW['description'];
+        }
+        $selfStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        if (!$selfStore) {
+            $ids = array_keys($stores);
+            $selfStore = $ids[0];
+        }
+
         if (!$found && $display_mode == 2 && substr($upc, 0, 3) != '002') {
             return '';
         }
@@ -117,24 +134,44 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $ret .= "<tr><td colspan=7>";
         $ret .= '<div class="col-sm-6">';
-        $ret .= "<b>Expanded text:<br />
-            <textarea name=s_text id=s_text rows=4 cols=45 class=\"form-control\">";
-        $ret .= $scale['text'];
-        $ret .= "</textarea>";
+        $measure = str_replace("\r", '', $storeIngredients[$selfStore]);
+        $measure = str_replace("\n", '', $measure);
+        $siSynced = count(array_unique($storeIngredients)) == 1 ? 'checked' : '';
+        $ret .= '<b>Ingredients (<span id="expLength">' . strlen($measure) . '</span>):
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label><input type="checkbox" id="si_sync" ' . $siSynced . ' /> Sync</label>
+            <br />
+            <ul class="nav nav-tabs" role="tablist">';
+        foreach ($stores as $id => $store) {
+            $ret .= '<li role="presentation" ' . ($selfStore == $id ? 'class="active"' : '') . '>
+                <a href="#si-store-' . $id . '" aria-controls="home" role="tab" data-toggle="tab"
+                onclick="setTimeout(() => scaleItem.countField(\'s_text\', \'expLength\'), 25);">' . $store . '</a></li>';
+        }
+        $ret .= '</ul>';
+        $ret .= '<div class="tab-content">';
+        foreach ($storeIngredients as $id => $text) {
+            $ret .= '<div role="tabpanel" class="tab-pane ' . ($selfStore == $id ? 'active' : '') . '" id="si-store-' . $id . '">';
+            $ret .= '<input type="hidden" name="s_text_id[]" value="' . $id . '" />';
+            $ret .= "<textarea name=s_text[] rows=4 cols=45 class=\"form-control s_text\" onkeyup=\"scaleItem.countField('s_text', 'expLength');\">";
+            $ret .= $storeIngredients[$id];
+            $ret .= "</textarea>";
+            $ret .= '</div>';
+        }
+        $ret .= '</div>';
         $ret .= '<br /><b>Linked PLU</b><br />';
         $linkedPLU = isset($scale['linkedPLU']) ? $scale['linkedPLU'] : '';
         $ret .= '<input type="text" class="form-control" name="s_linkedPLU" value="' . $linkedPLU . '" />';
         $ret .= '</div>';
         $ret .= '<div class="col-sm-4">';
         $ret .= '<div class="form-group">
-            <button type="button" class="btn btn-default btn-sm" onclick="appendScaleTag(\'mosa\'); return false;">MOSA</button>
+            <button type="button" class="btn btn-default btn-sm" onclick="scaleItem.appendScaleTag(\'mosa\'); return false;">MOSA</button>
             <label>
                 <input type="checkbox" name="scale_mosa" ' . ($scale['mosaStatement'] ? 'checked' : '') . ' />
                 Include MOSA statement
             </label>
             </div>';
         $ret .= '<div class="form-group">
-            <button type="button" class="btn btn-default btn-sm" onclick="appendScaleTag(\'cool\'); return false;">COOL</button>
+            <button type="button" class="btn btn-default btn-sm" onclick="scaleItem.appendScaleTag(\'cool\'); return false;">COOL</button>
             <input type="text" class="form-control" name="scale_origin" value="' . $scale['originText'] . '" 
                 placeholder="Country of origin text" />
             </div>';
@@ -149,6 +186,8 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
                                     INNER JOIN superdepts AS s ON p.department=s.dept_ID
                                 WHERE p.upc=?
                                     AND s.superID=?');
+        $isMapped = $dbc->prepare("SELECT upc FROM ServiceScaleItemMap WHERE upc=?");
+        $isMapped = $dbc->getValue($isMapped, array($upc));
         $ret .= '<div class="col-sm-2">';
         foreach ($scales->find('description') as $scale) {
             $checked = false;
@@ -156,7 +195,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             if ($dbc->num_rows($mapR) > 0) {
                 // marked in map table
                 $checked = true;
-            } else {
+            } elseif (!$isMapped) {
                 $deptR = $dbc->execute($deptP, array($upc, $scale->superID()));
                 if ($dbc->num_rows($deptR) > 0) {
                     // in a POS department corresponding 
@@ -184,16 +223,9 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         return $ret;
     }
 
-    function getFormJavascript($upc)
+    public function getFormJavascript($upc)
     {
-        return <<<STR
-function appendScaleTag(tag) {
-    var current = $('#s_text').val();
-    current += "{" + tag + "}";
-    $('#s_text').val(current);
-    console.log(current);
-}
-STR;
+        return file_get_contents(__DIR__ . '/scaleItem.js');
     }
 
     function SaveFormData($upc)
@@ -220,7 +252,8 @@ STR;
         $graphics = FormLib::get('s_graphics',0);
         $type = FormLib::get('s_type','Random Weight');
         $weight = ($type == 'Random Weight') ? 0 : 1;
-        $text = FormLib::get('s_text','');
+        $text = FormLib::get('s_text',array());
+        $textID = FormLib::get('s_text_id', array());
         $align = FormLib::get('s_label','horizontal');
         $netWeight = FormLib::get('s_netwt', 0);
         $linkedPLU = FormLib::get('s_linkedPLU', null);
@@ -238,9 +271,11 @@ STR;
         // double quotes definitely will
         // DGW quotes text fields w/o any escaping
         $desc = str_replace("'","",$desc);
-        $text = str_replace("'","",$text);
         $desc = str_replace("\"","",$desc);
-        $text = str_replace("\"","",$text);
+        for ($i=0; $i<count($text); $i++) {
+            $text[$i] = str_replace("'","",$text[$i]);
+            $text[$i] = str_replace("\"","",$text[$i]);
+        }
         
         /**
           Safety check:
@@ -273,7 +308,7 @@ STR;
         $scaleItem->bycount($bycount);
         $scaleItem->tare($tare);
         $scaleItem->shelflife($shelf);
-        $scaleItem->text($text);
+        $scaleItem->text(isset($text[0]) ? $text[0] : '');
         $scaleItem->label($label);
         $scaleItem->graphics( ($graphics) ? 121 : 0 );
         $scaleItem->netWeight($netWeight);
@@ -293,7 +328,7 @@ STR;
             'ShelfLife' => $shelf,
             'Price' => $price,
             'Label' => $label,
-            'ExpandedText' => $text,
+            'ExpandedText' => isset($text[0]) ? $text[0] : '',
             'ByCount' => $bycount,
             'OriginText' => $scaleItem->originText(),
             'MOSA' => $scaleItem->mosaStatement(),
@@ -312,6 +347,15 @@ STR;
         } else {
             $item_info['Type'] = 'Random Weight';
             $item_info['ByCount'] = 0;
+        }
+
+        for ($i=0; $i<count($textID); $i++) {
+            $ing = new ScaleIngredientsModel($dbc);
+            $ing->upc($upc);
+            $ing->storeID($textID[$i]);
+            $ing->ingredients($text[$i]);
+            $ing->save();
+            $item_info['ExpandedText' . $textID[$i]] = $text[$i];
         }
 
         $scales = array();
@@ -340,6 +384,7 @@ STR;
                     'host' => $model->host(),
                     'dept' => $model->scaleDeptName(),
                     'type' => $model->scaleType(),  
+                    'storeID' => $model->storeID(),
                     'new' => false,
                 );
                 $exists = $dbc->execute($chkMap, array($scaleID, $upc));
@@ -393,7 +438,8 @@ STR;
                 $dbc->execute($delP, array($mapW['serviceScaleID'], $upc));
             }
             if (count($scales) > 0) {
-                \COREPOS\Fannie\API\item\HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
+                // intentionally disabled. seems to trigger too often
+                //\COREPOS\Fannie\API\item\HobartDgwLib::deleteItemsFromScales($item_info['PLU'], $scales); 
             }
         }
     }

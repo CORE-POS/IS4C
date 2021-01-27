@@ -44,10 +44,10 @@ class PickupEnabledPage extends FannieRESTfulPage
             ORDER BY p.description");
         $body = '';
         while ($row = $this->connection->fetchRow($res)) {
-            $body .= sprintf('<tr><td>%s</td><td>%s</td>
+            $body .= sprintf('<tr><td><a href="../../../item/ItemEditorPage.php?searchupc=%s">%s</a></td><td>%s</td>
                 <td><input type="checkbox" value="%s" name="id[]" %s /></td>
                 </tr>',
-                $row['upc'], $row['description'],
+                $row['upc'], $row['upc'], $row['description'],
                 $row['upc'], ($row['enabled'] ? 'checked' : '')
             );
         }

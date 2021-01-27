@@ -39,6 +39,8 @@ class MemtypeModel extends BasicModel
     'staff' => array('type'=>'TINYINT'),
     'ssi' => array('type'=>'TINYINT'),
     'salesCode' => array('type'=>'INT'),
+    'ignoreSales' => array('type'=>'TINYINT', 'default'=>0),
+    'enabled' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     public function doc()

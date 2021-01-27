@@ -49,19 +49,27 @@ class PickupMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     continue;
                 }
                 $json = json_decode($a['content'], true);
+                if (count($json['items']) == 0) {
+                    $log = FannieLogger::factory();
+                    $log->debug('Odd order: ' . print_r($json, true));
+                    continue;
+                }
                 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
                 $orderP = $dbc->prepare("INSERT INTO PickupOrders
-                    (name, phone, vehicle, pDate, pTime, notes, storeID, status)
-                    VALUES (?, ?, ?, ?, ?, ?, 2, 'NEW')");
-                list($hour, $minute) = explode(':', $json['pTime'], 2);
-                $hour -= 12;
+                    (name, phone, vehicle, pDate, pTime, notes, storeID, status, placedDate, curbside, orderNumber, email)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 'NEW', ?, ?, ?, ?)");
                 $dbc->execute($orderP, array(
                     $json['name'],
                     $json['phone'],
                     $json['vehicle'],
                     $json['pDate'],
-                    $hour . ':' . $minute . 'PM',
+                    $json['pTime'],
                     $json['notes'],
+                    $json['store'],
+                    date('Y-m-d H:i:s'),
+                    $json['curbside'] ? 1 : 0,
+                    $json['orderNo'],
+                    $json['email'],
                 ));
                 $orderID = $dbc->insertID();
 

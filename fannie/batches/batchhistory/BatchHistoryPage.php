@@ -237,7 +237,7 @@ HTML;
         }
         $ret .= '</tbody></table>';
 
-        $p = new ProductsModel($dbc);
+        $prodP = $dbc->prepare("SELECT brand, description FROM products WHERE upc=?");
         $ret .= '<div class="" align="center"><h4 style="color: grey">Products</h4></div>';
         $upcCols = array('updateType','upc','modified','user','specialPrice');
         $ret .= '<table class="table table-bordered table-condensed small" id="iTable"><thead>';
@@ -252,10 +252,8 @@ HTML;
                 foreach ($upcCols as $upcCol) {
                     $ret .= '<td>' . $obj->$upcCol() . '</td>';
                 }
-                $p->reset();
-                $p->upc($obj->upc());
-                $p->load();
-                $ret .= '<td><strong>'.$p->brand().'</strong> '.$p->description().'</td>';
+                $p = $dbc->getRow($prodP, array($obj->upc()));
+                $ret .= '<td><strong>'.$p['brand'].'</strong> '.$p['description'].'</td>';
             }
             $ret .= '</tr>';
         }

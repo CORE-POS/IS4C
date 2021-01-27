@@ -30,8 +30,8 @@ class OsFillsReport extends FannieReportPage
         $table = $this->config->get('TRANS_DB') . $this->connection->sep() . 'dailyDeposit';
         $query = "SELECT dateStr, amt
             FROM {$table}
-            WHERE rowName='atm'
-                AND denomination='fill'";
+            WHERE rowName='buyAmount'
+                AND denomination='20.00'";
         $query .= (FormLib::get('store') == 0) ? 'AND storeID <> ?' : 'AND storeID=?';
         $query .= "
                 AND UNIX_TIMESTAMP(RIGHT(dateStr, 10)) BETWEEN ? AND ?";

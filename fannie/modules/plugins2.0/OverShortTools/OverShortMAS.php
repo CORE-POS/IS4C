@@ -83,7 +83,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'GD' => 21205,
         'SC' => 21200,
         'MI' => 10710,
-        'IC' => 67710,
+        'IC' => 66600,
         'MA' => 66600,
         'RR' => 63380,  
         'OB' => 66600,
@@ -91,7 +91,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'RB' => 31140,
         'PP' => 10295,
         'NCGA' => 66600,
-        'Member Discounts' => 66600,
+        'Member Discounts' => 66601,
         'Staff Discounts' => 61170,
         );
 
@@ -103,6 +103,14 @@ class OverShortMAS extends FannieRESTfulPage {
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
 
+        $icP = $dbc->prepare("SELECT upc, description, sum(total) AS ttl
+                FROM {$dlog} AS d
+                WHERE trans_type='T'
+                    AND trans_subtype='IC'
+                    AND " . DTrans::isStoreID($store, 'd') . "
+                    AND tdate BETWEEN ? AND ?
+                GROUP BY upc, description");
+        $coupP = $dbc->prepare("SELECT memberOnly FROM houseCoupons WHERE coupID=?");
         $tenderQ = "SELECT SUM(total) AS amount,
                 CASE WHEN description='REBATE CHECK' THEN 'RB'
                 WHEN trans_subtype IN ('CA','CK') THEN 'CA'
@@ -123,14 +131,29 @@ class OverShortMAS extends FannieRESTfulPage {
         $tenderP = $dbc->prepare($tenderQ);
         $tenderR = $dbc->execute($tenderP, $args);
         while($w = $dbc->fetch_row($tenderR)){
-            $coding = isset($codes[$w['type']]) ? $codes[$w['type']] : 10120;
-            $name = isset($names[$w['type']]) ? $names[$w['type']] : $w['name'];
-            $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
-            $debit = $w['amount'] > 0 ? $w['amount'] : 0;
-            $row = array($dateID, $dateStr,
-                str_pad($coding,9,'0',STR_PAD_RIGHT),
-                $credit, $debit, $name);    
-            $records[] = $row;
+            if ($w['type'] == 'IC') {
+                $icR = $dbc->execute($icP, $args);
+                while ($icW = $dbc->fetchRow($icR)) {
+                    $coupID = sprintf('%d', substr($icW['upc'], -5));
+                    $memOnly = $dbc->getValue($coupP, array($coupID));
+                    $coding = (!$coupID || $memOnly) ? 66600 : 67715;
+                    $credit = $icW['ttl'] < 0 ? -1*$icW['ttl'] : 0;
+                    $debit = $icW['ttl'] > 0 ? $icW['ttl'] : 0;
+                    $row = array($dateID, $dateStr,
+                        str_pad($coding,9,'0',STR_PAD_RIGHT),
+                        $credit, $debit, $icW['description']);    
+                    $records[] = $row;
+                }
+            } else {
+                $coding = isset($codes[$w['type']]) ? $codes[$w['type']] : 10120;
+                $name = isset($names[$w['type']]) ? $names[$w['type']] : $w['name'];
+                $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
+                $debit = $w['amount'] > 0 ? $w['amount'] : 0;
+                $row = array($dateID, $dateStr,
+                    str_pad($coding,9,'0',STR_PAD_RIGHT),
+                    $credit, $debit, $name);    
+                $records[] = $row;
+            }
         }
 
         $discountQ = "SELECT SUM(total) as amount, d.store_id,
@@ -171,6 +194,195 @@ class OverShortMAS extends FannieRESTfulPage {
         $salesP = $dbc->prepare($salesQ);
         $salesR = $dbc->execute($salesP, $args);
         while($w = $dbc->fetch_row($salesR)){
+            if ($w['store_id'] == 50 && $w['salesCode'] == '41201') {
+                $amts = array(
+                    1 => 0,
+                    2 => 0,
+                    '??' => 0,
+                );
+                $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_subtype='CM'
+                    AND description LIKE 'STORE%' AND emp_no=? AND register_no=? AND trans_no=?
+                    AND store_id=?"); 
+                $salesQ = "SELECT emp_no, register_no, trans_no, sum(total) as amount, min(tdate) as tdate
+                    FROM $dlog AS d 
+                    INNER JOIN departments as t ON d.department = t.dept_no
+                    INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.trans_type IN ('I','D')
+                        AND d.store_id=50
+                        AND tdate BETWEEN ? AND ?
+                        AND m.superID > 0
+                        AND salesCode = '41201'
+                        AND register_no <> 20
+                    GROUP BY emp_no, register_no, trans_no";
+                $salesP = $dbc->prepare($salesQ);
+                $innerR = $dbc->execute($salesP, array($args[1], $args[2]));
+                while ($innerW = $dbc->fetchRow($innerR)) {
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $w['store_id']);
+                    $storeR = $dbc->getValue($storeP, $storeArgs);
+                    list(,$storeID) = explode(' ', $storeR);
+                    if ($storeID == 1) {
+                        $amts[1] += $innerW['amount'];
+                    } elseif ($storeID == 2) {
+                        $amts[2] += $innerW['amount'];
+                    } else {
+                        $amts['??'] += $innerW['amount'];
+                    }
+                }
+                if ($amts[1] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412010120',
+                        ($amts[1] < 0 ? -1*$amts[1] : 0),
+                        ($amts[1] > 0 ? $amts[1] : 0),
+                        $names['41201'],
+                    );
+                }
+                if ($amts[2] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412010220',
+                        ($amts[2] < 0 ? -1*$amts[2] : 0),
+                        ($amts[2] > 0 ? $amts[2] : 0),
+                        $names['41201'],
+                    );
+                }
+                if ($amts['??'] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '41201??00',
+                        ($amts['??'] < 0 ? -1*$amts['??'] : 0),
+                        ($amts['??'] > 0 ? $amts['??'] : 0),
+                        $names['41201'],
+                    );
+                }
+                continue;
+            }
+            if ($w['store_id'] == '50' && $w['salesCode'] == '41205') {
+                $amts = array(
+                    1 => 0,
+                    2 => 0,
+                    '??' => 0,
+                );
+                $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_subtype='CM'
+                    AND description LIKE 'STORE%' AND emp_no=? AND register_no=? AND trans_no=?
+                    AND store_id=?"); 
+                $salesQ = "SELECT emp_no, register_no, trans_no, sum(total) as amount, min(tdate) as tdate
+                    FROM $dlog AS d 
+                    INNER JOIN departments as t ON d.department = t.dept_no
+                    INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.trans_type IN ('I','D')
+                    AND d.store_id=50
+                    AND tdate BETWEEN ? AND ?
+                    AND m.superID > 0
+                    AND salesCode = '41205'
+                    AND register_no <> 20
+                    GROUP BY emp_no, register_no, trans_no";
+                $salesP = $dbc->prepare($salesQ);
+                $innerR = $dbc->execute($salesP, array($args[1], $args[2]));
+                while ($innerW = $dbc->fetchRow($innerR)) {
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $w['store_id']);
+                    $storeR = $dbc->getValue($storeP, $storeArgs);
+                    list(,$storeID) = explode(' ', $storeR);
+                    if ($storeID == 1) {
+                        $amts[1] += $innerW['amount'];
+                    } elseif ($storeID == 2) {
+                        $amts[2] += $innerW['amount'];
+                    } else {
+                        $amts['??'] += $innerW['amount'];
+                    }
+                }
+                if ($amts[1] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412050120',
+                        ($amts[1] < 0 ? -1*$amts[1] : 0),
+                        ($amts[1] > 0 ? $amts[1] : 0),
+                        $names['41205'],
+                    );
+                }
+                if ($amts[2] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '412050220',
+                        ($amts[2] < 0 ? -1*$amts[2] : 0),
+                        ($amts[2] > 0 ? $amts[2] : 0),
+                        $names['41205'],
+                    );
+                }
+                if ($amts['??'] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '41205??00',
+                        ($amts['??'] < 0 ? -1*$amts['??'] : 0),
+                        ($amts['??'] > 0 ? $amts['??'] : 0),
+                        $names['41205'],
+                    );
+                }
+                continue;
+            }
+            if ($w['store_id'] == '50' && $w['salesCode'] == '41600') {
+                $amts = array(
+                    1 => 0,
+                    2 => 0,
+                    '??' => 0,
+                );
+                $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_subtype='CM'
+                    AND description LIKE 'STORE%' AND emp_no=? AND register_no=? AND trans_no=?
+                    AND store_id=?"); 
+                $salesQ = "SELECT emp_no, register_no, trans_no, sum(total) as amount, min(tdate) as tdate
+                    FROM $dlog AS d 
+                    INNER JOIN departments as t ON d.department = t.dept_no
+                    INNER JOIN MasterSuperDepts AS m ON d.department=m.dept_ID
+                    WHERE d.trans_type IN ('I','D')
+                    AND d.store_id=50
+                    AND tdate BETWEEN ? AND ?
+                    AND m.superID > 0
+                    AND salesCode = '41600'
+                    AND register_no <> 20
+                    GROUP BY emp_no, register_no, trans_no";
+                $salesP = $dbc->prepare($salesQ);
+                $innerR = $dbc->execute($salesP, array($args[1], $args[2]));
+                while ($innerW = $dbc->fetchRow($innerR)) {
+                    $storeArgs = array($args[1], $args[2], $innerW['emp_no'], $innerW['register_no'], $innerW['trans_no'], $w['store_id']);
+                    $storeR = $dbc->getValue($storeP, $storeArgs);
+                    list(,$storeID) = explode(' ', $storeR);
+                    if ($storeID == 1) {
+                        $amts[1] += $innerW['amount'];
+                    } elseif ($storeID == 2) {
+                        $amts[2] += $innerW['amount'];
+                    } else {
+                        $amts['??'] += $innerW['amount'];
+                    }
+                }
+                if ($amts[1] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '416000120',
+                        ($amts[1] < 0 ? -1*$amts[1] : 0),
+                        ($amts[1] > 0 ? $amts[1] : 0),
+                        $names['41600'],
+                    );
+                }
+                if ($amts[2] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '416000220',
+                        ($amts[2] < 0 ? -1*$amts[2] : 0),
+                        ($amts[2] > 0 ? $amts[2] : 0),
+                        $names['41600'],
+                    );
+                }
+                if ($amts['??'] != 0) {
+                    $records[] = array(
+                        $dateID, $dateStr,
+                        '41600??00',
+                        ($amts['??'] < 0 ? -1*$amts['??'] : 0),
+                        ($amts['??'] > 0 ? $amts['??'] : 0),
+                        $names['41600'],
+                    );
+                }
+                continue;
+            }
             $coding = isset($codes[$w['salesCode']]) ? $codes[$w['salesCode']] : $w['salesCode'];
             $coding = $accounting::extend($coding, $w['store_id']);
             $name = isset($names[$w['salesCode']]) ? $names[$w['salesCode']] : $w['name'];
@@ -358,6 +570,8 @@ class OverShortMAS extends FannieRESTfulPage {
                 $line = substr($line,0,strlen($line)-1)."\r\n";
                 $ret .= $line;
             }
+            // bail out to avoid extra html bits in the csv
+            echo $ret; exit;
         }
         return $ret;
     }

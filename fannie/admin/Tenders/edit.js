@@ -59,6 +59,10 @@ var tenderEditor = (function($) {
         _saveField('saveRLimit', val, t_id, this);
     };
 
+    mod.saveModule = function(val,t_id){
+        _saveField('saveModule', val, t_id, this);
+    };
+	
     mod.saveSalesCode = function(val, t_id){
         _saveField('saveSalesCode', val, t_id, this);
     };

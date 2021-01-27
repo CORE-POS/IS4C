@@ -93,7 +93,7 @@ a[type="submit"] {
     href="../../../item/CoopDealsLookupPage.php" />C+D Check Sale</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
-    href="../../../../../Scannie/content/Scanning/AuditScanner/ProductScanner.php" />Audie</a>
+    href="../../../../../Scannie/content/Scanning/AuditScanner/Scanner.php" />Audie</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../DeliInventory/DIScanner.php" />Prepared Inventory</a>

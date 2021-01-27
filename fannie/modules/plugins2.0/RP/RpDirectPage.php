@@ -50,11 +50,11 @@ class RpDirectPage extends FannieRESTfulPage
             $args[2] = $date3;
         }
 
-        $prep = $this->connection->prepare("SELECT receivedDate, internalUPC AS upc, brand, quantity AS qty,
+        $prep = $this->connection->prepare("SELECT receivedDate, internalUPC AS upc, brand, quantity AS qty, caseSize,
                 {$ignore}
             FROM PurchaseOrderItems AS i
                 INNER JOIN PurchaseOrder AS o ON i.orderID=o.orderID
-            WHERE o.vendorID=-2
+            WHERE (o.vendorID=-2 OR o.vendorInvoiceID LIKE 'PREBOOK %')
                 AND o.userID=-99
                 AND o.placed=1
                 AND o.storeID=?
@@ -71,6 +71,9 @@ class RpDirectPage extends FannieRESTfulPage
         foreach ($qtys as $row) {
             if (!isset($ret[$row['upc']])) {
                 $ret[$row['upc']] = array('upc' => $row['upc'], 'qty' => 0, 'text' => '');
+            }
+            if ($row['caseSize'] > 1) {
+                $row['qty'] *= $row['caseSize'];
             }
             if ($row['ignored'] != 1) {
                 $ret[$row['upc']]['qty'] += $row['qty'];
@@ -218,6 +221,10 @@ class RpDirectPage extends FannieRESTfulPage
     
         $itemP = $this->connection->prepare("SELECT * FROM RpOrderItems WHERE upc=? AND storeID=?");
         $item = $this->connection->getRow($itemP, array($upc, $store));
+        if ($item === false) {
+            $itemP = $this->connection->prepare("SELECT * FROM RpLocalItems WHERE upc=?");
+            $item = $this->connection->getRow($itemP, array($upc));
+        }
         if (substr($upc, 0, 2) == "LC") {
             $prodP = $this->connection->prepare("SELECT p.brand, p.size, p.cost FROM upcLike AS u
                     INNER JOIN products AS p ON u.upc=p.upc WHERE u.likeCode=?");
@@ -450,7 +457,7 @@ class RpDirectPage extends FannieRESTfulPage
                 LEFT JOIN RpOrderCategories AS c ON r.categoryID=c.rpOrderCategoryID
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
                 LEFT JOIN vendors AS b ON r.backupID=b.vendorID
-            WHERE r.storeID=2
+            WHERE r.storeID=?
 
             UNION ALL
 
@@ -512,9 +519,13 @@ class RpDirectPage extends FannieRESTfulPage
                 $row['vendorSKU'] = $mapped['sku'];
                 $row['lookupID'] = $mapped['vendorID'];
             }
-            $lcRow = $this->connection->getRow($lcP, array(str_replace('LC', '', $row['upc'])));
-            $lcName = $lcRow['likeCodeDesc'];
-            $organic = $lcRow['organic'] ? true : false;
+            $organic = false;
+            $lcName = $row['vendorItem'];
+            if (is_numeric(str_replace('LC', '', $row['upc']))) {
+                $lcRow = $this->connection->getRow($lcP, array(str_replace('LC', '', $row['upc'])));
+                $lcName = $lcRow['likeCodeDesc'];
+                $organic = $lcRow['organic'] ? true : false;
+            }
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
             if (($par / $row['caseSize']) < 0.1) {
                 $par = 0.1 * $row['caseSize'];

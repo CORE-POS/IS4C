@@ -39,6 +39,8 @@ class OrderAjax extends FannieRESTfulPage
     public function preprocess()
     {
         $this->addRoute(
+            'get<id><comms>',
+            'post<id><commID>',
             'post<id><status>', 
             'post<id><ctc>',
             'post<id><pn>',
@@ -56,6 +58,47 @@ class OrderAjax extends FannieRESTfulPage
     {
         $this->connection->selectDB($this->config->get('TRANS_DB'));
         return $this->connection;
+    }
+
+    protected function get_id_comms_handler()
+    {
+        $dbc =  $this->tdb();
+        $prep = $dbc->prepare("SELECT tdate, channel, message FROM SpecialOrderCommLog WHERE specialOrderID=? ORDER BY tdate DESC");
+        $res = $dbc->execute($prep, array($this->id));
+        $ret = '<table class="table table-bordered table-striped">';
+        while ($row = $dbc->fetchRow($res)) {
+            $ret .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td></tr>',
+                $row['tdate'], $row['channel'], $row['message']);
+        }
+        $ret .= '</table>';
+        echo $ret;
+
+        return false;
+    }
+
+    protected function post_id_commID_handler()
+    {
+        $dbc =  $this->tdb();
+        $msg = '';
+        switch ($this->commID) {
+        case 1:
+            $msg = 'Your order did not arrive today, we will re-order it.';
+            break;
+        case 2:
+            $msg = 'Your special order is not available and we cannot currently order this item for you due to outages from the supplier.';
+            $this->close = 8;
+            $this->post_id_close_handler();
+            break;
+        }
+
+        if ($msg) {
+            $email = new OrderNotifications($dbc);
+            $email->sendGenericMessage($this->id, $msg);
+        }
+
+        echo $this->get_id_comms_handler();
+
+        return false;
     }
 
     protected function post_id_close_handler()
@@ -171,8 +214,15 @@ class OrderAjax extends FannieRESTfulPage
 
         $json = array('tdate'=> date('m/d/Y'));
         if ($this->status == 5) {
-            $email = new OrderNotifications($dbc);
-            $json['sentEmail'] = $email->orderArrivedEmail($this->id);
+            // check necessity
+            $itemP = $dbc->prepare("SELECT COUNT(*) AS items FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . " WHERE trans_id > 0 AND order_id=?");
+            $itemCount = $dbc->getValue($itemP, array($this->id));
+            $sentP = $dbc->prepare("SELECT COUNT(*) FROM SpecialOrderCommLog WHERE specialOrderID = ? AND message LIKE '%arrived%'");
+            $sentCount = $dbc->getValue($sentP, array($this->id));
+            if ($itemCount > $sentCount) {
+                $email = new OrderNotifications($dbc);
+                $json['sentEmail'] = $email->orderArrivedEmail($this->id);
+            }
         }
 
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '

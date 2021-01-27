@@ -1,6 +1,6 @@
 <?php
 
-if (!class_exists('DeliInvLastestMapModel')) {
+if (!class_exists('DeliInvLatestMapModel')) {
     include(__DIR__ . '/models/DeliInvLatestMapModel.php');
 }
 

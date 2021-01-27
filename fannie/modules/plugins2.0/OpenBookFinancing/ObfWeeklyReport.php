@@ -879,6 +879,8 @@ class ObfWeeklyReport extends FannieReportPage
         $dbc = $class_lib::getDB();
         $sales = $class_lib::getCache($dbc);
         $sales->obfWeekID($week->obfWeekID());
+
+        $nabs = DTrans::memTypeIgnore($dbc);
         /**
           Lookup total sales for each category
           in a given date range
@@ -898,6 +900,7 @@ class ObfWeeklyReport extends FannieReportPage
                    WHERE c.hasSales=1
                     AND t.tdate BETWEEN ? AND ?
                     AND t.trans_type IN (\'I\', \'D\')
+                    AND t.memType NOT IN ' . $nabs . '
                    GROUP BY m.obfCategoryID, c.storeID, m.superID';
         /**
           Lookup number of transactions 
@@ -917,6 +920,7 @@ class ObfWeeklyReport extends FannieReportPage
                     AND t.trans_type IN (\'I\', \'D\')
                     AND t.upc <> \'RRR\'
                     AND t.store_id=?
+                    AND t.memType NOT IN ' . $nabs . '
                    GROUP BY 
                     YEAR(t.tdate),
                     MONTH(t.tdate),

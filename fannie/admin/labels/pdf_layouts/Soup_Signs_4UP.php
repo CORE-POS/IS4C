@@ -74,19 +74,31 @@ function Soup_Signs_4UP($data,$offset=0)
 
 function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
+    $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
     $upc = $row['upc'];
     $brand = $row['description'];
 
-    $args = array($row['upc']);
+    $args = array($upc, $store);
     $row = array();
     $prep = $dbc->prepare("
-        SELECT text
-        FROM scaleItems
-        WHERE plu = ?");
+        SELECT ingredients 
+        FROM ScaleIngredients 
+        WHERE upc = ?
+            AND storeID = ?");
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
+
+    $args = array($upc);
+    $prep = $dbc->prepare("
+        SELECT itemdesc 
+        FROM scaleItems 
+        WHERE plu = ?");
+    $res = $dbc->execute($prep, $args);
+    $rowB = $dbc->fetchRow($res);
+    $itemdesc = $rowB['itemdesc'];
     
-    $desc = $row['text'];
+    $desc = $row['ingredients'];
+    $brand = (strlen($itemdesc) > 1) ? $itemdesc : $brand;
     $brand = strtolower($brand);
     $brand = ucwords($brand);
     $brand = str_replace("Qt", "", $brand);
@@ -97,9 +109,21 @@ function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     /*
         Add Brand Text
     */
-    $pdf->SetFont('Gill','B', 16);
-    $pdf->SetXY($x,$y+30);
-    $pdf->Cell($width, 8, $brand, 0, 1, 'C', true); 
+    if (strlen($brand) < 40) {
+        $pdf->SetFont('Gill','B', 16);
+        $pdf->SetXY($x,$y+30);
+        $pdf->Cell($width, 8, $brand, 0, 1, 'C', true); 
+    } else {
+        $pdf->SetFont('Gill','B', 12);
+        $wrapB = wordwrap($brand, 50, "\n");
+        $expB = explode("\n", $wrapB);
+
+        $pdf->SetXY($x-5,$y+29);
+        $pdf->Cell($width, 4, $expB[0], 0, 1, 'C', true); 
+
+        $pdf->SetXY($x-5,$y+34);
+        $pdf->Cell($width, 4, $expB[1], 0, 1, 'C', true); 
+    }
 
     /*
         Add Description Text

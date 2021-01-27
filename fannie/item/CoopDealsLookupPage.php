@@ -144,7 +144,7 @@ HTML;
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         if (FormLib::get('linea') != 1) {
-            $this->add_onload_command("\$('#upc').focus();\n");
+            $this->add_onload_command("\$('#upc').focus().select();\n");
         }
         $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upc-form').append('<input type=hidden name=linea value=1 />').submit(); });\n");
         $upc = trim(FormLib::get('upc'));

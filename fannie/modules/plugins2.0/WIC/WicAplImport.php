@@ -10,6 +10,11 @@ class WicAplImport extends FannieRESTfulPage
     protected $header = 'Import APL File';
     protected $title = 'Import APL File';
 
+    private $stats = array(
+        'imported' => 0,
+        'skipped' => 0,
+    );
+
     protected function post_view()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -23,7 +28,7 @@ class WicAplImport extends FannieRESTfulPage
         $dbc->query("CREATE TABLE EWicBackup LIKE EWicItems");
         $dbc->query("INSERT INTO EWicBackup SELECT * FROM EWicItems");
         $dbc->query("TRUNCATE TABLE EWicItems");
-        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID) VALUES (?, ?, ?, ?)');
+        $addItem = $dbc->prepare('INSERT INTO EWicItems (upc, upcCheck, eWicCategoryID, eWicSubCategoryID, broadband) VALUES (?, ?, ?, ?, ?)');
         $catP = $dbc->prepare("UPDATE EWicCategories SET units=? WHERE eWicCategoryID=?");
         $subP = $dbc->prepare("UPDATE EWicSubCategories SET units=? WHERE eWicCategoryID=? AND eWicSubCategoryID=?");
         $dbc->startTransaction();
@@ -42,9 +47,27 @@ class WicAplImport extends FannieRESTfulPage
             $subID = substr($line, 131, 4);
             $sub = rtrim(substr($line, 134, 50));
             $unit = substr($line, 184, 3);
-            $dbc->execute($addItem, array($upc, $upcCheck, $catID, $subID));
-            $dbc->execute($catP, array($unit, ltrim($catID, '0')));
-            $dbc->execute($subP, array($unit, ltrim($catID, '0'), ltrim($subID, '0')));
+
+            $end = trim(substr($line, -21));
+            $broadband = substr($end, -1);
+            $startTS = mktime(0, 0, 0, substr($end, 4, 2), substr($end, 6, 2), substr($end, 0, 4));
+            $endTS = mktime(0, 0, 0, substr($end, 12, 2), substr($end, 14, 2), substr($end, 8, 4));
+            $now = time();
+            /*
+            var_dump($end);
+            var_dump($broadband);
+            var_dump(date('Y-m-d', $startTS));
+            var_dump(date('Y-m-d', $endTS));
+            break;
+            */
+            if ($now < $startTS || $now > $endTS) {
+                $this->stats['skipped']++;
+            } else {
+                $dbc->execute($addItem, array($upc, $upcCheck, $catID, $subID, $broadband));
+                $dbc->execute($catP, array($unit, ltrim($catID, '0')));
+                $dbc->execute($subP, array($unit, ltrim($catID, '0'), ltrim($subID, '0')));
+                $this->stats['imported']++;
+            }
         }
         $dbc->commitTransaction();
         $dbc->query("INSERT INTO EWicItems
@@ -52,6 +75,13 @@ class WicAplImport extends FannieRESTfulPage
             SELECT a.upc, i.upcCheck, i.upc, i.eWicCategoryID, i.eWicSubCategoryID
             FROM EWicAliases AS a
                 INNER JOIN EWicItems AS i ON a.aliasedUPC=i.upc");
+
+        return <<<HTML
+<p>
+Records imported: {$this->stats['imported']}<br />
+Records skipped: {$this->stats['skipped']}<br />
+</p>
+HTML;
     }
 
     protected function get_view()

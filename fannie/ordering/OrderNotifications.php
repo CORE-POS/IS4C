@@ -18,11 +18,11 @@ class OrderNotifications
         $order = $this->getOrder($orderID);
         $items = $this->getItems($orderID, $transID);
         $ret = false;
-        if (isset($items[0]) && $items[0]['staff'] && $order->sendEmails()) {
+        if (isset($items[0]) && $order->sendEmails()) {
             $formatted = $this->formatItems($items);
             $formatted['store'] = $this->getStore($orderID);
             $addr = $this->getAddress($order);
-            $ret = $this->sendArrivedEmail($addr, $formatted);
+            $ret = $this->sendArrivedEmail($addr, $formatted, $orderID);
         }
 
         return $ret;
@@ -40,7 +40,7 @@ class OrderNotifications
             $formatted = $this->formatItems($items);
             $formatted['store'] = $this->getStore($orderID);
             $addr = $this->getAddress($order);
-            $ret = $this->sendArrivedEmail($addr, $formatted);
+            $ret = $this->sendArrivedEmail($addr, $formatted, $orderID);
         }
 
         return $ret;
@@ -54,8 +54,24 @@ class OrderNotifications
             'text' => 'This is just a test message to verify delivery',
             'html' => 'This is just a test message to verify delivery',
         );
+        $formatted['store'] = $this->getStore($orderID);
         $addr = $this->getAddress($order);
-        $ret = $this->sendArrivedEmail($addr, $formatted);
+        $ret = $this->sendArrivedEmail($addr, $formatted, $orderID);
+
+        return $ret;
+    }
+
+    public function sendGenericMessage($orderID, $msg)
+    {
+        $order = $this->getOrder($orderID);
+        $ret = false;
+        $formatted = array(
+            'text' => $msg,
+            'html' => $msg,
+        );
+        $formatted['store'] = $this->getStore($orderID);
+        $addr = $this->getAddress($order);
+        $ret = $this->sendArrivedEmail($addr, $formatted, $orderID, true);
 
         return $ret;
     }
@@ -85,7 +101,7 @@ class OrderNotifications
     /**
       Actually send the email. Requires Scheduled Emails plugin
     */
-    private function sendArrivedEmail($addr, $items)
+    private function sendArrivedEmail($addr, $items, $orderID, $altTemplate=false)
     {
         $ret = false;
         if (class_exists('ScheduledEmailSendTask')) {
@@ -95,18 +111,27 @@ class OrderNotifications
             $dbc->selectDB($settings['ScheduledEmailDB']);
             $template = new ScheduledEmailTemplatesModel($dbc);
             $template->scheduledEmailTemplateID($config->get('SO_TEMPLATE'));
+            if ($altTemplate) {
+                $template->scheduledEmailTemplateID($config->get('SO_TEMPLATE') + 1);
+            }
             $template->load();
+            $msg = $template->textCopy();
+            foreach ($items as $name => $value) {
+                $msg = str_replace('{{' . $name . '}}', $value, $msg);
+            }
             if (preg_match('/^[0-9]+$/', $addr)) { // send text message
                 $sns = new COREPOS\Fannie\Plugin\AWS\SNS($config);
-                $msg = $template->textCopy();
-                foreach ($items as $name => $value) {
-                    $msg = str_replace('{{' . $name . '}}', $value, $msg);
-                }
                 $ret = $sns->sendSMS($addr, $msg);
             } else {
                 $ret = ScheduledEmailSendTask::sendEmail($template, $addr, $items);
             }
             $dbc->selectDB($config->get('TRANS_DB'));
+            $model = new SpecialOrderCommLogModel($dbc);
+            $model->specialOrderID($orderID);
+            $model->tdate(date('Y-m-d H:i:s'));
+            $model->channel($addr);
+            $model->message($msg);
+            $model->save();
         }
 
         return $ret;

@@ -53,6 +53,11 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetRightMargin($this->left);  //Set the right margin of the page
         $pdf->SetAutoPageBreak(False); // manage page breaks yourself
 
+        $offset = $_POST['offset'];
+        if ($offset == 1) {
+            $this->top = 32;
+        }
+
         $data = $this->loadItems();
         $num = 0; // count tags 
         $x = $this->left;

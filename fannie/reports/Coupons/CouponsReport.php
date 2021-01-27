@@ -41,11 +41,18 @@ class CouponsReport extends FannieReportPage {
         $sum = 0;
         $sum2 = 0;
         foreach($data as $row) {
-            $sum += $row[1];
-            $sum2 += $row[2];
+            $sum += count($row) == 4 ? $row[2] : $row[3];
+            $sum2 += count($row) == 4 ? $row[3] : $row[4];
         }
 
-        return array('Total', null, sprintf('%.2f', $sum), sprintf('%.2f',$sum2));
+        $ret = array('Total', null);
+        if (count($data[0]) == 5) {
+            $ret[] = null;
+        }
+        $ret[] = sprintf('%.2f', $sum);
+        $ret[] = sprintf('%.2f', $sum2);
+
+        return $ret;
     }
 
     public function fetch_report_data()
@@ -56,15 +63,24 @@ class CouponsReport extends FannieReportPage {
         $d1 = $this->form->date1;
         $d2 = $this->form->date2;
 
+        $unroll = FormLib::get('unroll', false);
+        $dateCols = '';
+        $dateGB = '';
+        if ($unroll) {
+            $dateCols = 'YEAR(tdate) AS year, MONTH(tdate) AS month, DAY(tdate) AS day,';
+            $dateGB = 'YEAR(tdate), MONTH(tdate), DAY(tdate),';
+            array_unshift($this->report_headers, 'Date');
+        }
+
         $dlog = DTransactionsModel::selectDlog($d1,$d2);
 
-        $query = $dbc->prepare("SELECT 
+        $query = $dbc->prepare("SELECT {$dateCols}{$dateCols}{$dateCols}{$dateCols}
             CASE WHEN upc='0' THEN 'NOT SCANNED' ELSE upc END as upc, 
             sum(CASE WHEN upc='0' THEN 1 ELSE quantity END) as qty,
             sum(-total) as ttl FROM $dlog
             WHERE trans_subtype='CP'
             AND tdate BETWEEN ? AND ?
-            GROUP BY CASE WHEN upc='0' THEN 'NOT SCANNED' ELSE upc END
+            GROUP BY {$dateGB} CASE WHEN upc='0' THEN 'NOT SCANNED' ELSE upc END
             ORDER BY upc");
         $result = $dbc->execute($query, array($d1.' 00:00:00', $d2.' 23:59:59'));
 
@@ -74,11 +90,17 @@ class CouponsReport extends FannieReportPage {
             WHERE upc LIKE ?
             GROUP BY p.brand
             ORDER BY COUNT(*) DESC');
+        $brandCache = array();
 
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
             $prefix = substr($row['upc'], 3, 5);
-            $row['brand'] = $dbc->getValue($brandP, array('%' . $prefix . '%'));
+            if (isset($brandCache[$prefix])) {
+                $row['brand'] = $brandCache[$prefix];
+            } else {
+                $row['brand'] = $dbc->getValue($brandP, array('%' . $prefix . '%'));
+                $brandCache[$prefix] = $row['brand'];
+            }
             $data[] = $this->rowToRecord($row);
         }
 
@@ -87,6 +109,17 @@ class CouponsReport extends FannieReportPage {
 
     private function rowToRecord($row)
     {
+        if (isset($row['year'])) {
+            $tdate = date('Y-m-d', mktime(0, 0, 0, $row['month'], $row['day'], $row['year']));
+            return array(
+                $tdate,
+                $row['upc'],
+                $row['brand'],
+                sprintf('%.2f', $row['qty']),
+                sprintf('%.2f', $row['ttl'])
+            );
+        }
+
         return array(
             $row['upc'],
             $row['brand'],

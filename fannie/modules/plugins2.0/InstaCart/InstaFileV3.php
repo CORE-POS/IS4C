@@ -17,6 +17,7 @@ class InstaFileV3
     {
         $depositP = $this->dbc->prepare('SELECT normal_price FROM products WHERE upc=?');
         $settings = $this->config->get('PLUGIN_SETTINGS');
+        $storeID = $this->config->get('STORE_ID');
         $PHOTOS = $settings['InstaCartImgLocal'];
         $instaDB = $settings['InstaCartDB'];
         $includeP = $this->dbc->prepare('SELECT upc FROM ' . $instaDB . $this->dbc->sep() . 'InstaIncludes WHERE upc=?');
@@ -74,7 +75,7 @@ class InstaFileV3
                 AND (numflag & (1<<18)) = 0";
         $args = array();
         if ($this->config->get('STORE_MODE') == 'HQ') {
-            $args[] = $this->config->get('STORE_ID');
+            $args[] = $storeID;
             $query .= ' AND p.store_id=?';
         }
         $prep = $this->dbc->prepare($query);
@@ -109,7 +110,7 @@ class InstaFileV3
                 }
             }
             
-            if ($this->skipDates($row['upc'], $settings['InstaCartNewCutoff'], $settings['InstaCartSalesCutoff'])) {
+            if ($this->skipDates($row['upc'], $settings['InstaCartNewCutoff'], $settings['InstaCartSalesCutoff'], $storeID)) {
                 $skips['date']++;
                 continue;
             }
@@ -327,9 +328,16 @@ class InstaFileV3
 
       @return [boolean] skip this item
     */
-    private function skipDates($upc, $created, $sold)
+    private function skipDates($upc, $created, $sold, $storeID=false)
     {
         if ($created <= 0 && $sold <= 0) {
+            return false;
+        }
+
+        $overP = $this->dbc->prepare("SELECT upc FROM " . FannieDB::fqn('InstaOverrides', 'plugin:InstaCartDB') . " WHERE upc=?");
+        $override = $this->dbc->getValue($overP, array($upc));
+        if ($override) {
+            echo "OVERRIDE!!!\n";
             return false;
         }
 
@@ -339,9 +347,11 @@ class InstaFileV3
                 $cutoff = date('Y-m-d', strtotime($created . ' days ago'));
                 $prep = $this->dbc->prepare("SELECT upc
                     FROM " . FannieDB::fqn('products', 'op') . "
+                    " . ($storeID ? ' WHERE store_id=? ' : '') . "
                     GROUP BY upc
                     HAVING MIN(created) >= ?");
-                $res = $this->dbc->execute($prep, array($cutoff));
+                $args = $storeID ? array($storeID, $cutoff) : array($cutoff);
+                $res = $this->dbc->execute($prep, $args);
                 while ($row = $this->dbc->fetchRow($res)) {
                     $this->cCache[$row['upc']] = true;
                 }
@@ -353,10 +363,13 @@ class InstaFileV3
         if ($sold) {
             if (!isset($this->nCache)) {
                 $this->nCache = array();
-                $res = $this->dbc->query('SELECT upc
+                $prep = $this->dbc->prepare('SELECT upc
                     FROM ' . FannieDB::fqn('products', 'op') . '
                     WHERE last_sold IS NULL
+                    ' . ($storeID ? ' AND store_id=? ' : '') . '
                     GROUP BY upc');
+                $args = $storeID ? array($storeID) : array();
+                $res = $this->dbc->execute($prep, $args);
                 while ($row = $this->dbc->fetchRow($res)) {
                     $this->nCache[$row['upc']] = true;
                 }
@@ -369,9 +382,11 @@ class InstaFileV3
                 $cutoff = date('Y-m-d', strtotime($sold . ' days ago'));
                 $prep = $this->dbc->prepare('SELECT upc
                     FROM ' . FannieDB::fqn('products', 'op') . '
+                    ' . ($storeID ? ' WHERE store_id=? ' : '') . '
                     GROUP BY upc
                     HAVING MIN(last_sold) >= ?');
-                $res = $this->dbc->execute($prep, array($cutoff));
+                $args = $storeID ? array($storeID, $cutoff) : array($cutoff);
+                $res = $this->dbc->execute($prep, $args);
                 while ($row = $this->dbc->fetchRow($res)) {
                     $this->sCache[$row['upc']] = true;
                 }

@@ -326,11 +326,11 @@ class ProdLocationEditor extends FannieRESTfulPage
             $ret .= '<table class="table">
                 <thead>
                     <th>UPC</th>
-                    <td>Brand</th>
-                    <td>Description</th>
-                    <td>Dept. No.</th>
-                    <td>Department</th>
-                    <td>Location</th>
+                    <th>Brand</th>
+                    <th>Description</th>
+                    <th>Dept. No.</th>
+                    <th>Department</th>
+                    <th>Location</th>
                 </thead>
                 <form method="post">
                     <input type="hidden" name="save" value="1">
@@ -495,7 +495,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
 
-        $ret .= '<table class="table mySortableTable tablesorter tablesorter-bootstrap">
+        $ret .= '<table class="table">
             <thead>
                 <th>UPC</th>
                 <th>Brand</th>

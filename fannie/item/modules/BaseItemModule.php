@@ -175,7 +175,8 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                 LEFT JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
                 LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID AND c.mostRecent=1
-            WHERE p.upc=?';
+            WHERE p.upc=?
+            ORDER BY v.modified DESC';
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
             $itemQ = str_replace('p.last_sold', 'NULL as last_sold', $itemQ);
@@ -185,7 +186,13 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($dbc->numRows($res) > 0) {
             $items = array();
             while ($row = $dbc->fetchRow($res)) {
-                $items[$row['store_id']] = $row;
+                // make sure we only use the *first* record for each store.
+                // this is done specifically to ensure we have the "correct"
+                // (deterministic) pseudo-default vendorItems record, for those
+                // cases where it matters
+                if (!array_key_exists($row['store_id'], $items)) {
+                    $items[$row['store_id']] = $row;
+                }
             }
             return $items;
         }
@@ -720,6 +727,7 @@ HTML;
             onchange="$('#vsku{$jsVendorID}').val(this.value);" 
             {$vFieldsDisabled} {$aliasDisabled} />
         <input type="hidden" name="isAlias" value="{$rowItem['isAlias']}" />
+        <input type="hidden" name="origSKU" value="{$rowItem['sku']}" {$vFieldsDisabled} />
     </td>
 </tr>
 <tr>
@@ -1138,13 +1146,35 @@ HTML;
         $vitem->vendorID($vendorID);
         $vitem->upc($upc);
         try {
-            $sku = $this->form->vendorSKU;
+            $sku = trim($this->form->vendorSKU);
             $caseSize = $this->form->caseSize;
             $alias = $this->form->isAlias;
             if ($alias) {
                 return true;
             }
-            if (count($vitem->find()) > 0 && $sku != '') {
+
+            /**
+             * Always require a sku. use upc if none available
+             */
+            if ($sku == '') {
+                $sku = $upc;
+            }
+
+            $chkP = $dbc->prepare("SELECT upc FROM vendorItems
+                WHERE sku=? AND vendorID=? AND upc <> ?");
+            $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
+            if ($chk) {
+                // bail out. same sku cannot be assigned to multiple items
+                return true;
+            }
+
+            $vrecords = $vitem->find();
+            if (count($vrecords) > 1) {
+                // bail out. multiple matching records will cause ambiguity
+                return true;
+            }
+
+            if (count($vrecords) > 0) {
                 $editP = $dbc->prepare('
                     UPDATE vendorItems
                     SET sku=?
@@ -1152,29 +1182,6 @@ HTML;
                         AND vendorID=? 
                 '); 
                 $editR = $dbc->execute($editP, array($sku, $upc, $vendorID));
-            } elseif (!empty($sku) && $sku != $upc) {
-                /**
-                  If a SKU is provided, update any
-                  old record that used the UPC as a
-                  placeholder SKU.
-                */
-                $existsP = $dbc->prepare('
-                    SELECT sku
-                    FROM vendorItems
-                    WHERE sku=?
-                        AND upc=?
-                        AND vendorID=?');
-                $exists = $dbc->getValue($existsP, array($upc, $upc, $vendorID));
-                if ($exists && $sku != $upc && $sku != $exists) {
-                    $fixSkuP = $dbc->prepare('
-                        UPDATE vendorItems
-                        SET sku=?
-                        WHERE sku=?
-                            AND vendorID=?');
-                    $dbc->execute($fixSkuP, array($sku, $upc, $vendorID));
-                }
-            } else {
-                $sku = $upc;
             }
         } catch (Exception $ex) {
             $sku = $upc;
@@ -1203,8 +1210,31 @@ HTML;
                 </td>';
             $row2 = '<th>Description</th><td>' . $model->description() . '</td>
                      <th>Price</th><td>$' . $model->normal_price() . '</td>';
+            $ret = array($row1, $row2);
+            $vendorID = $model->default_vendor_id();
+            $sku = FormLib::get('vendorSKU');
+            if ($vendorID != 0 && $sku != '') {
+                $chkP = $dbc->prepare("SELECT upc FROM vendorItems
+                    WHERE sku=? AND vendorID=? AND upc <> ?");
+                $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
+                if ($chk) {
+                    $ret[] = '<th class="danger">Error</th>
+                        <td class="danger" colspan="3">SKU already assigned to <a href="ItemEditorPage.php?searchupc=' . $chk . '">' . $chk . '</a>.
+                        Other changes saved.</td>';
+                }
 
-            return array($row1, $row2);
+                if ($sku != FormLib::get('origSKU')) {
+                    $multiP = $dbc->prepare("SELECT upc FROM vendorItems WHERE upc=? AND vendorID=?");
+                    $multiR = $dbc->execute($multiP, array($upc, $vendorID));
+                    if ($dbc->numRows($multiR) > 1) {
+                        $ret[] = '<th class="danger">Error</th>
+                            <td class="danger" colspan="3">Could not save SKU due to too many catalog entries.
+                            Other changes saved.</td>';
+                    }
+                }
+            }
+
+            return $ret;
         } else {
             return array('<td colspan="4">Error saving. <a href="ItemEditorPage.php?searchupc=' . $upc . '">Try Again</a>?</td>');
         }

@@ -63,7 +63,9 @@ class AddCashierPage extends FannieRESTfulPage
         $employee->EmpActive(1);
         $employee->frontendsecurity($this->fes);
         $employee->backendsecurity($this->fes);
-        $employee->birthdate($this->birthdate);
+        if ($this->birthdate) {
+            $employee->birthdate($this->birthdate);
+        }
         $employee->save();
 
         try {

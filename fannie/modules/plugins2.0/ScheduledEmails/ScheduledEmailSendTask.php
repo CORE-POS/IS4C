@@ -61,7 +61,8 @@ class ScheduledEmailSendTask extends FannieTask
             SELECT scheduledEmailQueueID,
                 scheduledEmailTemplateID,
                 cardNo,
-                templateData
+                templateData,
+                sentToEmail
             FROM ScheduledEmailQueue
             WHERE sent=0
                 AND sendDate <= ' . $dbc->now() . '
@@ -74,17 +75,22 @@ class ScheduledEmailSendTask extends FannieTask
                 $this->cronMsg('Template does not exist: ' . $row['scheduledEmailTemplateID']);
                 continue;
             }
-            $member = \COREPOS\Fannie\API\member\MemberREST::get($row['cardNo']);
-            $dbc->selectDB($settings['ScheduledEmailDB']); // reset current DB
-            if ($member === false) {
-                $this->cronMsg('Member does not exist: ' . $row['cardNo']);
-                continue;
-            }
+
             $email = false;
-            foreach ($member['customers'] as $customer) {
-                if ($customer['accountHolder']) {
-                    $email = $customer['email'];
-                    break;
+            if ($row['cardNo'] == 0) {
+                $email = $row['sentToEmail'];
+            } else {
+                $member = \COREPOS\Fannie\API\member\MemberREST::get($row['cardNo']);
+                $dbc->selectDB($settings['ScheduledEmailDB']); // reset current DB
+                if ($member === false) {
+                    $this->cronMsg('Member does not exist: ' . $row['cardNo']);
+                    continue;
+                }
+                foreach ($member['customers'] as $customer) {
+                    if ($customer['accountHolder']) {
+                        $email = $customer['email'];
+                        break;
+                    }
                 }
             }
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {

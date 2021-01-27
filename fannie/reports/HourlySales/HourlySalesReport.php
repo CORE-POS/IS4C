@@ -212,6 +212,7 @@ HTML;
         $hour = $dbc->hour('tdate');
 
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
+        $nabs = DTrans::memTypeIgnore($dbc);
 
         $query = "SELECT $date_selector, $hour as hour, 
                     sum(d.total) AS ttl, avg(d.total) as avg
@@ -225,6 +226,7 @@ HTML;
         }
         $query .= "WHERE d.trans_type IN ('I','D')
                     AND d.tdate BETWEEN ? AND ?
+                    AND d.memType NOT IN {$nabs}
                     AND $where ";
         if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
             $query .= ' AND d.department NOT IN (993, 998, 703) ';

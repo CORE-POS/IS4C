@@ -219,7 +219,7 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <?php
         foreach ($rowMods as $rm) {
             printf('<tr><td>%s<input type="hidden" name="_prMods[]" value="%s" /></td>
-                    <td><input type="number" class="form-control" name="_prPos" value="%s" /></td></tr>',
+                    <td><input type="number" class="form-control" name="_prPos[]" value="%s" /></td></tr>',
                     $rm, $rm,
                     (isset($FANNIE_PRODUCT_ROWS[$rm]) ? $FANNIE_PRODUCT_ROWS[$rm] : '')
             );

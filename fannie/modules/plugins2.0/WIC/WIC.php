@@ -34,7 +34,13 @@ class WIC extends \COREPOS\Fannie\API\FanniePlugin
     'WicDB' => array('default'=>'wic_db','label'=>'Database',
             'description'=>'Database to store item list. May
                     be one of the default CORE databases or a 
-                    separate one.')
+                    separate one.'),
+    'WicAplURL' => array('default'=>'', 'label'=>'APL URL',
+            'description' => 'URL to download APL'),
+    'WicAplUser' => array('default'=>'', 'label'=>'APL Username',
+            'description' => 'Credentials for APL download'),
+    'WicAplPass' => array('default'=>'', 'label'=>'APL Password',
+            'description' => 'Credentials for APL download'),
     );
 
     public $plugin_description = 'Plugin for tracking & locating

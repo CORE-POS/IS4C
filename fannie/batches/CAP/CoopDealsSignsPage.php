@@ -74,7 +74,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
             FROM is4c_op.batches
             WHERE batchType = 1
                 '.$Qcycle.'
-                AND SUBSTR(startDate,1,4) = ?
+                AND SUBSTR(DATE_ADD(startDate, INTERVAL 7 DAY), 1, 4) = ?
                 '.$Qdealset.'
         ';
         $prep = $dbc->prepare($query);
@@ -245,7 +245,7 @@ HTML;
         }
 
         $years = '';
-        $curYear = 2021;
+        $curYear = 2022;
         $curMonth = date('m');
         for ($i=2017; $i<$curYear; $i++) {
             $sel = ($i == FormLib::get('year')) ? " selected " : "";

@@ -170,13 +170,33 @@ class PcDailyReport extends FannieReportPage
         $this->integratedIDs = array();
         $this->ptIDs = array();
 
+        $recon = array('CC' => 0, 'Amex' => 0, 'Bankcard' => 0);
+
         $proc = $this->getTransactions($date_id, $store, 'MercuryE2E');
         $dataset = $this->procToDataset($dataset, $proc, 'Mercury');
 
         $proc = $this->getTransactions($date_id, $store, 'RapidConnect');
+        foreach ($proc as $type => $info) {
+            foreach ($info['Details'] as $issuer => $subinfo) {
+                if ($issuer == 'AMEX') {
+                    $recon['Amex'] += ($subinfo['Sales']['amt'] + $subinfo['Returns']['amt']);
+                } else {
+                    $recon['CC'] += ($subinfo['Sales']['amt'] + $subinfo['Returns']['amt']);
+                }
+            }
+        }
         $dataset = $this->procToDataset($dataset, $proc, 'First Data');
 
         $proc = $this->getTransactions($date_id, $store, 'GoEMerchant', true);
+        foreach ($proc as $type => $info) {
+            foreach ($info['Details'] as $issuer => $subinfo) {
+                if ($issuer == 'American Express') {
+                    $recon['Amex'] += ($subinfo['Sales']['amt'] + $subinfo['Returns']['amt']);
+                } else {
+                    $recon['Bankcard'] += ($subinfo['Sales']['amt'] + $subinfo['Returns']['amt']);
+                }
+            }
+        }
         $dataset = $this->procToDataset($dataset, $proc, 'FAPS');
 
         $doubleCheckP = $dbc->prepare("
@@ -287,6 +307,7 @@ class PcDailyReport extends FannieReportPage
             );
             $record['meta'] = FannieReportPage::META_BOLD;
             $dataset[] = $record;
+            $recon['CC'] += ($non['Sales']['amt'] + $non['Returns']['amt']);
         }
 
         $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
@@ -339,6 +360,33 @@ class PcDailyReport extends FannieReportPage
                             sprintf('%.2f', $non['Sales']['amt'] + $non['Returns']['amt']),
             );
             $dataset[] = $record;
+        }
+
+        $dataset[] = array('meta'=>FannieReportPage::META_BLANK);
+
+        $record = array(
+            'Recon Total',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            array_sum($recon),
+        );
+        $record['meta'] = FannieReportPage::META_BOLD;
+        $dataset[] = $record;
+        foreach ($recon as $type => $amt) {
+            $dataset[] = array(
+                '',
+                $type,
+                '',
+                '',
+                '',
+                '',
+                '',
+                $amt,
+            );
         }
 
         $dataset[] = array('meta'=>FannieReportPage::META_BLANK);

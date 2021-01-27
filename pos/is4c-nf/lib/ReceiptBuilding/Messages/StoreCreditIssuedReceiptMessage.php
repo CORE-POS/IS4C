@@ -74,7 +74,7 @@ class StoreCreditIssuedReceiptMessage extends ReceiptMessage{
 
         $slip .= " * no cash back on Co-op Cash purchases\n";
         $slip .= " * change amount is not transferable to\n   another ticket\n";
-        $slip .= " * valid Dec 1 through Dec 31, 2018\n";
+        $slip .= " * valid Dec 12 through Dec 31, 2020\n";
         $slip .= " * " . $ref . "\n";
         $slip .= ReceiptLib::centerString("................................................")."\n";
 

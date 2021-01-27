@@ -36,6 +36,7 @@ class GiftCardTracker extends FannieRESTfulPage
 
     protected $header = "Fannie :: Gift Card Tracker";
     protected $title = "Gift Card Tracker";
+    protected $must_authenticate = true;
 
     public function preprocess()
     {
@@ -111,7 +112,6 @@ class GiftCardTracker extends FannieRESTfulPage
             $ph = $formattedPh;
         }
         $amt = $json->amt;
-        $sname = "This card should be mailed to: \n" . $json->sname;
         $city = $json->city;
         $state = $json->state;
         $zip = $json->zip;
@@ -197,7 +197,6 @@ $used
         <label>Notes</label>
         <div class="form-group">
             <textarea class="form-control" rows=10 name="notes" spellcheck="falsespellcheck="false""/>
-$sname
 $addr1
 $city
 \nAdditional Customer Notes: $notes

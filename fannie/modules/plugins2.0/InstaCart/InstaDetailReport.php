@@ -19,7 +19,7 @@ class InstaDetailReport extends FannieReportPage
     public function report_description_content()
     {
         $query = "SELECT * FROM " . FannieDB::fqn('InstaTransactions', 'plugin:InstaCartDB')
-            . " WHERE orderDate BETWEEN ? AND ? AND deliveryID=?";
+            . " WHERE orderDate BETWEEN ? AND ? AND orderID=?";
         $query = $this->connection->addSelectLimit($query, 1);
         $prep = $this->connection->prepare($query);
         $row = $this->connection->getRow($prep, array($this->form->date, $this->form->date . ' 23:59:59', $this->form->order));
@@ -48,7 +48,7 @@ class InstaDetailReport extends FannieReportPage
                 " . DTrans::joinProducts('i') . "
                 LEFT JOIN productUser AS u ON i.upc=u.upc
             WHERE i.orderDate BETWEEN ? AND ?
-                AND i.deliveryID=?");
+                AND i.orderID=?");
             
         $res = $this->connection->execute($prep, array($this->form->date, $this->form->date . ' 23:59:59', $this->form->order));
         $data = array();

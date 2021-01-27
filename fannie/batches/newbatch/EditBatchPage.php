@@ -183,6 +183,51 @@ class EditBatchPage extends FannieRESTfulPage
         return true;
     }
 
+    private function checkAllOverlap($id)
+    {
+        $dbc = $this->connection;
+        $batch = new BatchesModel($dbc);
+        $batch->batchID($id);
+        $batch->load();
+        if ($batch->discountType() <= 0) {
+            return false;
+        }
+        $batchP = $dbc->prepare("SELECT batchID FROM batches
+            WHERE batchID <> ?
+                AND discounttype > 0
+                AND endDate >= ?");
+        $batchIDs = $dbc->getAllValues($batchP, array($id, date('Y-m-d')));
+        list($inStr, $args) = $dbc->safeInClause($batchIDs);
+        $overlapP = $dbc->prepare('
+            SELECT b.batchName,
+                b.startDate,
+                b.endDate,
+                b.batchID,
+                l.upc
+            FROM batchList AS l
+                INNER JOIN batches AS b ON l.batchID=b.batchID
+            WHERE l.batchID IN (' . $inStr . ')
+                AND b.endDate >= ?
+                AND b.startDate <= ?
+                AND b.discounttype > 0
+                AND b.endDate >= ' . $dbc->curdate()
+        );
+        $stamp = strtotime($batch->startDate());
+        if ($stamp === false) {
+            return false;
+        }
+        $args[] = $stamp ? date('Y-m-d', $stamp) : '1900-01-01';
+        $stamp = strtotime($batch->endDate());
+        $args[] = $stamp ? date('Y-m-d', $stamp) : '1900-01-01';
+        $overlapR = $dbc->execute($overlapP, $args);
+        $ret = array();
+        while ($row = $dbc->fetchRow($overlapR)) {
+            $ret[$row['upc']] = $row;
+        }
+
+        return $ret;
+    }
+
     private function checkOverlap($id, $upc)
     {
         $dbc = $this->connection;
@@ -1060,8 +1105,10 @@ HTML;
                     OR
                     (b.endDate BETWEEN ? AND ?)
                 )
-        ');
+                AND b.endDate <= ' . $dbc->curdate()
+        );
         $overlap_args = array($model->startDate(), $model->endDate(), $model->startDate(), $model->endDate());
+        $allOverlap = $this->checkAllOverlap($id);
 
         $cpCount = $dbc->prepare("SELECT count(*) FROM batchCutPaste WHERE uid=?");
         $res = $dbc->execute($cpCount,array($uid));
@@ -1223,7 +1270,16 @@ HTML;
         $upcFields = '';
         $upcs = '';
         $allLCs = true;
+        $products = new ProductsModel($dbc);
         while ($fetchW = $dbc->fetchRow($fetchR)) {
+            $products->reset();
+            $products->upc($fetchW['upc']);
+            if ($this->config->get('STORE_MODE') == 'HQ') {
+                $storeLocation = COREPOS\Fannie\API\lib\Store::getIdByIp();
+                $products->store_id($storeLocation);
+            }
+            $products->load();
+            $tr_style = ($products->inUse() === '0') ? "style=\"color: black; background-color: lightgrey;\"" : "";
             $cur = ($cur + 1) % 2;
             $ret .= "<tr>";
             $fetchW['upc'] = rtrim($fetchW['upc']);
@@ -1238,11 +1294,13 @@ HTML;
                 $upcs .= $fetchW['upc'] . "\n";
                 $conflict = '';
                 if ($dtype > 0) {
-                    $overlapR = $dbc->execute($overlapP, array_merge(array($fetchW['upc'], $id), $overlap_args));
-                    if ($overlapR && $dbc->numRows($overlapR)) {
-                        $overlap = $dbc->fetchRow($overlapR);
+                    //$overlapR = $dbc->execute($overlapP, array_merge(array($fetchW['upc'], $id), $overlap_args));
+                    //if ($overlapR && $dbc->numRows($overlapR)) {
+                    if (isset($allOverlap[$fetchW['upc']])) {
+                        //$overlap = $dbc->fetchRow($overlapR);
+                        $overlap = $allOverlap[$fetchW['upc']];
                         $conflict = sprintf('<a href="EditBatchPage.php?id=%d" target="_batch%d"
-                                                title="Conflicts with batch %s" class="btn btn-xs btn-danger">
+                                                title="!!Conflicts with batch %s" class="btn btn-xs btn-danger">
                                                 <span class="glyphicon glyphicon-exclamation-sign">
                                                 </span></a>',
                                                 $overlap['batchID'], $overlap['batchID'],
@@ -1261,8 +1319,8 @@ HTML;
                 $ret .= "<td bgcolor=$colors[$cur]><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$fetchW['upc']}\"
                     target=\"_new{$fetchW['upc']}\">{$fetchW['upc']}</a>{$conflict}</td>";
             }
-            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['brand']}</td>";
-            $ret .= "<td bgcolor=$colors[$cur]>{$fetchW['description']}</td>";
+            $ret .= "<td bgcolor=$colors[$cur]><span $tr_style>{$fetchW['brand']}</span></td>";
+            $ret .= "<td bgcolor=$colors[$cur]><span $tr_style>{$fetchW['description']}</span></td>";
             $ret .= "<td bgcolor=$colors[$cur] class=\"price\">{$fetchW['normal_price']}</td>";
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
             $qty = is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0 ? $fetchW['quantity'] : 1;
@@ -1667,7 +1725,9 @@ HTML;
             collectively. These limits cannot be used for volume sale price (i.e., 2-for-$1).</p>
             <p><em>Cut</em> and <em>Paste</em> can move items items from one batch to
             another. This feature requires user authentication so that each user has their
-            own clipboard and don\'t interfere with each oter.</p>
+            own clipboard and don\'t interfere with each other.</p>
+            <p><em>Items highlighted</em> in grey are not in-use in POS for the store the 
+            batch is being viewed from.</p>
             ';
     }
 

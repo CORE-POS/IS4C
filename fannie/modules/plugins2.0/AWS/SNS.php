@@ -2,6 +2,7 @@
 
 namespace COREPOS\Fannie\Plugin\AWS;
 use \Exception;
+use \FannieLogger;
 
 /**
  * Wrapper for Simple Notification Service
@@ -55,14 +56,19 @@ class SNS
         $phone = preg_replace('/[^0-9]/', '', $phone);
         $phone = strlen($phone) === 10 ? ('+1' . $phone) : ('+' . $phone);
 
+        $log = new FannieLogger();
+
         try {
             $result = $this->client->publish(array(
                 'Message' => $msg,
                 'PhoneNumber' => $phone,
             ));
+            //$log->debug(print_r($result, true));
 
             return true;
-        } catch (Exception $ex) { }
+        } catch (Exception $ex) {
+            $log->error($ex->getMessage());
+        }
 
         return false;
     }

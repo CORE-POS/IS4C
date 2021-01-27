@@ -68,6 +68,9 @@ class SQLManager
 
     protected $last_connect_error = false;
 
+    protected $query_counter = 0;
+    protected $queries = array();
+
     /** 
         Create an initial connection to the database. Will
         attempt to create the database if it does not exist
@@ -411,6 +414,10 @@ class SQLManager
         $con = $this->getNamedConnection($which_connection);
 
         $result = (!is_object($con)) ? false : $con->Execute($query_text,$params);
+        if (is_string($query_text) && strtoupper(substr($query_text, 0, 4)) !== "USE ") {
+            $this->query_counter++;
+            $this->queries[] = is_array($query_text) ? $query_text[0] : $query_text;
+        }
 
         // recover from "MySQL server has gone away" error
         // @see: restoreConnection method
@@ -1949,6 +1956,16 @@ class SQLManager
         $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
         $adapter = $this->getAdapter($this->connectionType($which_connection));
         return $adapter->numberFormat($num);
+    }
+
+    public function queryCount()
+    {
+        return $this->query_counter;
+    }
+
+    public function loggedQueries()
+    {
+        return $this->queries;
     }
 }
 

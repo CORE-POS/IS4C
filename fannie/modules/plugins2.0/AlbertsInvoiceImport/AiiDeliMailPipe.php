@@ -52,10 +52,11 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                         $order->placed(1);
                         $order->placedDate($date);
                         $order->vendorInvoiceID($data[0]);
+                        $order->inventoryIgnore(1);
                         $orderID = $order->save();
                     }
                     $isBulk = false;
-                    if (strstr($data[11], 'Bulk') && strstr($data[12], 'Meat')) {
+                    if (strstr($data[11], 'Bulk') && (strstr($data[12], 'Meat') || strstr($data[12], 'Poultry'))) {
                         $isBulk = true;
                     }
                     $poi = new PurchaseOrderItemsModel($dbc);

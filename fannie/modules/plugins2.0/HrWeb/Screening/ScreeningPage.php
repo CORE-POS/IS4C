@@ -38,6 +38,7 @@ class ScreeningPage extends FannieRESTfulPage
     <link rel="stylesheet" type="text/css" href="../../../../src/javascript/composer-components/bootstrap-default/css/bootstrap-theme.min.css">
     <meta name="viewport" content="width=device-width, user-scalable=no" />
 </head>
+<body style="background: #ffefcc">
 <body>
     <div class="container">
         <div class="row" align="center">
@@ -60,22 +61,24 @@ HTML;
 
         $any = FormLib::get('any') ? 1 : 0;
         $highTemp = FormLib::get('highTemp') ? 1 : 0;
+        $exp = FormLib::get('exp') ? 1 : 0;
         $empID = $this->id;
 
         $prep = $dbc->prepare("INSERT INTO " . FannieDB::fqn('ScreeningEntries', 'plugin:HrWebDB') . "
-            (screeningEmployeeID, tdate, highTemp, anySymptom) 
-            VALUES (?, ?, ?, ?)");
+            (screeningEmployeeID, tdate, highTemp, anySymptom, exposure) 
+            VALUES (?, ?, ?, ?, ?)");
         $args = array(
             $empID,
             date('Y-m-d H:i:s'),
             $highTemp,
             $any,
+            $exp,
         );
         $dbc->execute($prep, $args);
 
         $this->addOnloadCommand("setTimeout(function() { \$('#finishForm').submit(); }, 250);");
 
-        if ($highTemp || $any) {
+        if ($highTemp || $any || $exp) {
 
             $prep = $dbc->prepare("SELECT screeningEmployeeID, name FROM "
                 . FannieDB::fqn('ScreeningEmployees', 'plugin:HrWebDB') . " WHERE screeningEmployeeID=? AND deleted=0");
@@ -83,14 +86,14 @@ HTML;
             $subject = 'Screening Positive Notification';
             $body = $info['name'] . ' reported symptoms at the screening station.';
             $to = 'hr@wholefoods.coop, shannigan@wholefoods.coop, michael@wholefoods.coop, jkrussow@wholefoods.coop';
-            $headers = "From: hillside@wholefoods.coop\r\n";
+            $headers = "From: hillside-screening@wholefoods.coop\r\n";
             mail($to, $subject, $body, $headers);
 
             return <<<HTML
 <div style="font-size: 200% !important;">
     <div class="alert alert-danger">You've selected symptom(s)</div>
 Please isolate yourself from others immediately, <b>do not clock in for work and go home</b>.
-Contact your manager and HR at 218.491.4821.
+Contact your manager and either your Store Manager (952.687.1381) or General Manager (218.428.5747).
 </div>
 <p style="font-size: 200%;">
     <a href="ScreeningPage.php" class="btn btn-default btn-lg btn-block">Clear This Screen</a>
@@ -110,7 +113,7 @@ HTML;
 <div style="font-size: 200% !important;">
     <div class="alert alert-danger">You've selected symptom(s)</div>
 Please isolate yourself from others immediately, <b>do not clock in for work and go home</b>.
-Contact your manager and HR at 218.491.4821.
+Contact your manager and either your Store Manager (952.687.1381) or General Manager (218.428.5747).
 </div>
 <p style="font-size: 200%;">
     <a href="ScreeningPage.php" class="btn btn-default btn-lg btn-block">Clear This Screen</a>
@@ -137,7 +140,9 @@ HTML;
         $nonce = $dbc->getValue($prep);
         $dbc->query("UPDATE " . FannieDB::fqn('ScreeningNonce', 'plugin:HrWebDB') . " SET nonce=''");
         if ($nonce === false || strlen($nonce) == 0 || $nonce != FormLib::get('nonce')) {
-            return '<div class="alert alert-danger">Session expired</div>' . $this->get_view();
+            // disabled to allow for dual stations. the way the ipads handle history & back button
+            // it isn't really effective anyway.
+            //return '<div class="alert alert-danger">Session expired</div>' . $this->get_view();
         }
 
         $this->addOnloadCommand("\$('input[name=temp]').focus();");
@@ -166,7 +171,7 @@ HTML;
 </p>
 <hr />
 <p>
-<h3>Are you experiencing any COVID-19 related symptoms?</h3>
+<h3>Are you experiencing any <span class="" style="color: #e00; font-weight: bold;">new</span> COVID-19 related symptoms?</h3>
 </p>
 <table class="table" style="font-size: 200%;">
 <tr>
@@ -189,7 +194,6 @@ HTML;
     <th>Congestion or Runny Nose</th>
 </tr>
 </table>
-</table>
 <p style="font-size: 200%;">
     <label class="radio-inline">
         <input type="radio" name="any" value="1" required />
@@ -198,6 +202,21 @@ HTML;
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
     <label class="radio-inline">
         <input type="radio" name="any" value="0" required />
+        No
+    </label>
+</p>
+<hr />
+<p>
+<h3>Have you had direct contact with a positive COVID-19 case?</h3>
+</p>
+<p style="font-size: 200%;">
+    <label class="radio-inline">
+        <input type="radio" name="exp" value="1" required />
+        Yes
+    </label>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <label class="radio-inline">
+        <input type="radio" name="exp" value="0" required />
         No
     </label>
 </p>

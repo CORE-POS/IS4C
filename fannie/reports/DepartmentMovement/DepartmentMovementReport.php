@@ -106,6 +106,7 @@ class DepartmentMovementReport extends FannieReportPage
           per-department summary is fine (and a smaller table)
         */
         $dlog = DTransactionsModel::selectDlog($date1,$date2);
+        $nabs = DTrans::memTypeIgnore($dbc);
 
         /**
           Build an appropriate query depending on the grouping option
@@ -139,6 +140,7 @@ class DepartmentMovementReport extends FannieReportPage
                       AND tdate BETWEEN ? AND ?
                       AND $filter_transactions
                       AND " . DTrans::isStoreID($store, 't') . "
+                      AND t.memType NOT IN {$nabs}
                       GROUP BY t.upc,
                           p.brand,
                           CASE WHEN t.description IS NULL THEN p.description ELSE t.description END,
@@ -157,6 +159,7 @@ class DepartmentMovementReport extends FannieReportPage
                     AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
+                    AND t.memType NOT IN {$nabs}
                     GROUP BY t.department,d.dept_name ORDER BY SUM(total) DESC";
                 break;
             case 'Date':
@@ -172,6 +175,7 @@ class DepartmentMovementReport extends FannieReportPage
                     AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
+                    AND t.memType NOT IN {$nabs}
                     GROUP BY year(tdate),month(tdate),day(tdate) 
                     ORDER BY year(tdate),month(tdate),day(tdate)";
                 break;
@@ -196,6 +200,7 @@ class DepartmentMovementReport extends FannieReportPage
                     AND t.trans_type IN ('I', 'D')
                     AND $filter_transactions
                     AND " . DTrans::isStoreID($store, 't') . "
+                    AND t.memType NOT IN {$nabs}
                     GROUP BY $cols
                     ORDER BY ".$dbc->dayofweek('tdate');
                 break;

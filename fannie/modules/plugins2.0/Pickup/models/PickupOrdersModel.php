@@ -35,6 +35,7 @@ class PickupOrdersModel extends BasicModel
     'orderNumber' => array('type'=>'VARCHAR(255)'),
     'name' => array('type'=>'VARCHAR(255)'),
     'phone' => array('type'=>'VARCHAR(255)'),
+    'email' => array('type'=>'VARCHAR(255)'),
     'vehicle' => array('type'=>'VARCHAR(255)'),
     'pDate' => array('type'=>'DATETIME'),
     'pTime' => array('type'=>'VARCHAR(255)'),
@@ -44,6 +45,8 @@ class PickupOrdersModel extends BasicModel
     'storeID' => array('type'=>'INT'),
     'status' => array('type'=>'VARCHAR(255)'),
     'cardNo' => array('type'=>'INT'),
+    'placedDate' => array('type'=>'VARCHAR(255)'),
+    'curbside' => array('type'=>'TINYINT', 'default'=>1),
     );
 }
 

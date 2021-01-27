@@ -328,7 +328,6 @@ class ObfSummaryReport extends ObfWeeklyReportV2
             'end_ly' => $end_ly,
             'averageWeek' => false,
         );
-        var_dump(date('Y-m-d', $dateInfo['start_ly']));
         if (count($num_cached) == 0 || count($ly_cached) == 0) {
             $this->updateSalesCache($week, array($num_cached, $ly_cached), $dateInfo);
         }

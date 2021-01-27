@@ -14,6 +14,12 @@ if (!class_exists('IncidentsModel')) {
 if (!class_exists('IncidentCommentsModel')) {
     include(__DIR__ . '/models/IncidentCommentsModel.php');
 }
+if (!class_exists('Gohanman\\Otto\\Otto')) {
+    include(__DIR__ . '/../Otto/noauto/Otto.php');
+}
+if (!class_exists('Gohanman\\Otto\\Message')) {
+    include(__DIR__ . '/../Otto/noauto/Message.php');
+}
 
 class AlertIncident extends FannieRESTfulPage
 {
@@ -203,7 +209,67 @@ class AlertIncident extends FannieRESTfulPage
         $modP = $this->connection->prepare('UPDATE Incidents SET modified=? WHERE incidentID=?');
         $this->connection->execute($modP, array(date('Y-m-d H:i:s'), $this->id));
 
+        $this->sendNotifications($this->id);
+
         return 'AlertIncident.php?id=' . $this->id;
+    }
+
+    private function sendNotifications($id)
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
+        try {
+            $incident = $this->getIncident($id);
+            $comments = $this->getComments($id, false);
+            $settings = $this->config->get('PLUGIN_SETTINGS');
+            $prefix = $settings['IncidentDB'] . $this->connection->sep();
+            $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=1");
+            while ($row = $this->connection->fetchRow($res)) {
+                try {
+                    switch (strtolower($row['method'])) {
+                        case 'slack':
+                            $slack = new Slack();
+                            $slack->send($incident, $row['address']);
+                            break;
+                        case 'basecamp':
+                            $bc = new Basecamp();
+                            // disabled for now; needs to convert $incident array into a formatted string
+                            //$bc->send($incident, $row['address']);
+                            break;
+                        case 'email':
+                            $email = new Email();
+                            $email->send($incident, $row['address']);
+                            break;
+                        case 'teams':
+                            $otto = new Gohanman\Otto\Otto($row['address']);
+                            $msg = new Gohanman\Otto\Message();
+                            $msg->title = 'Alert #' . $id;
+                            $body = "**Date**: {$incident['tdate']}\n\n"
+                                . "**Type**: {$incident['incidentSubType']}\n\n"
+                                . "**Store**: {$incident['storeName']}\n\n"
+                                . "**Location**: {$incident['incidentLocation']}\n\n"
+                                . "**Entered By**: {$incident['userName']}\n\n"
+                                . "**Called Police**: {$incident['police']}\n\n"
+                                . "**Requested Trespass**: {$incident['trespass']}\n\n"
+                                . "**Details**:\n\n"
+                                . $incident['details'];
+                            if (count($comments) > 0) {
+                                $body .= "\n\n";
+                                foreach ($comments as $c) {
+                                    $body .= "**Comment on**: " . $c['tdate'] . "\n\n"
+                                        . "**Entered By**: {$c['userName']}\n\n"
+                                        . $c['comment'] . "\n\n";
+                                }
+                            }
+                            $msg->body($body);
+                            $ottoResult = $otto->post($msg);
+                            break;
+                    }
+                } catch (Exception $ex) {}
+            }
+        } catch (Exception $ex) {
+            // something went wrong here and the new incident doesn't exist
+            // letting the redirect happen is OK since it'll show an error
+        }
     }
 
     protected function delete_id_handler()
@@ -278,6 +344,7 @@ class AlertIncident extends FannieRESTfulPage
             $prefix = $settings['IncidentDB'] . $this->connection->sep();
             $res = $this->connection->query("SELECT * FROM {$prefix}IncidentNotifications WHERE incidentTypeID=1");
             while ($row = $this->connection->fetchRow($res)) {
+                $this->logger->debug(print_r($row, true));
                 try {
                     switch (strtolower($row['method'])) {
                         case 'slack':
@@ -286,11 +353,28 @@ class AlertIncident extends FannieRESTfulPage
                             break;
                         case 'basecamp':
                             $bc = new Basecamp();
-                            $bc->send($incident, $row['address']);
+                            // disabled for now
+                            //$bc->send($incident, $row['address']);
                             break;
                         case 'email':
                             $email = new Email();
                             $email->send($incident, $row['address']);
+                            break;
+                        case 'teams':
+                            $otto = new Gohanman\Otto\Otto($row['address']);
+                            $msg = new Gohanman\Otto\Message();
+                            $msg->title = 'Alert #' . $id;
+                            $body = "**Date**: {$incident['tdate']}\n\n"
+                                . "**Type**: {$incident['incidentSubType']}\n\n"
+                                . "**Store**: {$incident['storeName']}\n\n"
+                                . "**Location**: {$incident['incidentLocation']}\n\n"
+                                . "**Entered By**: {$incident['userName']}\n\n"
+                                . "**Called Police**: {$incident['police']}\n\n"
+                                . "**Requested Trespass**: {$incident['trespass']}\n\n"
+                                . "**Details**:\n\n"
+                                . $incident['details'];
+                            $msg->body($body);
+                            $ottoResult = $otto->post($msg);
                             break;
                     }
                 } catch (Exception $ex) {}
@@ -303,7 +387,7 @@ class AlertIncident extends FannieRESTfulPage
         return 'AlertIncident.php?id=' . $id;
     }
 
-    protected function getComments($id)
+    protected function getComments($id, $reverse=true)
     {
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $prefix = $settings['IncidentDB'] . $this->connection->sep();
@@ -313,7 +397,7 @@ class AlertIncident extends FannieRESTfulPage
             FROM {$prefix}IncidentComments AS i
                 LEFT JOIN Users as u ON i.userID=u.uid
             WHERE incidentID=?
-            ORDER BY tdate DESC";
+            ORDER BY tdate " . ($reverse ? 'DESC' : 'ASC');
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array($id));
         $ret = array();

@@ -13,6 +13,13 @@ class QueueManager
      */
     private $running = false;
 
+    private $logger;
+
+    public function __construct()
+    {
+        $this->logger = new FannieLogger();
+    }
+
     /**
      * Get a connection to Redis server
      */
@@ -107,6 +114,9 @@ class QueueManager
     {
         if ($this->running) {
             echo $msg ."\n";
+        } else {
+            // turn on for debugging
+            //$this->logger->info($msg);
         }
     }
 

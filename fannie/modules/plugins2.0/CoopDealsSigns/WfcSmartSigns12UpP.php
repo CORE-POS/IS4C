@@ -47,6 +47,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             WHERE upc = ?;");
         $organicLocalP = $dbc->prepare("SELECT 'true' FROM products WHERE numflag & (1<<16) != 0 AND upc = ? AND local > 0");
         $organicP = $dbc->prepare("SELECT 'true' FROM products WHERE numflag & (1<<16) != 0 AND upc = ?");
+        $localP = $dbc->prepare("SELECT 'true' FROM products WHERE local > 0 AND upc = ?");
 
         $data = $this->loadItems();
         $count = 0;
@@ -77,6 +78,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             $item['basic'] = $dbc->getValue($basicP, $item['upc']);
             $item['organicLocal'] = $dbc->getValue($organicLocalP, $item['upc']);
             $item['organic'] = $dbc->getValue($organicP, $item['upc']);
+            $item['local'] = $dbc->getValue($localP, $item['upc']);
 
             $pdf->Image($this->getTopImage($item), ($left-1) + ($width*$column), ($top-19) + ($row*$height), 62.67);
             $pdf->Image($this->getBottomImage($item), ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-4), 62.67);
@@ -100,6 +102,8 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             return __DIR__ . '/noauto/images/local_og_top.png';
         } elseif ($item['organic']) {
             return __DIR__ . '/noauto/images/organic_top_12.png';
+        } elseif ($item['local']) {
+            return __DIR__ . '/noauto/images/local-top.png';
         }
 
         return __DIR__ . '/noauto/images/standard_top_12.png';
@@ -117,7 +121,10 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             return __DIR__ . '/noauto/images/local_og_bottom.png';
         } elseif ($item['organic']) {
             return __DIR__ . '/noauto/images/organic_bottom_12.png';
+        } elseif ($item['local']) {
+            return __DIR__ . '/noauto/images/local-bottom.png';
         }
+
 
 
         return __DIR__ . '/noauto/images/standard_bottom_12.png';

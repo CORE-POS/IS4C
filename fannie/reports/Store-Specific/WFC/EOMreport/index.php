@@ -237,6 +237,55 @@ if (!$output || isset($_REQUEST['recache'])){
         } 
         $supers[$s][1] += $w[4];
     }
+    if ($store == 50) {
+        $depts = array();
+        $amts = array(
+            '41201-1' => 0,
+            '41201-2' => 0,
+            '41205-1' => 0,
+            '41205-2' => 0,
+            '41600-1' => 0,
+            '41600-2' => 0,
+        );
+        $webQ="select t.department,
+        s.superID,
+        d.salesCode,d.dept_name,
+        SUM(t.total),
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+        FROM $dlog as t 
+            INNER JOIN departments as d ON t.department = d.dept_no
+            LEFT JOIN MasterSuperDepts AS s ON s.dept_ID = d.dept_no    
+        WHERE tdate BETWEEN ? AND ?
+            AND " . DTrans::isStoreID($store, 't') . "
+            AND t.department <> 0
+            AND s.superID > 0
+            AND t.trans_type <> 'T'
+            AND t.trans_type IN ('I', 'D')
+        GROUP BY
+        s.superID,t.department,d.dept_name,d.salesCode,
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+        order by s.superID,t.department";
+        $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE trans_subtype='CM' AND description LIKE '%STORE%'
+            AND tdate BETWEEN ? AND ? AND emp_no=? AND register_no=? AND trans_no=?");
+        $webP = $dbc->prepare($webQ);
+        $webR = $dbc->execute($webP, $args);
+        while ($row = $dbc->fetchRow($webR)) {
+            $key = $row['salesCode'] . '-';
+            $tdate = date('Y-m-d', mktime(0, 0, 0, $row[6], $row[7], $row[5]));
+            $storeCM = $dbc->getValue($storeP, array($tdate, $tdate . ' 23:59:59', $row['emp_no'], $row['register_no'], $row['trans_no']));
+            list(,$storeID) = explode(' ', $storeCM);
+            $key .= $storeID;
+            $amts[$key] += $row[4];
+        }
+        $depts = array(
+            array(80, 3, '41205-01-20', 'DOutsideBakery', $amts['41205-1']),
+            array(80, 3, '41205-02-20', 'DOutsideBakery', $amts['41205-2']),
+            array(83, 3, '41201-01-20', 'DTHANKSGIVING', $amts['41201-1']),
+            array(83, 3, '41201-02-20', 'DTHANKSGIVING', $amts['41201-2']),
+            array(83, 3, '41600-01-20', 'BREAD', $amts['41600-1']),
+            array(83, 3, '41600-02-20', 'BREAD', $amts['41600-2']),
+        );
+    }
     unset($supers[0]);
     select_to_table3($depts,5,0,'ffffff');
     echo '<b>Total Sales by Group</b>';
@@ -286,7 +335,9 @@ if (!$output || isset($_REQUEST['recache'])){
     echo 'Member Sales';
     echo '<br>------------------------------';
     echo '<table><td width=120><u><font size=2><b>Mem Type</b></u></font></td>
-          <td width=120><u><font size=2><b>Sales</b></u></font></td></table>';
+          <td width=120><u><font size=2><b>Sales</b></u></font></td>
+          <td width=120><u><font size=2><b>Transactions</b></u></font></td>
+        </table>';
     $prep = $dbc->prepare($query13);
     $res = $dbc->execute($prep, $args);
     $mems = array();
@@ -295,7 +346,48 @@ if (!$output || isset($_REQUEST['recache'])){
         $mems[] = $w;
         $ttl += $w[1];
     }
-    select_to_table3($mems,2,0,'ffffff');
+    $query13 = "SELECT   m.memDesc,SUM(d.total) AS Sales,
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+    FROM         $dlog d INNER JOIN
+                  custdata c ON d.card_no = c.CardNo INNER JOIN
+                  memtype m ON c.memType = m.memtype
+    WHERE d.tdate BETWEEN ? AND ?
+        AND " . DTrans::isStoreID($store, 'd') . "
+    AND (d.department < 600) AND d.department <> 0 AND (c.personnum= 1 or c.personnum is null)
+    AND d.trans_type <> 'T'
+    GROUP BY m.memDesc,
+        YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+    ORDER BY m.memDesc";
+    if ($store == 50) {
+        $storeP = $dbc->prepare("SELECT description FROM {$dlog} WHERE trans_subtype='CM' AND description LIKE '%STORE%'
+            AND tdate BETWEEN ? AND ? AND emp_no=? AND register_no=? AND trans_no=?");
+        $prep = $dbc->prepare($query13);
+        $res = $dbc->execute($prep, $args);
+        $mSums = array();
+        $mCounts = array();
+        while ($w = $dbc->fetchRow($res)) {
+            $key = $w['memDesc'];
+            $tdate = date('Y-m-d', mktime(0, 0, 0, $w[3], $w[4], $w[2]));
+            $storeCM = $dbc->getValue($storeP, array($tdate, $tdate . ' 23:59:59', $w['emp_no'], $w['register_no'], $w['trans_no']));
+            list(,$storeID) = explode(' ', $storeCM);
+            if ($storeID == 1) {
+                $key .= ' HS';
+            } elseif ($storeID == 2) {
+                $key .= ' DN';
+            }
+            if (!isset($mSums[$key])) {
+                $mSums[$key] = 0;
+                $mCounts[$key] = 0;
+            }
+            $mSums[$key] += $w[1];
+            $mCounts[$key] += 1;
+        }
+        $mems = array();
+        foreach ($mSums as $k => $v) {
+            $mems[] = array($k, $v, $mCounts[$k]);
+        }
+    }
+    select_to_table3($mems,3,0,'ffffff');
     select_to_table3(array(array($ttl)),1,0,'ffffff');
     echo '<br>';
     echo 'Nabs';
@@ -345,6 +437,132 @@ if (!$output || isset($_REQUEST['recache'])){
 }
 echo $output;
 
+    $sql = FannieDB::get($FANNIE_OP_DB);
+    if ($store == 50) {
+        for ($i=1; $i<=2; $i++) {
+            $tranP = $sql->prepare("SELECT YEAR(tdate), MONTH(tdate), DAY(tdate), emp_no, register_no, trans_no
+                FROM {$dlog} WHERE trans_subtype='CM' AND description='STORE {$i}'
+                    AND tdate BETWEEN ? AND ?
+                    AND " . DTrans::isStoreID($store));
+            $tranR = $sql->execute($tranP, $args);
+            $collected = array(1 => 0, 2 => 0);
+            $taxP = $sql->prepare("SELECT total FROM {$dlog} WHERE tdate BETWEEN ? AND ?
+                    AND emp_no=? AND register_no=? AND trans_no=? AND upc='TAX'");
+            while ($w = $sql->fetchRow($tranR)) {
+                $tdate = date('Y-m-d', mktime(0, 0, 0, $w[1], $w[2], $w[0]));
+                $tax = $sql->getValue($taxP, array($tdate, $tdate . ' 23:59:59', $w['emp_no'], $w['register_no'], $w['trans_no']));
+                $collected[2] += $tax;
+            }
+            $state = 0.06875;
+            $city = 0.015;
+            $deli = 0.0225;
+            $county = 0.005;
+            $startDT = new DateTime($start);
+            $noCounty = new DateTime('2017-10-01');
+            if ($startDT >= $noCount) {
+                //$county = 0;
+            }
+            echo '<table border="1" cellspacing="0" cellpadding="4">';
+            echo '<tr><th colspan="4">' . ($i == 1 ? 'Hillside' : 'Denfeld') . ' Sales Tax</th></tr>';
+            echo '<tr><th>Tax Collected on Regular rate items</th>
+                    <th>' . sprintf('%.2f', $collected[1]) . '</th>
+                    <th>Regular Taxable Sales</th>
+                    <th>' . sprintf('%.2f', $collected[1]/($state+$city+$county)) . '</th>
+                    </tr>';
+            $stateTax = $collected[1] * ($state/($state+$city+$county));
+            $cityTax = $collected[1] * ($city/($state+$city+$county));
+            $countyTax = $collected[1] * ($county/($state+$city+$county));
+            echo '<tr>
+                <td align="right">State Tax Amount</td>
+                <td>' . sprintf('%.2f', $stateTax) . '</td>
+                <td align="right">State Taxable Sales</td>
+                <td>' . sprintf('%.2f', $stateTax / $state) . '</td>
+                </tr>';
+            echo '<tr>
+                <td align="right">City Tax Amount</td>
+                <td>' . sprintf('%.2f', $cityTax) . '</td>
+                <td align="right">City Taxable Sales</td>
+                <td>' . sprintf('%.2f', $cityTax / $city) . '</td>
+                </tr>';
+            echo '<tr>
+                <td align="right">County Tax Amount</td>
+                <td>' . sprintf('%.2f', $countyTax) . '</td>
+                <td align="right">County Taxable Sales</td>
+                <td>' . sprintf('%.2f', $countyTax / $county) . '</td>
+                </tr>';
+
+            echo '<tr><th>Tax Collected on Deli rate items</th>
+                    <th>' . sprintf('%.2f', $collected[2]) . '</th>
+                    <th>Deli Taxable Sales</th>
+                    <th>' . sprintf('%.2f', $collected[2]/($state+$city+$deli+$county)) . '</th>
+                    </tr>';
+            $stateTax = $collected[2] * ($state/($state+$city+$deli+$county));
+            $cityTax = $collected[2] * ($city/($state+$city+$deli+$county));
+            $deliTax = $collected[2] * ($deli/($state+$city+$deli+$county));
+            $countyTax = $collected[2] * ($county/($state+$city+$deli+$county));
+            echo '<tr>
+                <td align="right">State Tax Amount</td>
+                <td>' . sprintf('%.2f', $stateTax) . '</td>
+                <td align="right">State Taxable Sales</td>
+                <td>' . sprintf('%.2f', $stateTax / $state) . '</td>
+                </tr>';
+            echo '<tr>
+                <td align="right">City Tax Amount</td>
+                <td>' . sprintf('%.2f', $cityTax) . '</td>
+                <td align="right">City Taxable Sales</td>
+                <td>' . sprintf('%.2f', $cityTax / $city) . '</td>
+                </tr>';
+            echo '<tr>
+                <td align="right">County Tax Amount</td>
+                <td>' . sprintf('%.2f', $countyTax) . '</td>
+                <td align="right">County Taxable Sales</td>
+                <td>' . sprintf('%.2f', $countyTax / $county) . '</td>
+                </tr>';
+            echo '<tr>
+                <td align="right">Deli Tax Amount</td>
+                <td>' . sprintf('%.2f', $deliTax) . '</td>
+                <td align="right">Deli Taxable Sales</td>
+                <td>' . sprintf('%.2f', $deliTax / $deli) . '</td>
+                </tr>';
+
+            $stateTax = ($collected[1] * ($state/($state+$city+$county))) 
+                        + ($collected[2] * ($state/($state+$city+$deli+$county)));
+            $cityTax = ($collected[1] * ($city/($state+$city+$county))) 
+                        + ($collected[2] * ($city/($state+$city+$deli+$county)));
+            $countyTax = ($collected[1] * ($county/($state+$city+$county))) 
+                        + ($collected[2] * ($county/($state+$city+$deli+$county)));
+            $deliTax = $collected[2] * ($deli/($state+$city+$deli+$county));
+            echo '<tr><th colspan="4">State Totals</th></tr>';
+            echo '<tr>
+                <td align="right">Tax Collected</td>
+                <td>' . sprintf('%.2f', $stateTax) . '</td>
+                <td align="right">Taxable Sales</td>
+                <td>' . sprintf('%.2f', $stateTax / $state) . '</td>
+                </tr>';
+            echo '<tr><th colspan="4">City Totals</th></tr>';
+            echo '<tr>
+                <td align="right">Tax Collected</td>
+                <td>' . sprintf('%.2f', $cityTax) . '</td>
+                <td align="right">Taxable Sales</td>
+                <td>' . sprintf('%.2f', $cityTax / $city) . '</td>
+                </tr>';
+            echo '<tr><th colspan="4">County Totals</th></tr>';
+            echo '<tr>
+                <td align="right">Tax Collected</td>
+                <td>' . sprintf('%.2f', $countyTax) . '</td>
+                <td align="right">Taxable Sales</td>
+                <td>' . sprintf('%.2f', $countyTax / $county) . '</td>
+                </tr>';
+            echo '<tr><th colspan="4">Deli Totals</th></tr>';
+            echo '<tr>
+                <td align="right">Tax Collected</td>
+                <td>' . sprintf('%.2f', $deliTax) . '</td>
+                <td align="right">Taxable Sales</td>
+                <td>' . sprintf('%.2f', $deliTax / $deli) . '</td>
+                </tr>';
+            echo '</table><br />';
+        }
+    } else {
     $newTaxQ = 'SELECT MAX(description) AS description,
                     SUM(regPrice) AS ttl,
                     numflag AS taxID
@@ -354,7 +572,6 @@ echo $output;
                     AND upc=\'TAXLINEITEM\'
                     AND ' . DTrans::isNotTesting() . '
                 GROUP BY taxID';
-    $sql = FannieDB::get($FANNIE_OP_DB);
     $prep = $sql->prepare($newTaxQ);
     $res = $sql->execute($prep, $args);
     $collected = array(1 => 0.00, 2=>0.00);
@@ -468,4 +685,5 @@ echo $output;
         <td>' . sprintf('%.2f', $deliTax / $deli) . '</td>
         </tr>';
     echo '</table>';
+    }
 

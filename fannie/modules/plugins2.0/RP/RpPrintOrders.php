@@ -121,6 +121,9 @@ class RpPrintOrders extends FannieRESTfulPage
             $organic = $this->connection->getValue($orgP, array(str_replace('LC', '', $row['upc'])));
             $map = $this->connection->getValue($mapP, array(str_replace('LC', '', $row['upc'])));
             $lcName = $this->connection->getValue($lcP, array($likecode));
+            if (!is_numeric($likecode)) {
+                $lcName = $row['vendorItem'];
+            }
             if ($row['brand'] && $row['vendorName'] == 'Direct Produce') {
                 $row['vendorName'] = $row['brand'];
                 $suffix = ' (ea)';

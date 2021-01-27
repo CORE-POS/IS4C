@@ -65,6 +65,20 @@ class PickupOrders extends FannieRESTfulPage
         return 'ViewPickups.php?id=' . $orderID;
     }
 
+    protected function get_id_handler()
+    {
+        $id = trim($this->id);
+        if (!preg_match('/^\d+-\d+$/', $id)) {
+            $order = new PickupOrdersModel($this->connection);
+            $order->pickupOrderID($this->id);
+            if ($order->load()) {
+                return 'ViewPickups.php?id=' . $this->id;
+            }
+        }
+
+        return true;
+    }
+
     protected function get_id_view()
     {
         $id = trim($this->id);
@@ -226,6 +240,9 @@ HTML;
         return <<<HTML
 <p>
     <a href="ViewPickups.php" class="btn btn-default">View Orders</a>
+</p>
+<p>
+    <a href="PickupOrdersReport.php" class="btn btn-default">Orders Report</a>
 </p>
 <p>
     <a href="PickupEnabledPage.php" class="btn btn-default">Manage Item Listings</a>

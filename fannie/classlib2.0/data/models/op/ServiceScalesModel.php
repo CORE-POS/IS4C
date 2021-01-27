@@ -40,6 +40,7 @@ class ServiceScalesModel extends BasicModel
     'epDeptNo' => array('type'=>'SMALLINT', 'default'=>1),
     'epStoreNo' => array('type'=>'SMALLINT', 'default'=>0),
     'epScaleAddress' => array('type'=>'SMALLINT', 'default'=>1),
+    'storeID' => array('type'=>'INT'),
     );
 
     public function doc()

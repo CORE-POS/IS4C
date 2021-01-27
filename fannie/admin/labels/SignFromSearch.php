@@ -389,8 +389,6 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
         $ret .= '</form>';
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.js');
-        $this->addScript('../../src/javascript/chkboxMulticlick.js');
-        $this->addOnloadCommand('allow_group_select_checkboxes("printSignTable")');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
 
         return $ret;
@@ -463,6 +461,42 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $("#signform").submit();
         }
     }
+
+
+var lastChecked = null;
+var i = 0;
+var indexCheckboxes = function(){
+    $(':checkbox').each(function(){
+        $(this).attr('data-index', i);
+        i++;
+    });
+};
+indexCheckboxes();
+$('table').click(function(){
+    indexCheckboxes();
+});
+$(':checkbox').on("click", function(e){
+    if(lastChecked && e.shiftKey) {
+        var i = parseInt(lastChecked.attr('data-index'));
+        var j = parseInt($(this).attr('data-index'));
+        var checked = $(this).is(":checked");
+
+        var low = i;
+        var high = j;
+        if (i>j){
+            var low = j;
+            var high = i;
+        }
+
+        for(var c = low; c < high; c++) {
+            if (c != low && c!= high) {
+                var check = checked ? true : false;
+                $('input[data-index="'+c+'"').prop("checked", check);
+            }
+        }
+    }
+    lastChecked = $(this);
+});
 JAVASCRIPT;
     }
 

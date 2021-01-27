@@ -37,6 +37,7 @@ class EWicItemsModel extends BasicModel
     'alias' => array('type'=>'VARCHAR(13)'),
     'eWicCategoryID' => array('type'=>'INT'),
     'eWicSubCategoryID' => array('type'=>'INT'),
+    'broadband' => array('type'=>'TINYINT', 'default'=>1),
     );
 
     public function doc()
