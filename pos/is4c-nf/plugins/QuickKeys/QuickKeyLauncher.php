@@ -40,7 +40,7 @@ class QuickKeyLauncher extends Parser
             $this->mode = 'overlay';
         }
 
-        $len = count($tmp);
+        $len = $tmp === false ? 0 : count($tmp);
         if ($tmp && $len <= 2 && is_numeric($tmp[$len-1])) {
             return true;
         } else {
