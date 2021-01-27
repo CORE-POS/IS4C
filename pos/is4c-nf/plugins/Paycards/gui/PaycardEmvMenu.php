@@ -210,7 +210,7 @@ class PaycardEmvMenu extends NoInputCorePage
         <?php } ?>
         <p>
             <button class="pos-button" type="submit">Select [enter]</button>
-            <button class="pos-button" type="submit" onclick="$('#selectlist').val('');">
+            <button class="pos-button" type="submit" onclick="$('#selectlist option:selected').val('');">
                 Cancel [clear]
             </button>
         </p>
