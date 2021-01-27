@@ -187,11 +187,11 @@ class PaycardEmvWic extends PaycardProcessPage
         */
         $categories = array();
         foreach ($arr as $balanceRecord) {
-            if (isset($balanceRecord['subcat'])) {
+            if (isset($balanceRecord['subcat']) && $balanceRecord['qty'] > 0) {
                 $key = $balanceRecord['cat']['eWicCategoryID']
                     . ':' . $balanceRecord['subcat']['eWicSubCategoryID'];
                 $categories[$key] = $balanceRecord['qty'];
-            } else {
+            } elseif ($balanceRecord['qty'] > 0) {
                 $key = $balanceRecord['cat']['eWicCategoryID'];
                 $categories[$key] = $balanceRecord['qty'];
             }
@@ -206,13 +206,14 @@ class PaycardEmvWic extends PaycardProcessPage
         $couponP = $dbc->prepare("SELECT SUM(total) FROM localtemptrans WHERE upc LIKE ?");
         $res = $dbc->query('SELECT SUM(t.quantity) AS qty, SUM(t.total) AS ttl,
             CASE WHEN e.alias IS NOT NULL THEN e.alias ELSE e.upc END AS upc,
-            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID,
+            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID, e.broadband, e.multiplier,
             MAX(discountable) AS discountable, MAX(percentDiscount) AS percentDiscount
             FROM localtemptrans AS t
                 INNER JOIN ' . $this->conf->get('pDatabase') . $dbc->sep() . 'EWicItems AS e ON t.upc=e.upc
             GROUP BY
             CASE WHEN e.alias IS NOT NULL THEN e.alias ELSE e.upc END,
-            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID');
+            e.upcCheck, e.eWicCategoryID, e.eWicSubCategoryID, e.broadband, e.multiplier
+            ORDER BY e.broadband, e.multiplier DESC');
         $i = 1;
         $total = 0;
         $couponCache = array();
@@ -250,7 +251,7 @@ class PaycardEmvWic extends PaycardProcessPage
             */
             $add = false;
             $key = $row['eWicCategoryID'];
-            if (isset($categories[$key]) && $categories[$key] > 0) {
+            if ($row['broadband'] && isset($categories[$key]) && $categories[$key] > 0) {
                 $add = true;
             } else {
                 $key = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
@@ -258,29 +259,32 @@ class PaycardEmvWic extends PaycardProcessPage
                     $add = true;
                 }
             }
-            if ($add) {
-                $ret .= "<{$tag}{$i}>{$upc}</{$tag}{$i}>";
-            }
             if ($add && $row['eWicCategoryID'] == 19) {
                 if ($row['ttl'] > $categories[$key]) {
                     $row['ttl'] = $categories[$key];
                 }
+                $ret .= "<{$tag}{$i}>{$upc}</{$tag}{$i}>";
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['ttl']) . "</ItemQty{$i}>";
                 $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', 1) . "</ItemPrice{$i}>";
                 $i++;
                 $total += $row['ttl'];
                 $categories[$key] -= $row['ttl'];
             } elseif ($add) {
-                if ($row['qty'] > $categories[$key]) {
+                while ($row['qty'] * $row['multiplier'] > $categories[$key]) {
                     $price = $row['ttl'] / $row['qty'];
-                    $row['qty'] = $categories[$key];
-                    $row['ttl'] = $price * $row['qty'];
+                    $row['qty'] -= 1;
+                    $row['ttl'] -= $price;
                 }
+                // package size exceeds remaing quantity
+                if ($row['qty'] <= 0) {
+                    continue;
+                }
+                $ret .= "<{$tag}{$i}>{$upc}</{$tag}{$i}>";
                 $ret .= "<ItemQty{$i}>" . sprintf('%.2f', $row['qty']) . "</ItemQty{$i}>";
                 $ret .= "<ItemPrice{$i}>" . sprintf('%.2f', $row['ttl'] / $row['qty']) . "</ItemPrice{$i}>";
                 $i++;
                 $total += $row['ttl'];
-                $categories[$key] -= $row['qty'];
+                $categories[$key] -= $row['qty'] * $row['multiplier'];
             }
         }
         $this->conf->set('paycard_amount', $total);
@@ -390,7 +394,7 @@ function checkForCancel(ev) {
                 $msg .= $line['qty'] . ' ' . $line['cat']['name'] . '<br />';
             }
             $msg .= '</div>';
-            echo PaycardLib::paycardMsgBox('Current Balance', $msg, '[enter] to continue, [clear] to cancel');
+            echo PaycardLib::paycardMsgBox('Current Balance', $msg, 'wait for customer to continue, [clear] to cancel');
         }
         echo '</div>';
     }
