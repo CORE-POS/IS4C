@@ -9,8 +9,11 @@ class WicReceiptMessage extends ReceiptMessage
 {
     public $standalone_receipt_type = 'wicSlip';
 
+    private $balanceOnly = false;
+
     public function standalone_receipt($ref, $reprint=False)
     {
+        $this->balanceOnly = true;
         return 
             ReceiptLib::printReceiptHeader(time(), $ref)
             . $this->message(1, $ref, $reprint)
@@ -21,7 +24,7 @@ class WicReceiptMessage extends ReceiptMessage
             . ReceiptLib::centerString("................................................")."\n";
     }
 
-    private function potentialItems($wicData)
+    public function potentialItems($wicData)
     {
         $ret = "";
         $categories = array();
@@ -37,17 +40,73 @@ class WicReceiptMessage extends ReceiptMessage
         }
 
         $dbc = Database::tDataConnect();
-        $res = $dbc->query('SELECT t.upc, description, eWicCategoryID, eWicSubCategoryID 
+        $appliedP = $dbc->prepare("
+            SELECT c.trans_id
+            FROM couponApplied AS c
+                INNER JOIN localtemptrans AS t ON c.trans_id=t.trans_id
+            WHERE t.upc=?");
+        $couponP = $dbc->prepare("SELECT SUM(total) FROM localtemptrans WHERE upc LIKE ?");
+        $res = $dbc->query('SELECT t.upc, SUM(quantity) AS qty, SUM(total) AS ttl, description, eWicCategoryID, eWicSubCategoryID, e.broadband,
+                MAX(discountable) AS discountable, MAX(percentDiscount) AS percentDiscount, t.upc, e.multiplier
             FROM localtemptrans AS t
                 INNER JOIN ' . CoreLocal::get('pDatabase') . $dbc->sep() . 'EWicItems AS e ON t.upc=e.upc
-            GROUP BY upc, description, eWicCategoryID, eWicSubCategoryID
+            GROUP BY upc, description, eWicCategoryID, eWicSubCategoryID, e.broadband, t.upc, e.multiplier
             HAVING SUM(total) > 0
-            ORDER BY MIN(t.trans_id)');
+            ORDER BY e.broadband, e.multiplier DESC');
+        $couponCache = array();
         while ($row = $dbc->fetchRow($res)) {
-            $key1 = $row['eWicCategoryID'];
-            $key2 = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
-            if (isset($categories[$key1]) || isset($categories[$key2])) {
-                $ret .= $row['description'] . "\n";
+            $manu = substr($row['upc'], 3, 5);
+            if ($manu != '00000' && !isset($couponCache[$manu])) {
+                $couponApplied = $dbc->getValue($appliedP, array($row['upc']));
+                if ($couponApplied) {
+                    $couponValue = $dbc->getValue($couponP, array('005' . $manu . '%'));
+                    $row['ttl'] += $couponValue; // coupons are negative
+                    if ($row['ttl'] < 0.005) { // coupon made item free
+                        continue;
+                    }
+                }
+                $couponCache[$manu] = true;
+            }
+            if ($row['discountable'] && $row['percentDiscount']) {
+                $row['ttl'] *= (1 - ($row['percentDiscount'] / 100));
+            }
+            /**
+                Check if the whole category is available. If not
+                check whether the specific subcategory is availble.
+                Keep $key to later decrement the appropriate quantity
+            */
+            $add = false;
+            $key = $row['eWicCategoryID'];
+            if ($row['broadband'] && isset($categories[$key]) && $categories[$key] > 0) {
+                $add = true;
+            } else {
+                $key = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
+                if (isset($categories[$key]) && $categories[$key] > 0) {
+                    $add = true;
+                }
+            }
+            if ($add) {
+                if ($row['eWicCategoryID'] == 19) {
+                    if ($row['ttl'] > $categories[$key]) {
+                        $row['ttl'] = $categories[$key];
+                    }
+                    $categories[$key] -= $row['ttl'];
+                } else {
+                    while ($row['qty'] * $row['multiplier'] > $categories[$key]) {
+                        $price = $row['ttl'] / $row['qty'];
+                        $row['qty'] -= 1;
+                        $row['ttl'] -= $price;
+                    }
+                    // package size exceeds remaing quantity
+                    if ($row['qty'] <= 0) {
+                        continue;
+                    }
+                    $categories[$key] -= $row['qty'] * $row['multiplier'];
+                }
+                $ret .= str_pad($row['description'], 36, ' ', STR_PAD_RIGHT)
+                    . str_pad($row['qty'] . 'x', 8, ' ', STR_PAD_LEFT)
+                    . str_pad($row['ttl'], 8, ' ', STR_PAD_LEFT)
+                    . "\n";
             }
         }
 
@@ -95,12 +154,13 @@ class WicReceiptMessage extends ReceiptMessage
                   ORDER BY p.requestDatetime";
         $result = $dbc->query($query);
         $prevRefNum = false;
+        $prevMode = false;
         while ($row = $dbc->fetchRow($result)) {
 
             // failover to mercury's backup server can
             // result in duplicate refnums. this is
             // by design (theirs, not CORE's)
-            if ($row['refNum'] == $prevRefNum) {
+            if ($row['refNum'] == $prevRefNum && $row['ebtMode'] == $prevMode) {
                 continue;
             }
             $slip .= ReceiptLib::centerString("................................................")."\n";
@@ -122,6 +182,10 @@ class WicReceiptMessage extends ReceiptMessage
             $slip .= ReceiptLib::centerString("................................................")."\n";
 
             $prevRefNum = $row['refNum'];
+        }
+
+        if ($this->balanceOnly) {
+            $slip = '';
         }
 
         $dbc = Database::tDataConnect();
