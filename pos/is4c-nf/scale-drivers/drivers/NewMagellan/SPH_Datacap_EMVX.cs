@@ -46,6 +46,7 @@ public class SPH_Datacap_EMVX : SerialPortHandler
     private DsiPDCX pdc_ax_control = null;
     private string device_identifier = null;
     private string com_port = "0";
+    private string device_ip = "";
     protected string server_list = "x1.mercurypay.com;x2.backuppay.com";
     protected int LISTEN_PORT = 8999; // acting as a Datacap stand-in
     protected short CONNECT_TIMEOUT = 60;
@@ -69,6 +70,12 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             string[] parts = p.Split(new char[]{':'}, 2);
             device_identifier = parts[0];
             com_port = parts[1];
+            Console.WriteLine(com_port);
+            if (System.Text.RegularExpressions.Regex.IsMatch(parts[1], @"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")) {
+                Console.WriteLine("Is an IP Address");
+                com_port = "1";
+                this.device_ip = parts[1];
+            }
         }
 
         string my_location = AppDomain.CurrentDomain.BaseDirectory;
@@ -482,6 +489,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
         if (this.terminalID.Length > 0) {
             xml = xml.Replace("{{TerminalID}}", this.terminalID);
         }
+        if (this.device_ip.Length > 0) {
+            xml = xml.Replace("<ComPort>1</ComPort>", "<ComPort>1</ComPort><PinPadIpAddress>" + this.device_ip + "</PinPadIpAddress><PinPadIpPort>12000</PinPadIpPort>");
+        }
 
         try {
             /**
@@ -593,6 +603,9 @@ public class SPH_Datacap_EMVX : SerialPortHandler
             xml = xml.Replace("{{ComPort}}", com_port);
             if (this.terminalID.Length > 0) {
                 xml = xml.Replace("{{TerminalID}}", this.terminalID);
+            }
+            if (this.device_ip.Length > 0) {
+                xml = xml.Replace("<ComPort>1</ComPort>", "<ComPort>1</ComPort><PinPadIpAddress>" + this.device_ip + "</PinPadIpAddress><PinPadIpPort>12000</PinPadIpPort>");
             }
 
             ret = pdc_ax_control.ProcessTransaction(xml, 1, null, null);
