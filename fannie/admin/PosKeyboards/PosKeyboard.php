@@ -20,11 +20,6 @@ class PosKeyboard extends FanniePage
     protected $fontSize = 8;
     protected $connection;
 
-    public function __construct($dbc)
-    {
-        $this->connection = $dbc;
-    }
-
     public function drawPDF($dbc)
     {
         $keySize = 15;
