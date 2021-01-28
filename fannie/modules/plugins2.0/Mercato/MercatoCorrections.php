@@ -29,7 +29,7 @@ class MercatoCorrections extends FannieRESTfulPage
                 AND emp_no=?
                 AND register_no=?
                 AND trans_no=?
-                AND upc='0000000000000'
+                AND (upc='0000000000000' OR department IS NULL)
                 AND trans_id=?");
         $fix2P = $this->connection->prepare("UPDATE " . FannieDB::fqn('transarchive', 'trans') . "
             SET department=?, description=?, upc=?
@@ -37,7 +37,7 @@ class MercatoCorrections extends FannieRESTfulPage
                 AND emp_no=?
                 AND register_no=?
                 AND trans_no=?
-                AND upc='0000000000000'
+                AND (upc='0000000000000' OR department IS NULL)
                 AND trans_id=?");
         $fix3P = $this->connection->prepare("UPDATE " . FannieDB::fqn('bigArchive', 'arch') . "
             SET department=?, description=?, upc=?
@@ -45,7 +45,7 @@ class MercatoCorrections extends FannieRESTfulPage
                 AND emp_no=?
                 AND register_no=?
                 AND trans_no=?
-                AND upc='0000000000000'
+                AND (upc='0000000000000' OR department IS NULL)
                 AND trans_id=?");
 
         $fixArgs = array(
@@ -97,7 +97,7 @@ HTML;
             WHERE trans_type='I'
                 AND register_no=40
                 AND total <> 0
-                AND upc='0000000000000'
+                AND (upc='0000000000000' OR department is NULL)
         ");
         $ret = '<ul>';
         while ($row = $this->connection->fetchRow($res)) {
