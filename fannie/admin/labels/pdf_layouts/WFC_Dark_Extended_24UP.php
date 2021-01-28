@@ -227,7 +227,10 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
     /*
         Add Description Text
     */
-    $strlen = (strlen($lines[0]) > strlen($lines[1])) ? strlen($lines[0]) : strlen($lines[1]);
+    $strlen = strlen($lines[0]);
+    if (isset($lines[1]) && strlen($lines[1]) > $strlen) {
+        $strlen = strlen($lines[1]);
+    }
     if ($strlen >= 30) {
         $pdf->SetFont('Gill','B', 9);
     } elseif ($strlen > 20 && $strlen < 30) {
