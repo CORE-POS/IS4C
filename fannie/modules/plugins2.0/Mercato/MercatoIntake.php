@@ -180,6 +180,7 @@ class MercatoIntake
                     break;
                 case 'SALE FEE': // intentional fallthrough
                 case 'PROCESSING FEE':
+                case 'PER ORDER FEE':
                 case 'SALE REFUND':
                     $total = $data[$this->COL_AMT];
                     $dtrans['upc'] = $total . 'DP802';
