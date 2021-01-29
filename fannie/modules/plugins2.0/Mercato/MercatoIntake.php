@@ -113,6 +113,7 @@ class MercatoIntake
                     $dtrans['trans_subtype'] = 'OG';
                     $dtrans['trans_status'] = 'D';
                     $dtrans['regPrice'] = $actualOne;
+                    $dtrans['numflag'] = 1;
                     $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
                     $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
                     $this->dbc->execute($insP, $prep['arguments']);
@@ -131,6 +132,7 @@ class MercatoIntake
                     $dtrans['trans_subtype'] = 'OG';
                     $dtrans['trans_status'] = 'D';
                     $dtrans['regPrice'] = $actualTwo;
+                    $dtrans['numflag'] = 2;
                     $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
                     $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
                     $this->dbc->execute($insP, $prep['arguments']);
@@ -264,6 +266,7 @@ class MercatoIntake
             $dtrans['trans_subtype'] = 'OG';
             $dtrans['trans_status'] = 'D';
             $dtrans['regPrice'] = $actualOne;
+            $dtrans['numflag'] = 1;
             $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
@@ -282,6 +285,7 @@ class MercatoIntake
             $dtrans['trans_subtype'] = 'OG';
             $dtrans['trans_status'] = 'D';
             $dtrans['regPrice'] = $actualTwo;
+            $dtrans['numflag'] = 2;
             $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
