@@ -36,6 +36,8 @@ class LocalMixReport extends FannieReportPage
     public $required_fields = array();
     protected $title = "Fannie : Local Item Mix Report";
     protected $header = "Local Item Mix Report";
+    protected $no_sort_but_style = true;
+    protected $sortable = false;
 
     private $localSettings = array();
     protected $report_headers = array('Vendor', 'Brand', '# Non-Local');
@@ -68,11 +70,12 @@ class LocalMixReport extends FannieReportPage
         $vendorQ = '
             SELECT ' . $localCols . '
                 COALESCE(v.vendorName, \'\') AS vendor,
+                v.vendorID,
                 SUM(CASE WHEN p.local=0 THEN 1 ELSE 0 END) AS nonLocal,
                 COUNT(*) AS numItems
             FROM products AS p
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
-            GROUP BY COALESCE(v.vendorName, \'\')
+            GROUP BY COALESCE(v.vendorName, \'\'), v.vendorID
             ORDER BY COUNT(*) DESC';
         $vendorR = $dbc->query($vendorQ);
 
@@ -82,7 +85,7 @@ class LocalMixReport extends FannieReportPage
                 SUM(CASE WHEN p.local=0 THEN 1 ELSE 0 END) AS nonLocal
             FROM products AS p
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
-            WHERE v.vendorName=?
+            WHERE p.default_vendor_id=?
             GROUP BY COALESCE(p.brand, \'\')
             ORDER BY COALESCE(p.brand, \'\')');
 
@@ -115,7 +118,7 @@ class LocalMixReport extends FannieReportPage
             }
             $record['meta'] = FannieReportPage::META_BOLD;
             $data[] = $record;
-            $brandR = $dbc->execute($brandP, array($vendorW['vendor'], $vendorW['vendor']));
+            $brandR = $dbc->execute($brandP, array($vendorW['vendorID']));
             while ($brandW = $dbc->fetch_row($brandR)) {
                 $has_local = false;
                 foreach ($this->localSettings as $id => $name) {
