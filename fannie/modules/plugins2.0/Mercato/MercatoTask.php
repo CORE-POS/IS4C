@@ -43,6 +43,8 @@ class MercatoTask extends FannieTask
             }
             if (strlen($upc) > 6 && substr($upc, -6) != '000000') {
                 $upc = substr($upc, 0, strlen($upc) - 1);
+            } elseif (strlen($upc) == 5 && $upc[0] == 9) {
+                $upc = substr($upc, 1);
             }
             $upc = BarcodeLib::padUPC($upc);
             $info = $dbc->getRow($deptP, array($upc, $storeID));
@@ -69,7 +71,7 @@ class MercatoTask extends FannieTask
             fwrite($out, ($data[11] > 0 ? 'Y' : 'N') . ",");
             fwrite($out, $info['department'] . "\r\n");
 
-            if ($info['special_price'] < $data[1]) {
+            if ($info['special_price'] > 0 && $info['special_price'] < $data[1]) {
                 fwrite($saleOut, $upc . ",");
                 fwrite($saleOut, date('n/j/Y', strtotime($info['start_date'])) . ",");
                 fwrite($saleOut, date('n/j/Y', strtotime($info['end_date'])) . ",");
@@ -145,7 +147,7 @@ class MercatoTask extends FannieTask
         }
 
         //unlink($outputFile);
-        unlink($saleFile);
+        //unlink($saleFile);
     }
 }
 
