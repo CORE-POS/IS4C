@@ -30,14 +30,14 @@ class HobartDgwLib
       @param $item_info [keyed array] of value. Keys correspond to WRITE_ITEM_FIELDS
       @return [string] CSV formatted line
     */
-    static public function getItemLine($item_info)
+    static public function getItemLine($item_info, $scaleType='HOBART_QUANTUMTCP')
     {
         $line = '';
         // first write fields that are present
         foreach(ServiceScaleLib::$WRITE_ITEM_FIELDS as $key => $field_info) {
             if (isset($item_info[$key])) {
                 if ($key == 'Label') {
-                    $labelInfo = ServiceScaleLib::labelTranslate($item_info['Label'], 'HOBART_QUANTUMTCP');
+                    $labelInfo = ServiceScaleLib::labelTranslate($item_info['Label'], $scaleType);
                     $item_info['Label'] = $labelInfo['labelType'];
                 }
                 if (isset($field_info['quoted']) && $field_info['quoted']) {
@@ -135,11 +135,12 @@ class HobartDgwLib
         foreach ($selected_scales as $scale) {
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $counter . '.csv';
             $fp = fopen($file_name, 'w');
+            $realType = $scale['type'] == 'HOBART_QUANTUMTCP2' ? 'HOBART_QUANTUMTCP' : $scale['type'];
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
-            fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
+            fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$realType},SCALE\r\n");
             fwrite($fp, $header_line);
             foreach($items as $item) {
-                $item_line = self::getItemLine($item);
+                $item_line = self::getItemLine($item, $scale['type']);
                 fwrite($fp, $item_line);
             }
             fclose($fp);
@@ -152,7 +153,7 @@ class HobartDgwLib
             $et_file = sys_get_temp_dir() . '/' . $file_prefix . '_exText' . $counter . '.csv';
             $fp = fopen($et_file, 'w');
             fwrite($fp,"Record Type,Task Department,Task Destination,Task Destination Device,Task Destination Type\r\n");
-            fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$scale['type']},SCALE\r\n");
+            fwrite($fp, "ExecuteOneTask,{$scale['dept']},{$scale['host']},{$realType},SCALE\r\n");
             $has_et = false;
             foreach($items as $item) {
                 if (isset($item['ExpandedText']) && isset($item['PLU'])) {
