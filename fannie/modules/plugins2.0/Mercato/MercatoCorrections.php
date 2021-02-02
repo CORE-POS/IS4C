@@ -97,7 +97,7 @@ HTML;
             WHERE trans_type='I'
                 AND register_no=40
                 AND total <> 0
-                AND (upc='0000000000000' OR department is NULL)
+                AND (upc='0000000000000' OR department is NULL OR upc LIKE '%,%')
         ");
         $ret = '<ul>';
         while ($row = $this->connection->fetchRow($res)) {
