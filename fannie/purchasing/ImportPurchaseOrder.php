@@ -219,6 +219,7 @@ class ImportPurchaseOrder extends \COREPOS\Fannie\API\FannieUploadPage
             }
             $item->unitCost($unitCost);
             $item->caseSize($caseSize);
+            $item->unitSize($unitSize);
             $item->brand($brand);
             $item->description($desc);
             $item->internalUPC($upc);
