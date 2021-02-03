@@ -286,7 +286,7 @@ if (strlen($empty) > 2){
 }
 
 $yesterday = date('Y-m-d', strtotime('yesterday'));
-$superID = 4;
+$superID = 3;
 
 $prep = $sql->prepare("SELECT order_id FROM PendingSpecialOrder WHERE trans_id=0
     AND datetime BETWEEN ? AND ?");
@@ -311,11 +311,12 @@ $prep = $sql->prepare("SELECT specialOrderID, storeID FROM SpecialOrders
     GROUP BY specialOrderID, storeID");
 $orders = $sql->getAllRows($prep, $args);
 foreach ($orders as $row) {
-    $addr = $row['storeID'] == 1 ? 'andy' : 'andy';
+    $addrP = $sql->prepare("SELECT emailAddress FROM superDeptEmails WHERE superID=?");
+    $addr = $sql->getValue($addrP, array($superID));
     $msg_body = 'New Deli Special Order' . "\n\n";
     $msg_body .= "http://" . FannieConfig::config('HTTP_HOST') . '/' . FannieConfig::config('URL')
         . "ordering/OrderViewPage.php?orderID=".$row['specialOrderID']."\n\n";
     $subject = "New Special Order";
-    mail($addr . '@wholefoods.coop',$subject,$msg_body);
+    mail($addr,$subject,$msg_body);
 }
 
