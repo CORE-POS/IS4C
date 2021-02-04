@@ -30,7 +30,7 @@ class MercatoIntake
     public function process($filename)
     {
         $fp = fopen($filename, 'r');
-        $currentOrder = array('id' => false, 'total' => 0, 'tax' => 0);
+        $currentOrder = array('id' => false, 'total' => 0, 'tax' => 0, 'card_no' => 11, 'memType'=>0);
         $trans_id = 1;
         $taxable = array(1 => 0, 2 => 0);
         $storeID = 0;
@@ -62,7 +62,8 @@ class MercatoIntake
                     $dtrans['register_no'] = 40;
                     $dtrans['trans_no'] = $currentOrder['id'];
                     $dtrans['trans_id'] = $trans_id;
-                    $dtrans['card_no'] = 11;
+                    $dtrans['card_no'] = $currentOrder['card_no'];
+                    $dtrans['memType'] = $currentOrder['memType'];
                     $dtrans['upc'] = '0';
                     $dtrans['description'] = 'Mercato Tender';
                     $dtrans['trans_type'] = 'T';
@@ -90,7 +91,8 @@ class MercatoIntake
                     $dtrans['register_no'] = 40;
                     $dtrans['trans_no'] = $currentOrder['id'];
                     $dtrans['trans_id'] = $trans_id;
-                    $dtrans['card_no'] = 11;
+                    $dtrans['card_no'] = $currentOrder['card_no'];
+                    $dtrans['memType'] = $currentOrder['memType'];
                     $dtrans['upc'] = 'TAX';
                     $dtrans['description'] = 'Tax';
                     $dtrans['trans_type'] = 'A';
@@ -106,7 +108,8 @@ class MercatoIntake
                     $dtrans['register_no'] = 40;
                     $dtrans['trans_no'] = $currentOrder['id'];
                     $dtrans['trans_id'] = $trans_id;
-                    $dtrans['card_no'] = 11;
+                    $dtrans['card_no'] = $currentOrder['card_no'];
+                    $dtrans['memType'] = $currentOrder['memType'];
                     $dtrans['upc'] = 'TAXLINEITEM';
                     $dtrans['description'] = sprintf('%.5f', $rates[1]['rate']*100) . ' ' . $rates[1]['description'];
                     $dtrans['trans_type'] = 'L';
@@ -125,7 +128,8 @@ class MercatoIntake
                     $dtrans['register_no'] = 40;
                     $dtrans['trans_no'] = $currentOrder['id'];
                     $dtrans['trans_id'] = $trans_id;
-                    $dtrans['card_no'] = 11;
+                    $dtrans['card_no'] = $currentOrder['card_no'];
+                    $dtrans['memType'] = $currentOrder['memType'];
                     $dtrans['upc'] = 'TAXLINEITEM';
                     $dtrans['description'] = sprintf('%.5f', $rates[2]['rate']*100) . ' ' . $rates[2]['description'];
                     $dtrans['trans_type'] = 'L';
@@ -141,6 +145,12 @@ class MercatoIntake
                 $currentOrder['id'] = $mOrderID;
                 $currentOrder['total'] = 0;
                 $currentOrder['tax'] = 0;
+                $currentOrder['card_no'] = 11;
+                $owner = $this->findOwner($this->dbc, $currentOrder['id'], $storeID);
+                if ($owner != false) {
+                    $currentOrder['card_no'] = $owner;
+                    $currentOrder['memType'] = $this->getMemType($this->dbc, $owner);
+                }
                 $taxable = array(1 => 0, 2 => 0);
                 $trans_id = 1;
             }
@@ -150,9 +160,10 @@ class MercatoIntake
             $dtrans['store_id'] = $storeID;
             $dtrans['emp_no'] = '1001';
             $dtrans['register_no'] = 40;
-            $dtrans['trans_no'] = $mOrderID;
+            $dtrans['trans_no'] = $currentOrder['id'];
             $dtrans['trans_id'] = $trans_id;
-            $dtrans['card_no'] = 11;
+            $dtrans['card_no'] = $currentOrder['card_no'];
+            $dtrans['memType'] = $currentOrder['memType'];
 
             switch (strtoupper($data[$this->COL_ROWTYPE])) {
                 case 'SALE ITEM':
@@ -183,6 +194,7 @@ class MercatoIntake
                 case 'SALE FEE': // intentional fallthrough
                 case 'PROCESSING FEE':
                 case 'PER ORDER FEE':
+                case 'PROMO CODE':
                 case 'SALE REFUND':
                     $total = $data[$this->COL_AMT];
                     $dtrans['upc'] = $total . 'DP802';
@@ -215,7 +227,8 @@ class MercatoIntake
             $dtrans['register_no'] = 40;
             $dtrans['trans_no'] = $currentOrder['id'];
             $dtrans['trans_id'] = $trans_id;
-            $dtrans['card_no'] = 11;
+            $dtrans['card_no'] = $currentOrder['card_no'];
+            $dtrans['memType'] = $currentOrder['memType'];
             $dtrans['upc'] = '0';
             $dtrans['description'] = 'Mercato Tender';
             $dtrans['trans_type'] = 'T';
@@ -243,7 +256,8 @@ class MercatoIntake
             $dtrans['register_no'] = 40;
             $dtrans['trans_no'] = $currentOrder['id'];
             $dtrans['trans_id'] = $trans_id;
-            $dtrans['card_no'] = 11;
+            $dtrans['card_no'] = $currentOrder['card_no'];
+            $dtrans['memType'] = $currentOrder['memType'];
             $dtrans['upc'] = 'TAX';
             $dtrans['description'] = 'Tax';
             $dtrans['trans_type'] = 'A';
@@ -259,7 +273,8 @@ class MercatoIntake
             $dtrans['register_no'] = 40;
             $dtrans['trans_no'] = $currentOrder['id'];
             $dtrans['trans_id'] = $trans_id;
-            $dtrans['card_no'] = 11;
+            $dtrans['card_no'] = $currentOrder['card_no'];
+            $dtrans['memType'] = $currentOrder['memType'];
             $dtrans['upc'] = 'TAXLINEITEM';
             $dtrans['description'] = sprintf('%.5f', $rates[1]['rate']*100) . ' ' . $rates[1]['description'];
             $dtrans['trans_type'] = 'L';
@@ -278,7 +293,8 @@ class MercatoIntake
             $dtrans['register_no'] = 40;
             $dtrans['trans_no'] = $currentOrder['id'];
             $dtrans['trans_id'] = $trans_id;
-            $dtrans['card_no'] = 11;
+            $dtrans['card_no'] = $currentOrder['card_no'];
+            $dtrans['memType'] = $currentOrder['memType'];
             $dtrans['upc'] = 'TAXLINEITEM';
             $dtrans['description'] = sprintf('%.5f', $rates[2]['rate']*100) . ' ' . $rates[2]['description'];
             $dtrans['trans_type'] = 'L';
@@ -291,5 +307,39 @@ class MercatoIntake
             $this->dbc->execute($insP, $prep['arguments']);
             $trans_id++;
         }
+    }
+
+    private function findOwner($dbc, $orderID, $storeID)
+    {
+        $prep = $dbc->prepare("SELECT phone FROM MercatoOrders WHERE storeID=? AND orderID=?"); 
+        $phone = $dbc->getValue($prep, array($storeID, $orderID)); 
+        if (!$phone) {
+            return false;
+        }
+
+        $findP = $dbc->prepare("SELECT card_no FROM meminfo AS m
+            WHERE (phone LIKE ? OR email_2 LIKE ?)");
+        $arg = '%' . str_replace(' ', '%', $phone) . '%';
+        $found = $dbc->getAllValues($findP, array($arg, $arg));
+        if (count($found) == 0) {
+            return false;
+        } elseif (count($found) == 1) {
+            return $found[0];
+        }
+
+        list($inStr, $args) = $dbc->safeInClause($found);
+        $prep = $dbc->prepare("SELECT CardNo FROM custdata WHERE CardNo IN ({$inStr}) AND personNum=1 AND Type='PC'");
+        $mult = $dbc->getAllValues($prep, $args);
+        if (count($mult) == 1) {
+            return $mult[0];
+        }
+
+        return false;
+    }
+
+    private function getMemType($dbc, $card)
+    {
+        $prep = $dbc->prepare("SELECT memType FROM custdata WHERE CardNo=?");
+        return $dbc->getValue($prep, array($card));
     }
 }
