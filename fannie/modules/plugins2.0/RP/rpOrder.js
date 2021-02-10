@@ -150,7 +150,10 @@ var rpOrder = (function ($) {
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
                 if (state['orderAmt'][elemID] !== '') {
-                    document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                    var field = document.getElementById(elemID);
+                    if (field) {
+                        field.value = Number(state['orderAmt'][elemID]);
+                    }
                 }
             }
 
@@ -166,7 +169,10 @@ var rpOrder = (function ($) {
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
                 if (state['orderAmt'][elemID] !== '') {
-                    document.getElementById(elemID).value = Number(state['orderAmt'][elemID]);
+                    var field = document.getElementById(elemID);
+                    if (field) {
+                        field.value = Number(state['orderAmt'][elemID]);
+                    }
                 }
             }
         }

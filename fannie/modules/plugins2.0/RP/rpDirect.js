@@ -156,7 +156,10 @@ var rpOrder = (function ($) {
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
                 if (state['directAmt'][elemID] !== '') {
-                    document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
+                    var field = document.getElementById(elemID);
+                    if (field) {
+                        field.value = Number(state['directAmt'][elemID]);
+                    }
                 }
             }
 
@@ -172,7 +175,10 @@ var rpOrder = (function ($) {
             for (i=0; i<pIDs.length; i++) {
                 var elemID = pIDs[i];
                 if (state['priFarms'][elemID] !== '') {
-                    document.getElementById(elemID).value = state['priFarms'][elemID];
+                    var field = document.getElementById(elemID);
+                    if (field) {
+                        field.value = state['priFarms'][elemID];
+                    }
                 }
             }
 
@@ -180,7 +186,10 @@ var rpOrder = (function ($) {
             for (i=0; i<sIDs.length; i++) {
                 var elemID = sIDs[i];
                 if (state['secFarms'][elemID] !== '') {
-                    document.getElementById(elemID).value = state['secFarms'][elemID];
+                    var field = document.getElementById(elemID);
+                    if (field) {
+                        field.value = state['secFarms'][elemID];
+                    }
                 }
             }
 
@@ -188,7 +197,10 @@ var rpOrder = (function ($) {
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
                 if (state['directAmt'][elemID] !== '') {
-                    document.getElementById(elemID).value = Number(state['directAmt'][elemID]);
+                    var field = document.getElementById(elemID);
+                    if (field) {
+                        field.value = Number(state['directAmt'][elemID]);
+                    }
                 }
             }
         }
