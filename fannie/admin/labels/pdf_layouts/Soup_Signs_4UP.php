@@ -118,11 +118,16 @@ function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         $wrapB = wordwrap($brand, 50, "\n");
         $expB = explode("\n", $wrapB);
 
-        $pdf->SetXY($x-1,$y+29);
-        $pdf->Cell($width, 4, $expB[0], 0, 1, 'C', true); 
+        if (count($expB) > 1) {
+            $pdf->SetXY($x-1,$y+29);
+            $pdf->Cell($width, 4, $expB[0], 0, 1, 'C', true); 
 
-        $pdf->SetXY($x-1,$y+34);
-        $pdf->Cell($width, 4, $expB[1], 0, 1, 'C', true); 
+            $pdf->SetXY($x-1,$y+34);
+            $pdf->Cell($width, 4, $expB[1], 0, 1, 'C', true); 
+        } else {
+            $pdf->SetXY($x-1,$y+34);
+            $pdf->Cell($width, 4, $expB[0], 0, 1, 'C', true); 
+        }
     }
 
     /*
