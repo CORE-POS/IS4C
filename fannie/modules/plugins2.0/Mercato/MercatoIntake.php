@@ -30,7 +30,7 @@ class MercatoIntake
     public function process($filename)
     {
         $fp = fopen($filename, 'r');
-        $currentOrder = array('id' => false, 'total' => 0, 'tax' => 0, 'card_no' => 11, 'memType'=>0);
+        $currentOrder = array('id' => false, 'total' => 0, 'tax' => 0, 'card_no' => 11, 'memType'=>0, 'tdate' => '');
         $trans_id = 1;
         $taxable = array(1 => 0, 2 => 0);
         $storeID = 0;
@@ -69,7 +69,7 @@ class MercatoIntake
                     $dtrans['trans_type'] = 'T';
                     $dtrans['trans_subtype'] = 'ME';
                     $dtrans['total'] = -1 * $currentOrder['total'];
-                    $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
+                    $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
                     $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
                     $this->dbc->execute($insP, $prep['arguments']);
                     $trans_id++;
@@ -97,7 +97,7 @@ class MercatoIntake
                     $dtrans['description'] = 'Tax';
                     $dtrans['trans_type'] = 'A';
                     $dtrans['total'] = $actualOne + $actualTwo;
-                    $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
+                    $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
                     $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
                     $this->dbc->execute($insP, $prep['arguments']);
                     $trans_id++;
@@ -117,7 +117,7 @@ class MercatoIntake
                     $dtrans['trans_status'] = 'D';
                     $dtrans['regPrice'] = $actualOne;
                     $dtrans['numflag'] = 1;
-                    $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
+                    $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
                     $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
                     $this->dbc->execute($insP, $prep['arguments']);
                     $trans_id++;
@@ -137,15 +137,18 @@ class MercatoIntake
                     $dtrans['trans_status'] = 'D';
                     $dtrans['regPrice'] = $actualTwo;
                     $dtrans['numflag'] = 2;
-                    $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
+                    $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
                     $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
                     $this->dbc->execute($insP, $prep['arguments']);
                     $trans_id++;
+                } else {
+                    echo "No total on transaction " . $currentOrder['id'] . "\n";
                 }
                 $currentOrder['id'] = $mOrderID;
                 $currentOrder['total'] = 0;
                 $currentOrder['tax'] = 0;
                 $currentOrder['card_no'] = 11;
+                $currentOrder['tdate'] = $local;
                 $owner = $this->findOwner($this->dbc, $currentOrder['id'], $storeID);
                 if ($owner != false) {
                     $currentOrder['card_no'] = $owner;
@@ -168,9 +171,16 @@ class MercatoIntake
             switch (strtoupper($data[$this->COL_ROWTYPE])) {
                 case 'SALE ITEM':
                     $upc = BarcodeLib::padUPC($data[$this->COL_UPC]);
+                    if ($upc == '0000000000000' && is_numeric($data[$this->COL_UPC - 1])) {
+                        $upc = BarcodeLib::padUPC($data[$this->COL_UPC - 1]);
+                    }
                     $qty = $data[$this->COL_QTY];
                     $total = $data[$this->COL_AMT];
                     $item = $this->dbc->getRow($itemP, array($upc));
+                    if ($item === false) {
+                        $upc = '0' . substr($upc, 0, 12);
+                        $item = $this->dbc->getRow($itemP, array($upc));
+                    }
                     if ($item['tax']) {
                         $taxable[$item['tax']] += $total;
                     }
@@ -234,7 +244,7 @@ class MercatoIntake
             $dtrans['trans_type'] = 'T';
             $dtrans['trans_subtype'] = 'ME';
             $dtrans['total'] = -1 * $currentOrder['total'];
-            $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
+            $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
             $trans_id++;
@@ -262,7 +272,7 @@ class MercatoIntake
             $dtrans['description'] = 'Tax';
             $dtrans['trans_type'] = 'A';
             $dtrans['total'] = $actualOne + $actualTwo;
-            $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
+            $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
             $trans_id++;
@@ -282,7 +292,7 @@ class MercatoIntake
             $dtrans['trans_status'] = 'D';
             $dtrans['regPrice'] = $actualOne;
             $dtrans['numflag'] = 1;
-            $prep = DTrans::parameterize($dtrans, 'datetime', $local->format("'Y-m-d H:i:s'"));
+            $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
             $trans_id++;
