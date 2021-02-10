@@ -148,6 +148,7 @@ class MercatoIntake
                 $currentOrder['total'] = 0;
                 $currentOrder['tax'] = 0;
                 $currentOrder['card_no'] = 11;
+                $currentOrder['memType'] = 0;
                 $currentOrder['tdate'] = $local;
                 $owner = $this->findOwner($this->dbc, $currentOrder['id'], $storeID);
                 if ($owner != false) {
