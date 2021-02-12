@@ -720,7 +720,7 @@ HTML;
             {$subOpts}
         </select>
     </td>
-    <th class="small text-right">SKU</th>
+    <th class="small text-right sku-label" ondblclick="baseItem.toggleSkuOverride();">SKU</th>
     <td colspan="2">
         <input type="text" name="vendorSKU" value="{$rowItem['sku']}" 
             class="form-control input-sm sku-field syncable-input"
@@ -860,6 +860,7 @@ HTML;
         <input type="text" name="newVendorName" id="newVendorName" class="form-control" />
     </fieldset>
 </div>
+<input type="hidden" value="0" id="skuOverride" name="skuOverride" />
 </div> <!-- end panel-body -->
 </div> <!-- end panel-->
 HTML;
@@ -1149,6 +1150,7 @@ HTML;
             $sku = trim($this->form->vendorSKU);
             $caseSize = $this->form->caseSize;
             $alias = $this->form->isAlias;
+            $override = $this->form->skuOverride;
             if ($alias) {
                 return true;
             }
@@ -1163,7 +1165,7 @@ HTML;
             $chkP = $dbc->prepare("SELECT upc FROM vendorItems
                 WHERE sku=? AND vendorID=? AND upc <> ?");
             $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
-            if ($chk) {
+            if ($chk && $override == 0) {
                 // bail out. same sku cannot be assigned to multiple items
                 return true;
             }

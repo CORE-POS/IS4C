@@ -237,5 +237,18 @@ var baseItem = (function() {
         return true;
     };
 
+    mod.toggleSkuOverride = function() {
+        console.log($('#skuOverride').val());
+        if ($('#skuOverride').val() == 1) {
+            console.log('event off');
+            $('#skuOverride').val(0);
+            $('th.sku-label').removeClass('success');
+        } else {
+            console.log('event on');
+            $('#skuOverride').val(1);
+            $('th.sku-label').addClass('success');
+        }
+    };
+
     return mod;
 }());
