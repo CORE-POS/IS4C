@@ -155,6 +155,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         foreach ($storeIngredients as $id => $text) {
             $ret .= '<div role="tabpanel" class="tab-pane ' . ($selfStore == $id ? 'active' : '') . '" id="si-store-' . $id . '">';
             $ret .= '<input type="hidden" name="s_text_id[]" value="' . $id . '" />';
+            $ret .= '<input type="hidden" name="s_text_hash[]" value="' . md5($storeIngredients[$id]) . '" />';
             $ret .= "<textarea name=s_text[] rows=4 cols=45 class=\"form-control s_text\" onkeyup=\"scaleItem.countField('s_text', 'expLength');\">";
             $ret .= $storeIngredients[$id];
             $ret .= "</textarea>";
@@ -345,6 +346,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $item_info['ByCount'] = 0;
         }
 
+        $hashes = FormLib::get('s_text_hash');
         for ($i=0; $i<count($textID); $i++) {
             $ing = new ScaleIngredientsModel($dbc);
             $ing->upc($upc);
@@ -352,6 +354,15 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $ing->ingredients($text[$i]);
             $ing->save();
             $item_info['ExpandedText' . $textID[$i]] = $text[$i];
+            if (md5($text[$i]) != $hashes[$i]) {
+                $history = new ScaleIngredientHistoryModel($dbc);
+                $history->upc($upc);
+                $history->storeID($textID[$i]);
+                $history->ingredients($text[$i]);
+                $history->tdate(date('Y-m-d H:i:s'));
+                $history->userID(FannieAuth::getUID());
+                $history->save();
+            }
         }
 
         $scales = array();
@@ -426,11 +437,11 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 $repr = array(
                     'host' => $model->host(),
                     'dept' => $model->scaleDeptName(),
-                    'type' => $model->scaleType(),  
+                    'type' => $model->scaleType(),
                     'new' => false,
                 );
                 $scales[] = $repr;
-
+               
                 $dbc->execute($delP, array($mapW['serviceScaleID'], $upc));
             }
             if (count($scales) > 0) {
