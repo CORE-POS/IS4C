@@ -90,7 +90,7 @@ class WicMnAplTask extends FannieTask
             $item = rtrim(substr($line, 29, 50));
             $catID = substr($line, 79, 2);
             $cat = substr($line, 81, 50);
-            $subID = substr($line, 131, 4);
+            $subID = substr($line, 131, 3);
             $sub = rtrim(substr($line, 134, 50));
             $unit = substr($line, 184, 3);
             $mult = substr($line, 197, 7);
