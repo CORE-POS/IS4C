@@ -173,6 +173,14 @@ class HobartDgwLib
                         $item['OriginText'] = '';
                     }
                     $realText = str_replace('{cool}', $item['OriginText'], $realText);
+                    if (isset($item['Reheat']) && $item['Reheat']) {
+                        $realText .= "\nReheat product to an internal temperature of 165" . chr(176) . " F before consumption";
+                    }
+
+                    $utf8degree = chr(194) . chr(176);
+                    $iso85591degree = chr(176);
+                    $realText = str_replace($utf8degree, $iso85591degree, $realText);
+
                     $text = '';
                     foreach (explode("\n", $realText) as $line) {
                         $text .= wordwrap($line, 50, "\n") . "\n";

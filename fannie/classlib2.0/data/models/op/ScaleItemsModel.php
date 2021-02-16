@@ -47,6 +47,7 @@ class ScaleItemsModel extends BasicModel
     'linkedPLU' => array('type'=>'VARCHAR(13)'),
     'mosaStatement' => array('type'=>'TINYINT', 'default'=>0),
     'originText' => array('type'=>'VARCHAR(100)'),
+    'reheat' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     protected $preferred_db = 'op';

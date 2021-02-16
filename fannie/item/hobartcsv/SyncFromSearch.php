@@ -207,6 +207,7 @@ class SyncFromSearch extends FannieRESTfulPage
             'ByCount' => $model->bycount(),
             'OriginText' => $model->originText(),
             'MOSA' => $model->mosaStatement(),
+            'Reheat' => $model->reheat(),
         );
         if ($model->netWeight() != 0) {
             $item_info['NetWeight'] = $model->netWeight();

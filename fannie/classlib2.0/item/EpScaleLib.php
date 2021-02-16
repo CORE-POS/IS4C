@@ -114,7 +114,11 @@ class EpScaleLib
             $item_info['OriginText'] = '';
         }
         $text = str_replace('{cool}', $item_info['OriginText'], $text);
+        if (isset($item_info['Reheat']) && $item_info['Reheat']) {
+            $text .= "\nReheat product to an internal temperature of 165" . chr(176) . " F before consumption";
+        }
         $text = str_replace("\r", '', $text);
+
         return str_replace("\n", chr(0xE), $text);
     }
 

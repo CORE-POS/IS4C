@@ -33,7 +33,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $r = $dbc->execute($p,array($upc));
         $scale = array('itemdesc'=>'','weight'=>0,'bycount'=>0,'tare'=>0,
             'shelflife'=>0,'label'=>133,'graphics'=>0,'text'=>'', 'netWeight'=>0,
-            'mosaStatement'=>0, 'originText'=>'', 'price'=>0);
+            'mosaStatement'=>0, 'originText'=>'', 'price'=>0, 'reheat'=>0);
         $found = false;
         if ($dbc->num_rows($r) > 0) {
             $scale = $dbc->fetch_row($r);
@@ -143,6 +143,8 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '<b>Ingredients (<span id="expLength">' . strlen($measure) . '</span>):
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <label><input type="checkbox" id="si_sync" ' . $siSynced . ' /> Sync</label>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="../reports/ScaleIngredientHistory/ScaleIngredientHistoryReport.php?upc=' . $upc . '">Edit History</a>
             <br />
             <ul class="nav nav-tabs" role="tablist">';
         foreach ($stores as $id => $store) {
@@ -178,6 +180,10 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             <button type="button" class="btn btn-default btn-sm" onclick="scaleItem.appendScaleTag(\'cool\'); return false;">COOL</button>
             <input type="text" class="form-control" name="scale_origin" value="' . $scale['originText'] . '" 
                 placeholder="Country of origin text" />
+            </div>';
+        $ret .= '<div class="form-group">
+            <label><input type="checkbox" name="s_reheat" value="1" ' . ($scale['reheat'] ? 'checked' : '') . ' />
+            Include reheat line</label>
             </div>';
         $ret .= '</div>';
         $scales = new ServiceScalesModel($dbc);
@@ -312,6 +318,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $scaleItem->linkedPLU(BarcodeLib::padUPC($linkedPLU));
         $scaleItem->mosaStatement(FormLib::get('scale_mosa',false) ? 1 : 0);
         $scaleItem->originText(FormLib::get('scale_origin'));
+        $scaleItem->reheat(FormLib::get('s_reheat',false) ? 1 : 0);
         $scaleItem->save();
 
         // extract scale PLU
@@ -329,6 +336,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             'ByCount' => $bycount,
             'OriginText' => $scaleItem->originText(),
             'MOSA' => $scaleItem->mosaStatement(),
+            'Reheat' => $scaleItem->reheat(),
             'inUse' => count($inUse) == 0 ? 0 : 1,
         );
         $item_info['NetWeight'] = $netWeight;
