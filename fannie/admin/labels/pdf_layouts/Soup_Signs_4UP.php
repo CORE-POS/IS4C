@@ -143,8 +143,11 @@ function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $y = $y+40;
     $x = $x+10;
     foreach ($exp as $k => $str) {
+        /* Leave capitalization as entered by user
         $str = strtolower($str);
         $str = ucwords($str);
+        $str = str_replace("*=organic", "*=Organic", $str);
+         */
         $str = preg_replace( "/\r|\n/", "", $str);
         $mod = 4.3 * $k;
         $pdf->SetXY($x+5, $y+$mod);
