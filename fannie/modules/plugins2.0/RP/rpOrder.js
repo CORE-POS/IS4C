@@ -28,6 +28,7 @@ var rpOrder = (function ($) {
                 $('input#newUPC').val(data.upc);
                 $('input#newSKU').val(data.sku);
                 $('input#newCase').val(data.caseSize);
+                $('input#newLC').val(data.likeCode);
             },
             minLength: 3
         });
