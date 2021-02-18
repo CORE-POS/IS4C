@@ -311,10 +311,10 @@ $prep = $sql->prepare("SELECT specialOrderID, storeID FROM SpecialOrders
     GROUP BY specialOrderID, storeID");
 $orders = $sql->getAllRows($prep, $args);
 foreach ($orders as $row) {
-    $addrP = $sql->prepare("SELECT emailAddress FROM superDeptEmails WHERE superID=?");
+    $addrP = $sql->prepare("SELECT emailAddress FROM " . FannieDB::fqn('superDeptEmails', 'op') . " WHERE superID=?");
     $addr = $sql->getValue($addrP, array($superID));
     $msg_body = 'New Deli Special Order' . "\n\n";
-    $msg_body .= "http://" . FannieConfig::config('HTTP_HOST') . '/' . FannieConfig::config('URL')
+    $msg_body .= "http://" . FannieConfig::config('HTTP_HOST') . FannieConfig::config('URL')
         . "ordering/OrderViewPage.php?orderID=".$row['specialOrderID']."\n\n";
     $subject = "New Special Order";
     mail($addr,$subject,$msg_body);
