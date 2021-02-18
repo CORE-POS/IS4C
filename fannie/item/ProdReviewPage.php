@@ -229,7 +229,7 @@ HTML;
             $data[$vid]['score'] = Op::div($row['good'], $row['total']);
             if ($data[$vid]['priority'] == 0) {
                 $data[$vid]['priority'] = 1.01;
-            } 
+            }
         }
         usort($data, function($a, $b) {
             if ($a["priority"] == $b["priority"]) return 0;
@@ -277,8 +277,8 @@ HTML;
         }
         $table .= "</tbody></table>";
 
-        $this->addScript('../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');                                                               
-        $this->addScript('../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');                                                       
+        $this->addScript('../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.js');
+        $this->addScript('../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
         $this->addOnloadCommand("$('#reviewtable').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
 
         return <<<HTML
@@ -401,7 +401,7 @@ HTML;
             tableA = unforced batches | tableB = forced.
         */
         $bids = "0";
-        $pAllBtn = "<button class='btn btn-default btn-xs' 
+        $pAllBtn = "<button class='btn btn-default btn-xs'
             onClick='printAll(); return false;'><span class='glyphicon glyphicon-print'></span></button>";
         $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
             <th>{$pAllBtn}</th>
@@ -417,10 +417,10 @@ HTML;
             FROM batchReviewLog AS l
                 LEFT JOIN batches AS b ON l.bid=b.batchID
                 LEFT JOIN batchList AS bl ON b.batchID=bl.batchID
-                LEFT JOIN products AS p ON p.upc=bl.upc 
+                LEFT JOIN products AS p ON p.upc=bl.upc
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 LEFT JOIN vendors AS v ON l.vid=v.vendorID
-                LEFT JOIN Users AS u ON l.user=u.uid 
+                LEFT JOIN Users AS u ON l.user=u.uid
                 LEFT JOIN scaleItems AS s ON bl.upc=s.plu
             GROUP BY l.bid, m.super_name
             ORDER BY l.bid DESC
@@ -429,7 +429,7 @@ HTML;
         $batches = array();
         while ($row = $dbc->fetchRow($res)) {
             if (!in_array($row['super_name'], $batches[$row['bid']])) {
-                $batches[$row['bid']][] = $row['super_name'];   
+                $batches[$row['bid']][] = $row['super_name'];
             }
         };
 
@@ -569,7 +569,7 @@ HTML;
         $superNames = array();
         $superStrings = array();
         $prep = $dbc->prepare("
-            SELECT super_name, dept_ID FROM MasterSuperDepts 
+            SELECT super_name, dept_ID FROM MasterSuperDepts
         ");
         $r = $dbc->execute($prep);
         while ($row = $dbc->fetchRow($r)) {
@@ -645,7 +645,7 @@ HTML;
         } else {
             $shipping = '';
         }
-       
+
 
         return <<<HTML
 {$this->backBtn()}
@@ -899,7 +899,7 @@ HTML;
                     </span>
                     </div>
                 </div>
-                                    
+
             </div>
         </form>
     </div>
@@ -959,7 +959,7 @@ function deleteRow(id)
     var url = "ProdReviewPage.php?batchLog=1&deleteRow=1&id="+id;
     var c = confirm('Remove Batch From Table?');
     if (c == true) {
-        window.open(url, '_self'); 
+        window.open(url, '_self');
     }
 }
 
