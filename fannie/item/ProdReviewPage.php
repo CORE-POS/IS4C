@@ -396,53 +396,7 @@ HTML;
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $bid = FormLib::get('bid');
-        $bidLn = "../batches/newbatch/EditBatchPage.php?id=".$bid;
 
-        $bData = '';
-        if ($bid) {
-            $pArgs = array($bid);
-            $pPrep = $dbc->prepare("SELECT bid FROM batchReviewLog WHERE bid = ?");
-            $pRes = $dbc->execute($pPrep,$pArgs);
-            $rows = $dbc->numRows($pRes);
-
-            $args = array($bid);
-            $prep = $dbc->prepare("
-                SELECT b.batchName, b.batchID, b.owner, t.typeDesc
-                FROM batches AS b
-                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
-                WHERE b.batchID = ?
-            ");
-            $res = $dbc->execute($prep,$args);
-            while ($row = $dbc->fetchRow($res)) {
-                $name = $row['batchName'];
-                $owner = $row['owner'];
-                $type = $row['typeDesc'];
-                if ($type != 'Price Change') {
-                    $type = "<span class='text-danger'>!".$type."</span>";
-                }
-            }
-            if ($rows != 0) {
-                $action = '<td class="alert alert-warning" align="center">Batch found in log</td>';
-            } else {
-                $action = "<td class='btn btn-default btn-sm' style='width:100%;
-                    border: 1px solid orange;' onClick='addBatch({$bid}); return false;'>
-                    + Add to log</td>";
-            }
-            $bData .= "
-                <label class='text-info'>New Batch</label>
-                <div class='batchTable table-responsive'>
-                <table class='table table-condensed table-striped small'>
-                    <thead><th>Name</th><th>BatchID</th><th>Owner</th><th>BatchType</th><th></td></thead>
-                    <tbody>
-                        <tr><td><a href=\"{$bidLn}\" target=\"_blank\" class=\"bid\">{$bid}</a></td><td>{$name}</td><td>{$owner}</td><td>{$type}</td>
-                        {$action}
-                        </tr>
-                    </tbody>
-                </table>
-                </div>
-            ";
-        }
         /*
             tableA = unforced batches | tableB = forced.
         */
@@ -451,7 +405,7 @@ HTML;
             onClick='printAll(); return false;'><span class='glyphicon glyphicon-print'></span></button>";
         $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
             <th>{$pAllBtn}</th>
-            <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
+            <th>BatchID</th><th>Batch Name</th><th>Super Depts +</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
             <th>Comments</th><th></th><th></th><tr></thead><tbody>";
         $tableB = "<div class='table-responsive'><table class='table table-condensed table-striped small' id='forcedBatchesTable'><thead><tr>
             <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Forced On</th>
@@ -459,17 +413,39 @@ HTML;
         $args = array();
         $prep = $dbc->prepare("
             SELECT l.vid, l.printed, l.user, l.created, l.forced,
-                b.batchName, l.bid, v.vendorName, l.comments, u.name
+                b.batchName, l.bid, v.vendorName, l.comments, u.name, m.super_name, s.plu
             FROM batchReviewLog AS l
                 LEFT JOIN batches AS b ON l.bid=b.batchID
+                LEFT JOIN batchList AS bl ON b.batchID=bl.batchID
+                LEFT JOIN products AS p ON p.upc=bl.upc 
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 LEFT JOIN vendors AS v ON l.vid=v.vendorID
                 LEFT JOIN Users AS u ON l.user=u.uid 
-            GROUP BY l.bid
+                LEFT JOIN scaleItems AS s ON bl.upc=s.plu
+            GROUP BY l.bid, m.super_name
             ORDER BY l.bid DESC
         ");
         $res = $dbc->execute($prep,$args);
+        $batches = array();
         while ($row = $dbc->fetchRow($res)) {
+            if (!in_array($row['super_name'], $batches[$row['bid']])) {
+                $batches[$row['bid']][] = $row['super_name'];   
+            }
+        };
+
+        $res = $dbc->execute($prep,$args);
+        while ($row = $dbc->fetchRow($res)) {
+            $scale = '';
+            $superDepts = '';
+            if ($row['bid'] == $curBid)
+                continue;
             $curBid = $row['bid'];
+            foreach ($batches[$curBid] as $k => $superName) {
+                $rgb = '#'.substr(md5($superName), 0, 6);
+                $superDepts .= "<span class=\"supertab\" title=\"$superName\" style=\"color: $rgb;\">".substr($superName,0,4)."</span>";
+            }
+            if ($scale == '' && $row['plu'] != NULL)
+                $superDepts .= "<span class=\"\" style=\"border: 1px solid black; border-radius: 50%; padding-left: 3px; padding-right: 3px; cursor: default;\" title=\"Scale Items in batch\">S</span>";
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $bids .= ",".$curBid;
@@ -478,6 +454,7 @@ HTML;
                 $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
                 $batchName = $row['batchName'];
                 $tableA .= "<td>{$batchName}</td>";
+                $tableA .= "<td>$superDepts</td>";
                 if ($row['vid'] == 0) {
                     $vid = "n/a";
                 } else {
@@ -491,9 +468,9 @@ HTML;
                     '/>{$row['comments']}</textarea></td>";
                 $action = '';
                 $noPunctBatchName = str_replace("'", "", $batchName);
-                $action = "<td class='btn btn-default btn-wide' style='border: 1px solid tomato;'
-                    onClick='forceBatch($curBid, \"$noPunctBatchName\"); return false;' id='force$curBid'>Force</td>";
-                $tableA .= "<td><span class='glyphicon glyphicon-trash' onClick='deleteRow($curBid)'></span></td>";
+                $action = "<td><button class='btn btn-default ' style='border: 1px solid tomato;'
+                    onClick='forceBatch($curBid, \"$noPunctBatchName\"); return false;' id='force$curBid'>Force</button></td>";
+                $tableA .= "<td><span class='glyphicon glyphicon-trash' onClick='deleteRow($curBid)' title='Remove from staging table'></span></td>";
                 $tableA .= $action;
                 $tableA .= "</tr>";
             } else {
@@ -511,67 +488,28 @@ HTML;
         $tableA .= '</tbody></table></div>';
         $tableB .= '</tbody></table></div>';
 
-        $tableC = "<div class=\"well well-sm\" align=\"center\">
-            <a onclick=\"\" data-toggle=\"collapse\" data-target=\"#scale-item-table\">
-                <span class=\" glyphicon glyphicon-triangle-bottom\"></span> Scale items </a> in un-forced batches
-                </span></div>";
-        $tableC .= "<div id=\"scale-item-table\" class=\"collapse\"><table class=\"table small table-condensed \"><tbody>";
-        $query = "
-            SELECT b.upc, p.brand, p.description, b.batchID
-            FROM batchList AS b
-                LEFT JOIN products AS p ON b.upc=p.upc
-            WHERE b.batchID IN ($bids) 
-                AND b.upc > 19999999999 
-                AND b.upc < 29999999999
-            GROUP BY b.upc
-        ";
-        $prep = $dbc->prepare($query);
-        $res = $dbc->execute($prep);
-        while ($row = $dbc->fetchRow($res)) {
-            $upc = $row['upc'];
-            $brand = $row['brand'];
-            $description = $row['description'];
-            $batchID = $row['batchID'];
-            $tableC .= "<tr>";
-            $tableC .= "<td><a href=\"ItemEditorPage.php?searchupc=$upc&ntype=UPC\" target=\"_blank\">$upc</a></td>";
-            $tableC .= "<td>$brand</td>";
-            $tableC .= "<td>$description</td>";
-            $tableC .= "<td>$batchID</td>";
-        }
-        $tableC .= "</tbody></table></div>";
-
         return <<<HTML
 <div id="ajax-processing" style="text-align: center; position: fixed; top: 48vh; left: 40vw; font-weight: bold; background: rgba(255, 100, 100, 0.8); border: 3px solid pink; display: none;">BATCH BEING FORCED, PLEASE WAIT</div>
 <div align="">
         <div class="">
             <div>{$this->backBtn()}</div>
-            <h4>Review Batch Log</h4>
         </div>
         <div class="row">
             <div class="col-lg-4">
                 <form method="get" class="form-inline">
-                    <div class="form-group">
-                        <input type="text" class="form-control" name="bid" value="{$bid}"
-                            autofocus placeholder="Enter Batch ID" />
-                        <input type="hidden" name="batchLog" value="1"/>
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-default" value="1" name="getBatch">Stage Batch</button>
-                    </div>
                     <div id="alert"><div id="resp"></div></div>
                 </form>
             </div>
             <div class="col-lg-1"></div>
             <div class="col-lg-7">
-                $tableC
             </div>
         </div>
         {$bData}
-        <h4 align="center">Staged Batches</h4>
+        <h4 align="center">Batches Staged for Price Changes</h4>
         <div class="batchTable">
             {$tableA}
         </div>
-        <h4 align="center">Forced Batches</h4>
+        <h4 align="center">History of Price Change Batches</h4>
         <div class="batchTable" >
             {$tableB}
         </div>
@@ -1157,6 +1095,13 @@ function fadeAlerts()
     public function css_content()
     {
         return <<<HTML
+span.supertab {
+    padding: 2px;
+    margin: 1px;
+    cursor: default;
+    font-weight: bold;
+    text-shadow: 1px 1px lightgrey;
+}
 button:focus {
     color: lightblue;
 }
