@@ -157,6 +157,7 @@ class RpOrderPage extends FannieRESTfulPage
             ORDER BY CASE WHEN likeCode IS NULL THEN 1 ELSE 0 END,
                 p.description
         ";
+        $args = array('%' . $this->searchVendor . '%', '%' . $this->searchVendor . '%');
 
         $ret = array();
         $prep = $this->connection->prepare($query);
