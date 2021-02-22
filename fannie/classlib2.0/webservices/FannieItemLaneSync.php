@@ -93,12 +93,15 @@ class FannieItemLaneSync extends \COREPOS\Fannie\API\webservices\FannieWebServic
                 if (isset($FANNIE_LANES[$i]['offline']) && $FANNIE_LANES[$i]['offline']) {
                     continue;
                 }
+                $lane_sql = new \SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
+                    $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
+                    $FANNIE_LANES[$i]['pw']);
                 try {
                     $lane_sql = new \SQLManager($FANNIE_LANES[$i]['host'],$FANNIE_LANES[$i]['type'],
                         $FANNIE_LANES[$i]['op'],$FANNIE_LANES[$i]['user'],
                         $FANNIE_LANES[$i]['pw']);
                 } catch (Exception $ex) {
-                    continue;
+                        continue;
                 }
                 
                 if (!isset($lane_sql->connections[$FANNIE_LANES[$i]['op']]) || $lane_sql->connections[$FANNIE_LANES[$i]['op']] === false) {

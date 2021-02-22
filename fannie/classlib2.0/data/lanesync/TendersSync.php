@@ -29,7 +29,7 @@ class TendersSync extends SyncSpecial
             $ids[] = $t->TenderID();
         }
         list($idIn, $idArgs) = $dbc->safeInClause($ids);
-        
+
         foreach ($this->config->get('LANES') as $lane) {
             if (!$includeOffline && isset($lane['offline']) && $lane['offline']) {
                 continue;
@@ -42,7 +42,7 @@ class TendersSync extends SyncSpecial
                 $chkP = $dbc->prepare("SELECT TenderID FROM tenders WHERE TenderID=?", $lane['op']);
                 $insP = $dbc->prepare("INSERT INTO tenders (TenderID, TenderCode, TenderName, TenderType,
                             ChangeMessage, MinAmount, MaxAmount, MaxRefund, TenderModule, SalesCode)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'TenderModule', ?", $lane['op']);
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'TenderModule', ?)", $lane['op']);
                 $upP = $dbc->prepare("UPDATE tenders SET TenderCode=?, TenderName=?, TenderType=?, ChangeMessage=?,
                             MinAmount=?, MaxAmount=?, MaxRefund=?, SalesCode=? WHERE TenderID=?", $lane['op']);
                 foreach ($tenders as $t) {
@@ -63,4 +63,3 @@ class TendersSync extends SyncSpecial
         return $ret;
     }
 }
-

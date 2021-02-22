@@ -31,7 +31,9 @@ include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
 class PriceCheckPage extends NoInputCorePage 
 {
     private $upc = '';
+	private $storeid = '';
     private $found = false;
+	private $foundInv = false;
     private $pricing = array(
         'sale'=>false,
         'actual_price'=>'',
@@ -40,7 +42,13 @@ class PriceCheckPage extends NoInputCorePage
         'department'=>'',
         'regular_price'=>'',
     );
-
+	private $inventory = array(
+		'onHand'=>'',
+		'moreRecent'=>'',
+		'suspended'=>'',
+		'countDate'=>'',
+    );
+	
     function preprocess()
     {
         if (strtoupper(FormLib::get('reginput') == 'CL')) {
@@ -65,6 +73,22 @@ class PriceCheckPage extends NoInputCorePage
                 $this->pricing['description'] = $row['description'];
                 $this->pricing['department'] = $row['dept_name'];
 
+				// lookup inventory info
+				if ($this->session->get('ReportInventory')) {
+					$this->storeid = $this->session->get('store_id');
+					$rowInv = $this->getItemInventory();
+		            if ($rowInv !== false) {
+						$this->foundInv = true;
+
+						$this->inventory['onHand'] = $rowInv['onHand'];
+						$this->inventory['moreRecent'] = $rowInv['moreRecent'];
+						$this->inventory['suspended'] = $rowInv['suspended'];
+						$this->inventory['countDate'] = $rowInv['countDate'];
+					}
+					else {
+						$this->foundInv = false;
+					}
+				}
                 MiscLib::goodBeep();
             }
 
@@ -124,6 +148,57 @@ class PriceCheckPage extends NoInputCorePage
         return $result;
     }
 
+	private function getItemInventory()
+    {
+        $dbc = Database::mDataConnect(); //connect to server
+        if ($dbc === false || !$dbc->isConnected()) {
+			return false;
+        }
+
+        $invP = $dbc->prepare('SELECT onHand, countDate
+            FROM ' . $this->session->get('InventoryCheckOpDB') . $dbc->sep() . 'InventoryCache AS i
+                INNER JOIN ' . $this->session->get('InventoryCheckOpDB') . $dbc->sep() . 'InventoryCounts AS c
+                    ON i.upc=c.upc AND i.storeID=c.storeID
+            WHERE i.upc=?
+                AND i.storeID=?
+                AND c.mostRecent=1
+            ORDER BY c.countDate DESC');
+        $invData = $dbc->getRow($invP, array($this->upc, $this->storeid));
+        if ($invData === false) {
+            return false;
+        }
+		$result['onHand'] = $invData['onHand'];
+		$result['countDate'] = $invData['countDate'];
+				
+        $moreRecent = $dbc->prepare("SELECT SUM(quantity) AS qty
+            FROM dlog
+            WHERE upc=?
+                AND store_id=?
+                AND emp_no <> 9999
+                AND register_no <> 99
+                AND trans_status <> 'X'
+                AND tdate > ?
+        ");
+        $moreRecent = $dbc->getValue($moreRecent, array($this->upc, $this->storeid, $invData['countDate']));
+        $result['moreRecent'] = $moreRecent ? $moreRecent : 0;
+
+        //Get quantity sold in suspended transactions
+        $suspended = 0;
+        if ($this->session->get('InventoryCheckIncludeSuspended')) {
+            $invP = $dbc->prepare("SELECT SUM(quantity) AS qty
+                FROM suspended
+                WHERE upc=?
+                    AND emp_no <> 9999
+                    AND register_no <> 99
+                    AND trans_status <> 'X'
+                    AND datetime > ?");
+            $suspended = $dbc->getValue($invP, array($this->upc, $invData['countDate']));
+            $result['suspended'] = $suspended ? $suspended : 0;
+        }
+
+       return $result;
+    }	
+
     function head_content()
     {
         $this->default_parsewrapper_js();
@@ -150,7 +225,26 @@ class PriceCheckPage extends NoInputCorePage
         if (!empty($this->pricing['memPrice'])) {
             $info .= "<br />(" . _("Member Price") . ": " . $this->pricing['memPrice'] . ")";
         }
-        
+
+		if ($this->session->get('ReportInventory')) {
+			if ($this->foundInv) {
+				$info .= '<br />' . '<br />' . _("Last Counted on") . ": " . $this->inventory['countDate'] . '<br />'
+                . _("Starting count") . ": " . $this->inventory['onHand'] . '<br />'
+                . _("Sales since last count") . ": " . $this->inventory['moreRecent'] . '<br />';
+				
+				if ($this->session->get('InventoryIncludeSuspended')) {
+					$info .= _("Suspended since last count") . ": " . $this->inventory['suspended'] . "<br />"
+					. _("TOTAL INVENTORY") . ": " . ($this->inventory['onHand'] - $this->inventory['moreRecent'] - $this->inventory['suspended']);
+				} else {
+					$info .= _("TOTAL INVENTORY") . ": " . ($this->inventory['onHand'] - $this->inventory['moreRecent']);
+				}
+				$info .= '<br />';
+			}
+			else { // no inventory data for this item
+				$info .= '<br />' . "No inventory data for this item";
+			}
+		}
+		
         $inst = array(
             _("[scan] another item"),
             _("[enter] to ring this item"),
@@ -159,11 +253,15 @@ class PriceCheckPage extends NoInputCorePage
         
         return array($info, $inst);
     }
-
+	
     function body_content()
     {
         $this->add_onload_command("\$('#reginput').focus();\n");
-        $info = _("price check");
+        $info = _("Price");
+		if ($this->session->get('ReportInventory')) {
+			$info .= _(" & Inventory");
+		}
+		$info .= _(" check");
         $inst = array(
             _("[scan] item"),
             _("[clear] to cancel"),
@@ -184,7 +282,7 @@ class PriceCheckPage extends NoInputCorePage
         <?php echo $info ?>
         </span><br />
         <form name="form" id="formlocal" method="post" 
-            autocomplete="off" action="<?php echo AutoLoader::ownURL(); ?>">
+            autocomplete="off" action="<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>">
         <input type="text" name="reginput" tabindex="0" 
             onblur="$('#reginput').focus();" id="reginput" />
         <input type="hidden" name="upc" value="<?php echo $this->upc; ?>" />

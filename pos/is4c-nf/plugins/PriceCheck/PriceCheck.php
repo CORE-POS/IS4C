@@ -26,9 +26,33 @@ use COREPOS\pos\plugins\Plugin;
 class PriceCheck extends Plugin {
 
     public $plugin_settings = array(
-    );
+		'ReportInventory' => array(
+            'label' => 'Report Inventory',
+            'description' => 'Include inventory information',
+            'default' => 0,
+            'options' => array(
+                'No' => 0,
+                'Yes' => 1,
+			),
+		),
+        'InventoryCheckOpDB' => array(
+            'label' => 'Server Operational DB',
+            'description' => 'Name of the database w/ inventory data',
+            'default'=> 'core_op',
+        ),
+        'InventoryCheckIncludeSuspended' => array(
+            'label' => 'Include Suspended Transactions',
+            'description' => 'Include suspended transactions in inventory data',
+            'default' => 0,
+            'options' => array(
+                'No' => 0,
+                'Yes' => 1,
+            ),
+        ),
+    );	
 
     public $plugin_description = 'Check an item\'s price without ringing it. Type "PC" to
-                      and then scan an item or hit enter to use this feature.';
+                      and then scan an item or hit enter to use this feature. Also allows
+					  checking of inventory';
 }
 

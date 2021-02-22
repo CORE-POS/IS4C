@@ -39,7 +39,7 @@ class NormalPricing extends DiscountType
         $ret["unitPrice"] = $row['normal_price'];
         $ret['discount'] = 0;
         $ret['memDiscount'] = 0;
-        if ($row['line_item_discountable'] == 1 && $this->session->get("itemPD") > 0) {
+        if (isset($row['line_item_discountable']) && $row['line_item_discountable'] == 1 && $this->session->get("itemPD") > 0) {
             $discount = $row['normal_price'] * (($this->session->get("itemPD")/100));
             $ret["unitPrice"] = $row['normal_price'] - $discount;
             $ret["discount"] = $discount * $quantity;

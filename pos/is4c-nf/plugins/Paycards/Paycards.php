@@ -241,6 +241,15 @@ messages from POS?',
             'description' => 'Tips are added as an open ring to the specified department',
             'default' => '',
         ),
+        'PaycardsTipSuggested' => array(
+            'label' => 'Suggested Tip Amts',
+            'description' => 'Display 10% - 25% suggested tip amounts on supported terminals',
+            'default' => 0,
+            'options' => array(
+                'Yes' => 1,
+                'No' => 0
+                )
+        ),
     );
 
     public function plugin_transaction_reset()

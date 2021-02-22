@@ -25,25 +25,30 @@ use COREPOS\pos\plugins\Plugin;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\ReceiptLib;
 
-class RemotePrint extends Plugin
+class RemotePrintOTC extends Plugin
 {
     public $plugin_settings = array(
-        'RemotePrintDevice' => array(
-            'label' => 'Printer',
+        'RemotePrintDeviceOTC-1' => array(
+            'label' => 'Printer 1',
             'description' => 'A printer device name like LPT2: or a URL',
             'default' => '',
         ),
-        'RemotePrintHandler' => array(
+        'RemotePrintDeviceOTC-2' => array(
+            'label' => 'Printer 2',
+            'description' => 'A printer device name like LPT2: or a URL',
+            'default' => '',
+        ),
+        'RemotePrintHandlerOTC' => array(
             'label' => 'Driver',
             'description' => 'Handles communication with device',
             'default' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
             'options' => array(
                 'ESCPOS' => 'COREPOS-pos-lib-PrintHandlers-ESCPOSPrintHandler',
                 'RAW/TCP' => 'COREPOS-pos-lib-PrintHandlers-ESCNetRawHandler',
-                'HTTP' => 'RemotePrinterHTTP',
+                'HTTP' => 'RemotePrinterOTCHTTP',
             ),
         ),
-        'RemotePrintDebug' => array(
+        'RemotePrintDebugOTC' => array(
             'label' => 'Debug mode',
             'description' => 'Print debugging info instead of the normal receipt',
             'default' => 0,
@@ -54,12 +59,12 @@ class RemotePrint extends Plugin
         ),
     );
 
-    public $plugin_description = 'Send some info to a remote printer';
+    public $plugin_description = 'Send same info to up to two remote printers';
 
     public function plugin_transaction_reset()
     {
         list($emp, $reg, $trans) = explode('-', ReceiptLib::mostRecentReceipt(), 3);
-        $driverClass = CoreLocal::get('RemotePrintHandler');
+        $driverClass = CoreLocal::get('RemotePrintHandlerOTC');
         if (!class_exists($driverClass)) {
             $driverClass = 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler';
         }
@@ -81,7 +86,7 @@ class RemotePrint extends Plugin
         $comments = array();
         $hri = false;
         while ($row = $dbc->fetchRow($infoR)) {
-            if (CoreLocal::get('RemotePrintDebug')) {
+            if (CoreLocal::get('RemotePrintDebugOTC')) {
                 $lines[] = array(
                     'qty'=>1,
                     'upc'=>'',
@@ -110,10 +115,11 @@ class RemotePrint extends Plugin
           $receipt = "\n";
           if (CoreLocal::get("store")=="OurTable") {
             //Our Table specific header
-            $receipt .= str_repeat("*",12) . " OTC  EXPO " . str_repeat("*",12) . "\n\n";
+            $receipt .= str_repeat("*",11) . " OTC KITCHEN " . str_repeat("*",11) . "\n\n";
           } else {
             $receipt .= str_repeat("*",35) . "\n\n";
           }
+
           if ($hri) {
               $receipt .= chr(29).chr(33).chr(17);	/* big font */
               $receipt .= $hri;
@@ -138,8 +144,12 @@ class RemotePrint extends Plugin
           $receipt .= "\n\n";
           $receipt = ReceiptLib::cutReceipt($receipt,false);
           if ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\ESCPOSPrintHandler') {
-            //Write to printer
-            $port = fopen(CoreLocal::get('RemotePrintDevice'), 'w');
+            //Write to first printer
+            $port = fopen(CoreLocal::get('RemotePrintDeviceOTC-1'), 'w');
+            fwrite($port, $receipt);
+            fclose($port);
+            //Write to second printer
+            $port = fopen(CoreLocal::get('RemotePrintDeviceOTC-2'), 'w');
             fwrite($port, $receipt);
             fclose($port);
           } elseif ($driverClass == 'COREPOS\\pos\\lib\\PrintHandlers\\ESCNetRawHandler') {

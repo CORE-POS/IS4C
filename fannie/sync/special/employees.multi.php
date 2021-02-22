@@ -27,8 +27,8 @@ require_once(dirname(__FILE__) . '/generic.mysql.php');
 /**
   Sync the whole table using mysqldump. Then
   look up employees numbers that are valid for
-  this store and construct a DELETE query to 
-  remove all others. Run the DELETE query at 
+  this store and construct a DELETE query to
+  remove all others. Run the DELETE query at
   each lane.
 */
 
@@ -47,6 +47,9 @@ foreach ($map->find() as $obj) {
 $query = substr($query, 0, strlen($query)-1) . ')';
 
 foreach ($FANNIE_LANES as $lane) {
+    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+        continue;
+    }
     $sql = new SQLManager($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($sql->connections[$lane['op']] !== false) {
@@ -56,4 +59,3 @@ foreach ($FANNIE_LANES as $lane) {
 }
 
 echo "<li>Employees table synched</li>";
-

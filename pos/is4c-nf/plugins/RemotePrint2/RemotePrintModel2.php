@@ -1,16 +1,17 @@
 <?php
+
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2017 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
-    CORE-POS is free software; you can redistribute it and/or modify
+    IT CORE is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
     (at your option) any later version.
 
-    CORE-POS is distributed in the hope that it will be useful,
+    IT CORE is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
@@ -20,23 +21,21 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 *********************************************************************************/
+        
+namespace COREPOS\pos\plugins\RemotePrint2;
 
-include(dirname(__FILE__).'/../../config.php');
-require_once(dirname(__FILE__) . '/generic.mysql.php');
+/**
+  @class RemotePrintModel2
+*/
 
-// on each MySQL lane, load the CSV file
-foreach($FANNIE_LANES as $lane) {
-    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
-        continue;
-    }
-    $dbc = new SQLManager($lane['host'],$lane['type'],$lane['op'],
-            $lane['user'],$lane['pw']);
-    if ($dbc->connections[$lane['op']] !== False) {
+class RemotePrintModel2 extends \COREPOS\pos\lib\models\BasicModel
+{
+    protected $name = "RemotePrint2";
+    protected $preferred_db = 'op';
 
-        $dbc->query("DELETE FROM products WHERE inUse = 0", $lane['op']);
-    }
+    protected $columns = array(
+    'remotePrintID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
+    'identifier' => array('type'=>'VARCHAR(13)'),
+    'type' => array('type'=>'VARCHAR(10)', 'default'=>"'UPC'"),
+    );
 }
-
-echo "<li>Products table synched</li>";
-
-?>

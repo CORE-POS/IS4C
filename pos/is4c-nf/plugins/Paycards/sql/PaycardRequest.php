@@ -79,6 +79,14 @@ class PaycardRequest
         return number_format(abs($this->amount), 2, '.', '');
     }
 
+    public function formattedTipAmount($percentTip = 1)
+    {
+        if (!$percentTip) {
+          $percentTip = 1; //to avoid multiply by zero errors
+        }
+        return number_format(abs($this->amount * $percentTip), 2, '.', '');
+    }
+
     public function formattedCashBack()
     {
         return number_format(abs($this->cashback), 2, '.', '');

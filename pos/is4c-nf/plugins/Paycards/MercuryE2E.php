@@ -924,7 +924,21 @@ class MercuryE2E extends BasicCCModule
             $msgXml .= "<CashBack>Prompt</CashBack>";
         }
         if ($tipped) {
-            $msgXml .= '<Gratuity>Prompt</Gratuity>';
+            if ($this->conf->get('PaycardsTipSuggested')) {
+                // Display suggested tip amounts
+                $msgXml .= '<Gratuity>SuggestivePrompt</Gratuity>';
+                //Suggested tip amounts are hard coded at 10%, 15%, 20%, and 25%
+                $msgXml .= '<GratuitySuggestions>10%:' . $request->formattedTipAmount(0.1) .
+                  ',15%:' . $request->formattedTipAmount(0.15) .
+                  ',20%:' . $request->formattedTipAmount(0.2) .
+                  ',25%:' . $request->formattedTipAmount(0.25) . '</GratuitySuggestions>';
+            }
+			else {
+                //Prompt for gratuity amount
+                $msgXml .= '<Gratuity>Prompt</Gratuity>';
+            }
+
+
         }
         $msgXml .= "</Amount>";
         if ($request->type == 'Credit' && $request->mode == 'Sale') {

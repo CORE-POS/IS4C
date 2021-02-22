@@ -77,7 +77,8 @@ function _adodb_export(&$rs,$sep,$sepreplace,$fp=false,$addtitles=true,$quote = 
 		reset($fieldTypes);
 		$i = 0;
 		$elements = array();
-		while(list(,$o) = each($fieldTypes)) {
+		//while(list(,$o) = each($fieldTypes)) {
+		foreach ($fieldTypes as $o) {	//Replaced deprecated each() with foreach()
 
 			$v = ($o) ? $o->name : 'Field'.($i++);
 			if ($escquote) $v = str_replace($quote,$escquotequote,$v);

@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2015 Whole Foods Co-op.
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of IT CORE.
 
@@ -21,39 +21,39 @@
 
 *********************************************************************************/
 
-namespace COREPOS\pos\lib\ReceiptBuilding\ThankYou;
+namespace COREPOS\pos\lib\Kickers;
+use COREPOS\pos\lib\Database;
 use \CoreLocal;
 
-/**
-  @class DefaultReceiptThanks
-  Prints thank you line(s)
-*/
-class DefaultReceiptThanks 
+class OTC_Kicker extends Kicker
 {
-    protected $printHandler;
 
-    public function setPrintHandler($phObj)
+    public function doKick($trans_num)
     {
-        $this->printHandler = $phObj;
-    }
+        $dbc = Database::tDataConnect();
 
-    /**
-      Generate a message for a given receipt
-      @param $trans_num [string] transaction identifier
-      @return [string] receipt line(s)
-    */
-    public function message($trans_num)
-    {
-        $thanks = _('Thank You!');
-        if (trim(CoreLocal::get("memberID")) != CoreLocal::get("defaultNonMem")) {
-            $thanks .= _(' - Owner ') . trim(CoreLocal::get('memberID'));
-        }
-        $ret  = $this->printHandler->TextStyle(true,false,true);
-        $ret .= $this->printHandler->centerString($thanks);
-        $ret .= $this->printHandler->TextStyle(true);
-        $ret .= "\n\n";
+        $query = "SELECT trans_id
+                  FROM localtranstoday
+                  WHERE (
+                    (trans_subtype = 'CA' and total <> 0)
+                  ) AND " . $this->refToWhere($trans_num);
+
+        $result = $dbc->query($query);
+        $numRows = $dbc->numRows($result);
+
+        $ret = ($numRows > 0) ? true : false;
+
+        // use session to override default behavior
+        // based on specific cashier actions rather
+        // than transaction state
+        $override = CoreLocal::get('kickOverride');
+        CoreLocal::set('kickOverride',false);
+        if ($override === true) $ret = true;
 
         return $ret;
     }
-}
 
+    public function kickOnSignIn() {
+        return false;
+    }
+}

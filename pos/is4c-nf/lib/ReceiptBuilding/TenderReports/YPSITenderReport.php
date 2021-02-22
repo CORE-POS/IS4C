@@ -51,11 +51,11 @@ static public function get($session)
 
     $cashier_names = "";
     $cashierQ = "SELECT CONCAT(SUBSTR(e.FirstName,1,1),e.Lastname) as cashier
-        FROM dlog d, is4c_op.employees e
-        WHERE d.emp_no = e.emp_no AND d.register_no = ". $session->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L' 
+        FROM dlog d, opdata.employees e
+        WHERE d.emp_no = e.emp_no AND d.register_no = ". $session->get('laneno')." AND d.emp_no <> 9999 AND d.trans_type <> 'L'
         AND d.tdate >= '".$shiftCutoff."'
         GROUP BY d.emp_no ORDER BY d.tdate";
-        
+
     $cashierR = $dba->query($cashierQ);
 
     for ($i = 0; $i < $row = $dba->fetchRow($cashierR); $i++) {
@@ -173,7 +173,7 @@ function trTotal($session,$k, $label,$i=False)
         if ($row[0] != '') $shiftCutoff = $row[0];
     }
 
-    if (is_array($k)) $k = "'" . implode("','", $k) . "'";
+    if (is_array($k)) $k = implode("','", $k);
     if (!is_numeric($k)) { 
         if ($k[0] == '#') {
             $k = substr($k,1);
@@ -186,13 +186,13 @@ function trTotal($session,$k, $label,$i=False)
         $q = 'department';
     }
     // $q = (!is_numeric($k)) ? 'trans_subtype' : 'department';
-    
+
     if($i===False) {
-        $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog 
+        $tenderQ = "SELECT -SUM(total) AS net, COUNT(total) FROM dlog
             WHERE register_no=".$session->get('laneno').
             " AND $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999";
     } else {
-        $tenderQ = "SELECT tdate,register_no,emp_no,trans_no,card_no,total FROM dlog 
+        $tenderQ = "SELECT tdate,register_no,emp_no,trans_no,card_no,total FROM dlog
             WHERE register_no=".$session->get('laneno').
             " and $q IN($k) AND tdate >= '$shiftCutoff' AND emp_no <> 9999 order by tdate";
     }

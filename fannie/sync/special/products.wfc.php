@@ -2,9 +2,9 @@
 /*******************************************************************************
 
     Copyright 2009 Whole Foods Co-op
-  
+
     This file is part of CORE-POS.
-  
+
     CORE-POS is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -32,12 +32,15 @@ foreach($FANNIE_LANES as $lane){
 
     if ($lane['type'] != 'MYSQL') continue;
 
+    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+        continue;
+    }
     $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['op']] !== False){
 
         if (!is_readable('/pos/csvs/products.csv')) break;
-        
+
         $dbc->query("TRUNCATE TABLE products",$lane['op']);
 
         $dbc->query("LOAD DATA LOCAL INFILE '/pos/csvs/products.csv' INTO TABLE
@@ -47,4 +50,3 @@ foreach($FANNIE_LANES as $lane){
 }
 
 echo "<li>Product table synched</li>";
-

@@ -9,6 +9,9 @@ foreach ($tenders as $t) {
 }
 list($idIn, $idArgs) = $dbc->safeInClause($ids);
 foreach ($FANNIE_LANES as $lane) {
+    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+        continue;
+    }
     $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->isConnected($lane['op'])) {
@@ -17,7 +20,7 @@ foreach ($FANNIE_LANES as $lane) {
         $chkP = $dbc->prepare("SELECT TenderID FROM tenders WHERE TenderID=?", $lane['op']);
         $insP = $dbc->prepare("INSERT INTO tenders (TenderID, TenderCode, TenderName, TenderType,
                     ChangeMessage, MinAmount, MaxAmount, MaxRefund, TenderModule, SalesCode)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'TenderModule', ?", $lane['op']);
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'TenderModule', ?)", $lane['op']);
         $upP = $dbc->prepare("UPDATE tenders SET TenderCode=?, TenderName=?, TenderType=?, ChangeMessage=?,
                     MinAmount=?, MaxAmount=?, MaxRefund=?, SalesCode=? WHERE TenderID=?", $lane['op']);
         foreach ($tenders as $t) {
@@ -33,4 +36,3 @@ foreach ($FANNIE_LANES as $lane) {
 }
 
 echo "<li>Tender table synched</li>";
-

@@ -40,7 +40,7 @@ use COREPOS\pos\lib\TransRecord;
   via the houseCoupons and houseCouponItems
   tables
 */
-class HouseCoupon extends SpecialUPC 
+class HouseCoupon extends SpecialUPC
 {
 
     public function isSpecial($upc)
@@ -94,25 +94,25 @@ class HouseCoupon extends SpecialUPC
     private function lookupCoupon($coupID)
     {
         $dbc = Database::pDataConnect();
-        $infoQ = "SELECT endDate," 
+        $infoQ = "SELECT endDate,"
                     . $dbc->identifierEscape('limit') . ",
-                    discountType, 
+                    discountType,
                     department,
-                    discountValue, 
-                    minType, 
-                    minValue, 
-                    memberOnly, 
+                    discountValue,
+                    minType,
+                    minValue,
+                    memberOnly,
                     endDate,
-                    CASE 
-                        WHEN endDate IS NULL THEN 0 
-                        ELSE ". $dbc->datediff('endDate', $dbc->now()) . " 
+                    CASE
+                        WHEN endDate IS NULL THEN 0
+                        ELSE ". $dbc->datediff('endDate', $dbc->now()) . "
                     END AS expired";
         if ($this->session->get('NoCompat') == 1) {
-            $infoQ .= ", description, 
+            $infoQ .= ", description,
                         startDate,
-                        CASE 
-                          WHEN startDate IS NULL THEN 0 
-                          ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
+                        CASE
+                          WHEN startDate IS NULL THEN 0
+                          ELSE ". $dbc->datediff('startDate', $dbc->now()) . "
                         END as preStart,
                         virtualOnly";
         } else {
@@ -125,16 +125,16 @@ class HouseCoupon extends SpecialUPC
             }
             if (isset($hctable['startDate'])) {
                 $infoQ .= ", startDate,
-                            CASE 
-                              WHEN startDate IS NULL THEN 0 
-                              ELSE ". $dbc->datediff('startDate', $dbc->now()) . " 
+                            CASE
+                              WHEN startDate IS NULL THEN 0
+                              ELSE ". $dbc->datediff('startDate', $dbc->now()) . "
                             END as preStart";
             } else {
                 $infoQ .= ', \'1900-01-01\' AS startDate, 0 AS preStart';
             }
             $infoQ .= isset($hctable['virtualOnly']) ? ', virtualOnly ' : ', 0 AS virtualOnly ';
         }
-        $infoQ .= " FROM  houseCoupons 
+        $infoQ .= " FROM  houseCoupons
                     WHERE coupID=" . ((int)$coupID);
         $infoR = $dbc->query($infoQ);
         if ($dbc->num_rows($infoR) == 0) {
@@ -372,7 +372,7 @@ class HouseCoupon extends SpecialUPC
     }
 
     /**
-      Check how many times the coupon has been used and 
+      Check how many times the coupon has been used and
       compare against usage limits - e.g., one per transaction,
       one per member, etc. This is a separate method from
       checkQualifications() so that calling code has the option
@@ -387,9 +387,9 @@ class HouseCoupon extends SpecialUPC
             return $this->errorOrQuiet(_('coupon not found'), false);
         }
 
-        /* limit types 
-            0 => total coupons used, 
-            1 => total coupons used today, 
+        /* limit types
+            0 => total coupons used,
+            1 => total coupons used today,
          */
         $limitType = 0;
         if ($infoW['limit'] > 100 && $infoW['limit'] < 1000) {
@@ -421,11 +421,11 @@ class HouseCoupon extends SpecialUPC
           For members, enforce limits against longer
           transaction history
         */
-        if ($infoW["memberOnly"] == 1 && $this->session->get("standalone")==0 
+        if ($infoW["memberOnly"] == 1 && $this->session->get("standalone")==0
             && $this->session->get('memberID') != $this->session->get('visitingMem')) {
 
             /**
-              A virtual-only coupon MUST exist in the houseVirtualCoupons table for the 
+              A virtual-only coupon MUST exist in the houseVirtualCoupons table for the
               current member. If a record is present the coupon is allowed.
             */
             if ($infoW['virtualOnly']) {
@@ -463,9 +463,9 @@ class HouseCoupon extends SpecialUPC
                             AND upc='$upc'
                             AND card_no=" . ((int)$this->session->get('memberID')) . "
                      GROUP BY upc, card_no";
-            $lim1Qt = "SELECT SUM(quantity) AS quantity 
-                    FROM localtemptrans 
-                    WHERE trans_subtype = 'IC' 
+            $lim1Qt = "SELECT SUM(quantity) AS quantity
+                    FROM localtemptrans
+                    WHERE trans_subtype = 'IC'
                         AND upc = '$upc'";
 
             if ($limitType == 1) {
@@ -496,7 +496,7 @@ class HouseCoupon extends SpecialUPC
         return true;
     }
 
-    
+
     /**
       Get information about how much the coupon is worth
       @param $coupID [int] coupon ID
@@ -662,7 +662,7 @@ class HouseCoupon extends SpecialUPC
                 // current value minus the discount price is how much to
                 // take off
                 $value = $infoW["discountValue"];
-                $deptQ = "select department, (total/quantity) as value 
+                $deptQ = "select department, (total/quantity) as value
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
@@ -712,7 +712,7 @@ class HouseCoupon extends SpecialUPC
                 // simply take off the requested amount
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
-                $valQ = "select department, quantity 
+                $valQ = "select department, quantity
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
@@ -725,7 +725,7 @@ class HouseCoupon extends SpecialUPC
                 // take off item value or discount value
                 // whichever is less
                 $value = $infoW["discountValue"];
-                $valQ = "select department, l.total 
+                $valQ = "select department, l.total
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
@@ -738,7 +738,7 @@ class HouseCoupon extends SpecialUPC
                 // apply discount across all items
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
-                $valQ = "select sum(quantity) 
+                $valQ = "select sum(quantity)
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
@@ -751,7 +751,7 @@ class HouseCoupon extends SpecialUPC
                 // simply take off the requested amount
                 // scales with quantity for by-weight items
                 $value = $infoW["discountValue"];
-                $valQ = "select l.upc, quantity 
+                $valQ = "select l.upc, quantity
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')
                     and l.total > 0
@@ -765,7 +765,7 @@ class HouseCoupon extends SpecialUPC
                     // number of matching items.
                 $value = $infoW["discountValue"];
                 $valQ = "
-                    SELECT 
+                    SELECT
                        SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')";
@@ -781,7 +781,7 @@ class HouseCoupon extends SpecialUPC
                 $value = $infoW["discountValue"];
 
                 $qualQ = "
-                    SELECT 
+                    SELECT
                        SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'QUALIFIER')";
@@ -789,7 +789,7 @@ class HouseCoupon extends SpecialUPC
                 $qualW = $transDB->fetch_row($qualR);
 
                 $discQ = "
-                    SELECT 
+                    SELECT
                        SUM(CASE WHEN ItemQtty IS NULL THEN 0 ELSE ItemQtty END) AS qty
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')";
@@ -845,7 +845,7 @@ class HouseCoupon extends SpecialUPC
                 $discountable = 0;
                 break;
             case "%I": // percent discount on all relevant items
-                $valQ = "select sum(total) 
+                $valQ = "select sum(total)
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')";
                 $valR = $transDB->query($valQ);
@@ -853,7 +853,7 @@ class HouseCoupon extends SpecialUPC
                 $value = $row[0] * $infoW["discountValue"];
                 break;
             case "%D": // percent discount on all items in give department(s)
-                $valQ = "select sum(total) 
+                $valQ = "select sum(total)
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT') AND l.discountable >= 0";
                 $valR = $transDB->query($valQ);
@@ -862,7 +862,7 @@ class HouseCoupon extends SpecialUPC
                 break;
             case "%S": // percent discount on all items in give department(s)
                         // excluding sale items
-                $valQ = "select sum(total) 
+                $valQ = "select sum(total)
                     " . $this->baseSQL($transDB, $coupID, 'department') . "
                     and h.type in ('BOTH', 'DISCOUNT') AND l.discounttype = 0";
                 $valR = $transDB->query($valQ);
@@ -876,15 +876,15 @@ class HouseCoupon extends SpecialUPC
                 if ($couponDiscount > $this->session->get('percentDiscount')) {
                     // coupon discount is better than customer's discount
                     // apply coupon & exclude those items from customer's discount
-                    $valQ = "select sum(total) 
+                    $valQ = "select sum(total)
                         " . $this->baseSQL($transDB, $coupID, 'department') . "
                         and h.type in ('BOTH', 'DISCOUNT')";
                     $valR = $transDB->query($valQ);
                     $row = $transDB->fetch_row($valR);
-                    $value = $row[0] * $infoW["discountValue"];                 
+                    $value = $row[0] * $infoW["discountValue"];
 
                     $clearQ = "
-                        UPDATE localtemptrans AS l 
+                        UPDATE localtemptrans AS l
                             INNER JOIN " . $this->session->get('pDatabase') . $transDB->sep() . "houseCouponItems AS h ON l.department = h.upc
                         SET l.discountable=0
                         WHERE h.coupID = " . $coupID . "
@@ -923,10 +923,9 @@ class HouseCoupon extends SpecialUPC
     {
         $ret = '
             FROM localtemptrans AS l
-                INNER JOIN ' . $this->session->get('pDatabase') . $dbc->sep() . 'houseCouponItems AS h 
+                INNER JOIN ' . $this->session->get('pDatabase') . $dbc->sep() . 'houseCouponItems AS h
                 ON h.upc=' . ($mode=='upc' ? 'l.upc' : 'l.department') . '
             WHERE h.coupID=' . ((int)$coupID);
         return $ret;
     }
 }
-

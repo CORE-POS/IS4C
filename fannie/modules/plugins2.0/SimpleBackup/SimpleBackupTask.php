@@ -75,11 +75,10 @@ class SimpleBackupTask extends FannieTask
                 break; // no point in trying other databases
             }
             $cmd = escapeshellcmd($cmd);
-            $cmd .= ' -q --databases 
-                -h ' . escapeshellarg($FANNIE_SERVER) . '
-                -u ' . escapeshellarg($FANNIE_SERVER_USER) . '
-                -p' . escapeshellarg($FANNIE_SERVER_PW) . ' 
-                ' . escapeshellarg($db);
+            $cmd .= ' -f -q --databases -h ' . escapeshellarg($FANNIE_SERVER);
+            $cmd .= ' -u ' . escapeshellarg($FANNIE_SERVER_USER);
+            $cmd .= ' -p' . escapeshellarg($FANNIE_SERVER_PW);
+            $cmd .= ' ' . escapeshellarg($db);
             $outfile = $dir . '/' . $db . date('Ymd') . '.sql';
 
             $gzip = $this->gzip();

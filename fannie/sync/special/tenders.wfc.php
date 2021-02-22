@@ -24,7 +24,9 @@
 
 // map my big tender table down
 foreach($FANNIE_LANES as $lane){
-
+    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
+        continue;
+    }
     $dbc->addConnection($lane['host'],$lane['type'],$lane['op'],
             $lane['user'],$lane['pw']);
     if ($dbc->connections[$lane['op']] !== False){
@@ -39,4 +41,3 @@ foreach($FANNIE_LANES as $lane){
 }
 
 echo "<li>Tenders table synched</li>";
-

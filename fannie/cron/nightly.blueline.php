@@ -1,7 +1,7 @@
 <?php
 /*******************************************************************************
 
-    Copyright 2009 Whole Foods Co-op
+    Copyright 2012 Whole Foods Co-op
 
     This file is part of CORE-POS.
 
@@ -21,22 +21,32 @@
 
 *********************************************************************************/
 
-include(dirname(__FILE__).'/../../config.php');
-require_once(dirname(__FILE__) . '/generic.mysql.php');
+/* HELP
 
-// on each MySQL lane, load the CSV file
-foreach($FANNIE_LANES as $lane) {
-    if (isset($lane['offline']) && $lane['offline'] && !$includeOffline) {
-        continue;
-    }
-    $dbc = new SQLManager($lane['host'],$lane['type'],$lane['op'],
-            $lane['user'],$lane['pw']);
-    if ($dbc->connections[$lane['op']] !== False) {
+   nightly.blueline.php
 
-        $dbc->query("DELETE FROM products WHERE inUse = 0", $lane['op']);
-    }
-}
+   Update CustomerNotifications table with equity paid data
+*/
 
-echo "<li>Products table synched</li>";
+include('../config.php');
+include($FANNIE_ROOT.'src/SQLManager.php');
+include($FANNIE_ROOT.'src/cron_msg.php');
+
+set_time_limit(0);
+
+$sql = new SQLManager($FANNIE_SERVER,$FANNIE_SERVER_DBMS,$FANNIE_OP_DB,
+        $FANNIE_SERVER_USER,$FANNIE_SERVER_PW);
+
+$TRANS = ($FANNIE_SERVER_DBMS == "MSSQL") ? $FANNIE_TRANS_DB.".dbo." : $FANNIE_TRANS_DB.".";
+
+$sql->query("DELETE FROM CustomerNotifications WHERE source = 'nightly.blueline.php'"); 
+
+$upQ = "INSERT INTO CustomerNotifications (cardNo, source, type, message) 
+	SELECT card_no, 'nightly.blueline.php', 'blueline', 
+	CONCAT('EqPaid: $', payments)
+	FROM core_trans.equity_history_sum";
+
+$sql->query($upQ);
 
 ?>
+

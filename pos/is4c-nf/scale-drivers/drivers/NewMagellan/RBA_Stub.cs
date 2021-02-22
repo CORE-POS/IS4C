@@ -76,7 +76,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     private Object syncLock;
 
     private bool allowDebitCB = true;
-    private string defaultMsg = "Welcome";
+    private string defaultMsg = "Our Table";
     private string bufferedCardType = "";
 
     public RBA_Stub(string p)
@@ -307,6 +307,7 @@ public class RBA_Stub : SPH_IngenicoRBA_Common
     {
         try {
             char fs = (char)0x1c;
+            string store_name = "Our Table Cooperative";
 
             // standard credit/debit/ebt/gift
             string buttons = "TPROMPT6,"+defaultMsg+fs+"Bbtna,S"+fs+"Bbtnb,S"+fs+"Bbtnc,S"+fs+"Bbtnd,S";
