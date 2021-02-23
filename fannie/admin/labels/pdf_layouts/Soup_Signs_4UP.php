@@ -137,6 +137,7 @@ function generateSoupTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $utf8degree = chr(194) . chr(176);
     $iso85591degree = chr(176);
     $desc = str_replace($utf8degree, $iso85591degree, $desc);
+    $desc = str_replace("Reheat to a temperature of 165 degrees for 15 seconds", "", $desc);
     $wrap = wordwrap($desc, 68, "\n");
     $exp = explode("\n", $wrap);
 
