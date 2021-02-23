@@ -85,7 +85,7 @@ class GumLoanPayoffPage extends FannieRESTfulPage
                 $loan_info = GumLib::loanSchedule($this->loan); 
                 $this->check_info->amount($loan_info['balance']);
                 $this->check_info->issueDate(date('Y-m-d'));
-                $this->check_info->checkNumber(0);
+                $this->check_info->checkNumber(null);
                 $this->check_info->save();
                 $this->check_info->load();
             }
@@ -214,6 +214,7 @@ class GumLoanPayoffPage extends FannieRESTfulPage
             if ($try) $ssn = $decrypted;
         }
         $form =  new GumTaxFormTemplate($this->custdata, $this->meminfo, $ssn, date('Y'), $fields, $this->loan->accountNumber());
+        $pdf->addPage();
         $ret = $form->renderAsPDF($pdf, 105);
 
         $pdf->Output('LoanPayoff.pdf', 'I');
@@ -225,6 +226,29 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         }
 
         return false;
+    }
+
+    public function post_id_handler()
+    {
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
+        $model = new GumPayoffsModel($dbc);
+        $model->gumPayoffID($this->id);
+        if (FormLib::get('checkNumber')) {
+            $model->checkNumber(FormLib::get('checkNumber'));
+        }
+        if (FormLib::get('checkDate')) {
+            $model->issueDate(FormLib::get('checkDate'));
+        }
+        if (FormLib::get('checkAmount')) {
+            $model->amount(FormLib::get('checkAmount'));
+        }
+        if (FormLib::get('checkNote')) {
+            $model->reason(FormLib::get('checkNote'));
+        }
+        $model->save();
+
+        return 'GumLoanPayoffPage.php?id=' . FormLib::get('loanID');
     }
 
     public function css_content()
@@ -351,6 +375,35 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $ret .= $form->renderAsHTML();
 
         $ret .= '<hr />';
+
+        $checkID = $this->check_info->gumPayoffID();
+        $checkNumber = $this->check_info->checkNumber();
+        $issueDate = $this->check_info->issueDate();
+        $amount = $this->check_info->amount();
+        $note = $this->check_info->reason();
+        $ret .= <<<HTML
+<p>
+<form method="post" action="GumLoanPayoffPage.php">
+<input type="hidden" name="loanID" value="{$this->id}" />
+<input type="hidden" name="id" value="{$checkID}" />
+<table class="table table-bordered">
+    <tr>
+        <th>Check #</th>
+        <th>Issue Date</th>
+        <th>Amount</th>
+        <th>Note</th>
+    </tr>
+    <tr>
+        <td><input type="text" class="form-control" name="checkNumber" value="{$checkNumber}" /></td>
+        <td><input type="text" class="form-control" name="checkDate" value="{$issueDate}" /></td>
+        <td><input type="text" class="form-control" name="checkAmount" value="{$amount}" /></td>
+        <td><input type="text" class="form-control" name="checkNote" value="{$note}" /></td>
+    </tr>
+</table>
+<button type="submit" class="btn btn-default">Update Check Info</button>
+</form>
+</p>
+HTML;
 
         return $ret;
     }
