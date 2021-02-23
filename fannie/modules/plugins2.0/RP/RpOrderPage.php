@@ -255,7 +255,9 @@ class RpOrderPage extends FannieRESTfulPage
         }
 
         $sku = $vendor == $item['backupID'] ? $item['backupSKU'] : $item['vendorSKU'];
-        $prod['cost'] = $item['cost'] / $item['caseSize'];
+        if ($item['caseSize'] != 0) {
+            $prod['cost'] = $item['cost'] / $item['caseSize'];
+        }
         if ($sku == 'DIRECT') {
             $sku = $upc;
         } else {
@@ -487,13 +489,13 @@ class RpOrderPage extends FannieRESTfulPage
             $lcName = $lcRow['likeCodeDesc'];
             $organic = $lcRow['organic'] ? true : false;
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
-            if (($par / $row['caseSize']) < 0.1) {
+            if ($row['caseSize'] != 0 && ($par / $row['caseSize']) < 0.1) {
                 $par = 0.1 * $row['caseSize'];
             }
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
-            if (!$cost || !$cost['cost']) {
+            if ($row['caseSize'] != 0  && ($cost || !$cost['cost'])) {
                 $cost = array('cost' => $row['cost'] / $row['caseSize'], 'units' => $row['caseSize']);
             }
             $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
@@ -582,7 +584,7 @@ class RpOrderPage extends FannieRESTfulPage
                 $upc,
                 $price,
                 $par,
-                $par / $row['caseSize'],
+                ($row['caseSize'] != 0 ? $par / $row['caseSize'] : 0),
                 ($inOrder ? 'info' : ''),
                 $fieldType,
                 $upc,
