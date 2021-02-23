@@ -49,12 +49,10 @@ class QueuedReport extends Job
 
         $values = new ValueContainer();
         $values->setMany($this->data['formData']);
-        $values['excel'] = 'csv';
         $page->setForm($values);
+        $page->setFormat('csv');
 
-        ob_start();
-        $page->draw_page();
-        $csv = ob_get_clean();
+        $csv = $page->report_content();
 
         $mail = OutgoingEmail::get();
         $mail->isSMTP();
@@ -62,14 +60,17 @@ class QueuedReport extends Job
         $mail->Port = 25;
         $mail->SMTPAuth = false;
         $mail->SMTPAutoTLS = false;
+        $mail->FromName = 'Queued Report';
         $mail->From = $config->get('PO_EMAIL');
         $mail->Body = 'The requested report is attached.';
+        $mail->Subject = 'Queued Report';
         $mail->addStringAttachment(
             $csv,
-            $this->data['className'] . '.csv',
+            $this->data['reportClass'] . '.csv',
             'base64',
             'text/csv'
         );
+        $mail->addAddress($this->data['email']);
         $mail->send();
     }
 }

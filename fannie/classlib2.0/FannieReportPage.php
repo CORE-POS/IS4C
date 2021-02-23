@@ -145,6 +145,8 @@ class FannieReportPage extends FanniePage
     */
     protected $chart_data_columns = array();
 
+    protected $queueable = false;
+
     protected $form;
 
     /** 
@@ -380,6 +382,9 @@ class FannieReportPage extends FanniePage
     */
     function report_content()
     {
+        if ($this->queueable && FormLib::get('queued', false)) {
+            return $this->queueReport();
+        }
         $data = $this->getData();
         $output = '';
         if ($this->multi_report_mode) {
@@ -1334,6 +1339,39 @@ class FannieReportPage extends FanniePage
             $this->report_format = $format;
             $phpunit->assertNotEquals(0, strlen($this->report_content()));
         }
+    }
+
+    public function setFormat($f)
+    {
+        $this->report_format = $f;
+    }
+
+    private function queueReport()
+    {
+        $fileName = realpath($_SERVER['SCRIPT_FILENAME']);
+        $class = basename($fileName);
+        $class = substr($class, 0, strlen($class) - 4);
+        $email = FannieAuth::getEmail(FannieAuth::getUID());
+        $json = array(
+            'reportFile' => $fileName,
+            'reportClass' => $class,
+            'email' => $email,
+            'formData' => array(),
+        );
+        foreach ($this->form as $k => $v) {
+            $json['formData'][$k] = $v;
+        }
+        $queue = new COREPOS\Fannie\API\jobs\QueueManager();
+        $added = $queue->add(array(
+            'class' => 'COREPOS\\Fannie\\API\\jobs\\QueuedReport',
+            'data' => $json,
+        ));
+
+        if ($added) {
+            return '<div class="alert alert-success">Report queued for ' . $email . '</div>';
+        }
+
+        return '<div class="alert alert-danger">Report could not be queued</div>';
     }
 
 }

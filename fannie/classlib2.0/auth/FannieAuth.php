@@ -321,6 +321,18 @@ class FannieAuth
         return $sql->getValue($fetchQ, array($uid));
     }
 
+    public static function getEmail($uid)
+    {
+        if (!self::enabled()) {
+            return 'n/a';
+        }
+
+        $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
+        $uid = str_pad($uid, 4, '0', STR_PAD_LEFT);
+        $fetchQ = $sql->prepare("select email from Users where uid=?");
+        return $sql->getValue($fetchQ, array($uid));
+    }
+
     /**
       Create/update authorization class
       @param $auth_class [string] class name
