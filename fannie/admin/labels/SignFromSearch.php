@@ -375,6 +375,8 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $signmod = FormLib::get('signmod');
         if (FormLib::get('signmod') == 'Legacy:WFC Dark Extended 24UP') 
             $ret .= $darkExtendOnly;
+        if (FormLib::get('signmod') == 'Legacy:WFC MEAT 12UP') 
+            $ret .= $darkExtendOnly;
         $ret .= '</div>';
         $ret .= '<hr />';
 
