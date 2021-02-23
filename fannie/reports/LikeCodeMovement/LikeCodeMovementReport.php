@@ -31,6 +31,8 @@ class LikeCodeMovementReport extends FannieReportPage
     protected $title = "Fannie : Like Code Movement";
     protected $header = "Like Code Movement";
 
+    protected $queueable = true;
+
     protected $required_fields = array('date1', 'date2', 'start', 'end');
 
     public $description = '[Like Code Movement] lists sales for likecoded items over a given date range.';
@@ -49,7 +51,11 @@ class LikeCodeMovementReport extends FannieReportPage
         $dlog = DTransactionsModel::selectDlog($date1, $date2);
         $lc1 = $this->form->start;
         $lc2 = $this->form->end;
-        $store = FormLib::get('store', 0);
+        try {
+            $store = $this->form->store;
+        } catch (Exception $ex) {
+            $store = 0;
+        }
 
         $lcP = $dbc->prepare('SELECT upc FROM upcLike WHERE likeCode BETWEEN ? AND ?');
         $lcR = $dbc->execute($lcP, array($lc1, $lc2));
@@ -175,6 +181,8 @@ class LikeCodeMovementReport extends FannieReportPage
         <button type=submit name=submit value="Submit" class="btn btn-default btn-core">Submit</button>
         <button type=reset name=reset class="btn btn-default btn-reset"
             onclick="$('#super-id').val('').trigger('change');">Start Over</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <label><input type="checkbox" name="queued" value="1" /> Email it to me</label>
     </p>
 </form>
 <?php
