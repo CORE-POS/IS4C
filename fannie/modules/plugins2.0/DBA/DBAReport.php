@@ -11,6 +11,8 @@ class DBAReport extends FannieReportPage
     protected $title = 'DBA Report';
     public $description = '[DBA Report] is a tool for running ad hoc SQL queries';
 
+    protected $queueable = true;
+
     protected $required_fields = array('query');
 
     public function fetch_report_data()
@@ -126,11 +128,12 @@ JAVASCRIPT;
         style="border: solid 1px #000"></textarea>
 </div>
 <div class="form-group">
-<div class="form-group">
-    <label>Save as</label>
-    <input type="text" name="saveAs" id="saveAs" class="form-control" />
-</div>
+    <div class="form-group">
+        <label>Save as</label>
+        <input type="text" name="saveAs" id="saveAs" class="form-control" />
+    </div>
     <button type="submit" class="btn btn-default btn-core">Run Report</button>
+    <label><input type="checkbox" name="queued" value="1" /> Email it to me</label>
 </div>
 </form>
 HTML;
