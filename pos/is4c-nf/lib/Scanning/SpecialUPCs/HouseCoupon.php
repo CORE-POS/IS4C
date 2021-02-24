@@ -564,31 +564,22 @@ class HouseCoupon extends SpecialUPC
                 break;
             case 'BQ': // Quantity-capped BOGO
                 // get total number of coupon items
-                $valQ = 'SELECT SUM(l.quantity) '
-                        . $this->baseSQL($transDB, $coupID, 'upc') . "
-                        and h.type in ('BOTH', 'DISCOUNT')";
-                $valP = $transDB->prepare($valQ);
-                $qty = $transDB->getValue($valP);
-
-                // add cheapest items to total value until
-                // the allowed number of free items is reached
-                $priceQ = 'SELECT unitPrice '
+                $priceQ = 'SELECT unitPrice, quantity '
                         . $this->baseSQL($transDB, $coupID, 'upc') . "
                         and h.type in ('BOTH', 'DISCOUNT')
-                        ORDER BY unitPrice";
+                        ORDER BY unitPrice ASC";
                 $priceR = $transDB->query($priceQ);
                 $value = 0;
-                $freeItems = 1;
+                $tmp = array();
                 while ($priceW = $transDB->fetchRow($priceR)) {
-                    if ($freeItems*2 > $qty) {
-                        // not enough purchases to add a free item
-                        break;
-                    } elseif ($freeItems > $infoW['discountValue']) {
-                        // exceeds max number of free items
-                        break;
+                    $x = $priceW['quantity'];
+                    for ($x; $x > 0; $x--) {
+                        $tmp[] = $priceW['unitPrice'];
                     }
-                    $value += $priceW['unitPrice'];
-                    $freeItems++;
+                }
+                $f = floor(count($tmp) / 2);
+                for ($f; $f > 0; $f--) {
+                    $value += $tmp[$f-1];
                 }
                 break;
             case 'BH': // BOHO
