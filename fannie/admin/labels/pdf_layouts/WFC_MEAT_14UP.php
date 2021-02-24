@@ -10,7 +10,7 @@ if (!class_exists('Store')) {
     include(__DIR__ . '/../../classlib2.0/lib/Store.php');
 }
 
-class WFC_MEAT_12UP_PDF extends FpdfWithBarcode
+class WFC_MEAT_14UP_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     public function setTagDate($str){
@@ -25,10 +25,10 @@ class WFC_MEAT_12UP_PDF extends FpdfWithBarcode
 
 }
 
-function WFC_MEAT_12UP($data,$offset=0,$showPrice=0)
+function WFC_MEAT_14UP($data,$offset=0,$showPrice=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new WFC_MEAT_12UP_PDF('L','mm','Letter');
+    $pdf = new WFC_MEAT_14UP_PDF('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(0, 0, 0);
     $pdf->SetTextColor(255, 255, 255);
@@ -233,8 +233,10 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     $upc = $row['upc'];
     $brand = strToUpper($row['brand']);
     $price = $row['normal_price'];
-    $manualDesc = FormLib::get('update_desc');
     $descFontSize = 20;
+    
+    $updateUpcs = FormLib::get('update_upc');
+    $manualDescs = FormLib::get('update_desc');
 
     $args = array($row['upc']);
     $prep = $dbc->prepare("
@@ -245,7 +247,10 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
 
-    $desc = $manualDesc[$tagNo];
+    $MdescKey = array_search($upc, $updateUpcs);
+    $Mdesc = $manualDescs[$MdescKey];
+
+    $desc = $Mdesc;
     $desc = str_replace("\n", "", $desc);
     $desc = str_replace("\r", "", $desc);
     $par = $row['auto_par'];
