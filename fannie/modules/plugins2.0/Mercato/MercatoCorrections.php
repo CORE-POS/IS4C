@@ -92,7 +92,7 @@ HTML;
 
     protected function get_view()
     {
-        $res = $this->connection->query("SELECT tdate, trans_num, trans_id
+        $res = $this->connection->query("SELECT tdate, trans_num, trans_id, upc, description
             FROM " . FannieDB::fqn('dlog_15', 'trans') . "
             WHERE trans_type='I'
                 AND register_no=40
@@ -103,8 +103,8 @@ HTML;
         while ($row = $this->connection->fetchRow($res)) {
             list($date,) = explode(' ', $row['tdate']);
             list($emp,$reg,$trans) = explode('-', $row['trans_num']);
-            $ret .= sprintf('<li><a href="MercatoCorrections.php?id=%s:%s:%d">%s #%s</a>',
-                $date, $row['trans_num'], $row['trans_id'], $date, $trans);
+            $ret .= sprintf('<li><a href="MercatoCorrections.php?id=%s:%s:%d">%s #%s %s %s</a>',
+                $date, $row['trans_num'], $row['trans_id'], $date, $trans, $row['upc'], $row['description']);
         }
         $ret .= '</ul>';
 
