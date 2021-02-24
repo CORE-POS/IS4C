@@ -108,6 +108,12 @@ class GumLoanPayoffPage extends FannieRESTfulPage
 
         $loan_info = GumLib::loanSchedule($this->loan); 
 
+        $name = $this->custdata->FirstName();
+        $names = explode(' ', $name);
+        $names = array_filter($names, function($i) { return strlen($i) > 1; });
+        $name = implode(' ', $names);
+        $name = ucwords(strtolower($name));
+
         $pdf = new FPDF('P', 'mm', 'Letter');
         $pdf->SetMargins(6.35, 6.35, 6.35); // quarter-inch margins
         $pdf->SetAutoPageBreak(false);
@@ -119,15 +125,40 @@ class GumLoanPayoffPage extends FannieRESTfulPage
         $pdf->SetFont('Arial', '', 8);
         $line_height = 3.5;
         $pdf->SetXY(6.35, 43);
-        $text = 'Thank you for investing in the Denfeld expansion. Pursuant to the terms of your Promissory Note with WFC, below please find a check for the principal and, as applicable, compound interest due.   A statement showing the terms of your loan and annual compounding of the interest thereon is provided. If you have questions regarding this payment, please contact Financial Manager Josephine Lepak (jlepak@wholefoods.coop).  Thank you very much for your support.';
+        $pdf->Write($line_height, "Dear $name,");
+        $pdf->Ln();
+        $pdf->Ln();
+        $text = 'A few years ago you invested in the bold idea of doubling the size of Whole Foods Co-op with a new location in West Duluth, offering greater access to healthy, locally-sourced food.  Co-op Owners like yourself invested a huge $1.7 million into this project and today, our Denfeld store continues to grow and sustain the Co-op.';
         $pdf->Write($line_height, $text);
+        $pdf->Ln();
+        $pdf->Ln();
+        $text = 'Thank you for believing in your Co-op and investing locally. You\'ve made a difference in your community!';
+        $pdf->Write($line_height, $text);
+        $pdf->Ln();
+        $pdf->Ln();
+        $text = 'Pursuant to the terms of your Promissory Note with WFC, included you will find a check for the principal and, as applicable, compound interest due.   A statement showing the terms of your loan and annual compounding of the interest thereon is provided.  Your 1099 for any interest paid will be mailed out to you by January 31st.';
 
+        $pdf->Write($line_height, $text);
+        $pdf->Ln();
+        $pdf->Ln();
+        $text = 'If you have questions regarding this payment, please contact Finance Administrator Josephine Lepak (jlepak@wholefoods.coop).';
+        $pdf->Write($line_height, $text);
+        $pdf->Ln();
+        $pdf->Ln();
+        $text = 'From all of us at the Co-op...THANK YOU!';
+        $pdf->Write($line_height, $text);
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->Ln();
+        $pdf->Write($line_height, "Sarah Hannigan,\nGeneral Manager");
+        $pdf->Ln();
+        
         $col_width = 40.64;
         $col1 = 6.35 + $col_width;
         $col2 = $col1 + $col_width;
         $col3 = $col2 + $col_width;
         $col4 = $col3 + $col_width;
-        $table_y = 60;
+        $table_y = 130;
         $pdf->SetFont('Arial', 'BU', 8);
         $pdf->SetXY($col1, $table_y);
         $pdf->Cell($col_width, $line_height, 'Ending Period', 0, 0, 'C');
