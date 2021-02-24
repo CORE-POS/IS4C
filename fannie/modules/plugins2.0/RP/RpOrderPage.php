@@ -146,7 +146,7 @@ class RpOrderPage extends FannieRESTfulPage
             $query .= ' AND vendorID IN (292, 293, 136)';
         }
 
-        $query = "SELECT p.upc, p.description, v.sku, v.units, v.vendorID, u.likeCode
+        $query = "SELECT p.upc, p.description, v.sku, v.units, v.vendorID, u.likeCode, p.cost
             FROM products AS p
                 INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
                 LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID AND p.upc=v.upc
@@ -172,6 +172,9 @@ class RpOrderPage extends FannieRESTfulPage
             } elseif ($row['vendorID'] == 25) {
                 $row['vendorID'] = 293;
             }
+            if ($row['units'] == 0) {
+                $row['units'] = 1;
+            }
             $value = array(
                 'vendorID' => $row['vendorID'],
                 'caseSize' => $row['units'],
@@ -179,6 +182,7 @@ class RpOrderPage extends FannieRESTfulPage
                 'upc' => $row['upc'],
                 'item' => $row['description'],
                 'likeCode' => $row['likeCode'],
+                'cost' => $row['cost'] * $row['units'],
             );
             $value = json_encode($value);
             $ret[] = array(
@@ -300,6 +304,8 @@ class RpOrderPage extends FannieRESTfulPage
         $model->vendorID(FormLib::get('vendor'));
         $model->vendorSKU(FormLib::get('sku'));
         $model->vendorItem(FormLib::get('item'));
+        $model->cost(FormLib::get('cost'));
+        $model->backupID(0);
 
         $lc = FormLib::get('lc');
         $upc = BarcodeLib::padUPC(FormLib::get('upc'));
@@ -338,7 +344,7 @@ class RpOrderPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpOrder.js?date=20210217');
+        $this->addScript('rpOrder.js?date=20210224');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {
@@ -751,16 +757,22 @@ class RpOrderPage extends FannieRESTfulPage
             <input type="text" class="form-control input-sm" name="upc" id="newUPC" />
         </div>
     </div>
-    <div class="col-sm-6">
+    <div class="col-sm-5">
         <div class="form-group input-group">
             <span class="input-group-addon">SKU</span>
             <input type="text" class="form-control input-sm" name="sku" id="newSKU" />
         </div>
     </div>
-    <div class="col-sm-6">
+    <div class="col-sm-3">
         <div class="form-group input-group">
             <span class="input-group-addon">Case Size</span>
-            <input type="text" class="form-control input-sm" name="caseSize" required id="newCase" />
+            <input type="text" class="form-control input-sm" name="caseSize" required id="newCase" value="1" />
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="form-group input-group">
+            <span class="input-group-addon">Case Cost</span>
+            <input type="text" class="form-control input-sm" name="cost" required id="newCost" />
         </div>
     </div>
     <div class="form-group input-group">

@@ -29,6 +29,7 @@ var rpOrder = (function ($) {
                 $('input#newSKU').val(data.sku);
                 $('input#newCase').val(data.caseSize);
                 $('input#newLC').val(data.likeCode);
+                $('input#newCost').val(data.cost);
             },
             minLength: 3
         });
