@@ -53,11 +53,59 @@ class MercatoTags extends FannieRESTfulPage
         return false;
     }
 
+    protected function get_id_handler()
+    {
+        $orders = $this->getOrders();
+        echo json_encode($orders);
+
+        return false;
+    }
+
+    private function getOrders()
+    {
+        $today = date('Y-m-d');
+        $tomorrow = date('Y-m-d', strtotime('tomorrow'));
+        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $prep = $this->connection->prepare("SELECT orderID, name, pDate
+            FROM MercatoOrders
+            WHERE pdate BETWEEN ? AND ?
+                AND storeID=?
+            ORDER BY pDate");
+        $res = $this->connection->execute($prep, array($today, $tomorrow . ' 23:59:59', $store));
+        $orders = '<ul>';
+        $dataSet = array();
+        $i = 0;
+        while ($row = $this->connection->fetchRow($res)) {
+            $stamp = strtotime($row['pDate']);
+            $json = array(
+                'name' => $row['name'],
+                'orderID' => $row['orderID'],
+                'date' => date('Y-m-d', $stamp),
+                'time' => date('g:ia', $stamp),
+            );
+            $dataSet[] = $json;
+            $orders .= sprintf('<li><a href="" onclick="setFields(%s); return false;">%s %s</li>',
+                $i, date('D g:ia', $stamp), $row['name']);
+            $i++;
+        }
+        $orders .= '</ul>';
+
+        return array(
+            'html' => $orders,
+            'json' => $dataSet,
+        );
+    }
+
     protected function get_view()
     {
         $today = date('Y-m-d');
+        $orders = $this->getOrders();
+        $jsonData = json_encode($orders['json']);
+        $this->addOnloadCommand('setTimeout(refreshData, 15 * 60 * 1000);');
 
         return <<<HTML
+<div class="row">
+<div class="col-sm-6">
 <form method="post" action="MercatoTags.php" id="mtagform"
     onsubmit="setTimeout(function() { document.getElementById('mtagform').reset(); }, 500);">
 <p>
@@ -94,6 +142,32 @@ class MercatoTags extends FannieRESTfulPage
     <button type="submit" class="btn btn-default">Print Tags</button>
 </p>
 </form>
+</div>
+<div class="col-sm-6" id="ordersColumn">
+    {$orders['html']}
+</div>
+</div>
+<script>
+var dataSet = {$jsonData};
+function setFields(i) {
+    obj = dataSet[i];
+    $('input[name=name]').val(obj.name);
+    $('input[name=pdate]').val(obj.date);
+    $('input[name=ptime]').val(obj.time);
+    $('input[name=order]').val(obj.orderID);
+}
+function refreshData() {
+    $.ajax({
+        method: 'get',
+        data: 'id=refresh',
+        dataType: 'json'
+    }).done(function (resp) {
+        $('div#ordersColumn').html(resp.html);
+        dataSet = resp.json;
+        setTimeout(refreshData, 15 * 60 * 1000);
+    });
+};
+</script>
 HTML;
     }
 }
