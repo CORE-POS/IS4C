@@ -52,7 +52,7 @@ var CoreHttpApi = (function() {
     mod.process = function(req) {
         return fetch(url, {
             method: 'POST',
-            headers { 'Content-Type' : 'application/json' },
+            headers: { 'Content-Type' : 'application/json' },
             body: JSON.stringify(req)
         });
     };
