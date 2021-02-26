@@ -515,7 +515,10 @@ function enableLinea(selector, callback)
     protected function getRedis()
     {
         $conf = $this->config->get('PLUGIN_SETTINGS');
-        $redis_host = isset($conf['SatelliteRedis']) ? $conf['SatelliteRedis'] : '127.0.0.1';
+        $redis_host = isset($conf['SatelliteRedis']) ? $conf['SatelliteRedis'] : '';
+        if ($redis_host === '') {
+            return false;
+        }
         try {
             $redis = new \Predis\Client($redis_host);
             return $redis;
