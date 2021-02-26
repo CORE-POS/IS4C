@@ -142,6 +142,21 @@ class CouponCode extends SpecialUPC
         return true;
     }
 
+    private function ncgCouponItems($upc)
+    {
+        $dbc = Database::pDataConnect();
+        if (!$dbc->tableExists('NcgCouponItems')) {
+            return array();
+        }
+        $prep = $dbc->prepare("SELECT itemUPC FROM NcgCouponItems WHERE couponUPC=?");
+        $items = $dbc->getAllValues($prep, array($upc));
+        if (!is_array($items)) {
+            return array();
+        }
+
+        return $items;
+    }
+
     public function handle($upc,$json)
     {
         list($manId, $fam, $val, $manIdStart) = $this->upcToParts($upc);
@@ -163,6 +178,8 @@ class CouponCode extends SpecialUPC
         if ($chk !== true) {
             return $chk;
         }
+
+        $ncgItems = $this->ncgCouponItems($upc);
 
         if ($fam == "992") {
             // 992 basically means blanket accept
@@ -225,7 +242,16 @@ class CouponCode extends SpecialUPC
             localtemptrans as t left join couponApplied as c
             on t.emp_no=c.emp_no and t.trans_no=c.trans_no
             and t.trans_id=c.trans_id
-            where (substring(t.upc," . ($manIdStart+1) . ", {$matchLength})='{$matchOn}'";
+            where (";
+        if (count($ncgItems) > 0) {
+            $query .= " t.upc IN (";
+            foreach ($ncgItems as $ni) {
+                $query .= "'{$ni}',";
+            }
+            $query = substr($query, 0, strlen($query) - 1) . ') ';
+        } else {
+            $query .= " substring(t.upc," . ($manIdStart+1) . ", {$matchLength})='{$matchOn}'";
+        }
         /* not right per the standard, but organic valley doesn't
          * provide consistent manufacturer ids in the same goddamn
          * coupon book */
