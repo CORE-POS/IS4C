@@ -37,7 +37,7 @@ class ParametersModel extends BasicModel
     'store_id' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'lane_id' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'param_key' => array('type'=>'VARCHAR(100)', 'primary_key'=>true),
-    'param_value' => array('type'=>'VARCHAR(255)'),
+    'param_value' => array('type'=>'VARCHAR(512)'),
     'is_array' => array('type'=>'TINYINT'),
     );
 
