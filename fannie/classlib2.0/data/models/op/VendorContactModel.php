@@ -31,8 +31,8 @@ class VendorContactModel extends BasicModel
 
     protected $columns = array(
     'vendorID' => array('type'=>'INT','primary_key'=>True),
-    'phone' => array('type'=>'VARCHAR(15)'),
-    'fax' => array('type'=>'VARCHAR(15)'),
+    'phone' => array('type'=>'VARCHAR(25)'),
+    'fax' => array('type'=>'VARCHAR(25)'),
     'email' => array('type'=>'VARCHAR(50)'),
     'website' => array('type'=>'VARCHAR(100)'),
     'notes' => array('type'=>'TEXT')
