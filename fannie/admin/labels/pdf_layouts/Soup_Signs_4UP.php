@@ -36,7 +36,7 @@ function Soup_Signs_4UP($data,$offset=0)
     $pdf->SetFont('Gill','B', 16);
 
     $width = 68;
-    $height = 34;
+    $height = 36;
     $left = 3;  
     $top = 3;
     $guide = 0.3;
