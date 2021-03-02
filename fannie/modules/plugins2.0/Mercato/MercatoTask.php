@@ -73,8 +73,10 @@ class MercatoTask extends FannieTask
 
             if ($info['special_price'] > 0 && $info['special_price'] < $data[1]) {
                 fwrite($saleOut, $upc . ",");
+                $end = strtotime($info['end_date']);
+                $end = mktime(0, 0, 0, date('n', $end), date('j', $end) + 1, date('Y', $end));
                 fwrite($saleOut, date('n/j/Y', strtotime($info['start_date'])) . ",");
-                fwrite($saleOut, date('n/j/Y', strtotime($info['end_date'])) . ",");
+                fwrite($saleOut, date('n/j/Y', $end) . ",");
                 fwrite($saleOut, sprintf('%.2f', $info['special_price']) . ",");
                 fwrite($saleOut, "1\r\n");
             }
