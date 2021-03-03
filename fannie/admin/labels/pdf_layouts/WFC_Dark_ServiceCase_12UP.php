@@ -238,6 +238,8 @@ function generateServiceCaseTag($x, $y, $guide, $width, $height, $pdf, $row, $db
 {
     $upc = $row['upc'];
     $desc = $row['description'];
+    $showPrice = FormLib::get('showPrice', false);
+
     $args = array($row['upc']);
     $prep = $dbc->prepare("
         SELECT pu.description, p.scale
@@ -301,10 +303,12 @@ function generateServiceCaseTag($x, $y, $guide, $width, $height, $pdf, $row, $db
     /*
         Add Price
     */
+    if ($showPrice == 1) {
         $pdf->SetFont('Gill', 'B', 26); 
         $pdf->SetXY($x,$y+47);
         $pdf->Cell($width, 5, "$".$price."/lb", 0, 1, 'C', true); 
         $pdf->SetFont('Gill', 'B', 16); 
+    }
 
     /*
         Create Guide-Lines
