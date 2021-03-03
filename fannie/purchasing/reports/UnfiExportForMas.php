@@ -90,7 +90,7 @@ class UnfiExportForMas extends FannieReportPage
                         LEFT JOIN vendors AS n ON n.vendorID=i.vendorID
                     WHERE i.vendorID=? 
                         AND o.receivedDate BETWEEN ? AND ?
-                        AND o.orderID <> -99 ';
+                        AND o.userID <> -99 ';
         if (FormLib::get('store')) {
             $codingQ .= ' AND i.storeID=? ';
             $args[] = FormLib::get('store');
