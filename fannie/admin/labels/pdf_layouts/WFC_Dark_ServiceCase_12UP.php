@@ -236,6 +236,7 @@ function generateMirrorTagServiceCase12($x, $y, $guide, $width, $height, $pdf, $
 
 function generateServiceCaseTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
+    $upc = $row['upc'];
     $desc = $row['description'];
     $args = array($row['upc']);
     $prep = $dbc->prepare("
@@ -247,6 +248,12 @@ function generateServiceCaseTag($x, $y, $guide, $width, $height, $pdf, $row, $db
     $desc = $dbc->fetchRow($res);
     $desc = $desc['description'];
     $price = $row['normal_price'];
+
+    $updateUpcs = FormLib::get('update_upc');
+    $manualDescs = FormLib::get('update_desc');
+    $MdescKey = array_search($upc, $updateUpcs);
+    $Mdesc = $manualDescs[$MdescKey];
+    $desc = $Mdesc;
 
     // prep tag canvas
     $pdf->SetXY($x,$y);

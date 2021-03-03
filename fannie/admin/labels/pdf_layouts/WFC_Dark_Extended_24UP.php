@@ -185,6 +185,9 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
     $brand = $row['brand'];
     $price = $row['normal_price'];
 
+    $updateUpcs = FormLib::get('update_upc');
+    $manualDescs = FormLib::get('update_desc');
+
     $args = array($row['upc']);
     $prep = $dbc->prepare("
         SELECT pu.description, p.scale
@@ -194,6 +197,10 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
     $desc = $row['description'];
+
+    $MdescKey = array_search($upc, $updateUpcs);
+    $Mdesc = $manualDescs[$MdescKey];
+    $desc = $Mdesc;
 
     // prep tag canvas
     $pdf->SetXY($x,$y);

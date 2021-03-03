@@ -193,6 +193,7 @@ function generateMirrorTagHFM12($x, $y, $guide, $width, $height, $pdf, $row, $db
 
 function generateHFMTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
+    $upc = $row['upc'];
     $desc = $row['description'];
     $args = array($row['upc']);
     $prep = $dbc->prepare("
@@ -203,6 +204,12 @@ function generateHFMTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
     $desc = $row['description'];
+
+    $updateUpcs = FormLib::get('update_upc');
+    $manualDescs = FormLib::get('update_desc');
+    $MdescKey = array_search($upc, $updateUpcs);
+    $Mdesc = $manualDescs[$MdescKey];
+    $desc = $Mdesc;
 
     // prep tag canvas
     $pdf->SetXY($x,$y);
