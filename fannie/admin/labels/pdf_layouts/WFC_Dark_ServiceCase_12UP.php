@@ -146,7 +146,8 @@ function generateMirrorTagServiceCase12($x, $y, $guide, $width, $height, $pdf, $
 
     $ingr = strtolower($ingr);
     $ingr = explode('contains', $ingr);
-    $allergens = ucfirst($ingr[1]);
+    if (isset($ingr[1]))
+        $allergens = ucfirst($ingr[1]);
     $allergens = str_replace("\r\n", "", $allergens);
     $allergens = str_replace("\r", "", $allergens);
     $allergens = str_replace("\n", "", $allergens);
