@@ -6,9 +6,6 @@ if (!class_exists('FpdfWithBarcode')) {
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
-if (!class_exists('Store')) {
-    include(__DIR__ . '/../../classlib2.0/lib/Store.php');
-}
 
 class WFC_MEAT_14UP_PDF extends FpdfWithBarcode
 {
@@ -126,7 +123,7 @@ function generateMirrorMeatTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Gill','', 9);
 
-    $args = array($row['upc']);
+    $args = array($upc);
     $prep = $dbc->prepare("
         SELECT pu.description, p.scale, p.auto_par, v.sku
         FROM productUser AS pu
@@ -194,10 +191,6 @@ function generateMirrorMeatTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
 
     $store = FormLib::get('store');
     $movement = ($store == 1) ? $par * 3 : $par * 7;
-    if ($scale == 1) {
-        $priceText .= "/LB";
-        $pxMod -= 3;
-    }
     $pdf->SetFont('Gill', '', 12);
     $pdf->SetXY($x+124,$y+2);
     $pdf->Cell(10, 5, round($movement,1), 0, 1, 'C', true);
