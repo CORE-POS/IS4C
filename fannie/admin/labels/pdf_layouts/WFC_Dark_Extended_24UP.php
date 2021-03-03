@@ -187,6 +187,7 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
 
     $updateUpcs = FormLib::get('update_upc');
     $manualDescs = FormLib::get('update_desc');
+    $manualBrand = FormLib::get('update_brand');
 
     $args = array($row['upc']);
     $prep = $dbc->prepare("
@@ -200,7 +201,9 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
 
     $MdescKey = array_search($upc, $updateUpcs);
     $Mdesc = $manualDescs[$MdescKey];
+    $Mbrand = $manualBrand[$MdescKey];
     $desc = $Mdesc;
+    $brand = $Mbrand;
 
     // prep tag canvas
     $pdf->SetXY($x,$y);
