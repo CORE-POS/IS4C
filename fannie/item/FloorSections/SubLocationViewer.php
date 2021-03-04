@@ -69,8 +69,10 @@ class SubLocationViewer extends FannieRESTfulPage
                 && !array_key_exists($dept, $subdata[$fsName][$row['subSection']])) {
                 $subdata[$fsName][$row['subSection']][$dept] = 1;
             } else {
-                $subdata[$fsName][$row['subSection']][$dept] += 1;
-                $subExampleItem[$fsName][$row['subSection']][$dept] = $row['description'];
+                if (isset($subdata[$fsName][$row['subSection']][$dept])) {
+                    $subdata[$fsName][$row['subSection']][$dept] += 1;
+                    $subExampleItem[$fsName][$row['subSection']][$dept] = $row['description'];
+                }
             }
         }
         $td = '';

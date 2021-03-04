@@ -7,6 +7,7 @@ class FpdfLib
      **/
     static function strtolower_inpara($str)
     {
+        $newstr = '';
         preg_match_all('#\((.*?)\)#', $str, $match);
         foreach ($match as $k => $array) {
             if ($k == 0) {

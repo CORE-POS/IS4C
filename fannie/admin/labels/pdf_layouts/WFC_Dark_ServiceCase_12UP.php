@@ -123,9 +123,9 @@ function WFC_Dark_ServiceCase_12UP ($data,$offset=0)
 
 function generateMirrorTagServiceCase12($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
-    $upc = $row['upc'];
-    $desc = $row['description'];
-    $size = $row['size'];
+    $upc = isset($row['upc']) ? $row['upc'] : '';
+    $desc = isset($row['description']) ? $row['description'] : '';
+    $size = isset($row['size']) ? $row['size'] : '';
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Gill','', 22);  //Set the font 
@@ -146,8 +146,7 @@ function generateMirrorTagServiceCase12($x, $y, $guide, $width, $height, $pdf, $
 
     $ingr = strtolower($ingr);
     $ingr = explode('contains', $ingr);
-    if (isset($ingr[1]))
-        $allergens = ucfirst($ingr[1]);
+    $allergens = (isset($ingr[1])) ? ucfirst($ingr[1]) : '';
     $allergens = str_replace("\r\n", "", $allergens);
     $allergens = str_replace("\r", "", $allergens);
     $allergens = str_replace("\n", "", $allergens);
