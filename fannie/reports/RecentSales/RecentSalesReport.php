@@ -102,7 +102,7 @@ class RecentSalesReport extends FannieReportPage
         $dates['Yesterday'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
         $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-1,date("Y",$stamp));
         $dates['2 Days Ago'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
-        $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-2,date("Y",$stamp));
+        $stamp = mktime(0,0,0,date("n",$stamp),date("j",$stamp)-1,date("Y",$stamp));
         $dates['3 Days Ago'] = array(date("Y-m-d",$stamp), date('Y-m-d', $stamp));
 
         $dates['This Week'] = array(date("Y-m-d",strtotime("monday this week")),
