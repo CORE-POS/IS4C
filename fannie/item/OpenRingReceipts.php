@@ -187,11 +187,23 @@ class OpenRingReceipts extends FannieRESTfulPage
 
     public function get_upc_date1_date2_view()
     {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+
         if (!is_array($this->receipts) || count($this->receipts) == 0) {
             return '<div class="alert alert-danger">No matches found</div>';
         }
 
         $upc = FormLib::get('upc');
+        $family = substr($upc, 3, 5);
+        $famItems = "";
+            
+        $args = array($family);
+        $prep = $dbc->prepare("SELECT upc, brand, description FROM products WHERE SUBSTR(upc, 4, 5) = ? GROUP BY upc");
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $famItems .= "<tr><td>{$row['upc']}</td><td>{$row['brand']}</td><td>{$row['description']}</td></tr></div>";
+        }
+
         $ret = '<div id="openRings"><table class="table table-condensed small">';
         foreach ($this->receipts as $receipt) {
             $ret .= sprintf('<tr>
@@ -234,6 +246,11 @@ class OpenRingReceipts extends FannieRESTfulPage
                             Add to Ignored Barcodes: 
                             <a data-toggle='modal' data-target='#ignorebarcode-modal'> click here </a>
                         </strong>
+                        <div style=\"height: 15px\"></div>
+                        <div>
+                            Related Items by UPC Family: \"$family\"
+                            <table class=\"table table-small table-bordered condensed small\"><thead></thead><tbody>$famItems</tbody></table>
+                        </div>
                     <div id='IgnoredBarcodes'>
                     <!--
                         <form>
