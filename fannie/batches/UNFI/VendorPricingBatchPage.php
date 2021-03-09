@@ -262,7 +262,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $vendorModel = new VendorItemsModel($dbc);
 
-        $ret .= "<table class=\"table table-bordered small\" id=\"mytable\">";
+        $ret .= "<div class=\"table-responsive\"><table class=\"table table-bordered small\" id=\"mytable\">";
 
         $ret .= "<thead><tr class=\"thead\">
             <th class=\"thead\">UPC</th>
@@ -346,6 +346,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 $row['srp'] = $row['srp'] - $change;
                 $row['srp'] = $rounder->round($row['srp']);
             }
+            if (abs(abs($row['normal_price']) - abs($row['rawSRP'])) < 0.03)
+                continue;
             $ret .= sprintf("<tr id=row%s class='%s %s'>
                 <td class=\"sub\"><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\">%s</a></td>
                 <td class=\"sub sku\">%s</td>
@@ -395,7 +397,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 (!isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc']
             );
         }
-        $ret .= "</tbody></table>";
+        $ret .= "</tbody></table></div>";
 
         return $ret;
     }
