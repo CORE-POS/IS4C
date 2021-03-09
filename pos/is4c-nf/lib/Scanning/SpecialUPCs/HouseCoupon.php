@@ -562,7 +562,7 @@ class HouseCoupon extends SpecialUPC
                     $value = $infoW['discountValue'];
                 }
                 break;
-            case 'BQ': // Quantity-capped BOGO
+            case 'BQ': // BOGO Qty Limited
                 // get total number of coupon items
                 $priceQ = 'SELECT unitPrice, quantity '
                         . $this->baseSQL($transDB, $coupID, 'upc') . "
