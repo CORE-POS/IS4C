@@ -428,6 +428,9 @@ HTML;
         $res = $dbc->execute($prep,$args);
         $batches = array();
         while ($row = $dbc->fetchRow($res)) {
+            if (!isset($batches[$row['bid']])) {
+                $batches[$row['bid']] = array();
+            }
             if (!in_array($row['super_name'], $batches[$row['bid']])) {
                 $batches[$row['bid']][] = $row['super_name'];
             }
