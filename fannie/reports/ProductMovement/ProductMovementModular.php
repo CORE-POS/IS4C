@@ -70,6 +70,8 @@ class ProductMovementModular extends FannieReportPage
             return DTransactionsModel::selectDTrans($date1, $date2);
         } elseif (substr($upc, 0, 3) == '004') {
             return DTransactionsModel::selectDLog($date1, $date2);
+        } elseif (substr($upc, 0, 3) == '005') {
+            return DTransactionsModel::selectDLog($date1, $date2);
         }
 
         return DTrans::getView($date1, $date2);
