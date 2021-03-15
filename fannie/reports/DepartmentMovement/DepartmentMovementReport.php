@@ -143,9 +143,13 @@ class DepartmentMovementReport extends FannieReportPage
                       AND t.memType NOT IN {$nabs}
                       GROUP BY t.upc,
                           p.brand,
-                          CASE WHEN t.description IS NULL THEN p.description ELSE t.description END,
+                          description,
                           CASE WHEN t.trans_status = 'R' THEN 'Refund' ELSE 'Sale' END,
-                      d.dept_no,d.dept_name,s.superID,v.vendorName ORDER BY SUM(t.total) DESC";
+                          d.dept_no,d.dept_name,s.superID,
+                          v.vendorName,
+                          l.likeCode,
+                          l.likeCodeDesc
+                      ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':
                 $query =  "SELECT t.department,d.dept_name,"
