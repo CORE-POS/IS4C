@@ -67,7 +67,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetXY(-5 + $this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 41));
             $pdf->SetFont($this->font, '', $this->MED_FONT);
             $pdf->MultiCell($effective_width/2, 6, "BUY ONE\nGET ONE", 0, 'R');
-            $pdf->SetXY(-5 + $this->left + ($this->width*$column) + ($effective_width/2), $this->top + ($this->height*$row) + ($this->height - 39));
+            $pdf->SetXY(-5 + $this->left + ($this->width*$column) + ($effective_width/2), $this->top + ($this->height*$row) + ($this->height - 40.5));
             $pdf->SetFont($this->font, '', $this->BIG_FONT);
             $pdf->Cell($effective_width/2, 12, 'FREE', 0, 1, 'L');
         }
