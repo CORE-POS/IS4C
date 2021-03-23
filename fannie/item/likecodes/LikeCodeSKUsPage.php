@@ -267,6 +267,11 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         $category = '';
         $categories = '<option value="">Select category</option>';
         $filterCat = FormLib::get('cat');
+        $filterPri = FormLib::get('pri');
+        $priOpts = '<option value="0">Primary selection</option>
+            <option value="1" ' . ($filterPri == 1 ? 'selected' : '') . '>Not available</option>
+            <option value="2" ' . ($filterPri == 2 ? 'selected' : '') . '>Not selected</option>
+            ';
         foreach ($map as $lc => $data) {
             $data['cat'] = strtoupper($data['cat']);
             if ($data['cat'] != $category) {
@@ -278,6 +283,12 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             }
             if ($filterCat && $data['cat'] != $filterCat) {
                 continue;
+            }
+            if ($filterPri == 1 && (!isset($data['skus'][$data['vendorID']]) || $data['skus'][$data['vendorID']]['description'] != null)) {
+                continue; 
+            }
+            if ($filterPri == 2 && ($data['vendorID'] != null && isset($data['skus'][$data['vendorID']]))) {
+                continue; 
             }
             $checkMulti = $data['multi'] ? 'checked' : '';
             $inactiveClass = ($this->id != -1 && $data['inUse'] == 0) ? ' collapse inactiveRow warning' : '';
@@ -332,6 +343,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
 <input type="hidden" name="id" class="filter-field" value="{$this->id}" />
 Filter: 
 <select name="cat" class="form-control filter-field">{$categories}</select>
+<select name="pri" class="form-control filter-field">{$priOpts}</select>
 </p>
 <p><label><input type="checkbox" {$internalDisable} onchange="skuMap.toggleInact(this.checked);" /> Show inactive</label>
 (Active {$counts['act']}, Inactive {$counts['inact']})
