@@ -265,10 +265,19 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
         }
         $tableBody = '';
         $category = '';
+        $categories = '<option value="">Select category</option>';
+        $filterCat = FormLib::get('cat');
         foreach ($map as $lc => $data) {
+            $data['cat'] = strtoupper($data['cat']);
             if ($data['cat'] != $category) {
-                $tableBody .= "<tr><th class=\"text-center info\" colspan=\"8\" align=\"center\">{$data['cat']}</th></tr>";
+                if ($filterCat == '' || $filterCat == $data['cat']) {
+                    $tableBody .= "<tr><th class=\"text-center info\" colspan=\"8\" align=\"center\">{$data['cat']}</th></tr>";
+                }
                 $category = $data['cat'];
+                $categories .= sprintf('<option %s>%s</option>', ($filterCat == $data['cat'] ? 'selected' : ''), $data['cat']);
+            }
+            if ($filterCat && $data['cat'] != $filterCat) {
+                continue;
             }
             $checkMulti = $data['multi'] ? 'checked' : '';
             $inactiveClass = ($this->id != -1 && $data['inUse'] == 0) ? ' collapse inactiveRow warning' : '';
@@ -303,17 +312,27 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             $tableBody .= '</tr>';
         }
 
-        $this->addScript('skuMap.js?date=20180228');
+        $this->addScript('skuMap.js?date=20210323');
         foreach (array(292, 293, 136) as $vID) {
             $this->addOnloadCommand("skuMap.autocomplete('.sku-field$vID', $vID);");
             $this->addOnloadCommand("skuMap.unlink('.sku-field$vID', $vID);");
         }
+        $this->addOnloadCommand('skuMap.enableFilters();');
+        $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.filter-field').chosen({search_contains: true});");
         $updateP = $this->connection->prepare('SELECT MIN(modified) FROM vendorItems WHERE vendorID=?');
         $alb = $this->connection->getValue($updateP, array(292));
         $cpw = $this->connection->getValue($updateP, array(293));
         $rdw = $this->connection->getValue($updateP, array(136));
 
         return <<<HTML
+<p class="form-inline">
+<input type="hidden" name="store" class="filter-field" value="{$store}" />
+<input type="hidden" name="id" class="filter-field" value="{$this->id}" />
+Filter: 
+<select name="cat" class="form-control filter-field">{$categories}</select>
+</p>
 <p><label><input type="checkbox" {$internalDisable} onchange="skuMap.toggleInact(this.checked);" /> Show inactive</label>
 (Active {$counts['act']}, Inactive {$counts['inact']})
 <a href="LikeCodeSKUsPage.php?id={$this->id}&store={$store}&export=1" class="btn btn-default" $internalDisable>Export</a>

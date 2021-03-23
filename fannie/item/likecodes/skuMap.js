@@ -92,6 +92,14 @@ var skuMap = (function ($) {
         }
     };
 
+    function refilter() {
+        var dstr = $('.filter-field').serialize();
+        location = 'LikeCodeSKUsPage.php?' + dstr;
+    };
+    mod.enableFilters = function() {
+        $('.filter-field').change(refilter);
+    };
+
     return mod;
 
 }(jQuery));
