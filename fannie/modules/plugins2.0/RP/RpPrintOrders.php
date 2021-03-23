@@ -114,6 +114,9 @@ class RpPrintOrders extends FannieRESTfulPage
             $row['vendorName'] = str_replace(' (Produce)', '', $row['vendorName']);
             $suffix = '';
             $recv = '';
+            if ($row['upc'] == '') {
+                $row['upc'] = $row['internalUPC'];
+            }
             $likecode = str_replace('LC', '', $row['upc']);
             if (strstr($likecode, '-')) {
                 list($likecode, $rest) = explode('-', $likecode, 2);
