@@ -98,6 +98,14 @@ class MailPipe extends AttachmentEmailPipe
         $catP = $dbc->prepare('SELECT categoryID, name, notifyMethod, notifyAddress FROM Categories WHERE name=?');
         $catW = $dbc->getRow($catP, array($location));
 
+        $hash = md5($comment);
+        $dupeP = $dbc->prepare("SELECT commentID FROM Comments WHERE hash=?");
+        $dupeR = $dbc->execute($dupeP, array($hash));
+        if ($dbc->numRows($dupeR) > 0) {
+            $catW['categoryID'] = -1;
+            $catW['notifyAddress'] = false;
+        }
+
         $model = new \CommentsModel($dbc);
         $model->categoryID($catW['categoryID']);
         $model->publishable(1);
@@ -105,6 +113,7 @@ class MailPipe extends AttachmentEmailPipe
         $model->email($email);
         $model->comment($comment);
         $model->tdate(date('Y-m-d H:i:s'));
+        $model->hash($hash);
         $commentID = $model->save();
 
         $historyP = $dbc->prepare("INSERT INTO CommentHistory (commentID, userID, tdate, log) VALUES (?, ?, ?, ?)");

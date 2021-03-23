@@ -232,6 +232,7 @@ class ManageComments extends FannieRESTfulPage
         $comment->email($email);
         $comment->phone($phone);
         $comment->comment(FormLib::get('comment'));
+        $comment->hash(md5(FormLib::get('comment')));
         $comment->tdate(FormLib::get('tdate'));
         $comment->fromPaper(1);
         $comment->userID(FannieAuth::getUID());
