@@ -93,8 +93,9 @@ class NcgCouponEditor extends FannieRESTfulPage
                 <td><input type="text" name="start[]" value="%s" class="form-control date-field" /></td>
                 <td><input type="text" name="end[]" value="%s" class="form-control date-field" /></td>
                 <td><a href="NcgCouponEditor.php?id=%s">Adjust Items</a></td>
+                <td><a href="NcgCouponReport.php?id=%s">Usage Report</a></td>
                 </tr>',
-                $row['couponUPC'], $row['description'], $row['startDate'], $row['endDate'], $row['couponUPC']
+                $row['couponUPC'], $row['description'], $row['startDate'], $row['endDate'], $row['couponUPC'], $row['couponUPC']
             );
         }
 
