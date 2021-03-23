@@ -85,6 +85,25 @@ class PullRemoteTransactionsTask extends FannieTask
             $connect = $dbc->addConnection($store->dbHost(), $store->dbDriver(),
                                          $store->transDB(), $store->dbUser(),
                                          $store->dbPassword());
+
+            /**
+             * Adding a "pong" record on the remote before importing creates a marker
+             * that lets other imported records be manipulated without losing
+             * MAX(store_row_id) as an indicator where the import ended
+             */
+            $pongQ = "INSERT INTO dtransactions (datetime, register_no, emp_no, trans_no, upc,
+                description, trans_type, trans_subtype, trans_status, department,
+                quantity, cost, unitPrice, total, regPrice, scale, tax, foodstamp,
+                discount, memDiscount, discountable, discounttype, ItemQtty, volDiscType,
+                volume, VolSpecial, mixMatch, matched, voided, memType, staff, numflag,
+                charflag, card_no, trans_id) VALUES (" . $dbc->now() . ", 0, 0, 0, 'DAILYPONG',
+                'DAILYPONG', 'L', 'OG', '', 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0,
+                0, 0, '', 0, 0, 0, 0, 0,
+                '', 0, 1)";
+            $dbc->query($pongQ, $store->transDB());
+
             $columns = $dbc->getMatchingColumns($local_dtrans, $FANNIE_OP_DB,
                                             'dtransactions', $store->transDB());
 
@@ -104,7 +123,22 @@ class PullRemoteTransactionsTask extends FannieTask
             $records = $dbc->getValue($verifyP, array($remoteID));
             if ($records == 0) {
                 $this->cronMsg('No records imported for store #' . $remoteID, FannieLogger::ALERT);
+            } else {
+                $idP = $dbc->prepare("SELECT emp_no, register_no, trans_no, description FROM {$local_dtrans}
+                    WHERE store_id=? AND trans_subtype='CM' AND description LIKE '%STORE%'");
+                $idR = $dbc->execute($idP, array($store->storeID()));
+                $rewriteP = $dbc->prepare("UPDATE {$local_dtrans} SET store_id=?
+                    WHERE store_id=?
+                        AND emp_no=?
+                        AND register_no=?
+                        AND trans_no=?");
+                while ($idW = $dbc->fetchRow($idR)) {
+                    list(,$newID) = explode(' ', $idW['description']);
+                    $args = array($newID, $store->storeID(), $idW['emp_no'], $idW['register_no'], $idW['trans_no']);
+                    $dbc->execute($rewriteP, $args);
+                }
             }
+
         }
     }
 }
