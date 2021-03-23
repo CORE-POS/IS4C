@@ -135,9 +135,11 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 continue;
             }
 
+            /*
             $dbc->execute($extraP, array($reg,$upc));
             $dbc->execute($prodP, array($reg,$upc,$VENDOR_ID));
             $updated_upcs[] = $upc;
+             */
 
             $dbc->execute($delP, array($sku, $VENDOR_ID));
             $dbc->execute($itemP, array($sku, '', $upc, 1, $reg,
@@ -146,8 +148,10 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
         }
         $dbc->commitTransaction();
 
+        /*
         $updateModel = new ProdUpdateModel($dbc);
         $updateModel->logManyUpdates($updated_upcs, ProdUpdateModel::UPDATE_EDIT);
+         */
 
         return true;
     }
