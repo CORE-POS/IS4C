@@ -34,6 +34,18 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 AND l.inUse=1
             GROUP BY l.likeCode');
         $likeCodes = $this->connection->getAllValues($lcP, array($this->store, $this->id));
+        if ($this->store == 0) {
+            $lcP = $this->connection->prepare('
+                SELECT l.likeCode
+                FROM LikeCodeActiveMap AS l
+                    INNER JOIN upcLike AS u ON l.likeCode=u.likeCode
+                    INNER JOIN products AS p ON u.upc=p.upc
+                    INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                WHERE m.superID=?
+                    AND l.inUse=1
+                GROUP BY l.likeCode');
+            $likeCodes = $this->connection->getAllValues($lcP, array($this->id));
+        }
         list($inStr, $args) = $this->connection->safeInClause($likeCodes);
         $query = "SELECT l.likeCode,
                 l.likeCodeDesc,
@@ -160,6 +172,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             136 => $this->getItems(136),
         );
         $store = FormLib::get('store');
+        $lcArgs = array($store, $this->id);
         $lcP = $this->connection->prepare('
             SELECT l.likeCode
             FROM LikeCodeActiveMap AS l
@@ -180,13 +193,23 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                     AND ? IS NOT NULL');
             $sortFirst = 'sortInternal';
             $internalDisable = 'disabled';
+        } elseif ($store == 0) {
+            $lcP = $this->connection->prepare('
+                SELECT l.likeCode
+                FROM LikeCodeActiveMap AS l
+                    INNER JOIN upcLike AS u ON l.likeCode=u.likeCode
+                    INNER JOIN products AS p ON u.upc=p.upc
+                    INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                WHERE m.superID=?
+                GROUP BY l.likeCode');
+            $lcArgs = array($this->id);
         }
-        $lcR = $this->connection->execute($lcP, array($store, $this->id));
+        $lcR = $this->connection->execute($lcP, $lcArgs);
         $allCodes = array();
         while ($lcW = $this->connection->fetchRow($lcR)) {
             $allCodes[] = $lcW['likeCode'];
         }
-        $args = array($store);
+        $args = $store != 0 ? array($store) : array();
         list($inStr, $args) = $this->connection->safeInClause($allCodes, $args);
         $query = $this->connection->prepare("SELECT l.likeCode,
                 l.likeCodeDesc,
@@ -202,7 +225,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
             FROM likeCodes AS l
                 LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode
                 LEFT JOIN vendorItems AS v ON m.vendorID=v.vendorID AND m.sku=v.sku
-                LEFT JOIN LikeCodeActiveMap AS a ON l.likeCode=a.likeCode AND a.storeID=?
+                LEFT JOIN LikeCodeActiveMap AS a ON l.likeCode=a.likeCode " . ($store != 0 ? " AND a.storeID=? " : '') . "
             WHERE l.likeCode IN ({$inStr})
             ORDER BY {$sortFirst}, l.likeCodeDesc, l.likeCode, m.vendorID");
         $res = $this->connection->execute($query, $args);
