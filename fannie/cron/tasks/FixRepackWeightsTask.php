@@ -75,7 +75,7 @@ class FixRepackWeightsTask extends FannieTask
         $res = $dbc->execute($prep, array($date, $date . ' 23:59:59'));
         while ($row = $dbc->fetchRow($res)) {
             $qty = $row['total'] / $row['normal_price'];
-            $rounded = round($qty, 2);
+            $rounded = round($qty * 200) / 200;
             $match = round($row['normal_price']*$rounded, 2);
             if (abs($match - $row['total']) < 0.005) {
                 continue;
@@ -93,6 +93,12 @@ class FixRepackWeightsTask extends FannieTask
                 continue;
             } 
 
+            /**
+             * Round to the nearest 0.005 for the sanity check above
+             * to handle double-interval scales, but then round to 
+             * nearest 0.01 for values stored in transaction records
+             */
+            $rounded = round($qty, 2);
             $itemQtty = $row['trans_status'] == 'R' ? -1 * $rounded : $rounded;
             $args = array(
                 $rounded,
