@@ -41,7 +41,7 @@ class OrderTags extends FannieRESTfulPage
 
     protected $must_authenticate = true;
     protected $auth_classes = array('pricechange');
-    protected $id = 1;
+    protected $id = 358;
 
     public $description = '[Vendor Aliases] manages items that are sold under one or more UPCs that
         differ from the vendor catalog UPC.';
@@ -65,13 +65,20 @@ class OrderTags extends FannieRESTfulPage
         $pdf->SetFont('Arial', '', 7);
         $dbc = $this->connection;
 
+        $mvmtP = $dbc->prepare("SELECT upc, auto_par FROM products WHERE upc = ? AND store_id = ?");
+
         $items = FormLib::get('items');
         $items = preg_split('/\r\n|[\r\n]/', $items);
+        $mvmtT = array();
         foreach ($items as $k => $upc) {
-            $items[$k] = BarcodeLib::padUPC($upc);
+            $upc = BarcodeLib::padUPC($upc);
+            $items[$k] = $upc;
+            $mvmtR = $dbc->execute($mvmtP, array($upc, $store));
+            $mvmtRow = $dbc->fetchRow($mvmtR);
+            $mvmtT[$upc] = round($mvmtRow['auto_par'] * $mtLength, 1);
         }
 
-        $prep = $dbc->prepare("SELECT i.sku, p.description, i.size, i.units, v.vendorName, p.brand
+        $prep = $dbc->prepare("SELECT i.sku, p.description, i.size, i.units, v.vendorName, p.brand, p.upc
             FROM products AS p 
                 LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
                 LEFT JOIN vendorItems AS i ON p.default_vendor_id=i.vendorID AND p.upc=i.upc
@@ -87,7 +94,8 @@ class OrderTags extends FannieRESTfulPage
                 $row['size'],
                 $row['units'],
                 $row['brand'],
-                $row['vendorName']
+                $row['vendorName'],
+                $row['upc']
             );
         }
 
@@ -110,10 +118,15 @@ class OrderTags extends FannieRESTfulPage
             $pdf->Image($file, $posX, $posY+7);
             unlink($file);
 
+
+            $border = $mtLength == 7 ? 'TBR' : 'TBL';
+            $mvmt = $mvmtT[$row[5]];
+            $pdf->SetXY($posX+40, $posY+4);
+            $pdf->Cell(6, 3, $mvmt, $border, 1);
+
             $pdf->SetXY($posX+3, $posY+16);
             $pdf->Cell(0, 5, $row[2] . ' / ' . $row[1] . ' - ' . $row[4]);
             $pdf->SetXY($posX+35, $posY+15);
-            $border = $mtLength == 7 ? 'TBR' : 'TBL';
             $posX += 52;
             if ($posX > 170) {
                 $posX = 5;
@@ -199,7 +212,8 @@ class OrderTags extends FannieRESTfulPage
             <div class="form-group">
             </div>
             <div>
-                <label for="items">Enter List of UPCs to Print UNFI order scan-tags </a>
+                <label for="items">Enter List of UPCs to Print Order Tags</label>
+                <p>Barcode on tags represents SKU from default vendor</p>
             </div>
             <div id="enterItems">
                 <div class="form-group">
