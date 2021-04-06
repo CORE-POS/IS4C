@@ -38,7 +38,7 @@ class MOrderBotTask extends FannieTask
         $insP = $dbc->prepare("INSERT INTO MercatoOrders (orderID, storeID, name, type, status, pdate)
             VALUES (?, ?, ?, ?, ?, ?)");
         $count = 0;
-        while (!feof($fp)) {
+        while ($fp && !feof($fp)) {
             $data = fgetcsv($fp);
             $orderID = $data[0];
             if (!is_numeric($orderID)) {
@@ -63,7 +63,7 @@ class MOrderBotTask extends FannieTask
         $fp = fopen('/tmp/mc/phones.csv', 'r');
         $upP = $dbc->prepare("UPDATE MercatoOrders SET phone=? WHERE orderID=? AND storeID=?");
         $count = 0;
-        while (!feof($fp)) {
+        while ($fp && !feof($fp)) {
             $data = fgetcsv($fp);
             $orderID = $data[0];
             $phone = $data[1];
