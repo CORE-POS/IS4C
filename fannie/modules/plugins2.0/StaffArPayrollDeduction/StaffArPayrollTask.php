@@ -113,7 +113,7 @@ StaffArPayrollDeduction plugin.';
 
         $model = new StaffArAccountsModel($dbc);
         foreach($model->find() as $obj) {
-            if ($obj->nextPayment() == 0) {
+            if ($obj->nextPayment() <= 0) {
                 // no need to write empty records
                 continue;
             }
