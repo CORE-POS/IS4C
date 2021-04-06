@@ -76,7 +76,7 @@ function Deli_Big_Special_Signs_1UP($data,$offset=0)
 function generateDeliSpecialSign($x, $y, $width, $height, $pdf, $row, $dbc)
 {
     $upc = $row['upc'];
-    $brand = $row['description'];
+    $name = $row['description'];
 
     $args = array($row['upc']);
     $row = array();
@@ -88,12 +88,12 @@ function generateDeliSpecialSign($x, $y, $width, $height, $pdf, $row, $dbc)
     $row = $dbc->fetchRow($res);
 
     $desc = $row['text'];
-    $brand = strtolower($brand);
-    $brand = ucwords($brand);
-    $brand = str_replace("Qt", "", $brand);
-    $brand = str_replace("Quart", "", $brand);
-    $brand = str_replace("Pt", "", $brand);
-    $brand = str_replace("Pint", "", $brand);
+    $name = strtolower($name);
+    $name = ucwords($name);
+    $name = str_replace("Qt", "", $name);
+    $name = str_replace("Quart", "", $name);
+    $name = str_replace("Pt", "", $name);
+    $name = str_replace("Pint", "", $name);
 
     // Get full brand description
     $args = array($upc);
@@ -101,14 +101,30 @@ function generateDeliSpecialSign($x, $y, $width, $height, $pdf, $row, $dbc)
         WHERE upc = ?");
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
-    $brand = $row['description'];
+    $name = $row['description'];
 
     /*
-        Add Brand Text
+        Add Name Text (top, bold line of sign)
     */
-    $pdf->SetFont('Gill','B', 28);
-    $pdf->SetXY($x+10,$y+55);
-    $pdf->Cell($width-100, 8, $brand, 0, 1, 'C', true); 
+    $length = strlen($name);
+    if ($length >= 40) {
+        // print name of meal in multiple lines
+        $wrap = wordwrap($name, 50, "\n");
+        $exp = explode("\n", $wrap);
+
+        $pdf->SetFont('Gill','B', 28);
+        $ymod = array(60, 70, 80);
+        foreach ($exp as $k => $str) {
+            $pdf->SetXY($x+10,$y+$ymod[$k]);
+            $pdf->Cell($width-100, 8, $str, 0, 1, 'C', true); 
+        }
+
+    } else {
+        // there is only one line to print
+        $pdf->SetFont('Gill','B', 28);
+        $pdf->SetXY($x+10,$y+45);
+        $pdf->Cell($width-100, 8, substr($name, 0, 40), 0, 1, 'C', true); 
+    }
 
     /*
         Add Description Text
@@ -130,7 +146,7 @@ function generateDeliSpecialSign($x, $y, $width, $height, $pdf, $row, $dbc)
     $wrap = wordwrap($desc, 120, "\n");
     $exp = explode("\n", $wrap);
    
-    $y = $y+69;
+    $y = $y+84;
     $x = $x+5;
     $i = 0;
     foreach ($exp as $k => $str) {
