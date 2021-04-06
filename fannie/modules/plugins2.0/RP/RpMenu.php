@@ -39,6 +39,24 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="RpManualEntries.php">View Added Items</a> - report of items manually added to the order guide</a></li>
     </ul>
 </ul>
+<hr />
+<ul>
+    <li>Pricing</li>
+    <ul>
+        <li>Comparison Shop</li>
+        <ul>
+            <li><a href="../../../item/likecodes/LikeCodeSKUsPage.php?id=6&store=1">Active @ Hillside</a></li>
+            <li><a href="../../../item/likecodes/LikeCodeSKUsPage.php?id=6&store=2">Active @ Denfeld</a></li>
+            <li><a href="../../../item/likecodes/LikeCodeSKUsPage.php?id=6&store=0">Active @ Either</a></li>
+        </ul>
+        <li>Upload Pricesheet</li>
+        <ul>
+            <li><a href="../../../batches/UNFI/load-classes/AlbertsUploadPage.php">Alberts</a></li>
+            <li><a href="../../../batches/UNFI/load-classes/CpwProduceUploadPage.php">CPW</a></li>
+            <li><a href="../../../batches/UNFI/load-classes/RdwUploadPage.php">RDW</a></li>
+        </ul>
+    </ul>
+</ul>
 HTML;
     }
 }
