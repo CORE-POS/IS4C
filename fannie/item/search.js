@@ -1,39 +1,44 @@
 function getResults() {
     var dstr = $('#searchform').serialize();
-    $('.upcCheckBox:checked').each(function(){
-        dstr += '&u[]='+$(this).val();
+    document.querySelectorAll('.upcCheckBox:checked').forEach(function(el){
+        dstr += '&u[]='+el.value;
     });
 
-    $('.progress').show();
-    $('#resultArea').html('');
-    $.ajax({
-        url: 'AdvancedItemSearch.php',
-        type: 'post',
-        data: 'search=1&' + dstr,
-    }).done(function(data) {
-        $('.progress').hide();
-        $('#resultArea').html(data);
-        // don't run sorting JS on very large result sets
-        if ($('.upcCheckBox').length < 2500) {
-            $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
+    document.querySelector('.progress').style.display = 'block';
+    document.querySelector('#resultArea').innerHTML = '';
+    fetch('AdvancedItemSearch.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'search=1&' + dstr
+    }).then(response => {
+        if (!response.ok) {
+            return;
         }
+        response.text().then(data => {
+            document.querySelector('.progress').style.display = 'none';
+            document.querySelector('#resultArea').innerHTML = data;
+            // don't run sorting JS on very large result sets
+            if ($('.upcCheckBox').length < 2500) {
+                $('.search-table').tablesorter({headers: { 0: { sorter:false } } });
+            }
+        });
     });
 }
 function toggleAll(elem, selector) {
     if (elem.checked) {
-        $(selector).prop('checked', true);
+        document.querySelectorAll(selector).forEach(el => el.checked = true);
     } else {
-        $(selector).prop('checked', false);
+        document.querySelectorAll(selector).forEach(el => el.checked = false);
     }
     checkedCount('#selection-counter', selector);
 }
 function checkedCount(output_selector, checked_selector)
 {
-    var count = $(checked_selector + ':checked').length;
+    var count = document.querySelectorAll(checked_selector + ':checked').length;
     if (count == 0) {
-        $(output_selector).html('');
+        document.querySelector(output_selector).innerHTML = '';
     } else {
-        $(output_selector).html(count + ' items selected. These items will be retained in the next search.');
+        document.querySelector(output_selector).innerHTML = count + ' items selected. These items will be retained in the next search.';
     }
 }
 // helper: add all selected upc values to hidden form
