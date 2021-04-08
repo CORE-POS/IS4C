@@ -198,6 +198,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 INNER JOIN vendorItems AS v ON a.sku=v.sku AND a.vendorID=v.vendorID
             WHERE a.upc=?");
 
+        $vidsStart = FormLib::get('forcedStart', false);
+        $vidsEnd = FormLib::get('forcedEnd', false);
         $query = "SELECT p.upc,
             p.description,
             p.brand,
@@ -235,10 +237,26 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
         WHERE v.cost > 0
-                AND v.vendorID=?
-                AND m.SuperID IN (1, 3, 4, 5, 8, 9, 13, 17, 18)
         ";
-        $args = array($vendorID);
+
+        if ($vidsStart != false && $vidsEnd != false) {
+            $ret .= "<h3 align=\"center\">Multiple Vendor View</h3>";
+            $vidsA = array($vidsStart, $vidsEnd);
+            $vidsP = $dbc->prepare("SELECT * FROM batchReviewLog WHERE forced >= ? AND forced < ? 
+                AND vid <> 1 GROUP BY vid;");
+            $vidsR = $dbc->execute($vidsP, $vidsA);
+            $vids = array();
+            while ($row = $dbc->fetchRow($vidsR)) {
+                $vids[$row['vid']] = $row['vid'];
+            }
+            list($inStr, $args) = $dbc->safeInClause($vids);
+            $query .= " AND v.vendorID IN ($inStr) ";
+        } else {
+            $args = array($vendorID);
+            $query .= " AND v.vendorID = ? ";
+        }
+
+        $query .= " AND m.SuperID IN (1, 3, 4, 5, 8, 9, 13, 17, 18) ";
         if ($superID == -2) {
             $query .= " AND m.superID<>0 ";
         } elseif ($superID != -1) {

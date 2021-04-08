@@ -56,7 +56,26 @@ class ProdReviewPage extends FannieRESTfulPage
         $this->__routes[] = 'get<schedule>';
         $this->__routes[] = 'get<schedule><setup>';
         $this->__routes[] = 'get<schedule><setup><save>';
+        $this->__routes[] = 'get<stagedReview>';
         return parent::preprocess();
+    }
+
+    public function get_stagedReview_view()
+    {
+
+        return <<<HTML
+<form action=VendorPricingBatchPage.php method="get" target="_blank">
+<input name="id" class="hidden" value="1">
+<label>Forced date begin</label>
+<input type="date" class="form-control">
+<label>Forced date end</label>
+<input type="date" class="form-control">
+<br />
+<p>
+<button type=submit class="btn btn-default">Continue</button>
+</p>
+</form>
+HTML;
     }
 
     public function get_schedule_setup_save_handler()
@@ -880,7 +899,32 @@ HTML;
                             </div>
                         </div>
                     </div>
-                    <div class="divider"></div>
+                </form>
+                <div class="divider hidden-md hidden-lg"></div>
+            </div>
+            <div class="col-md-6">
+        <form class="form" method="get">
+                <div class="form-group" style="z-index: -1">
+                    <label>Review a list of UPCs</label>
+                    <div class="input-group">
+                    <textarea class="form-control" rows="10" rows="25" name="list" style="z-index: 0"></textarea>
+                    <span class="input-group-addon">
+                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                    </span>
+                    </div>
+                </div>
+        </form>
+
+
+            </div>
+
+    </div>
+</div>
+</div>
+    <div class="panel panel-default " style="max-width: 800px;">
+        <div class="panel-body" style="text-align: left;">
+            <div class="row">
+                <div class="col-lg-6">
                     <label>Other Pages</label>
                     <ul>
                         <li><a href="ProdLocationEditor.php">Product <strong>Location</strong> Editor</a></li>
@@ -888,25 +932,29 @@ HTML;
                         <li><a href="ProdReviewPage.php?schedule=1">Vendor <strong>Review Schedule</strong></a></li>
                         <li><a href="ProdReviewPage.php?schedule=1&setup=1">Vendor Schedule <strong>Setup</strong></a></li>
                     </ul>
-                </form>
-                <div class="divider hidden-md hidden-lg"></div>
-            </div>
-        <form class="form" method="get">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label>Review a list of UPCs</label>
-                    <div class="input-group">
-                    <textarea class="form-control" rows="10" rows="25" name="list"></textarea>
-                    <span class="input-group-addon">
-                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-chevron-right"></span></button>
-                    </span>
-                    </div>
                 </div>
-
+                <div class="col-lg-6">
+                    <form class="form" method="get" action="../batches/UNFI/VendorPricingBatchPage.php">
+                        <div class="form-group">
+                            <label>Vendor Pricing Staged Changes Review</label>
+                            <input type="hidden" name="id" value=1 />
+                            <div class="form-group">
+                                <input type="text" name="forcedStart" class="form-control date-field" placeholder="Start Date" />
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="forcedEnd" class="form-control date-field" placeholder="End Date" />
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" class="form-control btn btn-default" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </form>
+        </div>
     </div>
-</div></div></div>
+</div>
+
 HTML;
 
     }
