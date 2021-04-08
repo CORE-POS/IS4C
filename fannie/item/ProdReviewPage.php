@@ -907,7 +907,7 @@ HTML;
                 <div class="form-group" style="z-index: -1">
                     <label>Review a list of UPCs</label>
                     <div class="input-group">
-                    <textarea class="form-control" rows="10" rows="25" name="list" style="z-index: 0"></textarea>
+                    <textarea class="form-control" rows="5" name="list" style="z-index: 0"></textarea>
                     <span class="input-group-addon">
                     <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-chevron-right"></span></button>
                     </span>
@@ -936,7 +936,7 @@ HTML;
                 <div class="col-lg-6">
                     <form class="form" method="get" action="../batches/UNFI/VendorPricingBatchPage.php">
                         <div class="form-group">
-                            <label>Vendor Pricing Staged Changes Review</label>
+                            <label>Rolling Price Changes</label>
                             <input type="hidden" name="id" value=1 />
                             <div class="form-group">
                                 <input type="text" name="forcedStart" class="form-control date-field" placeholder="Start Date" />
@@ -1271,6 +1271,10 @@ HTML;
                 <li><b>Force</b> force a batch in POS and mark it as forced.</li>
             </ul>
         </p>
+        <h4>Rolling Price Changes</h4>
+        <p>Enter a date range to pull up a list of items in the Vendor Pricing
+            Batch page from vendors who had products in price change batches
+            that were forced within the span of time requested.</p>
 HTML;
     }
 
