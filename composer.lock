@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e623a70513d9a0f11effbc337f9d9f5e",
+    "content-hash": "0a27e047eae814ebac23409a81e39624",
     "packages": [
         {
             "name": "automattic/woocommerce",
@@ -381,20 +381,24 @@
         },
         {
             "name": "corepos/composer-installer",
-            "version": "1.0.0",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CORE-POS/ComposerInstaller.git",
-                "reference": "7ea84847cc5906a7316483fc423fcdfdf4c1e79e"
+                "reference": "08c6afda3a2ce2c2999254bdff341f86b6d01139"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CORE-POS/ComposerInstaller/zipball/7ea84847cc5906a7316483fc423fcdfdf4c1e79e",
-                "reference": "7ea84847cc5906a7316483fc423fcdfdf4c1e79e",
+                "url": "https://api.github.com/repos/CORE-POS/ComposerInstaller/zipball/08c6afda3a2ce2c2999254bdff341f86b6d01139",
+                "reference": "08c6afda3a2ce2c2999254bdff341f86b6d01139",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^1.0"
+            },
+            "require-dev": {
+                "composer/composer": "^1.1",
+                "phpunit/phpunit": "^5.3"
             },
             "type": "composer-plugin",
             "extra": {
@@ -403,7 +407,10 @@
             "autoload": {
                 "psr-4": {
                     "COREPOS\\ComposerInstaller\\": "src/"
-                }
+                },
+                "exclude-from-classmap": [
+                    "/test"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -416,7 +423,7 @@
                 }
             ],
             "description": "A composer plugin to install CORE POS plugins",
-            "time": "2016-05-27T21:53:51+00:00"
+            "time": "2016-05-28T15:57:45+00:00"
         },
         {
             "name": "datto/json-rpc",
@@ -1192,6 +1199,7 @@
                 "api",
                 "email"
             ],
+            "abandoned": "mailchimp/marketing",
             "time": "2014-10-30T20:38:12+00:00"
         },
         {
@@ -1625,12 +1633,12 @@
             "version": "v1.0.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/nrk/predis.git",
+                "url": "https://github.com/predis/predis.git",
                 "reference": "84060b9034d756b4d79641667d7f9efe1aeb8e04"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nrk/predis/zipball/84060b9034d756b4d79641667d7f9efe1aeb8e04",
+                "url": "https://api.github.com/repos/predis/predis/zipball/84060b9034d756b4d79641667d7f9efe1aeb8e04",
                 "reference": "84060b9034d756b4d79641667d7f9efe1aeb8e04",
                 "shasum": ""
             },
@@ -2035,7 +2043,7 @@
             ],
             "authors": [
                 {
-                    "name": "Sébastien MALOT",
+                    "name": "Sebastien MALOT",
                     "email": "sebastien@malot.fr"
                 }
             ],
@@ -2612,6 +2620,7 @@
                 "i18n",
                 "text"
             ],
+            "abandoned": true,
             "time": "2016-09-22T16:50:57+00:00"
         },
         {
@@ -2979,6 +2988,7 @@
                 "rest",
                 "web service"
             ],
+            "abandoned": "guzzlehttp/guzzle",
             "time": "2015-03-18T18:23:50+00:00"
         },
         {
@@ -3404,6 +3414,7 @@
             "keywords": [
                 "tokenizer"
             ],
+            "abandoned": true,
             "time": "2015-09-15T10:49:45+00:00"
         },
         {
@@ -3532,6 +3543,7 @@
                 "mock",
                 "xunit"
             ],
+            "abandoned": true,
             "time": "2015-10-02T06:51:40+00:00"
         },
         {
@@ -3590,6 +3602,7 @@
                 "github",
                 "test"
             ],
+            "abandoned": "php-coveralls/php-coveralls",
             "time": "2016-01-20T17:35:46+00:00"
         },
         {
