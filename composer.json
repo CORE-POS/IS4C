@@ -31,7 +31,7 @@
         "symfony/http-foundation": "^2.6",
         "domisys/image_barcode2": "^3.0",
         "sebastian/git": "^2.1",
-        "corepos/composer-installer": "^1.0",
+        "corepos/composer-installer": "^2.0",
         "twig/twig": "^1.25",
         "twig/extensions": "^1.4",
         "automattic/woocommerce": "^1.1",
