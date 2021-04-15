@@ -327,7 +327,7 @@ class LikeCodeBatchPage extends FannieRESTfulPage
                 <td><a href=\"LikeCodeEditor.php?start={$lc}\">{$data['name']}</a></td>";
             $retail = $retailMap[$lc]['normal'];
             $tableBody .= sprintf('<td>%d</td><td>%.2f</td>
-                <td class="cost">%.2f</td>
+                <td class="cost">%.3f</td>
                 <td><input type="text" size="5" class="price form-control input-sm" value="%.2f" 
                     onchange="lcBatch.recalculateMargin(this);" />
                     <input type="hidden" class="orig-price" value="%.2f" />
@@ -340,6 +340,9 @@ class LikeCodeBatchPage extends FannieRESTfulPage
         $this->addScript('lcBatch.js');
         $this->addOnloadCommand('lcBatch.enableFilters();');
         $this->addOnloadCommand('lcBatch.recalculateSheet();');
+        $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile('../../src/javascript/chosen/bootstrap-chosen.css');
+        $this->addOnloadCommand("\$('select.filter-field').chosen({search_contains: true});");
 
         return <<<HTML
 <p class="form-inline">
