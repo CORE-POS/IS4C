@@ -346,12 +346,49 @@ class LikeCodeAjax extends FannieRESTfulPage
 
     protected function post_id_storeID_inUse_handler()
     {
-        return $this->toggleStoreField($this->storeID, $this->id, 'inUse');
+        $newVal = $this->toggleStoreField($this->storeID, $this->id, 'inUse');
+        if ($this->connection->tableExists('RpOrderItems')) {
+            if ($newVal == 0) {
+                $prep = $this->connection->prepare("DELETE FROM RpOrderItems WHERE
+                    upc=? AND storeID=?");
+                $this->connection->execute($prep, array('LC' . $this->id, $this->storeID));
+            } elseif ($newVal == 1) {
+                $infoP = $this->connection->prepare("SELECT l.organic, l.preferredVendorID,
+                        COALESCE(i.units, 1) AS units,
+                        COALESCE(i.cost, 0) AS cost,
+                        c.rpOrderCategoryID,
+                        m.sku,
+                        COALESCE(i.description, l.likeCodeDesc) AS item
+                    FROM likeCodes AS l
+                        LEFT JOIN VendorLikeCodeMap AS m ON l.likeCode=m.likeCode AND l.preferredVendorID=m.vendorID
+                        LEFT JOIN vendorItems AS i ON m.sku=i.sku AND m.vendorID=i.vendorID
+                        LEFT JOIN RpOrderCategories AS c ON l.sortRetail=c.name
+                    WHERE l.likeCode=?");
+                $info = $this->connection->getRow($infoP, array($this->id)); 
+                $insP = $this->connection->prepare("INSERT INTO RpOrderItems
+                    (upc, storeID, categoryID, addedBy, caseSize, vendorID, vendorSKU, vendorItem, cost, backupID)
+                    VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, 0)");
+                $this->connection->execute($insP, array(
+                    'LC' . $this->id,
+                    $this->storeID,
+                    $info['rpOrderCategoryID'],
+                    $info['units'],
+                    $info['preferredVendorID'],
+                    $info['sku'],
+                    $info['item'],
+                    $info['cost'],
+                ));
+            }
+        }
+
+        return false;
     }
 
     protected function post_id_storeID_internal_handler()
     {
-        return $this->toggleStoreField($this->storeID, $this->id, 'internalUse');
+        $newVal = $this->toggleStoreField($this->storeID, $this->id, 'internalUse');
+
+        return false;
     }
 
     private function toggleStoreField($store, $likeCode, $field)
@@ -364,7 +401,7 @@ class LikeCodeAjax extends FannieRESTfulPage
         $model->save();
 
         echo 'Done';
-        return false;
+        return $model->$field();
 
     }
 
