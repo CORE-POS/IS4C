@@ -282,13 +282,13 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
                 $categories .= sprintf('<option %s>%s</option>', ($filterCat == $data['cat'] ? 'selected' : ''), $data['cat']);
             }
             if ($filterCat && $data['cat'] != $filterCat) {
-                continue;
+                $data['inUse'] = 0;
             }
             if ($filterPri == 1 && (!isset($data['skus'][$data['vendorID']]) || $data['skus'][$data['vendorID']]['description'] != null)) {
-                continue; 
+                $data['inUse'] = 0;
             }
             if ($filterPri == 2 && ($data['vendorID'] != null && isset($data['skus'][$data['vendorID']]))) {
-                continue; 
+                $data['inUse'] = 0;
             }
             $checkMulti = $data['multi'] ? 'checked' : '';
             $inactiveClass = ($this->id != -1 && $data['inUse'] == 0) ? ' collapse inactiveRow warning' : '';
@@ -344,6 +344,7 @@ class LikeCodeSKUsPage extends FannieRESTfulPage
 Filter: 
 <select name="cat" class="form-control filter-field">{$categories}</select>
 <select name="pri" class="form-control filter-field">{$priOpts}</select>
+<a href="LikeCodeBatchPage.php?{$_SERVER['QUERY_STRING']}" class="btn btn-default">Pricing</a>
 </p>
 <p><label><input type="checkbox" {$internalDisable} onchange="skuMap.toggleInact(this.checked);" /> Show inactive</label>
 (Active {$counts['act']}, Inactive {$counts['inact']})
