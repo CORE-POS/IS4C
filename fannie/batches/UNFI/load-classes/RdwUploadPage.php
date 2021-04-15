@@ -51,6 +51,11 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             'default' => 0,
             'required' => true
         ),
+        'units' => array(
+            'display_name' => 'Case Size *',
+            'default' => 2,
+            'required' => true
+        ),
         'cost' => array(
             'display_name' => 'Unit Cost (Reg) *',
             'default' => 14,
@@ -129,6 +134,10 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
             $description = $data[$indexes['desc']];
             $upc = $this->cleanUPC($data[$indexes['upc']]);
             $reg = trim($data[$indexes['cost']]);
+            $units = $data[$indexes['units']];
+            if (!is_numeric($units)) {
+                $units = 1;
+            }
             // blank spreadsheet cell
             // can't process items w/o price (usually promos/samples anyway)
             if (empty($reg) || !is_numeric($reg)) {
@@ -142,7 +151,7 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
              */
 
             $dbc->execute($delP, array($sku, $VENDOR_ID));
-            $dbc->execute($itemP, array($sku, '', $upc, 1, $reg,
+            $dbc->execute($itemP, array($sku, '', $upc, $units, $reg,
                 $description, $VENDOR_ID, date('Y-m-d H:i:s')));
 
         }
