@@ -75,7 +75,7 @@ class FileToOrder
     private function normalizeItemLine($item)
     {
         list($case, $unit) = $this->parseSize($item[2]);
-        return array(
+        $ret = array(
             'description' => $item[2],
             'orderedQty' => $item[0] === null ? 0 : $item[0],
             'shippedQty' => $item[1] === null ? 0 : $item[1],
@@ -85,6 +85,15 @@ class FileToOrder
             'caseSize' => $case,
             'unitSize' => $unit,
         );
+        //fixup for data oddities
+        switch ($ret['sku']) {
+            case '9228':
+                $ret['caseSize'] = 33;
+                $ret['unitSize'] = 'LB';
+                break;
+        }
+
+        return $ret;
     }
 
     private function parseSize($item)
