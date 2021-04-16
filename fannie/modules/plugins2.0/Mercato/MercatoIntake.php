@@ -177,6 +177,9 @@ class MercatoIntake
                     }
                     $qty = $data[$this->COL_QTY];
                     $total = $data[$this->COL_AMT];
+                    // adjust total upward for Mercato's share of the item's value
+                    $total += $data[$this->COL_AMT + 1];
+                    $currentOrder['total'] += $data[$this->COL_AMT + 1];
                     $item = $this->dbc->getRow($itemP, array($upc));
                     if ($item === false) {
                         $upc = '0' . substr($upc, 0, 12);
