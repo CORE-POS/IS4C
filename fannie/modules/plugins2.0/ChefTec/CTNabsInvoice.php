@@ -11,7 +11,7 @@ class CTNabsInvoice extends FannieReportPage
     protected $title = 'Nabs Invoice';
     public $description = '[Nabs Invoice] lists purchases by a given nabs account in an invoice-like format';
     protected $required_fields = array('date1', 'date2');
-    protected $report_headers = array('Product Code', 'Inventory Item', 'Invoice Number', 'Date', 'Unit', 'Quantity', 'Cost', 'Description', 'Alt. Unit Indicator', 'Alternate Unit');
+    protected $report_headers = array('Product Code', 'Inventory Item', 'Invoice Number', 'Date', 'Quantity', 'Unit', 'Cost', 'Description', 'Alt. Unit Indicator', 'Alternate Unit');
 
     public function fetch_report_data()
     {
@@ -50,8 +50,8 @@ class CTNabsInvoice extends FannieReportPage
                 $row['brand'] . ' ' . $row['description'],
                 $invoice,
                 date('Ymd'),
-                $measure,
                 $units,
+                $measure,
                 sprintf('%.2f', $row['ttl']),
                 $row['brand'] . ' ' . $row['description'],
                 '',
