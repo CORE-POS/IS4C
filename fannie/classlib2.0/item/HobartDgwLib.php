@@ -174,7 +174,7 @@ class HobartDgwLib
                     }
                     $realText = str_replace('{cool}', $item['OriginText'], $realText);
                     if (isset($item['Reheat']) && $item['Reheat']) {
-                        $realText .= "\n\nReheat product to an internal temperature of 165" . chr(176) . " F before consumption";
+                        $realText .= "\n\nReheat product to an internal temperature of 165 F before consumption";
                     }
 
                     $utf8degree = chr(194) . chr(176);
