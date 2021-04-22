@@ -195,8 +195,12 @@ last thirteen weeks';
         $insP = $dbc->prepare("INSERT INTO productSummaryLastQuarter
             (upc, storeID, qtyThisWeek, totalThisWeek, qtyLastQuarter,
             totalLastQuarter, percentageStoreSales, percentageSuperDeptSales,
-            percentageDeptSales)
-            VALUES (?, ?, 0, 0, ?, ?, ?, ?, ?)");
+            percentageDeptSales, percentageStoreSalesWeek, percentageSuperDeptSalesWeek,
+            percentageDeptSalesWeek, percentageStoreSales2Week,
+            percentageSuperDeptSales2Week, percentageDeptSales2Week,
+            percentageStoreSales5Week, percentageSuperDeptSales5Week,
+            percentageDeptSales5Week)
+            VALUES (?, ?, 0, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         $totalsP = $dbc->prepare("SELECT weekLastQuarterID, storeID,
             SUM(total) AS store,
             SUM(CASE WHEN m.superID=? THEN total ELSE 0 END) AS super,
@@ -207,6 +211,21 @@ last thirteen weeks';
             WHERE storeID=?
             GROUP BY weekLastQuarterID, storeID");
         $totalCache = array(
+            'store' => array(),
+            'super' => array(),
+            'dept' => array(),
+        );
+        $totalCache1W = array(
+            'store' => array(),
+            'super' => array(),
+            'dept' => array(),
+        );
+        $totalCache2W = array(
+            'store' => array(),
+            'super' => array(),
+            'dept' => array(),
+        );
+        $totalCache5W = array(
             'store' => array(),
             'super' => array(),
             'dept' => array(),
@@ -225,8 +244,26 @@ last thirteen weeks';
                 'super' => 0,
                 'dept' => 0,
             );
+            $sales1W = array(
+                'store' => 0,
+                'super' => 0,
+                'dept' => 0,
+            );
+            $sales2W = array(
+                'store' => 0,
+                'super' => 0,
+                'dept' => 0,
+            );
+            $sales5W = array(
+                'store' => 0,
+                'super' => 0,
+                'dept' => 0,
+            );
             $realSales = 0;
             $scaledSales = 0;
+            $scaledSalesWeek = 0;
+            $scaledSales2Week = 0;
+            $scaledSales5Week = 0;
             $realQty = 0;
             $factor = 1.0;
             for ($i=1; $i<=13; $i++) {
@@ -235,45 +272,132 @@ last thirteen weeks';
                     $realSales += $week['total'];
                     $realQty += $week['quantity'];
                     $scaledSales += ($factor * $week['total']);
+                    if ($i <= 1) {
+                        $scaledSalesWeek += ($factor * $week['total']);
+                    }
+                    if ($i <= 2) {
+                        $scaledSales2Week += ($factor * $week['total']);
+                    }
+                    if ($i <= 5) {
+                        $scaledSales5Week += ($factor * $week['total']);
+                    }
                 }
                 if (!isset($totalCache['store'][$storeID])) {
                     $totalCache['store'][$storeID] = array();
+                    $totalCache1W['store'][$storeID] = array();
+                    $totalCache2W['store'][$storeID] = array();
+                    $totalCache5W['store'][$storeID] = array();
                 }
                 if (!isset($totalCache['super'][$row['superID']])) {
                     $totalCache['super'][$row['superID']] = array();
+                    $totalCache1W['super'][$row['superID']] = array();
+                    $totalCache2W['super'][$row['superID']] = array();
+                    $totalCache5W['super'][$row['superID']] = array();
                 }
                 if (!isset($totalCache['dept'][$row['department']])) {
                     $totalCache['dept'][$row['department']] = array();
+                    $totalCache1W['dept'][$row['department']] = array();
+                    $totalCache2W['dept'][$row['department']] = array();
+                    $totalCache5W['dept'][$row['department']] = array();
                 }
                 if (!isset($totalCache['store'][$storeID][$i])) {
                     $totalCache['super'] = array();
                     $totalCache['dept'] = array();
+                    $totalCache1W['super'] = array();
+                    $totalCache1W['dept'] = array();
+                    $totalCache2W['super'] = array();
+                    $totalCache2W['dept'] = array();
+                    $totalCache5W['super'] = array();
+                    $totalCache5W['dept'] = array();
                     $totalR = $dbc->execute($totalsP, array($row['superID'], $row['department'], $storeID));
                     while ($totals = $dbc->fetchRow($totalR)) {
                         $weekID = $totals['weekLastQuarterID'];
                         $totalCache['store'][$storeID][$weekID] = $totals['store'];
                         $totalCache['super'][$row['superID']][$weekID] = $totals['super'];
                         $totalCache['dept'][$row['department']][$weekID] = $totals['dept'];
+                        if ($weekID <= 1) {
+                            $totalCache1W['store'][$storeID][$weekID] = $totals['store'];
+                            $totalCache1W['super'][$row['superID']][$weekID] = $totals['super'];
+                            $totalCache1W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
+                        if ($weekID <= 2) {
+                            $totalCache2W['store'][$storeID][$weekID] = $totals['store'];
+                            $totalCache2W['super'][$row['superID']][$weekID] = $totals['super'];
+                            $totalCache2W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
+                        if ($weekID <= 5) {
+                            $totalCache5W['store'][$storeID][$weekID] = $totals['store'];
+                            $totalCache5W['super'][$row['superID']][$weekID] = $totals['super'];
+                            $totalCache5W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
                     }
                 }
                 $sales['store'] += $factor * $totalCache['store'][$storeID][$i];
+                if ($i <= 1) {
+                    $sales1W['store'] += $factor * $totalCache1W['store'][$storeID][$i];
+                }
+                if ($i <= 2) {
+                    $sales2W['store'] += $factor * $totalCache2W['store'][$storeID][$i];
+                }
+                if ($i <= 5) {
+                    $sales5W['store'] += $factor * $totalCache5W['store'][$storeID][$i];
+                }
                 if (!isset($totalCache['super'][$row['superID']][$i])) {
                     $totalR = $dbc->execute($totalsP, array($row['superID'], $row['department'], $storeID));
                     while ($totals = $dbc->fetchRow($totalR)) {
                         $weekID = $totals['weekLastQuarterID'];
                         $totalCache['super'][$row['superID']][$weekID] = $totals['super'];
                         $totalCache['dept'][$row['department']][$weekID] = $totals['dept'];
+                        if ($i <= 1) {
+                            $totalCache1W['super'][$row['superID']][$weekID] = $totals['super'];
+                            $totalCache1W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
+                        if ($i <= 2) {
+                            $totalCache2W['super'][$row['superID']][$weekID] = $totals['super'];
+                            $totalCache2W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
+                        if ($i <= 5) {
+                            $totalCache5W['super'][$row['superID']][$weekID] = $totals['super'];
+                            $totalCache5W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
                     }
                 }
                 $sales['super'] += $factor * $totalCache['super'][$row['superID']][$i];
+                if ($i <= 1) {
+                    $sales1W['super'] += $factor * $totalCache1W['super'][$row['superID']][$i];
+                }
+                if ($i <= 2) {
+                    $sales2W['super'] += $factor * $totalCache2W['super'][$row['superID']][$i];
+                }
+                if ($i <= 5) {
+                    $sales5W['super'] += $factor * $totalCache5W['super'][$row['superID']][$i];
+                }
                 if (!isset($totalCache['dept'][$row['department']][$i])) {
                     $totalR = $dbc->execute($totalsP, array($row['superID'], $row['department'], $storeID));
                     while ($totals = $dbc->fetchRow($totalR)) {
                         $weekID = $totals['weekLastQuarterID'];
                         $totalCache['dept'][$row['department']][$weekID] = $totals['dept'];
+                        if ($i <= 1) {
+                            $totalCache1W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
+                        if ($i <= 2) {
+                            $totalCache2W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
+                        if ($i <= 5) {
+                            $totalCache5W['dept'][$row['department']][$weekID] = $totals['dept'];
+                        }
                     }
                 }
                 $sales['dept'] += $factor * $totalCache['dept'][$row['department']][$i];
+                if ($i <= 1) {
+                    $sales1W['dept'] += $factor * $totalCache1W['dept'][$row['department']][$i];
+                }
+                if ($i <= 2) {
+                    $sales2W['dept'] += $factor * $totalCache2W['dept'][$row['department']][$i];
+                }
+                if ($i <= 5) {
+                    $sales5W['dept'] += $factor * $totalCache5W['dept'][$row['department']][$i];
+                }
                 $factor -= 0.05;
             }
             $args = array(
@@ -284,6 +408,15 @@ last thirteen weeks';
                 $sales['store'] != 0 ? $scaledSales / $sales['store'] : 0,
                 $sales['super'] != 0 ? $scaledSales / $sales['super'] : 0,
                 $sales['dept'] != 0 ? $scaledSales / $sales['dept'] : 0,
+                $sales1W['store'] != 0 ? $scaledSalesWeek / $sales1W['store'] : 0,
+                $sales1W['super'] != 0 ? $scaledSalesWeek / $sales1W['super'] : 0,
+                $sales1W['dept'] != 0 ? $scaledSalesWeek / $sales1W['dept'] : 0,
+                $sales2W['store'] != 0 ? $scaledSales2Week / $sales2W['store'] : 0,
+                $sales2W['super'] != 0 ? $scaledSales2Week / $sales2W['super'] : 0,
+                $sales2W['dept'] != 0 ? $scaledSales2Week / $sales2W['dept'] : 0,
+                $sales5W['store'] != 0 ? $scaledSales5Week / $sales5W['store'] : 0,
+                $sales5W['super'] != 0 ? $scaledSales5Week / $sales5W['super'] : 0,
+                $sales5W['dept'] != 0 ? $scaledSales5Week / $sales5W['dept'] : 0,
             );
             $dbc->execute($insP, $args);
 

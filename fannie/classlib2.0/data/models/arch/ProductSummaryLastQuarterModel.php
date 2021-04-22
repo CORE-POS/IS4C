@@ -41,6 +41,15 @@ class ProductSummaryLastQuarterModel extends BasicModel
     'percentageStoreSales' => array('type'=>'DECIMAL(10,5)'),
     'percentageSuperDeptSales' => array('type'=>'DECIMAL(10,5)'),
     'percentageDeptSales' => array('type'=>'DECIMAL(10,5)'),
+    'percentageStoreSalesWeek' => array('type'=>'DECIMAL(10,5)'),
+    'percentageSuperDeptSalesWeek' => array('type'=>'DECIMAL(10,5)'),
+    'percentageDeptSalesWeek' => array('type'=>'DECIMAL(10,5)'),
+    'percentageStoreSales2Week' => array('type'=>'DECIMAL(10,5)'),
+    'percentageSuperDeptSales2Week' => array('type'=>'DECIMAL(10,5)'),
+    'percentageDeptSales2Week' => array('type'=>'DECIMAL(10,5)'),
+    'percentageStoreSales5Week' => array('type'=>'DECIMAL(10,5)'),
+    'percentageSuperDeptSales5Week' => array('type'=>'DECIMAL(10,5)'),
+    'percentageDeptSales5Week' => array('type'=>'DECIMAL(10,5)'),
     );
 
     public function doc()
