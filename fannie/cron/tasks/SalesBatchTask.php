@@ -96,6 +96,8 @@ class SalesBatchTask extends FannieTask
                                 WHERE likeCode=?');
         $product = new ProductsModel($dbc);
         $isPartial = $dbc->prepare('SELECT batchID FROM PartialBatches WHERE batchID=?');
+        $applied = array();
+        $applyP = $dbc->prepare("UPDATE batches SET applied=1 WHERE batchID=?");
 
         // lookup current batches
         $prep = $dbc->prepare($this->getSaleItems($dbc));
@@ -104,6 +106,10 @@ class SalesBatchTask extends FannieTask
             // ignore partials. they have a separate task
             if ($dbc->getValue($isPartial, $row['batchID'])) {
                 continue;
+            }
+            if (!isset($applied[$row['batchID']])) {
+                $dbc->execute($applyP, array($row['batchID']));
+                $applied[$row['batchID']] = true;
             }
             // all items affected by this bathcList record
             // could be more than one in the case of likecodes

@@ -41,6 +41,7 @@ class BatchesModel extends BasicModel
     'owner' => array('type'=>'VARCHAR(50)'),
     'transLimit' => array('type'=>'TINYINT', 'default'=>0),
     'notes' => array('type'=>'TEXT'),
+    'applied' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()
@@ -467,6 +468,9 @@ those same items revert to normal pricing.
 
         $update = new ProdUpdateModel($this->connection);
         $update->logManyUpdates(array_keys($upcs), $updateType);
+
+        $applyP = $this->connection->prepare("UPDATE batches SET applied=1 WHERE batchID=?");
+        $this->connection->execute($prep, array($id));
 
         $updateQ = '
             UPDATE products AS p SET
