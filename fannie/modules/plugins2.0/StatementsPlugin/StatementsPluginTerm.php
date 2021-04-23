@@ -117,7 +117,6 @@ number above or at mms@wholefoods.coop. Thank you.";
             $pdf->MultiCell(0,5,"WHOLE FOODS COMMUNITY CO-OP, INC.");
             $pdf->Ln(10);
 
-            $pdf->MultiCell(0,5,"Amanda Borgren");
             $pdf->MultiCell(0,5,"Owner Services");
 
         }
