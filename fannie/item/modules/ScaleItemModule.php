@@ -158,7 +158,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $ret .= '<div role="tabpanel" class="tab-pane ' . ($selfStore == $id ? 'active' : '') . '" id="si-store-' . $id . '">';
             $ret .= '<input type="hidden" name="s_text_id[]" value="' . $id . '" />';
             $ret .= '<input type="hidden" name="s_text_hash[]" value="' . md5($storeIngredients[$id]) . '" />';
-            $ret .= "<textarea name=s_text[] rows=4 cols=45 class=\"form-control s_text\" 
+            $ret .= "<textarea name=s_text[] rows=15 cols=45 class=\"form-control s_text\" 
                 onkeyup=\"scaleItem.countField('s_text', 'expLength');\"
                 onpaste=\"setTimeout(() => scaleItem.countField('s_text', 'expLength'), 25);\">";
             $ret .= $storeIngredients[$id];
