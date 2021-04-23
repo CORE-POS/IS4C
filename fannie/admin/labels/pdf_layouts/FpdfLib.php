@@ -16,6 +16,8 @@ class FpdfLib
                     $newstr = str_replace($line, $lower, $str);
                     $str = $newstr;
                 }
+            } else {
+                $newstr = $str;
             }
         }
 
