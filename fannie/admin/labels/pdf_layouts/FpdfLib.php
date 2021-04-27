@@ -1,6 +1,21 @@
 <?php
 class FpdfLib 
 {
+    static function abbreviation_to_upper($text)
+    {
+        $ABBREV= array('MN', 'WI', 'BBQ', 'TVP', 'TSP');
+        $chunks = explode(' ', $text);
+        $new_text = "";
+        foreach ($chunks as $chunk) {
+            if (in_array(strtoupper($chunk), $ABBREV)) {
+                $chunk = strtoupper($chunk);
+            }
+            $new_text .= $chunk . " ";
+        }
+
+        return $new_text;
+    }
+
     /**
      *  static method strtolower_inpara
      *  change all chars to lower case inside parenthesis
