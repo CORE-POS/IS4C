@@ -487,7 +487,7 @@ HTML;
                 $uploaded = substr($row['created'],0,10);
                 $tableA .= "<td>{$uploaded}</td>";
                 $tableA .= "<td><textarea name='comments' class='batchLogInput editable'
-                    '/>{$row['comments']}</textarea></td>";
+                    ' rows=2>{$row['comments']}</textarea></td>";
                 $action = '';
                 $noPunctBatchName = str_replace("'", "", $batchName);
                 $action = "<td><button class='btn btn-default ' style='border: 1px solid tomato;'
@@ -1191,9 +1191,6 @@ textarea { resize: vertical }
     pointer-events: all;
     width: 600px;
     height: 150px;
-}
-textarea {
-    height: 25px;
 }
 #alert {
     position: relative;
