@@ -197,9 +197,18 @@ foreach($data as $row) {
         $pdf->SetX($full_x);
         $pdf->Cell($width-5,4,$ppu,0,0,'R');
 
+        $lbMod = 0;
+        if (strpos($size, '#') != 0) {
+            $lbMod = -5;
+            $pdf->SetFont('Arial','B',12);
+            $pdf->SetXY($full_x,$full_y+17);
+            $pdf->Cell($width-5,8,'/lb',0,0,'R');
+        }
+
         $pdf->SetFont('Arial','B',24);  //change font size
-        $pdf->SetXY($full_x,$full_y+16);
+        $pdf->SetXY($full_x+$lbMod,$full_y+16);
         $pdf->Cell($width-5,8,$price,0,0,'R');
+
    } else {
         $price = $row['normal_price'];
         $desc = strtoupper(substr($row['description'],0,27));
