@@ -46,7 +46,7 @@ class CashierBarGraphs extends FannieRESTfulPage
     {
         $this->addOnloadCommand('$(\'#emp_no\').focus();');
         return <<<HTML
-<form method=get action="CashierBarGraphs.php">
+<form method=get action="CashierBarGraphs.php"
     class="form-inline">
 <p>
     <label>Enter Employee Number</label>
