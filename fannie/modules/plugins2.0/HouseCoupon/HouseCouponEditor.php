@@ -152,7 +152,7 @@ class HouseCouponEditor extends FanniePage
             if ($expires == '') {
                 $expires = null;
             }
-            $limit = FormLib::get_form_value('limit',1) || 1;
+            $limit = FormLib::get_form_value('limit',1);
             $mem = FormLib::get_form_value('memberonly',0);
             $dept = FormLib::get_form_value('dept',0);
             $dtype = FormLib::get_form_value('dtype','Q');
