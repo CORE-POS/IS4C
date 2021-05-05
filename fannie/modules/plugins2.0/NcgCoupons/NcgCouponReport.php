@@ -28,7 +28,7 @@ class NcgCouponReport extends FannieRESTfulPage
             WHERE tdate BETWEEN ? AND ? AND upc=?
             GROUP BY date_id, store_id, trans_num
             HAVING SUM(total) <> 0");
-        $res = $this->connection->execute($prep, array($model->startDate(), $model->endDate() . ' 23:59:59', $this->id));
+        $res = $this->connection->execute($prep, array($model->startDate(), str_replace('00:00:00', '23:59:59', $model->endDate()), $this->id));
         $count = 0;
         $sales = 0;
         $memCount = 0;
@@ -49,8 +49,8 @@ class NcgCouponReport extends FannieRESTfulPage
         $avg = sprintf('%.2f', $sales / $count);
         $memAvg = sprintf('%.2f', $memSales / $memCount);
 
-        $start = date('Ymd', strtotime($model->startDate()));
-        $end = date('Ymd', strtotime($model->endDate()));
+        $start = '20210301';
+        $end = '20210331';
         list($inStr, $args) = $this->connection->safeInClause(array_keys($redeemers), array($start, $end));
         $otherP = $this->connection->prepare("SELECT AVG(retailTotal)
             FROM core_warehouse.transactionSummary
@@ -62,6 +62,19 @@ class NcgCouponReport extends FannieRESTfulPage
         $other = sprintf('%.2f', $other);
         $diff = $memAvg - $other;
 
+        $start = '20210201';
+        $end = '20210228';
+        list($inStr, $args) = $this->connection->safeInClause(array_keys($redeemers), array($start, $end));
+        $sameP = $this->connection->prepare("SELECT AVG(retailTotal)
+            FROM core_warehouse.transactionSummary
+            WHERE date_id BETWEEN ? AND ?
+                AND memType IN (1,3,5)
+                AND retailTotal > 0
+                AND card_no IN ({$inStr})");
+        $same = $this->connection->getValue($sameP, $args);
+        $same = sprintf('%.2f', $same);
+        $diff2 = $memAvg - $same;
+
         return <<<HTML
 <h3>{$obj->couponUPC} - {$obj->description}</h3>
 <p>
@@ -70,6 +83,8 @@ class NcgCouponReport extends FannieRESTfulPage
 <b>Average Coupon Basket</b>: {$avg}<br />
 <b>Owner Sales on Coupon Transactions</b>: {$memSales}<br />
 <b>Average Owner Coupon Basket</b>: {$memAvg}<br />
+<b>Average Baset for Same Owners February</b>: {$same}<br />
+<b>Basket Difference</b>: {$diff2}<br />
 <b>Average Basket Other Owners</b>: {$other}<br />
 <b>Basket Difference</b>: {$diff}<br />
 </p>
