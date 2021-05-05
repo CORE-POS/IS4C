@@ -24,17 +24,17 @@ class FairhavenInvoiceImport extends \COREPOS\Fannie\API\FannieUploadPage
         ),
         'desc' => array(
             'display_name' => 'Description *',
-            'default' => 17,
+            'default' => 16,
             'required' => true
         ),
         'cost' => array(
             'display_name' => 'Unit Cost *',
-            'default' => 18,
+            'default' => 17,
             'required' => true
         ),
         'qty' => array(
             'display_name' => 'Quantity *',
-            'default' => 16,
+            'default' => 15,
             'required' => true
         ),
     );
@@ -44,8 +44,8 @@ class FairhavenInvoiceImport extends \COREPOS\Fannie\API\FannieUploadPage
         $vendorID = 302;
         $baseLine = $linedata[1];
         $invoice = $baseLine[0];
-        $date = date('Y-m-d H:i:s', strtotime($baseLine[5]));
-        $address = trim($baseLine[25]);
+        $date = FormLib::get('rDate');
+        $address = trim($baseLine[26]);
         $storeID = $address[0] == '6' ? 1 : 2;
 
         $checkP = $this->connection->prepare("SELECT orderID FROM PurchaseOrder WHERE vendorID=302 and vendorInvoiceID=? AND storeID=?");
@@ -115,6 +115,18 @@ class FairhavenInvoiceImport extends \COREPOS\Fannie\API\FannieUploadPage
         $task->run();
 
         return true;
+    }
+
+    public function preview_content()
+    {
+        return <<<HTML
+<div class="form-inline">
+    <div class="form-group">
+        <label>Delivery Date</label>
+        <input type="text" name="rDate" class="form-control date-field" />
+    </div>
+</div>
+HTML;
     }
 
     function results_content()
