@@ -236,7 +236,7 @@ last thirteen weeks';
         $dbc->startTransaction();
         echo "Found $rows\n";
         while ($row = $dbc->fetchRow($res)) {
-            echo "$count/$rows\r";
+            //echo "$count/$rows\r";
             $upc = $row['upc'];
             $storeID = $row['storeID'];
             $sales = array(
