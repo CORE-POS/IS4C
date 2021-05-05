@@ -25,6 +25,15 @@ class RpMenu extends FannieRESTfulPage
 </ul>
 <hr />
 <ul>
+    <li>Plant Pre-Orders</li>
+    <ul>
+        <li><a href="../Pickup/ViewPickups.php">View Customer Orders</a></li>
+        <li><a href="../../../item/inventory/InvCountPage.php">Perpetual Inventory</a></li>
+        <li><a href="../../../purchasing/importers/FairhavenInvoiceImport.php">Upload Fairhaven Invoice</a></li>
+    </ul>
+</ul>
+<hr />
+<ul>
     <li>Data Management</li>
     <ul>
         <li><a href="RpCategoriesPage.php">Categories</a> - sort which order the categories appear in</li>
