@@ -22,7 +22,6 @@
         "phpmailer/phpmailer": "6.1.6",
         "psr/log": "~1.0",
         "sabre/vobject": "~3.4",
-        "endroid/qrcode": "~1.5",
         "phpoffice/phpexcel": "^1.8",
         "mailchimp/mailchimp": "^2.0",
         "datto/json-rpc-http": "^3.1",
@@ -44,15 +43,21 @@
         "spomky-labs/otphp": "^8.0",
         "drewm/mailchimp-api": "^2.4",
         "league/flysystem-sftp": "^1.0",
-        "phpseclib/phpseclib": "2.0.31"
+        "phpseclib/phpseclib": "2.0.31",
+        "php-coveralls/php-coveralls": "^2.4",
+        "endroid/qr-code": "^2.5",
+        "oomphinc/composer-installers-extender": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",
         "squizlabs/php_codesniffer": "2.*",
         "codeclimate/php-test-reporter": "^0.3.2"
     },
-    "config": {
-        "component-dir": "fannie/src/javascript/composer-components/"
+    "extra": {
+        "installer-types": ["component"],
+        "installer-paths": {
+            "fannie/src/javascript/composer-components/{$name}/": ["type:component"]
+        }
     },
     "autoload": {
         "psr-4": {
