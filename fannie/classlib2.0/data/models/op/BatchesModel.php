@@ -470,7 +470,7 @@ those same items revert to normal pricing.
         $update->logManyUpdates(array_keys($upcs), $updateType);
 
         $applyP = $this->connection->prepare("UPDATE batches SET applied=1 WHERE batchID=?");
-        $this->connection->execute($prep, array($id));
+        $this->connection->execute($applyP, array($id));
 
         $updateQ = '
             UPDATE products AS p SET
