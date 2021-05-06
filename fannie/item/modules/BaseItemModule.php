@@ -1163,6 +1163,7 @@ HTML;
             }
 
             $chkP = $dbc->prepare("SELECT upc FROM vendorItems
+                INNER JOIN products ON products.upc = vendorItems.upc
                 WHERE sku=? AND vendorID=? AND upc <> ?");
             $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
             if ($chk && $override == 0) {
@@ -1217,6 +1218,7 @@ HTML;
             $sku = FormLib::get('vendorSKU');
             if ($vendorID != 0 && $sku != '') {
                 $chkP = $dbc->prepare("SELECT upc FROM vendorItems
+                    INNER JOIN products ON products.upc = vendorItems.upc
                     WHERE sku=? AND vendorID=? AND upc <> ?");
                 $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
                 if ($chk) {
