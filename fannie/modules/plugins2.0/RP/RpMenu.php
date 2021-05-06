@@ -30,6 +30,8 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="../Pickup/ViewPickups.php">View Customer Orders</a></li>
         <li><a href="../../../item/inventory/InvCountPage.php">Perpetual Inventory</a></li>
         <li><a href="../../../purchasing/importers/FairhavenInvoiceImport.php">Upload Fairhaven Invoice</a></li>
+        <li><a href="../../../item/shrink/ShrinkTool.php">Enter Shrink</a></li>
+        <li><a href="../Pickup/PushUpdate.php">Update Website Inventory</a></li>
     </ul>
 </ul>
 <hr />
