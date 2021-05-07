@@ -46,7 +46,8 @@
         "phpseclib/phpseclib": "2.0.31",
         "php-coveralls/php-coveralls": "^2.4",
         "endroid/qr-code": "^2.5",
-        "oomphinc/composer-installers-extender": "^1.1"
+        "oomphinc/composer-installers-extender": "^1.1",
+        "monolog/monolog": "^1.26"
     },
     "require-dev": {
         "phpunit/phpunit": "4.5.*",
