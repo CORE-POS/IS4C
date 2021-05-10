@@ -48,6 +48,12 @@ class EdlpBatchPage extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $date = FormLib::get('date', false);
+        $id = FormLib::get('id', 6);
+
+        $model = new PriceRuleTypesModel($this->connection);
+        $model->priceRuleTypeID($id);
+        $model->load();
+        $type = $model->description();
 
         $args = array($this->id);
         if ($date) {
@@ -68,7 +74,7 @@ class EdlpBatchPage extends FannieRESTfulPage
         }
 
         $batch = new BatchesModel($dbc);
-        $batch->batchName('EDLP Price Change');
+        $batch->batchName($type);
         $yesterday = date('Y-m-d', strtotime('yesterday'));
         $batch->startDate($yesterday);
         $batch->endDate($yesterday);
