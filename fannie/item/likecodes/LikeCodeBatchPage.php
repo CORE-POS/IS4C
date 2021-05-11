@@ -335,7 +335,32 @@ class LikeCodeBatchPage extends FannieRESTfulPage
                 'isSale', false,
             );
         }
-        $contribP = $this->connection->prepare("SELECT u.likeCode, SUM(percentageSuperDeptSales) AS weight
+        $weighting = 'percentageSuperDeptSales2Week';
+        $weightReq = FormLib::get('weighting', '2 Weeks');
+        switch ($weightReq) {
+            case '1 Week':
+                $weighting = 'percentageSuperDeptSalesWeek';
+                break;
+            case '2 Weeks':
+                $weighting = 'percentageSuperDeptSales2Week';
+                break;
+            case '5 Weeks':
+                $weighting = 'percentageSuperDeptSales5Week';
+                break;
+            case '13 Weeks':
+                $weighting = 'percentageSuperDeptSales';
+                break;
+            default:
+                $weightReq = '2 Weeks';
+                break;
+        }
+        $weightSel = '<select name="weighting" class="form-control filter-field" onchange="lcBatch.refilter();">';
+        foreach (array('1 Week', '2 Weeks', '5 Weeks', '13 Weeks') as $wOpt) {
+            $weightSel .= sprintf('<option %s>%s</option>',
+                ($weightReq == $wOpt ? 'selected' : ''), $wOpt);
+        }
+        $weightSel .= '</select>';
+        $contribP = $this->connection->prepare("SELECT u.likeCode, SUM({$weighting}) AS weight
             FROM upcLike AS u
                 INNER JOIN " . FannieDB::fqn('productSummaryLastQuarter', 'arch') . " AS q ON q.upc = u.upc
             WHERE u.likeCode IN ({$inStr})
@@ -454,6 +479,9 @@ Filter:
 <select name="cat" class="form-control filter-field">{$categories}</select>
 <select name="pri" class="form-control filter-field">{$priOpts}</select>
 <a href="LikeCodeSKUsPage.php?{$_SERVER['QUERY_STRING']}" class="btn btn-default">Shopping</a>
+</p>
+<p class="form-inline">
+Contribution Window: {$weightSel}
 </p>
 <p><label><input type="checkbox" {$internalDisable} onchange="lcBatch.toggleInact(this.checked);" /> Show inactive</label>
 (Active {$counts['act']}, Inactive {$counts['inact']})
