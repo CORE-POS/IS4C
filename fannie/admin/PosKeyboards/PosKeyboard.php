@@ -208,7 +208,7 @@ class PosKeyboard extends FanniePage
 
     public function drawKeyboard()
     {
-        $dbc = $this->connection;
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 
         $prep = $dbc->prepare("SELECT * FROM PosKeys");
         $res = $dbc->execute($prep);
