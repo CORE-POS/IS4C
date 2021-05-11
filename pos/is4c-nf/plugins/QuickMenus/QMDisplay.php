@@ -45,11 +45,13 @@ class QMDisplay extends NoInputCorePage
                 if (event.which >= 49 && event.which <= 57) {
                     if (!qm_submitted) {
                         qm_submitted = true;
+                        $('#qmform').prop('onsubmit', null);
                         $('#qmform').submit();
                     }
                 } else if (event.which >= 97 && event.which <= 105) {
                     if (!qm_submitted) {
                         qm_submitted = true;
+                        $('#qmform').prop('onsubmit', null);
                         $('#qmform').submit();
                     }
                 }
