@@ -44,6 +44,7 @@ CSS;
         $greens = $this->greensTable($store);
         $preps = $this->prepsTable($store);
         $stock = $this->stockFirst($store);
+        $sale = $this->onSale($store);
         $today = date('l, F jS');
         $model = new StoresModel($this->connection);
         $model->storeID($store);
@@ -81,6 +82,16 @@ CSS;
         }
         $pdf->SetX(5);
         $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell(120, 7, 'Tops Sweep:', 1, 0, 'L');
+        $pdf->SetFont('Arial', '', 9);
+        $pdf->SetX(30);
+        $pdf->Cell(12, 7, '1', 0, 0);
+        $pdf->Cell(12, 7, '3', 0, 0);
+        $pdf->Cell(12, 7, '5', 0, 0);
+        $pdf->Cell(12, 7, '7', 0, 0);
+        $pdf->Ln();
+        $pdf->SetX(5);
+        $pdf->SetFont('Arial', 'B', 9);
         $pdf->Cell(120, 7, 'Sanitizing:', 1, 0, 'L');
         $pdf->SetFont('Arial', '', 9);
         $pdf->SetX(30);
@@ -102,7 +113,7 @@ CSS;
         $pdf->Ln();
 
         $preps = DataConvert::htmlToArray($preps);
-        $pdf->SetXY(5, 140);
+        $pdf->SetXY(5, 150);
         foreach ($preps as $row) {
             $pdf->SetX(5);
             if (!empty($row[0])) {
@@ -112,7 +123,7 @@ CSS;
         }
 
         $greens = DataConvert::htmlToArray($greens);
-        $pdf->SetXY(83, 140);
+        $pdf->SetXY(83, 150);
         foreach ($greens as $row) {
             $pdf->SetX(83);
             if (!empty($row[0])) {
@@ -130,6 +141,17 @@ CSS;
                 $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 1, 'L');
             }
         }
+
+        $sale = str_replace('&', '&amp;', $sale);
+        $sale = DataConvert::htmlToArray($sale);
+        $pdf->SetXY(160, 110);
+        foreach ($sale as $row) {
+            $pdf->SetX(160);
+            if (!empty($row[0])) {
+                $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 1, 'L');
+            }
+        }
+
 
         $pdf->Output('Daily.pdf', 'I');
 
@@ -149,6 +171,7 @@ CSS;
         $greens = $this->greensTable($store);
         $preps = $this->prepsTable($store);
         $stock = $this->stockFirst($store);
+        $sale = $this->onSale($store);
         $today = date('l, F jS');
 
         $stores = FormLib::storePicker('store', false, "window.location='RpDailyPage.php?store='+this.value");
@@ -178,6 +201,20 @@ CSS;
                 <tr><td>&nbsp;</td></tr>
                 <tr><td>&nbsp;</td></tr>
                 <tr><td>&nbsp;</td></tr>
+                <tr><td><b>Tops Sweep</b>:
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    1
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    3
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    5
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    7
+                </td></tr>
                 <tr><td><b>Sanitizing</b>:
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -218,6 +255,8 @@ CSS;
     </div>
     <div class="col-sm-3">
         {$stock}
+        <br />
+        {$sale}
     </div>
 </div>
 </div>
@@ -406,6 +445,11 @@ HTML;
     protected function stockFirst($store)
     {
         $nameP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
+        $batchP = $this->connection->prepare("SELECT l.batchID FROM batchList AS l
+            INNER JOIN batches AS b ON l.batchID=b.batchID
+            WHERE l.upc=?
+                AND " . $this->connection->curdate() . " BETWEEN b.startDate AND b.endDate
+                AND b.discountType > 0");
         $dataP = $this->connection->prepare("SELECT r.upc
             FROM RpSubTypes AS r
                 LEFT JOIN " . FannieDB::fqn('Smoothed', 'plugin:WarehouseDatabase') . " AS w ON r.upc=w.upc
@@ -418,9 +462,36 @@ HTML;
         $count = 0;
         while ($row = $this->connection->fetchRow($dataR)) {
             $name = $this->connection->getValue($nameP, array(substr($row['upc'], 2)));
+            if ($this->connection->getValue($batchP, array($row['upc']))) {
+                $name = '** ' . $name;
+            }
             $ret .= '<tr><td>' . $name . '</td></tr>';
             $count++;
-            if ($count >= 30) {
+            if ($count >= 10) {
+                break;
+            }
+        }
+
+        return $ret . '</table>';
+    }
+
+    protected function onSale($store)
+    {
+        $nameP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
+        $batchR = $this->connection->query("SELECT l.upc FROM batchList AS l
+            INNER JOIN batches AS b ON l.batchID=b.batchID
+            WHERE l.upc LIKE 'LC%'
+                AND " . $this->connection->curdate() . " BETWEEN b.startDate AND b.endDate
+                AND b.discountType > 0
+                AND b.batchName LIKE '%Pro%Deal%'");
+        $count = 0;
+        $ret = '<table class="table table-bordered table-striped">
+                <tr><th>On Sale</th></tr>';
+        while ($row = $this->connection->fetchRow($batchR)) {
+            $name = $this->connection->getValue($nameP, array(substr($row['upc'], 2)));
+            $ret .= '<tr><td>' . $name . '</td></tr>';
+            $count++;
+            if ($count >= 20) {
                 break;
             }
         }
