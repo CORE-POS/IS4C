@@ -41,6 +41,75 @@ var lcBatch = (function ($) {
         $('#mainMargin').html(result);
     };
 
+    function addPriceChange(lc, price, cost) {
+        $.ajax({
+            'url': 'LikeCodeBatchPage.php',
+            'method': 'post',
+            'data': 'id=' + lc + '&price=' + price + '&cost=' + cost,
+            'dataType': 'json'
+        }).done(function (resp) {
+            $('#priceBatch').html('<a href="../../batches/newbatch/EditBatchPage.php?id=' + resp.id + '">Price Batch</a>');
+        });
+    };
+
+    function removePriceChange(lc) {
+        $.ajax({
+            'url': 'LikeCodeBatchPage.php',
+            'method': 'post',
+            'data': '_method=delete&id=' + lc
+        }).done (function(resp) {
+        });
+    };
+
+    function addSale(lc, price, cost) {
+        $.ajax({
+            'url': 'LikeCodeBatchPage.php',
+            'method': 'post',
+            'data': 'id=' + lc + '&sale=' + price + '&cost=' + cost,
+            'dataType': 'json'
+        }).done(function (resp) {
+            $('#saleBatch').html('<a href="../../batches/newbatch/EditBatchPage.php?id=' + resp.id + '">Sale Batch</a>');
+        });
+    };
+
+    function removeSaleChange(lc) {
+        $.ajax({
+            'url': 'LikeCodeBatchPage.php',
+            'method': 'post',
+            'data': '_method=delete&id=' + lc + '&sale=1'
+        }).done (function(resp) {
+        });
+    };
+
+    mod.batchify = function(elem) {
+        var row = $(elem).closest('tr');
+        var price = row.find('input.price').val();
+        var orig = row.find('input.orig-price').val();
+        var cost = row.find('td.cost').html();
+        var lc = row.find('td.rowLC a').html();
+        var changeType = row.find('select.changeType').val();
+        switch (changeType) {
+            case 'Change':
+                removeSaleChange(lc);
+                if (orig != price) {
+                    addPriceChange(lc, price, cost);
+                } else {
+                    removePriceChange(lc);
+                    row.find('input.price').closest('td').removeClass('warning');
+                }
+                break;
+            case 'Stop Sale':
+                removeSaleChange(lc);
+                addPriceChange(lc, price, cost);
+                row.find('input.price').closest('td').addClass('warning');
+                break;
+            case 'Start Sale':
+                removePriceChange(lc);
+                addSale(lc, price, cost);
+                break;
+        }
+    };
+
     mod.recalculateMargin = function(elem) {
         var price = elem.value;
         var cost = $(elem).closest('tr').find('td.cost').html();
@@ -48,12 +117,14 @@ var lcBatch = (function ($) {
         margin = Math.round(margin * 100) / 100;
         $(elem).closest('tr').find('td.margin').html(margin);
         var orig = $(elem).closest('tr').find('input.orig-price').val();
+        var lc = $(elem).closest('tr').find('td.rowLC a').html();
         if (orig != price) {
             $(elem).closest('td').addClass('warning');
         } else {
             $(elem).closest('td').removeClass('warning');
         }
         mod.recalculateSheet();
+        mod.batchify(elem);
     }
 
     return mod;

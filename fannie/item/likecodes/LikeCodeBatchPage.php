@@ -12,13 +12,124 @@ class LikeCodeBatchPage extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('post<id><vendorID>',
-            'post<id><vendorID><sku>',
-            'post<id><multiVendor>',
-            'get<id><store><export>'
+        $this->addRoute(
+            'get<id><store><export>',
+            'post<id><price><cost>',
+            'post<id><sale><cost>'
         );
 
         return parent::preprocess();
+    }
+
+    private function getBatchID()
+    {
+        $prep = $this->connection->prepare("SELECT batchID FROM batches
+            WHERE batchName LIKE 'Pro Price Change%'
+                AND applied=0
+                AND discountType=0");
+        return $this->connection->getValue($prep);
+    }
+
+    private function getSalesID()
+    {
+        $prep = $this->connection->prepare("SELECT batchID FROM batches
+            WHERE batchName LIKE 'Pro Deal%'
+                AND applied=0
+                AND discountType=1");
+        return $this->connection->getValue($prep);
+    }
+
+    private function getBatchPrices($batchID)
+    {
+        if (!$batchID) {
+            return array();
+        }
+
+        $prep = $this->connection->prepare("SELECT upc, salePrice FROM batchList WHERE batchID=? AND upc LIKE 'LC%'");
+        $res = $this->connection->execute($prep, array($batchID));
+        $ret = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $lc = str_replace('LC', '', $row['upc']);
+            $ret[$lc] = $row['salePrice'];
+        }
+
+        return $ret;
+    }
+
+    protected function post_id_price_cost_handler()
+    {
+        $batchID = $this->getBatchID();
+        if (!$batchID) {
+            $model = new BatchesModel($this->connection);
+            $model->batchName('Pro Price Change ' . date('n/j'));
+            $model->owner('PRODUCE');
+            $model->discountType(0);
+            $model->batchType(4);
+            $batchID = $model->save();
+        }
+
+        $upc = 'LC'  . trim($this->id);
+        $chkP = $this->connection->prepare("SELECT listID FROM batchList WHERE batchID=? AND upc=?");
+        $listID = $this->connection->getValue($chkP, array($batchID, $upc));
+        if ($listID) {
+            $upP = $this->connection->prepare("UPDATE batchList SET salePrice=?, cost=? WHERE listID=?");
+            $this->connection->execute($upP, array($this->price, $this->cost, $listID));
+            $op = 'updating';
+        } else {
+            $insP = $this->connection->prepare("INSERT INTO batchList (upc, batchID, salePrice, cost, groupSalePrice, active)
+               VALUES (?, ?, ?, ?, 0, 0)");
+            $this->connection->execute($insP, array($upc, $batchID, $this->price, $this->cost)); 
+            $op = 'adding';
+        }
+
+        echo json_encode(array('id' => $batchID, 'op' => $op));
+
+        return false;
+    }
+
+    protected function delete_id_handler()
+    {
+        $batchID = FormLib::get('sale') ? $this->getSalesID() : $this->getBatchID();
+        if (!$batchID) {
+            return false;
+        }
+
+        $upc = 'LC'  . trim($this->id);
+        $prep = $this->connection->prepare("DELETE FROM batchList WHERE batchID=? AND upc=?");
+        $this->connection->execute($prep, array($batchID, $upc));
+
+        return false;
+    }
+
+    protected function post_id_sale_cost_handler()
+    {
+        $batchID = $this->getSalesID();
+        if (!$batchID) {
+            $model = new BatchesModel($this->connection);
+            $model->batchName('Pro Deals ' . date('n/j'));
+            $model->owner('PRODUCE');
+            $model->discountType(1);
+            $model->batchType(2);
+            $batchID = $model->save();
+        }
+
+        $upc = 'LC'  . trim($this->id);
+        $chkP = $this->connection->prepare("SELECT listID FROM batchList WHERE batchID=? AND upc=?");
+        $listID = $this->connection->getValue($chkP, array($batchID, $upc));
+        if ($listID) {
+            $upP = $this->connection->prepare("UPDATE batchList SET salePrice=?, cost=? WHERE listID=?");
+            $this->connection->execute($upP, array($this->sale, $this->cost, $listID));
+            $op = 'updating';
+        } else {
+            $insP = $this->connection->prepare("INSERT INTO batchList (upc, batchID, salePrice, cost, groupSalePrice, active)
+               VALUES (?, ?, ?, ?, 0, 0)");
+            $this->connection->execute($insP, array($upc, $batchID, $this->sale, $this->cost)); 
+            $op = 'adding';
+        }
+
+        echo json_encode(array('id' => $batchID, 'op' => $op));
+
+        return false;
     }
 
     protected function get_id_store_export_handler()
@@ -90,52 +201,6 @@ class LikeCodeBatchPage extends FannieRESTfulPage
         return false;
     }
 
-    protected function post_id_multiVendor_handler()
-    {
-        $prep = $this->connection->prepare('UPDATE likeCodes SET multiVendor=? WHERE likeCode=?');
-        $this->connection->execute($prep, array($this->multiVendor, $this->id));
-        echo 'Done';
-
-        return false;
-    }
-
-    protected function post_id_vendorID_sku_handler()
-    {
-        $sku = trim($this->sku);
-        $vID = $this->vendorID;
-        $dbc = $this->connection;
-
-        $existsP = $dbc->prepare('SELECT likeCode FROM VendorLikeCodeMap WHERE likeCode=? AND vendorID=?');
-        $exists = $dbc->getValue($existsP, array($this->id, $vID));
-        if ($exists && empty($sku)) {
-            $delP = $dbc->prepare('DELETE FROM VendorLikeCodeMap WHERE likeCode=? AND vendorID=?');
-            $dbc->execute($delP, array($this->id, $vID));
-        } elseif ($exists) {
-            list($sku,) = explode(' ', $sku, 2);
-            $upP = $dbc->prepare('UPDATE VendorLikeCodeMap SET sku=? WHERE likeCode=? AND vendorID=?');
-            $dbc->execute($upP, array($sku, $this->id, $vID));
-        } else {
-            list($sku,) = explode(' ', $sku, 2);
-            $insP = $dbc->prepare('INSERT INTO VendorLikeCodeMap (likeCode, vendorID, sku) VALUES (?, ?, ?)');
-            $dbc->execute($insP, array($this->id, $vID, $sku));
-        }
-        echo 'Done';
-
-        return false;
-    }
-
-    protected function post_id_vendorID_handler()
-    {
-        $prep = $this->connection->prepare("
-            UPDATE " . FannieDB::fqn('likeCodes', 'op') . "
-            SET preferredVendorID=?
-            WHERE likeCode=?");
-        $res = $this->connection->execute($prep, array($this->vendorID, $this->id));
-        echo 'Done';
-
-        return false;
-    }
-
     private function getItems($vendorID)
     {
         $prep = $this->connection->prepare("
@@ -171,6 +236,12 @@ class LikeCodeBatchPage extends FannieRESTfulPage
             292 => $this->getItems(292),
             136 => $this->getItems(136),
         );
+        $pcBatchID = $this->getBatchID();
+        $pcLink = $pcBatchID ? '<a href="../../batches/newbatch/EditBatchPage.php?id=' . $pcBatchID . '">Price Batch</a>' : '';
+        $pcPrices = $this->getBatchPrices($pcBatchID);
+        $saleBatchID = $this->getSalesID();
+        $saleLink = $pcBatchID ? '<a href="../../batches/newbatch/EditBatchPage.php?id=' . $saleBatchID . '">Sale Batch</a>' : '';
+        $salePrices = $this->getBatchPrices($saleBatchID);
         $store = FormLib::get('store');
         $lcArgs = array($store, $this->id);
         $lcP = $this->connection->prepare('
@@ -326,18 +397,49 @@ class LikeCodeBatchPage extends FannieRESTfulPage
             $tableBody .= "<tr class=\"{$inactiveClass} price-row\"><td class=\"rowLC\"><a href=\"LikeCodeEditor.php?start={$lc}\">{$lc}</a></td>
                 <td><a href=\"LikeCodeEditor.php?start={$lc}\">{$data['name']}</a></td>";
             $retail = $retailMap[$lc]['normal'];
+            $changed = false;
+            $changeType = false;
+            if (isset($pcPrices[$lc])) {
+                $changed = $pcPrices[$lc];
+                $changeType = 'PC';
+            } elseif (isset($salePrices[$lc])) {
+                $changed = $salePrices[$lc];
+                $changeType = 'Sale';
+            }
+            $opts = array('Change', 'Start Sale', 'Stop Sale');
+            $typeSel = '<select class="changeType form-control input-sm" onchange="lcBatch.batchify(this);">';
+            foreach ($opts as $opt) {
+                $selected = '';
+                if ($opt == 'Change' && $changeType == 'PC' && $changed != $retail) {
+                    $selected = 'selected';
+                } elseif ($opt == 'Stop Sale' && $changeType == 'PC' && $changed == $retail) {
+                    $selected = 'selected';
+                } elseif ($opt == 'Start Sale' && $changeType == 'Sale') {
+                    $selected = 'selected';
+                }
+                $typeSel .= sprintf('<option %s>%s</option>', $selected, $opt);
+            }
+            $typeSel .= '</select>';
             $tableBody .= sprintf('<td>%d</td><td>%.2f</td>
                 <td class="cost">%.3f</td>
-                <td><input type="text" size="5" class="price form-control input-sm" value="%.2f" 
+                <td class="form-inline %s"><input type="text" size="5" class="price form-control input-sm" value="%.2f" 
                     onchange="lcBatch.recalculateMargin(this);" />
+                    %s
                     <input type="hidden" class="orig-price" value="%.2f" />
                     <input type="hidden" class="weight" value="%s" />
                     </td>
                 <td class="margin">%.2f</td>',
-                $caseSize, $cost * $caseSize, $cost, $retail, $retail, $contribMap[$lc], ($retail - $cost) / $retail);
+                $caseSize, $cost * $caseSize,
+                $cost,
+                ($changed ? 'warning' : ''), ($changed ? $changed : $retail),
+                $typeSel,
+                $retail,
+                isset($contribMap[$lc]) ? $contribMap[$lc] : 0,
+                $retail == 0 ? 0 : ($retail - $cost) / $retail
+            );
             $tableBody .= '</tr>';
         }
-        $this->addScript('lcBatch.js');
+        $this->addScript('lcBatch.js?date=20210511');
         $this->addOnloadCommand('lcBatch.enableFilters();');
         $this->addOnloadCommand('lcBatch.recalculateSheet();');
         $this->addScript('../../src/javascript/chosen/chosen.jquery.min.js');
@@ -377,6 +479,8 @@ Filter:
 <div class="col-sm-1" style="position:fixed; right: 20px; top: 155px;">
     <b>Expected Margin</b>
     <div id="mainMargin"></div>
+    <div id="priceBatch">{$pcLink}</div>
+    <div id="saleBatch">{$saleLink}</div>
 </div>
 </div>
 HTML;
