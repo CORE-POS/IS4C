@@ -1,4 +1,5 @@
 <?php
+$FANNIE_PRODUCTION = true;
 if ($headerConfig instanceof FannieConfig) {
     $FANNIE_DYNAMIC_MENU = $headerConfig->get('DYNAMIC_MENU');
     $FANNIE_NAV_POSITION = $headerConfig->get('NAV_POSITION');
@@ -6,6 +7,7 @@ if ($headerConfig instanceof FannieConfig) {
     $FANNIE_CHARSET = $headerConfig->get('CHARSET');
     $FANNIE_CUSTOM_TITLE = $headerConfig->get('CUSTOM_TITLE');
     $FANNIE_MENU = $headerConfig->get('MENU');
+    $FANNIE_PRODUCTION = $headerConfig->production();
 }
 if (preg_match('/^Fannie[^\w]+.*$/', $page_title)) {
     $page_title = preg_replace('/^Fannie(.*)$/', $BACKEND_NAME . '$1', $page_title);
@@ -56,6 +58,13 @@ if (file_exists($path1 . 'bootstrap/js/bootstrap.min.js')) {
     echo "\n";
 }
 ?>
+<?php if (!$FANNIE_PRODUCTION): ?>
+<style type="text/css">
+  body {
+      background-image: url('<?php echo $headerConfig->get('URL'); ?>src/img/testing.png');
+  }
+</style>
+<?php endif; ?>
 <script type="text/javascript">
 function smartToggle()
 {
