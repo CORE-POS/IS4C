@@ -113,7 +113,7 @@ class FannieConfig
 
     public function production()
     {
-        return $this->get('DEV_MODE') === true;
+        return $this->get('DEV_MODE') !== true;
     }
 
 }

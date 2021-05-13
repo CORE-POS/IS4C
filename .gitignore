@@ -8,6 +8,7 @@ pos/is4c-nf/ini.json
 pos/is4c-nf/css/store.css
 fannie/reports/cash_report/image_area/*
 fannie/config.php
+fannie/DEV_MODE
 fannie/logs/*.log
 fannie/logs/*.txt
 pos/is4c-nf/scale-drivers/drivers/rs232/ssd
