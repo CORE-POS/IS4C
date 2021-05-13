@@ -152,6 +152,47 @@ CSS;
             }
         }
 
+        $pdf->AddPage();
+        $pdf->SetDrawColor(0,0,0);
+        $pdf->Line(108,0,108,279);
+        $pdf->Line(0,135,215,135);
+
+        $pdf->SetFont('Arial', '', 8);
+        $pdf->SetAutoPageBreak(false);
+        for ($i=0; $i<4; $i++) {
+            $posX = $i % 2 == 0 ? 5 : 110;
+            $posY = ($i/2) % 2 == 0 ? 10 : 140;
+            $pdf->SetXY($posX,$posY);
+
+            $header = true;
+            foreach ($stock as $row) {
+                $pdf->SetX($posX);
+                if (!empty($row[0])) {
+                    $pdf->Cell(60, 5, str_replace('bold', '', $row[0]), 1, 0, 'L');
+                    $pdf->Cell(20, 5, $header ? 'Qty' : '', 1, 0, 'L');
+                    $pdf->Cell(20, 5, $header ? 'Initial' : '', 1, 1, 'L');
+                    if ($header) {
+                        $header = false;
+                    }
+                }
+            }
+
+            $pdf->Ln(5);
+
+            $pdf->SetX($posX);
+            $header = true;
+            foreach ($sale as $row) {
+                $pdf->SetX($posX);
+                if (!empty($row[0])) {
+                    $pdf->Cell(60, 5, str_replace('bold', '', $row[0]), 1, 0, 'L');
+                    $pdf->Cell(20, 5, $header ? 'Qty' : '', 1, 0, 'L');
+                    $pdf->Cell(20, 5, $header ? 'Initial' : '', 1, 1, 'L');
+                    if ($header) {
+                        $header = false;
+                    }
+                }
+            }
+        }
 
         $pdf->Output('Daily.pdf', 'I');
 
