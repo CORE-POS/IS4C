@@ -30,7 +30,12 @@ class MOrderBotTask extends FannieTask
             $this->cronMsg("Mercato Bot errored\n" . implode("\n", $output) . "\n", FannieLogger::ALERT);
         }
 
-        $fp = fopen('/tmp/mc/store-orders.csv', 'r');
+        $fp = false;
+        if (file_exists('/tmp/mc/store-orders.csv')) {
+            $fp = fopen('/tmp/mc/store-orders.csv', 'r');
+        } elseif (file_exists('/tmp/mc/store-orders.csv.crdownload')) {
+            $fp = fopen('/tmp/mc/store-orders.csv.crdownload', 'r');
+        }
         $storeID = $this->config->get('STORE_ID');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $chkP = $dbc->prepare("SELECT mercatoOrderID FROM MercatoOrders WHERE orderID=? AND storeID=?");
