@@ -862,7 +862,10 @@ class FannieReportPage extends FanniePage
                         $this->addOnloadCommand("\$.tablesorter.themes.bootstrap['header'] += ' table-condensed small';");
                         $this->addOnloadCommand("\$('.mySortableTable').tablesorter({sortList: $sort, theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
                     }
-                    $this->addOnloadCommand("\$('.mySortableTable').floatThead();\n");
+                    // by default this seems to use z-index: 2, but that means it floats *above*
+                    // the datepicker, when that is exposed.  datepicker apparently uses z-index:
+                    // 1 but we cannot override that, so here we at least keep them the same.
+                    $this->addOnloadCommand("\$('.mySortableTable').floatThead({zIndex: 1});\n");
                 } elseif ($this->new_tablesorter) {
                     /**
                       New bootstrap-themed tablesorter requires more setup to style correctly
