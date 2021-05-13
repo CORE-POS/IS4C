@@ -42,6 +42,9 @@ class FannieConfig
                 }
             }
         }
+        if (file_exists(__DIR__ . '/../DEV_MODE')) {
+            $this->vars['FANNIE_DEV_MODE'] = true;
+        }
     }
 
     /**
@@ -106,6 +109,11 @@ class FannieConfig
     public function set($name, $value)
     {
         $this->vars[$name] = $value;
+    }
+
+    public function production()
+    {
+        return $this->get('DEV_MODE') === true;
     }
 
 }
