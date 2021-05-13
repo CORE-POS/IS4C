@@ -195,7 +195,7 @@ class QKDisplay extends NoInputCorePage
         $my_keys = $launcher->getKeys(CoreLocal::get('qkNumber'), $filter);
 
         $num_pages = ceil(count($my_keys)/9.0);
-        $page = $this->offset % $num_pages;
+        $page = $num_pages == 0 ? 0 : $this->offset % $num_pages;
         if ($page < 0) $page = $num_pages + $page;
 
         ob_start();
