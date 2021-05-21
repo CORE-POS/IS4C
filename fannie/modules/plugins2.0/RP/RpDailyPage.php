@@ -92,20 +92,6 @@ CSS;
         $pdf->Ln();
         $pdf->SetX(5);
         $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell(120, 7, 'Sanitizing:', 1, 0, 'L');
-        $pdf->SetFont('Arial', '', 9);
-        $pdf->SetX(30);
-        $pdf->Cell(12, 7, '6', 0, 0);
-        $pdf->Cell(12, 7, '8', 0, 0);
-        $pdf->Cell(12, 7, '10', 0, 0);
-        $pdf->Cell(12, 7, '12', 0, 0);
-        $pdf->Cell(12, 7, '2', 0, 0);
-        $pdf->Cell(12, 7, '4', 0, 0);
-        $pdf->Cell(12, 7, '6', 0, 0);
-        $pdf->Cell(12, 7, '8', 0, 0);
-        $pdf->Ln();
-        $pdf->SetX(5);
-        $pdf->SetFont('Arial', 'B', 9);
         $pdf->Cell(120, 7, 'Daily Critical Temp Food spot check:', 1, 0, 'L');
         $pdf->SetFont('Arial', '', 9);
         $pdf->SetX(63);
@@ -255,32 +241,6 @@ CSS;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     7
-                </td></tr>
-                <tr><td><b>Sanitizing</b>:
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    6
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    8
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    10
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    12
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    2
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    4
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    6
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    8
                 </td></tr>
                 <tr><td><b>Daily Critical Temp Food spot check</b>: ____________</td></tr>
             </table>
@@ -495,6 +455,7 @@ HTML;
             FROM RpSubTypes AS r
                 LEFT JOIN " . FannieDB::fqn('Smoothed', 'plugin:WarehouseDatabase') . " AS w ON r.upc=w.upc
             WHERE w.storeID=?
+                AND r.upc <> 'LC50'
                 AND subType='stock'
             ORDER BY w.movement * r.price DESC");
         $ret = '<table class="table table-bordered table-striped">
