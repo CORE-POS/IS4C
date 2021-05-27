@@ -291,6 +291,8 @@ class InvCountPage extends FannieRESTfulPage
             <a href="InvCasesPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Case Sizes</a>
             |
             <a href="InvHistoryPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Count History</a>
+            | <label><input type="checkbox" onclick="(this.checked) ? $(\'tr.warning\').hide() : $(\'tr.warning\').show();" />
+                Hide uncounted items</label>
             <p>
                 <button type="submit" class="btn btn-default">Save</button>
             </p>
