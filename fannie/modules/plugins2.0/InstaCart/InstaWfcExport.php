@@ -132,22 +132,18 @@ class InstaWfcExport extends FannieTask
             OPTIONALLY ENCLOSED BY '\"'
             LINES TERMINATED BY '\\n'");
 
-/*
         $dbc->query("TRUNCATE TABLE productOrderLimits");
         $dbc->query("LOAD DATA LOCAL INFILE '/tmp/pickupLimits.csv'
             INTO TABLE productOrderLimits
             FIELDS TERMINATED BY ','
             OPTIONALLY ENCLOSED BY '\"'
             LINES TERMINATED BY '\\n'");
- */
 
         $dbc->query("DELETE FROM localtemptrans WHERE trans_type='I'
             AND upc NOT IN (SELECT upc FROM productUser WHERE enableOnline=1)");
 
-/*
         $dbc->query("DELETE FROM localtemptrans WHERE trans_type='I'
             AND upc NOT IN (SELECT upc FROM productOrderLimits WHERE available <= 0)");
- */
         
         /*
         unlink($csvfile);
