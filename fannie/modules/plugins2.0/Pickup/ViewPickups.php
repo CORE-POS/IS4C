@@ -325,12 +325,26 @@ HTML;
         if ($store === false) {
             $store = Store::getIdByIp();
         }
-        $stores = FormLib::storePicker('store', true, "location='ViewPickups.php?store=' + this.value");
+        $stores = FormLib::storePicker('store', true, "location='ViewPickups.php?' + \$('select.form-control').serialize();");
+        $stat = FormLib::get('status', 'NEW + READY');
+        $status = array('NEW + READY', 'COMPLETE', 'CANCELLED');
+        $stats = '';
+        foreach ($status as $s) {
+            $stats .= sprintf('<option %s value="%s">%s</option>',
+                ($s == $stat ? 'selected' : ''), $s, $s);
+        }
+        $statClause = " status in ('NEW', 'READY') ";
+        if ($stat == 'COMPLETE') {
+            $statClause = " status in ('COMPLETE') ";
+        } elseif ($stat == 'CANCELLED') {
+            $statClause = " status in ('CANCELLED') ";
+        }
         $prep = $this->connection->prepare("SELECT *
             FROM PickupOrders
             WHERE closed=0 AND deleted=0
                 AND storeID=?
-                AND status IN ('NEW', 'READY')");
+                AND {$statClause}
+            ORDER BY pickupOrderID DESC");
         $res = $this->connection->execute($prep, array($store));
         $table = '';
         while ($row = $this->connection->fetchRow($res)) {
@@ -353,6 +367,12 @@ HTML;
 </p>
 <p>
     {$stores['html']}
+</p>
+<p>
+    <select name="status" class="form-control"
+        onchange="location='ViewPickups.php?' + $('select.form-control').serialize();">
+        {$stats}
+    </select>
 </p>
 <p>
 <table class="table table-bordered table-striped">
