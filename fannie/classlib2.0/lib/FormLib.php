@@ -495,7 +495,7 @@ HTML;
     <label class="col-sm-4 control-label">
         <a href="" 
             onclick="$('#multi-dept :input').prop('disabled', true);$('.pair-dept :input').prop('disabled', false);$('#multi-dept').hide();$('.pair-dept').show();return false;">
-            <span class="glyphicon glyphicon-refresh"
+            <span class="fas fa-sync"
                 title="Choose range of departments"></span>
         </a>
         Department(s)
@@ -517,7 +517,7 @@ HTML;
     <label class="col-sm-4 control-label">
         <a href="" 
             onclick="$('.pair-dept :input').prop('disabled', true);$('#multi-dept :input').prop('disabled', false);$('.pair-dept').hide();$('#multi-dept').show();return false;">
-            <span class="glyphicon glyphicon-refresh"
+            <span class="fas fa-sync"
                 title="Choose individual department(s)"></span>
         </a>
         Department Start

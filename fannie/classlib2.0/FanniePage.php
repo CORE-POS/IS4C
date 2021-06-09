@@ -148,6 +148,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
             } else {
                 $this->addCssFile($url . 'src/javascript/jquery-ui.css?id=20140625');
             }
+            $this->addCssFile($url . 'src/javascript/fontawesome-5.15.3/css/all.min.css');
             $this->addCssFile($url . 'src/css/configurable.php');
             $this->addCssFile($url . 'src/css/core.css');
             $this->addCssFile($url . 'src/css/print.css');

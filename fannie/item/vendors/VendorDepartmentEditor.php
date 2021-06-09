@@ -208,7 +208,7 @@ class VendorDepartmentEditor extends FanniePage {
             <td><a href=\"\" onclick=\"vDept.deleteCat(%d,'%s');return false\">%s</a></td>
             <td><a href=\"../../reports/VendorCategory/VendorCategoryReport.php?id=%d&category=%d\"
                 title=\"View Items in this Category\">
-                <span class=\"glyphicon glyphicon-th-list\"></span>
+                <span class=\"fas fa-th-list\"></span>
                 </a></td>
             </tr>",
             $row['deptID'],

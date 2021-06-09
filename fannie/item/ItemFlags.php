@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\lib\FannieUI;
+
 require(dirname(__FILE__) . '/../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../classlib2.0/FannieAPI.php');
@@ -132,7 +134,7 @@ class ItemFlags extends FanniePage {
             <th>Current Flags</th>
             <th>Enabled</th>
             <th>Action</th>
-            <th><span class="glyphicon glyphicon-trash"></span></th>
+            <th>' . FannieUI::deleteIcon() . '</th>
             </tr>';
         while ($w = $dbc->fetchRow($res)) {
             if (isset($FANNIE_COOP_ID) && $FANNIE_COOP_ID == 'WEFC_Toronto' ) {

@@ -165,7 +165,7 @@ class EditVendorItems extends FannieRESTfulPage
                     <input type="text" class="form-control input-sm costing" name="unitCost" value="%.2f" size="5" /></td>
                     
                 </td><td><button href="" class="btn btn-danger btn-xs"
-                    onclick="deleteVendorItem(this, \'%s\', \'%s\', \'%s\', \'%s\'); return false;"><span class="glyphicon glyphicon-trash" title="Delete"></span></button></td>
+                    onclick="deleteVendorItem(this, \'%s\', \'%s\', \'%s\', \'%s\'); return false;"><span class="fas fa-trash" title="Delete"></span></button></td>
                     
                 </tr>',
                 $item->sku(),

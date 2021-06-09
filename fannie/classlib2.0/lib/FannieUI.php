@@ -31,17 +31,17 @@ class FannieUI
 {
     public static function editIcon($alt='Edit')
     {
-        return '<span class="glyphicon glyphicon-pencil" title="' . $alt . '"></span>';
+        return '<span class="fas fa-pencil-alt" title="' . $alt . '"></span>';
     }
 
     public static function saveIcon($alt='Save')
     {
-        return '<span class="glyphicon glyphicon-floppy-disk" title="' . $alt . '"></span>';
+        return '<span class="fas fa-save" title="' . $alt . '"></span>';
     }
 
     public static function deleteIcon($alt='Delete')
     {
-        return '<span class="glyphicon glyphicon-trash" title="' . $alt . '"></span>';
+        return '<span class="fas fa-trash" title="' . $alt . '"></span>';
     }
 
     public static function loadingBar($id='')
@@ -58,9 +58,9 @@ class FannieUI
     public static function tableSortIcons()
     {
         return '
-            <span class="core-sort-none glyphicon glyphicon-sort"></span>
-            <span class="core-sort-down glyphicon glyphicon-arrow-down"></span>
-            <span class="core-sort-up glyphicon glyphicon-arrow-up"></span>
+            <span class="core-sort-none fas fa-sort"></span>
+            <span class="core-sort-down fas fa-sort-down"></span>
+            <span class="core-sort-up fas fa-sort-up"></span>
         ';
     }
 

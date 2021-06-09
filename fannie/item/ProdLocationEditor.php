@@ -621,7 +621,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <input type="hidden" name="batchCheck" value="'.$batchCheck.'">
                 </div>
                     <button type="submit" class="btn btn-default" value="Go" style="width: 50">
-                        <span class="glyphicon glyphicon-chevron-right"></span>
+                        <span class="fas fa-chevron-right"></span>
                     </button>
                     <input type="hidden" class="btn btn-default" name="searchupc" value="Update Locations by UPC">
                     <div class="spacer"></div>

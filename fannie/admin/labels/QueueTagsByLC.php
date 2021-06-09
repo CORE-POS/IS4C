@@ -140,7 +140,7 @@ class QueueTagsByLC extends FannieRESTfulPage
         $this->addOnloadCommand("\$('select.chosen').chosen();");
         
         return <<<HTML
-<p><button class="glyphicon glyphicon-chevron-left btn btn-default" id="back"></button></p>
+<p><button class="fas fa-chevron-left btn btn-default" id="back"></button></p>
 <select class="form-control chosen" onchange="queueLC(event);">
     <option value="">Select likecode(s)</option>
     {$lOpts}

@@ -1301,7 +1301,7 @@ HTML;
                         $overlap = $allOverlap[$fetchW['upc']];
                         $conflict = sprintf('<a href="EditBatchPage.php?id=%d" target="_batch%d"
                                                 title="!!Conflicts with batch %s" class="btn btn-xs btn-danger">
-                                                <span class="glyphicon glyphicon-exclamation-sign">
+                                                <span class="fas fa-exclamation-circle">
                                                 </span></a>',
                                                 $overlap['batchID'], $overlap['batchID'],
                                                 $overlap['batchName']);
@@ -1313,7 +1313,7 @@ HTML;
                     if ($sp < $mp && $fetchW['priceRuleTypeID'] == 10) {
                         $conflict .= '<a href="#" class="btn btn-warning btn-xs"
                             title="Sale price falls below MAP restriction. Minimum Price: $'.$mp.'">
-                            <span class="glyphicon glyphicon-exclamation-sign"></span></span>';
+                            <span class="fas fa-exclamation-circle"></span></span>';
                     }
                 }
                 $ret .= "<td bgcolor=$colors[$cur]><a href=\"{$FANNIE_URL}item/ItemEditorPage.php?searchupc={$fetchW['upc']}\"

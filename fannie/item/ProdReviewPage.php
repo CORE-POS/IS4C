@@ -102,7 +102,7 @@ HTML;
         return <<<HTML
 <form name="backbutton">
 <button class="btn btn-xs btn-primary backBtn" type="submit">
-    <span class="glyphicon glyphicon-chevron-left"></span></button>
+    <span class="fas fa-chevron-left"></span></button>
 </form>
 HTML;
     }
@@ -156,7 +156,9 @@ HTML;
                                             min='0' max='12' value='NULL'>
                                     </div>
                                     <div class='input-group'>
-                                        <button type='submit' class='btn btn-default'><span class='glyphicon glyphicon-floppy-disk'></span></button>
+                                        <button type='submit' class='btn btn-default'>"
+                                        . COREPOS\Fannie\API\lib\FannieUI::saveIcon() .
+                                        "</span></button>
                                     </div>
                                 </form>
                             </div>
@@ -421,7 +423,7 @@ HTML;
         */
         $bids = "0";
         $pAllBtn = "<button class='btn btn-default btn-xs'
-            onClick='printAll(); return false;'><span class='glyphicon glyphicon-print'></span></button>";
+            onClick='printAll(); return false;'><span class='fas fa-print'></span></button>";
         $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
             <th>{$pAllBtn}</th>
             <th>BatchID</th><th>Batch Name</th><th>Super Depts +</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
@@ -492,7 +494,7 @@ HTML;
                 $noPunctBatchName = str_replace("'", "", $batchName);
                 $action = "<td><button class='btn btn-default ' style='border: 1px solid tomato;'
                     onClick='forceBatch($curBid, \"$noPunctBatchName\"); return false;' id='force$curBid'>Force</button></td>";
-                $tableA .= "<td><span class='glyphicon glyphicon-trash' onClick='deleteRow($curBid)' title='Remove from staging table'></span></td>";
+                $tableA .= "<td><span class='fas fa-trash' onClick='deleteRow($curBid)' title='Remove from staging table'></span></td>";
                 $tableA .= $action;
                 $tableA .= "</tr>";
             } else {
@@ -877,7 +879,7 @@ HTML;
                         <div class="input-group">
                             <input type="text" class="form-control" name="upc" value="" autofocus>
                             <span class="input-group-addon">
-                                <button class="input-addon-btn glyphicon glyphicon-chevron-right" type="submit">
+                                <button class="input-addon-btn fas fa-chevron-right" type="submit">
                                 </button>
                             </span>
                         </div>
@@ -894,7 +896,7 @@ HTML;
                             </select>
                             <div class="input-group-addon">
                                 <button class="input-addon-btn" type="submit">
-                                    <span class="glyphicon glyphicon-chevron-right"></span>
+                                    <span class="fas fa-chevron-right"></span>
                                 </button>
                             </div>
                         </div>
@@ -909,7 +911,7 @@ HTML;
                     <div class="input-group">
                     <textarea class="form-control" rows="5" name="list" style="z-index: 0"></textarea>
                     <span class="input-group-addon">
-                    <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-chevron-right"></span></button>
+                    <button class="btn btn-default" type="submit"><span class="fas fa-chevron-right"></span></button>
                     </span>
                     </div>
                 </div>

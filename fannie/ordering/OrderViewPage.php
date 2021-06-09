@@ -1312,17 +1312,17 @@ HTML;
             $ret .= '<div class="row">
                 <div class="col-sm-6 text-left">';
             if ($prev == -1) {
-                $ret .= '<span class="glyphicon glyphicon-chevron-left"></span>Prev';
+                $ret .= '<span class="fas fa-chevron-left"></span>Prev';
             } else {
                 $ret .= sprintf('<a href="?orderID=%d&k=%s" class="btn btn-default btn-xs">
-                    <span class="glyphicon glyphicon-chevron-left"></span>Prev</a>',$prev,$cachekey);
+                    <span class="fas fa-chevron-left"></span>Prev</a>',$prev,$cachekey);
             }
             $ret .= '</div><div class="col-sm-6 text-right">';
             if ($next == -1) {
-                $ret .= '<span class="glyphicon glyphicon-chevron-right"></span>Next';
+                $ret .= '<span class="fas fa-chevron-right"></span>Next';
             } else {
                 $ret .= sprintf('<a href="?orderID=%d&k=%s" class="btn btn-default btn-xs">
-                    <span class="glyphicon glyphicon-chevron-right"></span>Next</a>',$next,$cachekey);
+                    <span class="fas fa-chevron-right"></span>Next</a>',$next,$cachekey);
             }
             $ret .= '</div></div>';
         }

@@ -178,7 +178,7 @@ class OrderTags extends FannieRESTfulPage
                 <th>Unit Size</th>
                 <th>Multiplier</th>
                 <th>&nbsp;</th>
-                <th><span class="glyphicon glyphicon-print" onclick="$(\'.printUPCs\').prop(\'checked\', true);"></span></th>
+                <th><span class="fas fa-print" onclick="$(\'.printUPCs\').prop(\'checked\', true);"></span></th>
             </thead><tbody>';
         $res = $dbc->execute($prep, array($this->id));
         while ($row = $dbc->fetchRow($res)) {

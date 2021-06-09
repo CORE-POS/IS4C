@@ -117,7 +117,7 @@ HTML;
         $options = $queues->toOptions($master);
         
         return <<<HTML
-<p><button class="glyphicon glyphicon-chevron-left btn btn-default" id="back"></button></p>
+<p><button class="fas fa-chevron-left btn btn-default" id="back"></button></p>
 <form class="form-inline" method="get">
     <textarea name="list" class="form-control" rows="10"></textarea>
     <select name="tagID" class="form-control">{$options}</select>

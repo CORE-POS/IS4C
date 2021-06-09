@@ -244,7 +244,7 @@ class EditLocations extends FannieRESTfulPage
                 $stripe,
                 $i,
                 $this->floorSectionSelect($sections, $floorSectionID)
-                    ." <span class=\"btn btn-default glyphicon glyphicon-trash btn-remove-section\" 
+                    ." <span class=\"btn btn-default fas fa-trash btn-remove-section\" 
                         style=\"float:right; margin: 5px;\" data-floorSectionID=\"$floorSectionID\"></span>",
                 $stripe,
                 $i,
@@ -373,7 +373,7 @@ HTML;
                 $brand, 
                 $description,
                 $this->floorSectionSelect($sections, $floorSectionID)
-                    ." <span class=\"form-control btn btn-default glyphicon glyphicon-trash btn-remove-section\"></span>",
+                    ." <span class=\"form-control btn btn-default fas fa-trash btn-remove-section\"></span>",
                 "<select class=\"form-control edit-subsection\" style=\"width: 50px;\">$subSectionOpts</select>"
                     ." <span class=\"form-control btn btn-default btn-add-subsection\">+</span>",
                 $department,

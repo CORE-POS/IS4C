@@ -397,7 +397,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($prevUPC) {
             $ret .= ' <a class="btn btn-default btn-xs small" href="ItemEditorPage.php?searchupc=' . $prevUPC . '"
                 title="Previous item in this department">
-                <span class="glyphicon glyphicon-chevron-left"></span></a> ';
+                <span class="fas fa-chevron-left"></span></a> ';
         }
         $ret .= '<strong>UPC</strong>
                 <span class="text-danger">';
@@ -407,7 +407,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($nextUPC) {
             $ret .= ' <a class="btn btn-default btn-xs small" href="ItemEditorPage.php?searchupc=' . $nextUPC . '"
                 title="Next item in this department">
-                <span class="glyphicon glyphicon-chevron-right"></span></a>';
+                <span class="fas fa-chevron-right"></span></a>';
         }
         $ret .= ' <label style="color:darkmagenta;">Modified</label>
                 <span style="color:darkmagenta;">'. $rowItem['modified'] . '</span>';
@@ -546,7 +546,7 @@ HTML;
             $ret .= ' <button type="button" 
                         title="Create new vendor"
                         class="btn btn-default btn-sm newVendorButton">
-                        <span class="glyphicon glyphicon-plus"></span></button>';
+                        <span class="fas fa-plus"></span></button>';
             $ret .= '</td></tr>'; // end row
 
             if (isset($rowItem['discounttype']) && $rowItem['discounttype'] <> 0) {

@@ -427,7 +427,7 @@ HTML;
         $table = "<h4>List of Active Ranges</h4>
             <table class='table table-condensed table-bordered'>
             <thead><th>Store</th><th>Start</th><th>End</th><th>Change At</th>
-            <th><span class='glyphicon glyphicon-trash'></span></th><tbody>";
+            <th><span class='fas fa-trash'></span></th><tbody>";
         foreach ($params as $id => $row) {
             $table .= "<tr>";
             if (isset($params[$id]['type']) && $params[$id]['type'] == 'range') {
@@ -438,7 +438,7 @@ HTML;
                 $table .= "<td>{$row['end']}</td>";
                 $table .= "<td>{$row['change']}</td>";
                 $table .= "<td style='width: 20px'>
-                    <a href='?delete=$id' class='btn btn-danger btn-sm glyphicon glyphicon-trash'></a></td>";
+                    <a href='?delete=$id' class='btn btn-danger btn-sm fas fa-trash'></a></td>";
             }
             $table .= "</tr>";
         }
@@ -539,7 +539,7 @@ HTML;
             <div>
             <table class='table table-small table-bordered'>
             <thead><th>Exclusion Type</th><th>Value</th><th>
-            <span class='glyphicon glyphicon-trash'></span></th></thead><tbody>";
+            <span class='fas fa-trash'></span></th></thead><tbody>";
         $exclP = $dbc->prepare("SELECT * FROM MovementTrackerParams
             WHERE parameter IN ('Product', 'Brand', 'Dept') ORDER BY parameter, value;");
         $exclR = $dbc->execute($exclP);
@@ -551,7 +551,7 @@ HTML;
                 $v = $v .  " - " . $departments[$v];
             }
             $tableC .= "<tr><td>$p</td><td>{$v}</td>
-                <td><a href='?delete=$id&uid=$id' class='btn btn-danger btn-sm glyphicon glyphicon-trash'></a>
+                <td><a href='?delete=$id&uid=$id' class='btn btn-danger btn-sm fas fa-trash'></a>
                 </td></tr>";
         }
         $tableC .= "</tbody></table></div>";
@@ -739,7 +739,7 @@ $('.col-upc').click(function(){
     $('#upc-filter').val(upc);
     document.forms['history'].submit();
 });
-$('.glyphicon').click(function()
+$('.fas').click(function()
 {
     var c = confirm("Delete row?");
     if (c == true) {

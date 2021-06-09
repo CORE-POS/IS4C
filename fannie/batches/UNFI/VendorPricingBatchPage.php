@@ -168,7 +168,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                  <span style="text-shadow: -1px -1px 0 crimson, 1px -1px 0 crimson, -1px 1px 0 crimson, 1px 1px crimson;">Red</span></button> 
             | <button class="btn btn-default btn-xs btn-filter active" data-filter-type="white">White</button> 
             | <button class="btn btn-default btn-xs multi-filter active" data-filter-type="multiple">
-                <span class="glyphicon glyphicon-exclamation-sign" title="View only rows containing multiple SKUs"> </span>
+                <span class="fas fa-exclamation-circle" title="View only rows containing multiple SKUs"> </span>
             </button> 
             | <input type="" class="date-field" id="reviewed" placeholder="Reviewed on" style="border: 1px solid lightgrey; border-radius: 3px;"/>
             <br/><br/>';
@@ -306,7 +306,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $numRows = $vendorModel->find();
             $multipleVendors = '';
             if (count($numRows) > 1) {
-                $multipleVendors = '<span class="glyphicon glyphicon-exclamation-sign"
+                $multipleVendors = '<span class="fas fa-exclamation-circle"
                     title="Multiple SKUs For This Product">
                     </span> ';
             }
@@ -347,11 +347,11 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 }
             }
             if (isset($batchUPCs[$row['upc']])) {
-                $icon = '<span class="glyphicon glyphicon-minus-sign"
+                $icon = '<span class="fas fa-minus-circle"
                     title="Remove from batch">
                     </span>';
             } else {
-                $icon = '<span class="glyphicon glyphicon-plus-sign"
+                $icon = '<span class="fas fa-plus-circle"
                     title="Add to batch">
                     </span>';
             }
@@ -382,12 +382,12 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 <td class=white>
                     <a class=\"add-button %s\" href=\"\"
                         onclick=\"addToBatch('%s'); return false;\">
-                        <span class=\"glyphicon glyphicon-plus-sign\"
+                        <span class=\"fas fa-plus-circle\"
                             title=\"Add item to batch\"></span>
                     </a>
                     <a class=\"remove-button %s\" href=\"\"
                         onclick=\"removeFromBatch('%s'); return false;\">
-                        <span class=\"glyphicon glyphicon-minus-sign\"
+                        <span class=\"fas fa-minus-circle\"
                             title=\"Remove item from batch\"></span>
                     </a>
                 </td>
@@ -606,7 +606,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                     </span> columns => suggest price increase, lower priority than full red</li>
                 <li><span class="alert-default">White</span> columns => item is using a custom pricing rule and may not need to be updated</li>
                 <li><button class="btn btn-default btn-xs">
-                    <span class="glyphicon glyphicon-exclamation-sign"</span></button> => shows only items that have multiple vendor item listings</li>
+                    <span class="fas fa-exclamation-circle"</span></button> => shows only items that have multiple vendor item listings</li>
             </ul>
             ';
     }

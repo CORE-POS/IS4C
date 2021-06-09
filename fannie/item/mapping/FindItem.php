@@ -69,7 +69,7 @@ class FindItem extends FannieRESTfulPage
                         $l['name'] .= ' (' . $l['subSection'] . ')';
                     }
                     $storeSection .= sprintf('<a href="StoreFloorsPage.php?id=%d&section=%d">%s
-                            <span class="glyphicon glyphicon-info-sign"></span></a><br />',
+                            <span class="fas fa-info-circle"></span></a><br />',
                         $s->storeID(),
                         $l['floorSectionID'],
                         $l['name']);

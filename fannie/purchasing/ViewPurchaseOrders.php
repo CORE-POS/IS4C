@@ -903,9 +903,9 @@ HTML;
                     <td class="hidden-xs"><a href="%s">%s</a></td><td class="hidden-xs">%s</td><td>%s</td>
                     <td class="hidden-xs">%s</td><td>%s</td>
                     <td><span id="qty%d">%s</span> <span class="%s pull-right">
-                        <a href="" onclick="itemInc(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-up small" /></a>
+                        <a href="" onclick="itemInc(%d, \'%s\', %d); return false;"><span class="fas fa-chevron-up small" /></a>
                         <br />
-                        <a href="" onclick="itemDec(%d, \'%s\', %d); return false;"><span class="glyphicon glyphicon-chevron-down small" /></a>
+                        <a href="" onclick="itemDec(%d, \'%s\', %d); return false;"><span class="fas fa-chevron-down small" /></a>
                         </span>
                     </td>
                     <td class="hidden-xs">%.2f</td>

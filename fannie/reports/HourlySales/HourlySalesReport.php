@@ -103,7 +103,7 @@ class HourlySalesReport extends FannieReportPage
             }
             ${'form'.$k} .= "<input type='hidden' name='date1' value='$newDate1'>";
             ${'form'.$k} .= "<input type='hidden' name='date2' value='$newDate2'>";
-            ${'form'.$k} .= '<button class="btn btn-default btn-xs"><span class="glyphicon glyphicon-chevron-'.$row['glyph'].'"></span></button>';
+            ${'form'.$k} .= '<button class="btn btn-default btn-xs"><span class="fas fa-chevron-'.$row['glyph'].'"></span></button>';
             ${'form'.$k} .= '</form>';
         }
 

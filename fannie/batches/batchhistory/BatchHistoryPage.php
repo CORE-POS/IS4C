@@ -112,7 +112,7 @@ HTML;
                             . $obj->$upcCol() . '</a>';
                         $ret .= ' &nbsp <a style="cursor: pointer;"
                             onClick="get_bid('.$obj->$upcCol().'); return false;">
-                            <span class="glyphicon glyphicon-book"></span></a></td>';
+                            <span class="fas fa-book"></span></a></td>';
                         $ret .= '<td>'.$b->batchName().'</td>';
                     } else {
                         $ret .= '<td>' . $obj->$upcCol() . '</td>';
