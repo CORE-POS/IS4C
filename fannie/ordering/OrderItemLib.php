@@ -32,14 +32,16 @@ class OrderItemLib
     */
     public static function getItem($upc)
     {
-        $item = self::getItemByUPC($upc);
-        if ($item !== false) {
-            return $item;
-        }
+        if (trim($upc) !== '' && !preg_match('/^0+$/', trim($upc))) {
+            $item = self::getItemByUPC($upc);
+            if ($item !== false) {
+                return $item;
+            }
 
-        $item = self::getItemBySKU($upc);
-        if ($item !== false) {
-            return $item;
+            $item = self::getItemBySKU($upc);
+            if ($item !== false) {
+                return $item;
+            }
         }
 
         $item = self::$generic_item;
