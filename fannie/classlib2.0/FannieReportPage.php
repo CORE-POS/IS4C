@@ -1058,6 +1058,8 @@ class FannieReportPage extends FanniePage
             } elseif (is_numeric($row[$i]) && strlen($row[$i]) == 13) {
                 // auto-link UPCs to edit tool
                 $row[$i] = \COREPOS\Fannie\API\lib\FannieUI::itemEditorLink($row[$i]);
+            } elseif (!$header && preg_match('/^LC\d+$/', $row[$i])) {
+                $row[$i] = \COREPOS\Fannie\API\lib\FannieUI::likeCodeEditorLink($row[$i]);
             } else if (!$header && !$date && preg_match('/^\d\d\d\d-\d\d-\d\d$/', $row[$i])) {
                 // cell contains a date column
                 $date = $row[$i];

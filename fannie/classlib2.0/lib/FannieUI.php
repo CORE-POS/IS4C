@@ -114,6 +114,12 @@ class FannieUI
             \FannieConfig::config('URL'), $upc, $upc);
     }
 
+    public static function likeCodeEditorLink($lcCode)
+    {
+        return sprintf('<a href="%sitem/likecodes/LikeCodeEditor.php?start=%s">%s</a>',
+            \FannieConfig::config('URL'), str_replace('LC', '', $lcCode), $lcCode);
+    }
+
     public static function receiptLink($date, $trans_num)
     {
         $date = date('Y-m-d', strtotime($date));
