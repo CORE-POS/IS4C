@@ -277,15 +277,15 @@ class FannieAPI
     static private function searchDirectories($base_class)
     {
         $directories = array();
+        // prefer directories from Poser if present
+        $poser = FannieConfig::config('POSER');
+        if ($poser) {
+            $directories[] = "$poser/office-plugins/";
+        }
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
         // leading backslash is ignored
         if ($base_class[0] == '\\') {
             $base_class = substr($base_class, 1);
-        }
-
-        $poser = FannieConfig::config('POSER');
-        if ($poser) {
-            $directories[] = "$poser/fannie/modules/plugins2.0/";
         }
 
         switch($base_class) {
