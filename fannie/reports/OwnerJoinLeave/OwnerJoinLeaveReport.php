@@ -130,8 +130,11 @@ class OwnerJoinLeaveReport extends FannieReportPage
             } elseif ($reg == 50) {
                 $store = 'Website';
             }
-            if ($franReqP && !$row['name']) {
-                $row['name'] = $dbc->getValue($franReqP, array($row['card_no']));
+            if ($franReqP && (!$row['name'] || strpos($row['name'], 'FRAN'))) {
+                $frR = $dbc->getValue($franReqP, array($row['card_no']));
+                if ($frR) {
+                    $row['name'] = $frR;
+                }
             }
             $data[] = array(
                 $row['card_no'],
