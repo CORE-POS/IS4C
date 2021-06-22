@@ -283,6 +283,11 @@ class FannieAPI
             $base_class = substr($base_class, 1);
         }
 
+        $poser = FannieConfig::config('POSER');
+        if ($poser) {
+            $directories[] = "$poser/fannie/modules/plugins2.0/";
+        }
+
         switch($base_class) {
             case 'COREPOS\Fannie\API\item\ItemModule':
             case 'COREPOS\Fannie\API\item\ItemRow':
