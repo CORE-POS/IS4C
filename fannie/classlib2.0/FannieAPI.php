@@ -197,6 +197,10 @@ class FannieAPI
             'COREPOS\\Fannie\\API\\' => dirname(__FILE__) . '/',
             'COREPOS\\Fannie\\Plugin\\' => dirname(__FILE__) . '/../modules/plugins2.0/',
         );
+        $poser = FannieConfig::config('POSER');
+        if ($poser) {
+            $namespaces[] = 'Poser\\' => $poser;
+        }
         $class = ltrim($class, '\\');
         foreach ($namespaces as $namespace => $path) {
             if (substr($class, 0, strlen($namespace)) == $namespace) {
