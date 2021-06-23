@@ -103,6 +103,17 @@ class InstallThemePage extends \COREPOS\Fannie\API\InstallPage
             . '<td><img src="' . $FANNIE_CSS_LOGO . '" alt="logo preview" /></td>'
             . '</tr>';
 
+        echo '<tr><td>Poser path (optional)</td>'
+            . '<td>' . installTextField('FANNIE_POSER', $FANNIE_POSER, '') . '</td>'
+            . '</tr>';
+        if (isset($FANNIE_POSER) && $FANNIE_POSER) {
+            if ($FANNIE_POSER[0] != '/') {
+                echo '<tr><td colspan="4" class="alert-warning">You should use an absolute path to Poser</td></tr>';
+            } elseif (!is_dir($FANNIE_POSER)) {
+                echo '<tr><td colspan="4" class="alert-danger">Path to Poser is not valid</td></tr>';
+            }
+        }
+
         echo '</table>';
         $this_page = $_SERVER['REQUEST_URI'];
         $test_page = str_replace('install/InstallThemePage.php', 'install/util.php', $this_page);
