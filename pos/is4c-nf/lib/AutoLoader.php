@@ -204,7 +204,10 @@ class AutoLoader
         });
         $poser = CoreLocal::get('poserPath');
         if ($poser) {
-            $map = Plugin::pluginMap($poser . 'lane_plugins/', $map);
+            $path = $poser . '/lane_plugins/';
+            if (is_dir($path)) {
+                $map = Plugin::pluginMap($path, $map);
+            }
         }
         if (isset(self::$classPaths[$baseClass])) {
             $path = realpath(dirname(__FILE__) . self::$classPaths[$baseClass]);
