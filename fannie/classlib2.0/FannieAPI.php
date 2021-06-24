@@ -199,7 +199,7 @@ class FannieAPI
         );
         $poser = FannieConfig::config('POSER');
         if ($poser) {
-            $namespaces[] = 'Poser\\' => $poser;
+            $namespaces['Poser\\'] = $poser;
         }
         $class = ltrim($class, '\\');
         foreach ($namespaces as $namespace => $path) {
