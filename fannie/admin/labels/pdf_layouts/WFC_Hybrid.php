@@ -2,6 +2,9 @@
 if (!class_exists('FpdfWithBarcode')) {
     include(dirname(__FILE__) . '/../FpdfWithBarcode.php');
 }
+if (!class_exists('FpdfLib')) {
+    include(dirname(__FILE__) . '/FpdfLib.php');
+}
 /*
     Using layouts
     1. Make a file, e.g. New_Layout.php
@@ -71,7 +74,6 @@ $updateMT = $dbc->prepare('
 
 $full = array();
 $half = array();
-$location = array();
 foreach ($data as $k => $row) {
     if ($dbc->getValue($narrowP, array($row['upc']))) {
         $row['full'] = false;
@@ -82,21 +84,13 @@ foreach ($data as $k => $row) {
         $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
         $full[] = $row;
     }
-    $loc = $dbc->getValue($locationP, array($row['upc']));
-    $data[$k]['location'] = $loc;
 }
 
+
+$full= FpdfLib::sortProductsByPhysicalLocation($dbc, $full, $store);
+$half= FpdfLib::sortProductsByPhysicalLocation($dbc, $half, $store);
 $data = array_merge($full, $half);
 
-function sortByLocation($a, $b)
-{                              
-    $a = $a['location'];       
-    $b = $b['location'];       
-                                           
-    if ($a == $b) return 0;
-    return ($a < $b) ? -1 : 1; 
-}
-//usort($data, 'sortByLocation');
 
 $width = 52; // tag width in mm
 $height = 31; // tag height in mm

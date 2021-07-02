@@ -93,4 +93,50 @@ class FpdfLib
         return $newstr .  $tmp;
     }
 
+
+    static function getKeyByUpc($data, $upc)
+    {
+        foreach ($data as $k => $row) {
+            if ($row['upc'] == $upc)
+                return $k;
+        }
+
+        return rand();
+    }
+
+    static function sortProductsByPhysicalLocation($dbc, $data, $storeID)
+    {
+
+        $upcs = array();
+        foreach ($data as $k => $row) {
+            $upcs[] = $row['upc']; 
+        }
+        list($inStr, $args) = $dbc->safeInClause($upcs);
+        $args[] = $storeID;
+        $query = "SELECT p.upc, f.sections FROM FloorSectionsListView AS f INNER JOIN products AS p ON f.upc=p.upc WHERE p.upc IN ($inStr) AND storeID = ? ORDER BY sections;";
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $args);
+
+        $i = 0;
+        while ($row = $dbc->fetchRow($res)) {
+            $tmpKey = self::getKeyByUpc($data, $row['upc']);
+            $data[$tmpKey]['order'] = $i;
+            $i++;
+        }
+
+        $newData = array();
+        $i = 0;
+        foreach ($data as $k => $row) {
+            $order = $row['order'];
+            //$order = $i;
+            foreach ($row as $name => $value){
+                $newData[$order][$name] = $value;
+            }
+            $i++;
+        }
+        ksort($newData);
+
+        return $newData;
+    }
+
 }
