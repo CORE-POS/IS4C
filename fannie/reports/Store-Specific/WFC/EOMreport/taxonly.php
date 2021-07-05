@@ -46,8 +46,8 @@ $uoutput .= '<br>Report run ' . $today;
 echo $uoutput;
 
 $dlog = "trans_archive.dlogBig";
-$start = '2017-12-01';
-$end = '2017-12-31';
+$start = '2017-07-01';
+$end = '2017-07-31';
 $args = array($start.' 00:00:00',$end.' 23:59:59', $store);
 
     $date = substr($start,0,strpos($start,":")-3);
@@ -197,20 +197,52 @@ $args = array($start.' 00:00:00',$end.' 23:59:59', $store);
         $collected[$row['taxID']] = $row['ttl'];
     }
     $state = 0.06875;
-    $city = 0.01;
+    $city = 0.010;
     $deli = 0.0225;
-    $county = 0.000;
+    $county = 0.005;
+    var_dump($state + $city + $county);
+    var_dump($state + $city + $county + $deli);
     $startDT = new DateTime($start);
     $noCounty = new DateTime('2017-10-01');
     if ($startDT >= $noCount) {
         //$county = 0;
     }
+    $stateTax = $collected[1] * ($state/($state+$city+$county));
+    $cityTax = $collected[1] * ($city/($state+$city+$county));
+    $countyTax = $collected[1] * ($county/($state+$city+$county));
     echo '<table border="1" cellspacing="0" cellpadding="4">';
-    echo '<tr><th>Tax Collected on Regular rate items</th>
-            <th>' . sprintf('%.2f', $collected[1]) . '</th>
+    echo '<tr>
+            <th>Tax Collected on Regular rate items</th>
             <th>Regular Taxable Sales</th>
+            <th>Regular State Amount</th>
+            <th>Regular City Amount</th>
+            <th>Regular County Amount</th>
+            <th>Tax Collected on Deli rate items</th>
+            <th>Deli Taxable Sales</th>
+            <th>Deli State Amount</th>
+            <th>Deli City Amount</th>
+            <th>Deli County Amount</th>
+            <th>Deli Prepared Foods Amount</th>
+            </tr>
+            <tr>
+            <th>' . sprintf('%.2f', $collected[1]) . '</th>
             <th>' . sprintf('%.2f', $collected[1]/($state+$city+$county)) . '</th>
+            <td>' . sprintf('%.2f', $stateTax) . '</td>
+            <td>' . sprintf('%.2f', $cityTax) . '</td>
+            <td>' . sprintf('%.2f', $countyTax) . '</td>';
+    $stateTax = $collected[2] * ($state/($state+$city+$deli+$county));
+    $cityTax = $collected[2] * ($city/($state+$city+$deli+$county));
+    $deliTax = $collected[2] * ($deli/($state+$city+$deli+$county));
+    $countyTax = $collected[2] * ($county/($state+$city+$deli+$county));
+            echo '
+                <th>' . sprintf('%.2f', $collected[2]) . '</th>
+                <th>' . sprintf('%.2f', $collected[2]/($state+$city+$deli+$county)) . '</th>
+                <td>' . sprintf('%.2f', $stateTax) . '</td>
+                <td>' . sprintf('%.2f', $cityTax) . '</td>
+                <td>' . sprintf('%.2f', $countyTax) . '</td>
+                <td>' . sprintf('%.2f', $deliTax) . '</td>
             </tr>';
+
     $stateTax = $collected[1] * ($state/($state+$city+$county));
     $cityTax = $collected[1] * ($city/($state+$city+$county));
     $countyTax = $collected[1] * ($county/($state+$city+$county));
