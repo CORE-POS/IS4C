@@ -130,6 +130,9 @@ class OrderReviewPage extends FannieRESTfulPage
         }
         $ret .= "<b>Taken by</b>: ".$user."<br />";
         $ret .= "<b>On</b>: ".date("M j, Y g:ia",strtotime($orderDate))."<br />";
+        if (FannieAuth::validateUserQuiet('ordering_edit')) {
+            $ret .= '<a href="SpoEditsPage.php?id=' . $orderID . '">Edit History</a><br />';
+        }
         $ret .= '</div>
             <div class="col-sm-6 text-right">';
         $ret .= '<b>Call to Confirm</b>: ';
