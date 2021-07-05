@@ -47,7 +47,7 @@ class RpOrderPage extends FannieRESTfulPage
 
         $extra = strtotime($date2);
         if ($extra) {
-            $extra = mktime(0,0,0,date('n',$extra),date('j',$extra)+2,date('Y',$extra));
+            $extra = mktime(0,0,0,date('n',$extra),date('j',$extra)+3,date('Y',$extra));
             $date3 = date('Y-m-d', $extra);
             // safe embed because it's a formatted date string or false
             // for any user input
