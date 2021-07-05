@@ -72,6 +72,8 @@ class SyncIndexPage extends FanniePage
             <option value="houseVirtualCoupons">House Virtual Coupons</option>
             <option value="houseCouponItems">House Coupon Items</option>
             <option value="memtype">Member Types</option>
+            <option value="CustomerNotifications">CustomerNotifications</option>
+            <option value="IgnoredBarcodes">IgnoredBarcodes</option>
             </select><br /><br />
 
             <label>Other table</label><input type="text" name="othertable" class="form-control" />
