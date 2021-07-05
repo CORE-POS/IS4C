@@ -81,8 +81,12 @@ class GumInterestReport extends FannieReportPage
             );
             $loanDT = new DateTime(date('Y-m-d', strtotime($loan->loanDate())));
 
-            $days1 = $loanDT->diff($end_last_dt)->format('%r%a');
-            $days2 = $loanDT->diff($end_next_dt)->format('%r%a');
+            $ld = strtotime($loan->loanDate());
+            $ed = mktime(0, 0, 0, date('n', $ld)+$loan->termInMonths(), date('j', $ld), date('Y', $ld));
+            $end_dt = new DateTime(date('Y-m-d', $ed));
+
+            $days1 = $loanDT->diff($end_dt < $end_last_dt ? $end_dt : $end_last_dt)->format('%r%a');
+            $days2 = $loanDT->diff($end_dt < $end_next_dt ? $end_dt : $end_next_dt)->format('%r%a');
 
             $bal_before = $loan->principal() * pow(1.0 + $loan->interestRate(), $days1/365.25);
             if ($days1 < 0) {
