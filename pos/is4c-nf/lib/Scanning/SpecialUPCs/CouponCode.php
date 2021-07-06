@@ -48,6 +48,7 @@ class CouponCode extends SpecialUPC
 {
 
     private $ean;
+    private $alts = array();
 
     public function isSpecial($upc)
     {
@@ -69,6 +70,16 @@ class CouponCode extends SpecialUPC
         }
 
         return false;
+    }
+
+    private function getAlts($upc)
+    {
+        $dbc = Database::pDataConnect();
+        $prep = $dbc->prepare("SELECT altUPC FROM CouponAlts WHERE upc=? AND expires >= " . $dbc->curdate());
+        $res = $dbc->execute($prep, array($upc));
+        while ($row = $dbc->fetchRow($res)) {
+            $this->alts[] = $row['altUPC'];
+        }
     }
 
     private function upcToParts($upc)
@@ -266,6 +277,12 @@ class CouponCode extends SpecialUPC
 
         /* no item w/ matching manufacturer */
         if ($numRows == 0) {
+
+            if (count($this->alts) > 0) {
+                $next = array_pop($this->alts);
+                return $this->handle($next, $json);
+            }
+
             $json['output'] = DisplayLib::boxMsg(
                 _("product not found")."<br />"._("in transaction"),
                 '',
