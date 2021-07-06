@@ -37,7 +37,6 @@ class LineItemMovementReport extends FannieReportPage
                 END) as reducedQty,
                 SUM(CASE WHEN charflag='PO' THEN total ELSE 0 END) AS reducedTTL
             " . $from_where['query'] . "
-                AND t.upc LIKE '002%'
             GROUP BY t.upc,
                 COALESCE(p.brand, ''),
                 CASE WHEN p.description IS NULL THEN t.description ELSE p.description END
