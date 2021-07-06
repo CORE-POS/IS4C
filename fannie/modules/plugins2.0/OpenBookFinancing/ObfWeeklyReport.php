@@ -1091,7 +1091,23 @@ class ObfWeeklyReport extends FannieReportPage
                                         AS n ON s.superID=n.superID
                                  WHERE s.obfWeekID=?
                                     AND s.obfCategoryID=?
-                                 ORDER BY s.superID,n.super_name');
+                                 ORDER BY 
+                                    CASE
+                                        WHEN s.superID=4 THEN 0
+                                        WHEN s.superID=17 THEN 1
+                                        WHEN s.superID=13 THEN 2
+                                        WHEN s.superID=1 THEN 3
+                                        WHEN s.superID=7 THEN 4
+                                        WHEN s.superID=5 THEN 5
+                                        WHEN s.superID=7 THEN 6
+                                        WHEN s.superID=9 THEN 7
+                                        WHEN s.superID=18 THEN 8 
+                                        WHEN s.superID=10 THEN 9 
+                                        WHEN s.superID=11 THEN 10 
+                                        WHEN s.superID=15 THEN 12 
+                                        WHEN s.superID=23 THEN 13 
+                                        ELSE 99
+                                    END');
 
         /**
           Look up sales for the [sales] quarter in a given category

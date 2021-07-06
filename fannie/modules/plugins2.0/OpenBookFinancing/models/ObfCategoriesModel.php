@@ -40,6 +40,7 @@ class ObfCategoriesModel extends BasicModel
     'hoursTarget' => array('type'=>'DOUBLE'),
     'averageWage' => array('type'=>'MONEY'),
     'salesPerLaborHourTarget' => array('type'=>'DOUBLE', 'default'=>0.0),
+    'seq' => array('type'=>'INT', 'default'=>0),
     );
 }
 
