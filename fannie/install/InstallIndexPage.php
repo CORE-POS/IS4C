@@ -643,6 +643,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
         'BrandsModel',
         'ConsistentProductRulesModel',
         'CoopDealsItemsModel',
+        'CouponAltsModel',
         'CronBackupModel',
         'CustdataModel',
         'CustdataBackupModel',
