@@ -267,7 +267,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
     public function preprocess()
     {
         $this->addScript('../../../src/javascript/Chart.min.js');
-        $this->addScript('summary.js');
+        $this->addScript('summary.js?date=20210706');
 
         return FannieReportPage::preprocess();
     }
@@ -479,6 +479,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                 $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
                 $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($qtd_dept_sales)/($quarter['hours']);
+                /*
                 $data[] = array(
                     $category->name() . ' SPLH',
                     '',
@@ -508,6 +509,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                     'meta_background' => $this->colors[0],
                     'meta_foreground' => 'black',
                 );
+                 */
 
                 $plan_wages += ($dept_proj * ($this->laborPercent[$category->obfCategoryID()]/100));
 
@@ -549,6 +551,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                 $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
                 $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
+                /*
                 $data[] = array(
                     $c->name() . ' SPLH',
                     '',
@@ -578,6 +581,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                     'meta_background' => $this->colors[0],
                     'meta_foreground' => 'black',
                 );
+                 */
 
                 $total_hours->actual += $labor->hours();
                 $total_hours->projected += $proj_hours;
@@ -609,6 +613,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                 'meta_foreground' => 'black',
             );
 
+            /*
             $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
             $quarter_proj_sph = $total_hours->quarterProjected == 0 ? 0 : ($total_sales->quarterProjected)/($total_hours->quarterProjected);
             $data[] = array(
@@ -640,6 +645,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
             );
+             */
 
             $data[] = array(
                 'Transactions',
@@ -717,6 +723,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($total_sales->quarterActual)/($quarter['hours']);
             $quarter_proj_sph = $qt_proj_hours == 0 ? 0 : ($total_sales->quarterProjected)/($qt_proj_hours);
+            /*
             $data[] = array(
                 'Admin SPLH',
                 '',
@@ -746,6 +753,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
             );
+             */
 
             $org['hours'] += $labor->hours();
             $org['projHours'] += $proj_hours;
@@ -779,6 +787,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
 
         $quarter_actual_sph = $total_hours->quarterActual == 0 ? 0 : ($total_sales->quarterActual)/($total_hours->quarterActual);
         $quarter_proj_sph = $total_hours->quarterProjected == 0 ? 0 : ($total_sales->quarterProjected)/($total_hours->quarterProjected);
+        /*
         $data[] = array(
             'SLPH per Hour',
             '',
@@ -808,6 +817,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
             'meta_background' => $this->colors[0],
             'meta_foreground' => 'black',
         );
+         */
 
         $data[] = array(
             'Transactions',

@@ -117,6 +117,7 @@ var obfSummary = (function () {
         canvas.id = "obfCanvas";
         document.body.appendChild(canvas);
 
+        /*
         var canvas2 = document.createElement("canvas");
         canvas2.id = "obfHoursCanvas";
         document.body.appendChild(canvas2);
@@ -124,6 +125,7 @@ var obfSummary = (function () {
         var canvas3 = document.createElement("canvas");
         canvas3.id = "obfSplhCanvas";
         document.body.appendChild(canvas3);
+        */
 
         mod.renderChart(false);
     };

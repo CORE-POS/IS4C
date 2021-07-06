@@ -234,7 +234,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
     public function preprocess()
     {
         $this->addScript('../../../src/javascript/Chart.min.js');
-        $this->addScript('summary.js');
+        $this->addScript('summary.js?date=20210706');
 
         return FannieReportPage::preprocess();
     }
@@ -418,7 +418,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $categories = new ObfCategoriesModelV2($dbc);
         $categories->hasSales(1);
         $categories->storeID($store);
-        foreach ($categories->find('name') as $category) {
+        foreach ($categories->find('seq', true) as $category) {
             $data[] = $this->headerRow($category->name(), 'black', array($category->obfCategoryID(), $week->obfWeekID()));
             $sum = array(0.0, 0.0);
             $dept_proj = 0.0;
@@ -534,6 +534,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             $total_hours->quarterProjected += $qt_proj_hours;
             $total_sales->quarterLaborSales += $quarter['actualSales'];
 
+            /*
             $data[] = array(
                 'Hours',
                 '',
@@ -549,6 +550,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
             );
+             */
             $total_hours->actual += $labor->hours();
             $qtd_hours_ou += ($quarter['hours'] - $qt_proj_hours);
 
@@ -557,6 +559,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
             $quarter_actual_sph = $quarter['hours'] == 0 ? 0 : ($qtd_dept_sales)/($quarter['hours']);
             $quarter_proj_sph = ($qt_proj_hours == 0) ? 0 : ($qtd_dept_plan)/($qt_proj_hours);
+            /*
             $data[] = array(
                 'Sales per Hour',
                 '',
@@ -572,6 +575,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
                 'meta_background' => $this->colors[0],
                 'meta_foreground' => 'black',
             );
+             */
 
             /*
             $data[] = array(
@@ -610,6 +614,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $cat->storeID($store);
         $cat->name('Admin', '<>');
         foreach ($cat->find('name') as $c) {
+            continue; // no longer rendering labor data
             $data[] = $this->headerRow($c->name());
             $labor->obfCategoryID($c->obfCategoryID());
             $labor->load();
@@ -714,6 +719,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             'meta_foreground' => 'black',
         );
 
+        /*
         $data[] = array(
             'Hours',
             '',
@@ -747,6 +753,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
             'meta_background' => $this->colors[0],
             'meta_foreground' => 'black',
         );
+         */
 
         $transGrowth = $store == 1 ? 0.925 : 1.0;
         $proj_trans = $total_trans->lastYear * $transGrowth;
@@ -789,11 +796,12 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
         $otherStore = $this->getOtherStore($store, $week->obfWeekID());
 
-        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
+        //$data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
         $cat = new ObfCategoriesModelV2($dbc);
         $cat->hasSales(0);
         $cat->name('Admin');
         foreach ($cat->find('name') as $c) {
+            continue; // no longer doing labor data
             $data[] = $this->headerRow($c->name());
             $labor->obfCategoryID($c->obfCategoryID());
             $labor->load();
