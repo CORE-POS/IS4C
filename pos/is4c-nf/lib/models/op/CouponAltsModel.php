@@ -34,6 +34,7 @@ class CouponAltsModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
+    'couponAltID' => array('type'=>'INT', 'increment'=>true, 'index'=>true),
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'altUPC' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'expires' => array('type'=>'DATETIME'),

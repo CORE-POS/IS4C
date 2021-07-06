@@ -63,8 +63,10 @@ class CouponCode extends SpecialUPC
 
         $this->ean = false;
         if (substr($upc,0,strlen($upcPrefix)) == $upcPrefix) {
+            $this->getAlts($upc);
             return true;
         } elseif (substr($upc,0,strlen($eanPrefix)) == $eanPrefix) {
+            $this->getAlts($upc);
             $this->ean = true;
             return true;
         }
