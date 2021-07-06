@@ -7,6 +7,7 @@ class Creator
 {
     private static $op_models = array(
         '\\COREPOS\\pos\\lib\\models\\op\\AutoCouponsModel',
+        '\\COREPOS\\pos\\lib\\models\\op\\CouponAltsModel',
         '\\COREPOS\\pos\\lib\\models\\op\\CouponCodesModel',
         '\\COREPOS\\pos\\lib\\models\\op\\CustdataModel',
         '\\COREPOS\\pos\\lib\\models\\op\\CustomerNotificationsModel',
