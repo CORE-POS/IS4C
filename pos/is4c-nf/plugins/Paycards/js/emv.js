@@ -10,7 +10,7 @@ var emv = (function($){
         // POST result to PHP page in POS to
         // process the result.
         $('div.baseHeight').html('Finishing transaction');
-        var f = $('<form id="js-form"></form>');
+        var f = $('<form id="js-form" method="post"></form>');
         f.append($('<input type="hidden" name="xml-resp" />').val(resp));
         $('body').append(f);
         $('#js-form').submit();
@@ -21,7 +21,7 @@ var emv = (function($){
         // go to dedicated error page?
         errorLog.log(JSON.stringify({ jqstatus: stat, error: err, resp: xhr.responseText }));
         $('div.baseHeight').html('Finishing transaction');
-        var f = $('<form id="js-form"></form>');
+        var f = $('<form id="js-form" method="post"></form>');
         var resp = 'error';
         if (xhr.responseXml !== null && xhr.responseXml !== '') {
             resp = xhr.responseXml;
