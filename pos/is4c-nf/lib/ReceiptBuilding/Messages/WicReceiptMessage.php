@@ -54,6 +54,7 @@ class WicReceiptMessage extends ReceiptMessage
             HAVING SUM(total) > 0
             ORDER BY e.broadband, e.multiplier DESC');
         $couponCache = array();
+        $count = 0;
         while ($row = $dbc->fetchRow($res)) {
             $manu = substr($row['upc'], 3, 5);
             if ($manu != '00000' && !isset($couponCache[$manu])) {
@@ -77,7 +78,12 @@ class WicReceiptMessage extends ReceiptMessage
             */
             $add = false;
             $key = $row['eWicCategoryID'];
-            if ($row['broadband'] && isset($categories[$key]) && $categories[$key] > 0) {
+            $subkey = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
+            if ($row['broadband'] && (
+                    (isset($categories[$key]) && $categories[$key] > 0)
+                    || 
+                    (isset($categories[$subkey]) && $categories[$subkey] > 0)
+                )) {
                 $add = true;
             } else {
                 $key = $row['eWicCategoryID'] . ':' . $row['eWicSubCategoryID'];
@@ -91,6 +97,28 @@ class WicReceiptMessage extends ReceiptMessage
                         $row['ttl'] = $categories[$key];
                     }
                     $categories[$key] -= $row['ttl'];
+                } elseif ($row['broadband']) {
+                    // straddle if both broad and narrow are available
+                    $pool = isset($categories[$key]) ? $categories[$key] : 0;
+                    $pool += (isset($categories[$subkey]) ? $categories[$subkey] : 0);
+                    while ($row['qty'] * $row['multiplier'] > $pool) {
+                        $price = $row['ttl'] / $row['qty'];
+                        $row['qty'] -= 1;
+                        $row['ttl'] -= $price;
+                    }
+                    // package size exceeds remaing quantity
+                    if ($row['qty'] <= 0) {
+                        continue;
+                    }
+                    if (isset($categories[$subkey]) && $row['qty'] * $row['multiplier'] <= $categories[$subkey]) {
+                        $categories[$subkey] -= $row['qty'] * $row['multiplier'];
+                    } elseif (isset($categories[$subkey])) {
+                        $remainder = ($row['qty'] * $row['multiplier']) - $categories[$subkey];
+                        $categories[$subkey] = 0;
+                        $categories[$key] -= $remainder;
+                    } else {
+                        $categories[$key] -= $row['qty'] * $row['multiplier'];
+                    }
                 } else {
                     while ($row['qty'] * $row['multiplier'] > $categories[$key]) {
                         $price = $row['ttl'] / $row['qty'];
@@ -107,7 +135,13 @@ class WicReceiptMessage extends ReceiptMessage
                     . str_pad($row['qty'] . 'x', 8, ' ', STR_PAD_LEFT)
                     . str_pad($row['ttl'], 8, ' ', STR_PAD_LEFT)
                     . "\n";
+                $count++;
             }
+        }
+        $log = new \COREPOS\pos\lib\LaneLogger();
+        $log->debug("Count was " . $count);
+        if ($count > 50) {
+            $ret = 'Too many items: remove ' . ($count - 49) . ' to continue';
         }
 
         return $ret;
