@@ -127,7 +127,7 @@ class FpdfLib
         $newData = array();
         $i = 0;
         foreach ($data as $k => $row) {
-            $order = $row['order'];
+            $order = isset($row['order']) ? $row['order'] : 9999;
             //$order = $i;
             foreach ($row as $name => $value){
                 $newData[$order][$name] = $value;
