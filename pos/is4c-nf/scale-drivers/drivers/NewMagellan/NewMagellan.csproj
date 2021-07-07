@@ -165,6 +165,8 @@
   <ItemGroup>
     <SPH Include="SerialPortHandler.cs" />
     <SPH Include="SPH_Magellan_Scale.cs" />
+    <SPH Include="SPH_Magellan_ScanOnly.cs" />
+    <SPH Include="SPH_Magellan_WeighOnly.cs" />
     <SPH Include="SPH_Magellan_Classic.cs" />
     <SPH Include="SPH_Magellan_Locking.cs" />
     <SPH Include="SPH_NCR_Scale.cs" />
