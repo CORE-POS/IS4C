@@ -443,6 +443,8 @@ HTML;
                 LEFT JOIN vendors AS v ON l.vid=v.vendorID
                 LEFT JOIN Users AS u ON l.user=u.uid
                 LEFT JOIN scaleItems AS s ON bl.upc=s.plu
+            WHERE forced > NOW() - INTERVAL 3 MONTH 
+                OR forced = 0
             GROUP BY l.bid, m.super_name
             ORDER BY l.bid DESC
         ");
