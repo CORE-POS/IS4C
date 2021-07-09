@@ -252,7 +252,7 @@ class BasicModel
     */
     protected function setColumn($col, $val)
     {
-        if (!isset($this->instance[$col]) || $this->instance[$col] != $val) {
+        if (!isset($this->instance[$col]) || $this->instance[$col] != $val || (is_null($this->instance[$col]) && !is_null($val))) {
             if (!isset($this->columns[$col]['ignore_updates']) || $this->columns[$col]['ignore_updates'] == false) {
                 $this->record_changed = true;
             }
