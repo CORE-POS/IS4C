@@ -126,13 +126,15 @@ class FpdfLib
 
         $newData = array();
         $i = 0;
+        $endOfList = 9999;
         foreach ($data as $k => $row) {
-            $order = isset($row['order']) ? $row['order'] : 9999;
+            $order = isset($row['order']) ? $row['order'] : $endOfList;
             //$order = $i;
             foreach ($row as $name => $value){
                 $newData[$order][$name] = $value;
             }
             $i++;
+            $endOfList++;
         }
         ksort($newData);
 
