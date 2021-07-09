@@ -88,7 +88,7 @@ class PISearchPage extends PIKillerPage {
                     ),
                 ),
             );
-            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 350, true);
+            $accounts = \COREPOS\Fannie\API\member\MemberREST::search($json, 700, true);
             if (count($accounts) == 1) {
                 header('Location: PIMemberPage.php?id='.$accounts[0]['cardNo']);
                 return false;
