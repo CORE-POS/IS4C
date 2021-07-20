@@ -271,6 +271,9 @@ function existingDates(dateStr)
         if (dates.length === 2) {
             $('#startDate').val(dates[0]);
             $('#endDate').val(dates[1]);
+        } else {
+            $('#startDate').val(dates[0]);
+            $('#endDate').val(dates[0]);
         }
     }
 }
