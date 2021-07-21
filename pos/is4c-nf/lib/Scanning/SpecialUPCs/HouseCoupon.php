@@ -79,7 +79,7 @@ class HouseCoupon extends SpecialUPC
         }
 
         $add = $this->getValue($coupID);
-        TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description'], $add['discountable']);
+        TransRecord::addhousecoupon($upc, $add['department'], -1 * $add['value'], $add['description'], $add['discountable'], $add['tax']);
 
         $json['output'] = DisplayLib::lastpage();
         $json['udpmsg'] = 'goodBeep';
@@ -525,6 +525,7 @@ class HouseCoupon extends SpecialUPC
         $value = 0;
         $description = isset($infoW['description']) ? $infoW['description'] : '';
         $discountable = 1;
+        $tax = 0;
         switch ($infoW["discountType"]) {
             case "Q": // quantity discount
                 // discount = coupon's discountValue
@@ -677,7 +678,7 @@ class HouseCoupon extends SpecialUPC
                 $qualW = $transDB->getRow($qualP);
                 // qualQty = total quantity of qualifier items found
                 $qualQty = $qualW[0];
-                $deptQ = "SELECT (total/quantity) AS value, quantity
+                $deptQ = "SELECT (total/quantity) AS value, quantity, tax, foodstamp
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     AND h.type IN ('BOTH', 'DISCOUNT')
                     AND l.total > 0
@@ -689,6 +690,7 @@ class HouseCoupon extends SpecialUPC
                 $j = 0;
                 // $deptPrice = total price of discount items found
                 $deptPrice = 0;
+                $findTax = 999;
                 while ($row = $transDB->fetchRow($deptR)) {
                     // only tally discount item price if elible based on qualifier qty
                     if ($j < $qualQty) {
@@ -698,7 +700,13 @@ class HouseCoupon extends SpecialUPC
                             $deptPrice += $row['value']; 
                             $j++;
                         }
+                        if ($row['foodstamp'] && $row['tax'] < $findTax) {
+                            $findTax = $row['tax'];
+                        }
                     }
+                }
+                if ($findTax < 999) {
+                    $tax = $findTax;
                 }
                 $price = $discoVal * $j;
                 $value = ($deptPrice != 0) ? $price - $deptPrice : 0;
@@ -918,7 +926,7 @@ class HouseCoupon extends SpecialUPC
             $value = $infoW['maxValue'];
         }
 
-        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description, 'discountable'=>$discountable);
+        return array('value' => $value, 'department' => $infoW['department'], 'description' => $description, 'discountable'=>$discountable, 'tax'=>$tax);
     }
 
     /**

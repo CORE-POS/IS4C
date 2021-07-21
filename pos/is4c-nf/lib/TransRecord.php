@@ -615,7 +615,7 @@ static public function addCoupon($strupc, $intdepartment, $dbltotal, $statusFlag
   @param $intdepartment associated POS department
   @param $dbltotal coupon amount (should be negative)
 */
-static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $description='', $discountable=1)
+static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $description='', $discountable=1, $tax=0)
 {
     if (empty($description)) {
         $sql = Database::pDataConnect();
@@ -638,6 +638,8 @@ static public function addhousecoupon($strupc, $intdepartment, $dbltotal, $descr
         'total' => $dbltotal,
         'regPrice' => $dbltotal,
         'discountable' => $discountable,
+        'tax' => $tax,
+        'foodstamp' => $tax > 0 ? 1 : 0,
     ));
 }
 
