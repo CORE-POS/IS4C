@@ -63,7 +63,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $location = FormLib::get('location');
         $args = array($upc, $location);
         $prep = $dbc->prepare('
-            DELETE FROM FloorSectionProductMap 
+            DELETE FROM FloorSectionProductMap
             WHERE upc = ?
                 AND floorSectionID = ?
         ');
@@ -351,7 +351,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 ';
             foreach ($item as $key => $row) {
                 $ret .= '
-                    <tr><td><a href="ProdLocationEditor.php?store_id=&upc=' . 
+                    <tr><td><a href="ProdLocationEditor.php?store_id=&upc=' .
                         $key . '&searchupc=Update+Locations+by+UPC" target="_blank">' . $key . '</a></td>
                     <td>' . $row['brand'] . '</td>
                     <td>' . $row['desc'] . '</td>
@@ -438,7 +438,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         while ($row = $dbc->fetch_row($result)) {
             $upcsWithLoc[] = $row['upc'];
         }
-        
+
         $upcsMissingLoc = array();
         foreach ($plus as $upc) {
             if (!in_array($upc,$upcsWithLoc)) {
@@ -465,7 +465,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         ';
         $bQuery = $dbc->prepare($bString);
         $bResult = $dbc->execute($bQuery,$bArgs);
-    
+
         $item = array();
         $result = $dbc->execute($query,$args);
 
@@ -493,8 +493,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         foreach ($sections as $section) {
             if ($section != null) {
                 $sectionContent .= "<span style=\"padding: 10px;\">
-                    <input type=\"checkbox\" class=\"checkboxx\" name=\"$section\" 
-                    id=\"$section\" checked> 
+                    <input type=\"checkbox\" class=\"checkboxx\" name=\"$section\"
+                    id=\"$section\" checked>
                     <label for=\"$section\" style=\"font-weight: normal\">$section</label>
                     </span>";
             }
@@ -549,7 +549,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             ';
         foreach ($item as $key => $row) {
             $ret .= '
-                <tr data-selected=""><td><a href="ProdLocationEditor.php?store_id=&upc=' . 
+                <tr data-selected=""><td><a href="ProdLocationEditor.php?store_id=&upc=' .
                     $key . '&searchupc=Update+Locations+by+UPC" target="">' . $key . '</a></td>
                 <td>' . $row['brand'] . '</td>
                 <td>' . $row['desc'] . '</td>
@@ -738,7 +738,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     $name = 'section' . $primaryKey[$count-1];
                     $oldName = 'mapID' . ($primaryKey[$count-1]);
                     $ret .= '<input type="hidden" name="' . $oldName . '" value="' . $value . '">';
-                    $ret .= '<div class="location-container"><span style="float: right" class="btn btn-danger delete_location" 
+                    $ret .= '<div class="location-container"><span style="float: right" class="btn btn-danger delete_location"
                         data-upc="'.$upc.'" data-location="'.$value.'">
                         <span class="glyphicon glyphicon-trash"></span></span>
                         <div class="input-group">
@@ -876,7 +876,7 @@ $('.checkboxx').on('change', function(){
             }
         });
     } else {
-        //became un-checked 
+        //became un-checked
         $('td').each(function(){
             var value = $(this).text();
             if ($(this).hasClass('locations')) {
