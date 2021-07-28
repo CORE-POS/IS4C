@@ -460,6 +460,7 @@ HTML;
         };
 
         $res = $dbc->execute($prep,$args);
+        $curBid = -999;
         while ($row = $dbc->fetchRow($res)) {
             $scale = '';
             $superDepts = '';
@@ -530,7 +531,6 @@ HTML;
             <div class="col-lg-7">
             </div>
         </div>
-        {$bData}
         <h4 align="center">Batches Staged for Price Changes</h4>
         <div class="batchTable">
             {$tableA}
