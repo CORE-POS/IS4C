@@ -150,7 +150,7 @@ class BadScanTool extends FannieRESTfulPage
         $ret .= '</thead><tbody>';
         $scanCount = 0;
         foreach($data as $row) {
-            if (count($row) == 1) {
+            if (!is_array($row)) {
                 // cached item total
                 continue;
             }
