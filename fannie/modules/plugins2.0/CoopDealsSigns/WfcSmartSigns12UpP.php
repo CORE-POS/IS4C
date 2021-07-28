@@ -41,7 +41,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
         $pdf = $this->createPDF();
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
         $basicP = $dbc->prepare("SELECT
-            CASE WHEN pr.priceRuleTypeID = 6 THEN 1 ELSE 0 END
+            CASE WHEN pr.priceRuleTypeID = 6 OR pr.priceRuleTypeID = 12 THEN 1 ELSE 0 END
             FROM products AS p
                 LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
             WHERE upc = ?;");
