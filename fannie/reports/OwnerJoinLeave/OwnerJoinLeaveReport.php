@@ -202,11 +202,45 @@ class OwnerJoinLeaveReport extends FannieReportPage
             null,
         ));
 
+        $franP = $dbc->prepare('
+            SELECT n.cardno
+            FROM memberNotes AS n
+                LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
+                LEFT JOIN memDates AS d ON n.cardno=d.card_no
+                    LEFT JOIN custdata AS c ON n.cardno=c.CardNo AND c.personNum=1
+            WHERE note LIKE \'%FUNDS REQ%\'
+                AND d.start_date BETWEEN ? AND ?
+                AND c.Type <> \'TERM\'
+                AND c.Type <> \'INACT2\'
+            GROUP BY n.cardno
+            ORDER BY n.cardno');
+        $franR = $dbc->execute($franP, $ytdArgs);
+
+        if ($this->config->COOP_ID == 'WFC_Duluth') {
+            array_unshift($data, array(
+                'Annual Fran Skinner Goal',
+                null,
+                '130',
+                '',
+                null,
+                null,
+            ));
+            array_unshift($data, array(
+                'Year to Date Fran Skinner Matches',
+                null,
+                $dbc->numRows($franR),
+                '',
+                null,
+                null,
+            ));
+        }
+        
+
         if ($this->config->COOP_ID == 'WFC_Duluth') {
             array_unshift($data, array(
                 'Annual New Owner Goal',
                 null,
-                '780',
+                '650',
                 '',
                 null,
                 null,
