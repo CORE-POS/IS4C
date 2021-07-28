@@ -206,7 +206,7 @@ class FannieSignage
                 }
             }
 
-            if (!isset($row['signCount']) || $row['signCount'] < 0) {
+            if (!isset($row['signCount']) || $row['signCount'] < 0 || !is_numeric($row['signCount'])) {
                 $row['signCount'] = 1;
             }
             if (isset($this->itemRepeats[$row['upc']])) {
