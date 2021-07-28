@@ -45,6 +45,28 @@ class RpOrderPage extends FannieRESTfulPage
         $args = array(FormLib::get('store'), $date1, $date2);
         $ignore = 'CASE WHEN receivedDate < ' . $this->connection->curdate() . ' THEN 1 ELSE 0 END AS ignored';
 
+        /**
+         * Check for past dates. Since the purpose it to view future expected
+         * deliveries, selected weekdays that are in the past should be pushed
+         * forward into the subsequent week
+         */
+        $ts1 = strtotime($date1);
+        $ts2 = strtotime($date2);
+        $today = strtotime(date('Y-m-d'));
+        if ($ts1 < $today) {
+            $ts1 = mktime(0, 0, 0, date('n', $ts1), date('j', $ts1) + 7, date('Y', $ts1));
+        }
+        if ($ts2 < $today) {
+            $ts2 = mktime(0, 0, 0, date('n', $ts2), date('j', $ts2) + 7, date('Y', $ts2));
+        }
+        if ($ts1 > $ts2) {
+            $swap = $ts2;
+            $ts2 = $ts1;
+            $ts1 = $swap;
+        }
+        $date1 = date('Y-m-d', $ts1);
+        $date2 = date('Y-m-d', $ts2);
+
         $extra = strtotime($date2);
         if ($extra) {
             $extra = mktime(0,0,0,date('n',$extra),date('j',$extra)+3,date('Y',$extra));

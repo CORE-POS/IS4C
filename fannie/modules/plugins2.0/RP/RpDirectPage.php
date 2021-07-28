@@ -38,6 +38,28 @@ class RpDirectPage extends FannieRESTfulPage
         $args = array(FormLib::get('store'), $date1, $date2);
         $ignore = 'CASE WHEN receivedDate < ' . $this->connection->curdate() . ' THEN 1 ELSE 0 END AS ignored';
 
+        /**
+         * Check for past dates. Since the purpose it to view future expected
+         * deliveries, selected weekdays that are in the past should be pushed
+         * forward into the subsequent week
+         */
+        $ts1 = strtotime($date1);
+        $ts2 = strtotime($date2);
+        $today = strtotime(date('Y-m-d'));
+        if ($ts1 < $today) {
+            $ts1 = mktime(0, 0, 0, date('n', $ts1), date('j', $ts1) + 7, date('Y', $ts1));
+        }
+        if ($ts2 < $today) {
+            $ts2 = mktime(0, 0, 0, date('n', $ts2), date('j', $ts2) + 7, date('Y', $ts2));
+        }
+        if ($ts1 > $ts2) {
+            $swap = $ts2;
+            $ts2 = $ts1;
+            $ts1 = $swap;
+        }
+        $date1 = date('Y-m-d', $ts1);
+        $date2 = date('Y-m-d', $ts2);
+
         $date3 = false;
         $extra = FormLib::get('date3');
         $d3ts = strtotime($extra);
@@ -255,6 +277,7 @@ class RpDirectPage extends FannieRESTfulPage
         $farm = FormLib::get('farm');
         if ($farm) {
             $words = array_map('trim', explode(' ', $farm));
+            $words = array_filter($words, function ($i) { return strlen($i) > 0; });
             $initials = array_reduce($words, function($c, $i) { return $c . $i[0]; });
             $sku = $initials . $sku;
 
