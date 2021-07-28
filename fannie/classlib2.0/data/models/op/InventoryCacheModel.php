@@ -125,6 +125,34 @@ class InventoryCacheModel extends BasicModel
         $obj->upc($upc);
         $obj->storeID($storeID);
         if ($obj->load()) {
+            if ($obj->negative()) {
+                /**
+                 * If the cache record is flagged as having an underlying negative on-hand,
+                 * create a new most recent count record with a zero count and keeping
+                 * the current par. This record is backdated by 30 seconds so that if
+                 * this is triggered by flagging a new order as "placed", that order's timestamp
+                 * will be ahead of this new count and will add to the on-hand total
+                 */
+                $parP = $this->connection->prepare("SELECT par FROM InventoryCounts WHERE upc=? AND storeID=? AND mostRecent=1");
+                $par = $this->connection->getValue($parP, array($upc, $storeID));
+                $clearP = $this->connection->prepare("UPDATE InventoryCounts SET mostRecent=0 WHERE upc=? AND storeID=?");
+                $this->connection->execute($clearP, array($upc, $storeID));
+                $count = new InventoryCountsModel($this->connection);
+                $count->upc($upc);
+                $count->storeID($storeID);
+                $count->count(0);
+                $count->countDate(date('Y-m-d H:i:s', time() - 30));
+                $count->mostRecent(1);
+                $count->uid(0);
+                $count->par($par);
+                $count->save();
+
+                $obj->negative(0);
+                $obj->baseCount(0);
+                $obj->sold(0);
+                $obj->shrunk(0);
+                $obj->cacheStart($count->countDate());
+            }
             $orders = InventoryCacheModel::calculateOrdered($this->connection, $upc, $storeID, $obj->cacheStart());
             $obj->ordered($orders);
             $obj->onHand($obj->baseCount() + $obj->ordered() - $obj->sold() - $obj->shrunk());
