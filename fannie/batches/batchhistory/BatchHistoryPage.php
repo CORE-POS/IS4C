@@ -95,7 +95,7 @@ HTML;
             $ret .= '<th>' . ucwords($column) . '</th>';
         }
         $ret .= '</thead><tbody>';
-        foreach ($bu->find() as $obj) {
+        foreach ($bu->find('batchID',true) as $obj) {
             $ret .= '<tr class="info">';
             if ($obj->upc()) {
                 foreach ($upcCols as $upcCol) {
@@ -153,7 +153,7 @@ HTML;
             $ret .= '<th>' . ucwords($column) . '</th>';
         }
         $ret .= '</thead><tbody>';
-        foreach ($bu->find() as $obj) {
+        foreach ($bu->find('batchID',true) as $obj) {
             $ret .= '<tr class="info">';
             if ($obj->upc()) {
                 foreach ($upcCols as $upcCol) {
@@ -207,7 +207,7 @@ HTML;
         }
         $ret .= '</thead><tbody>';
         $s = 1;
-        foreach ($bu->find() as $obj) {
+        foreach ($bu->find('batchID',true) as $obj) {
             if ($obj->upc() == NULL) {
                 $ret .= '<tr class="warning">';
                 foreach ($columns as $column) {
@@ -246,7 +246,7 @@ HTML;
         }
         $ret .= '<th>Brand | description</th>';
         $ret .= '</thead><tbody>';
-        foreach ($bu->find() as $obj) {
+        foreach ($bu->find('batchID',true) as $obj) {
             $ret .= '<tr class="info">';
             if (!$obj->upc() == NULL) {
                 foreach ($upcCols as $upcCol) {
