@@ -411,7 +411,7 @@ class OverShortSafecountV2 extends FanniePage {
         }
         $class = $count % 2 == 0 ? 'color' : '';
         $ret .= '<tr class="' . $class . '"><td>Open Safe</td><td>n/a</td>';
-        $cur = '';
+        $cur = 0;
         if (isset($holding['dropExtra']) && isset($holding['dropExtra']['ttl'])) {
             $cur = $holding['dropExtra']['ttl'];
         }
