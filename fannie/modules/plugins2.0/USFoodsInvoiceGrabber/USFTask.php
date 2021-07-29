@@ -69,7 +69,7 @@ class USFTask extends FannieTask
                 $fullPrice = $this->getField($data, 56);
                 $unitPrice = $price;
                 $invoiceTotal = $this->getField($data, 14);
-                $orderTotal += $fullPrice;
+                $orderTotal += (is_numeric($fullPrice) ? $full_Price : 0);
 
                 if (!is_numeric($sku)) continue;
                 if ($priceType == '') continue;
