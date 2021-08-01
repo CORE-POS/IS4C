@@ -60,6 +60,7 @@ $cmd = 'mysqldump'
     . ' -h ' . escapeshellarg($host)
     . ' -P ' . escapeshellarg($port)
     . ' -w ' . escapeshellarg('store_id=' . ((int)$FANNIE_STORE_ID))
+    . ' --skip-triggers '
     . ' ' . escapeshellarg($FANNIE_OP_DB)
     . ' ' . escapeshellarg($table)
     . ' > ' . escapeshellarg($tempfile)
@@ -70,6 +71,7 @@ $cmd_obfusc = 'mysqldump'
     . ' -h ' . escapeshellarg($host)
     . ' -P ' . escapeshellarg($port)
     . ' -w ' . escapeshellarg('store_id=' . ((int)$FANNIE_STORE_ID))
+    . ' --skip-triggers '
     . ' ' . escapeshellarg($FANNIE_OP_DB)
     . ' ' . escapeshellarg($table)
     . ' > ' . escapeshellarg($tempfile);
