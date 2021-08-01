@@ -1162,6 +1162,14 @@ HTML;
                 $sku = $upc;
             }
 
+            /**
+             * Must have a valid value for the data type.
+             * The default in the Model is 1.
+             */
+            if (empty($caseSize)) {
+                $caseSize = 1;
+            }
+
             $chkP = $dbc->prepare("SELECT upc FROM vendorItems
                 WHERE sku=? AND vendorID=? AND upc <> ?");
             $chk = $dbc->getValue($chkP, array($sku, $vendorID, $upc));
