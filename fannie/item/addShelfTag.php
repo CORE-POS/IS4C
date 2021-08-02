@@ -148,7 +148,11 @@ HTML;
           $shelftag->brand(FormLib::get('brand'));
           $shelftag->sku(FormLib::get('sku'));
           $shelftag->size(FormLib::get('size'));
-          $shelftag->units(FormLib::get('units'));
+          $units = FormLib::get('units');
+          if (empty($units)) {
+              $units = 1;
+          }
+          $shelftag->units($units);
           $shelftag->vendor(FormLib::get('vendor'));
           $shelftag->count(FormLib::get('count', 1));
           $insR = $shelftag->save();
