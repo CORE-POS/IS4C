@@ -407,9 +407,12 @@ var batchEdit = (function ($) {
         curDate.setSeconds(0);
         curDate.setMinutes(0);
         curDate.setHours( -(curDate.getTimezoneOffset()/60) );
+
         var checkEndDate = new Date(end);
-        var stopBatch = (curDate.getTime() > checkEndDate.getTime()) ? true : false; 
-        var startBatch = (curDate.getTime() <= checkEndDate.getTime()) ? true : false;
+        var checkStartDate = new Date(start);
+
+        var stopBatch = (curDate.getTime() > checkEndDate.getTime() || curDate.getTime() < checkStartDate) ? true : false; 
+        var startBatch = (curDate.getTime() <= checkEndDate.getTime() && curDate.getTime() >= checkStartDate) ? true : false;
 
         var c = confirm('Change '+action+' date?');
         if (c == true) {
