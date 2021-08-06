@@ -215,12 +215,11 @@ class WfcVcTask extends FannieTask
             // lookup OAM usage in the last month
             $usageP = $dbc->prepare("SELECT card_no 
                                     FROM trans_archive.dlogBig
-                                    WHERE upc IN ('0049999900445', '0049999900441')
+                                    WHERE upc = ?
                                         AND tdate BETWEEN ? AND ?
                                     GROUP BY card_no, upc
                                     HAVING SUM(quantity) <> 0");
             $usageArgs = array($curRow['upc'], $curRow['startDate'], str_replace('00:00:00', '23:59:59', $curRow['endDate']));
-            $usageArgs = array($curRow['startDate'], str_replace('00:00:00', '23:59:59', $curRow['endDate']));
             $usageR = $dbc->execute($usageP, $usageArgs);
             $dbc->startTransaction();
             $upP = $dbc->prepare('UPDATE CustomerNotifications SET message=\'\' WHERE cardNo=? AND source=\'WFC.OAM\'');
