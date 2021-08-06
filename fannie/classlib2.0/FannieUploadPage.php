@@ -254,11 +254,14 @@ class FannieUploadPage extends \FanniePage
                         $new = escapeshellarg($tempdir.'/splits/csvUNFISPLIT');
                         system("split -l 2500 $orig $new");
                         $dir = opendir($tempdir.'/splits');
+                        $i = 0;
+                        $files = array();
                         while ($current = readdir($dir)) {
                             if (!strstr($current,"UNFISPLIT")) {
                                 continue;
                             }
-                            $files[$i++] = $current;
+                            $files[$i] = $current;
+                            $i++;
                         }
                         closedir($dir);
                         unlink($this->upload_file_name);
@@ -266,7 +269,7 @@ class FannieUploadPage extends \FanniePage
                     }
 
                     if (!is_array($files)) {
-                        $this->error_detail = 'Split problem';
+                        $this->error_details = 'Split problem';
                         $this->content_function = 'results_content';
                     } else {
                         /* process one file */
