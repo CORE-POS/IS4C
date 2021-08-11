@@ -795,6 +795,205 @@ HTML;
     }
 
     /**
+      Generate FROM and WHERE clauses with appropriate parameters
+      and joins based on the standard form submissions.
+      @param $form [ValueContainer]
+      @return [keyed array]
+      - query [string] from and where clauses
+      - args [array] corresponding parameters
+    */
+    static public function queueableItemFromWhere($form)
+    {
+        $op_db = FannieConfig::config('OP_DB');
+        $dbc = FannieDB::getReadOnly($op_db);
+        try {
+            $start_date = $form->date1;
+            $end_date = $form->date2;
+        } catch (Exception $ex) {
+            $start_date = date('Y-m-d');
+            $end_date = date('Y-m-d');
+        }
+        $dlog = DTransactionsModel::selectDlog($start_date, $end_date);
+        $lookupType = $form->tryGet('lookup-type', 'dept');
+        $store = $form->tryGet('store', false);
+        $ignoreMemType = DTrans::memTypeIgnore($dbc);
+        if ($store === false) {
+            $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+            if ($store === false) {
+                $store = 0;
+            }
+        }
+
+        $query = '
+            FROM ' . $dlog . ' AS t 
+                LEFT JOIN departments AS d ON t.department=d.dept_no
+                ' . DTrans::joinProducts('t') . '
+                LEFT JOIN MasterSuperDepts AS m ON t.department=m.dept_ID 
+                LEFT JOIN subdepts AS b ON p.subdept=b.subdept_no
+                LEFT JOIN vendors AS v ON p.default_vendor_id=v.vendorID
+                LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID';
+        $args = array();
+        switch ($lookupType) {
+            case 'dept':
+                $super = $form->tryGet('super-dept');
+                if ($super !== '' && $super >= 0) {
+                    $query .= ' LEFT JOIN superdepts AS s ON t.department=s.dept_ID ';
+                }
+                break;
+            case 'manu':
+                break;
+            case 'likecode':
+                $query .= ' LEFT JOIN upcLike AS u ON t.upc=u.upc ';
+                break;
+        }
+
+        $query .= ' WHERE t.tdate BETWEEN ? AND ? ';
+        $query .= ' AND t.memType NOT IN ' . $ignoreMemType;
+        $args[] = $start_date . ' 00:00:00';
+        $args[] = $end_date . ' 23:59:59';
+        $query .= ' AND ' . DTrans::isStoreID($store, 't') . ' ';
+        $args[] = $store;
+
+        switch ($lookupType) {
+            case 'dept':
+                $super = $form->tryGet('super-dept');
+                if ($super !== '' && $super >= 0) {
+                    $query .= ' AND s.superID=? ';
+                    $args[] = $super;
+                    if (is_array($form->tryGet('departments')) && count($form->tryGet('departments')) > 0) {
+                        $query .= ' AND t.department IN (';
+                        foreach ($form->tryGet('departments') as $d) {
+                            $query .= '?,';
+                            $args[] = $d;
+                        }
+                        $query = substr($query, 0, strlen($query)-1) . ')';
+                    } elseif ($form->tryGet('dept-start') !== '' && $form->tryGet('dept-end') !== '') {
+                        $query .= ' AND t.department BETWEEN ? AND ? ';
+                        $args[] = $form->tryGet('dept-start');
+                        $args[] = $form->tryGet('dept-end');
+                    }
+                } elseif ($super !== '' && $super == -2) {
+                    $query .= ' AND m.superID <> 0 ';
+                    if (is_array($form->tryGet('departments')) && count($form->tryGet('departments')) > 0) {
+                        $query .= ' AND t.department IN (';
+                        foreach ($form->tryGet('departments') as $d) {
+                            $query .= '?,';
+                            $args[] = $d;
+                        }
+                        $query = substr($query, 0, strlen($query)-1) . ')';
+                    } elseif ($form->tryGet('dept-start') !== '' && $form->tryGet('dept-end') !== '') {
+                        $query .= ' AND t.department BETWEEN ? AND ? ';
+                        $args[] = $form->tryGet('dept-start');
+                        $args[] = $form->tryGet('dept-end');
+                    }
+                } elseif ($super === '') {
+                    if (is_array($form->tryGet('departments')) && count($form->tryGet('departments')) > 0) {
+                        $query .= ' AND t.department IN (';
+                        foreach ($form->tryGet('departments') as $d) {
+                            $query .= '?,';
+                            $args[] = $d;
+                        }
+                        $query = substr($query, 0, strlen($query)-1) . ')';
+                    } else {
+                        $query .= ' AND t.department BETWEEN ? AND ? ';
+                        $args[] = $form->tryGet('dept-start', 1);
+                        $args[] = $form->tryGet('dept-end', 1);
+                    }
+                }
+                if (is_array($form->tryGet('subdepts')) && count($form->tryGet('subdepts')) > 0) {
+                    $query .= ' AND p.subdept IN (';
+                    foreach ($form->tryGet('subdepts') as $s) {
+                        $query .= '?,';
+                        $args[] = $s;
+                    }
+                    $query = substr($query, 0, strlen($query)-1) . ')';
+                }
+                break;
+            case 'manu':
+                $mtype = $form->tryGet('mtype');
+                if ($mtype == 'prefix') {
+                    $query .= ' AND t.upc LIKE ? ';
+                    $args[] = '%' . $form->tryGet('manufacturer') . '%';
+                } else {
+                    $query .= ' AND (p.brand LIKE ?) ';
+                    $manu = '%' . $form->tryGet('manufacturer') . '%';
+                    $args[] = $manu;
+                    $optimizeP = $dbc->prepare('
+                        SELECT p.department
+                        FROM products AS p
+                        WHERE p.brand LIKE ?
+                        GROUP BY p.department');
+                    $optimizeR = $dbc->execute($optimizeP, array($manu));
+                    $dept_in = '';
+                    while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                        $dept_in .= '?,';
+                        $args[] = $optimizeW['department'];
+                    }
+                    if ($dept_in !== '') {
+                        $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                        $query .= ' AND t.department IN (' . $dept_in . ') ';
+                    }
+                }
+                break;
+            case 'vendor':
+                $query .= ' AND (p.default_vendor_id=?) ';
+                $vID = $form->tryGet('vendor', 1);
+                $args[] = $vID;
+                $optimizeP = $dbc->prepare('
+                    SELECT p.department
+                    FROM products AS p
+                    WHERE p.default_vendor_id=?
+                    GROUP BY p.department');
+                $optimizeR = $dbc->execute($optimizeP, array($vID));
+                $dept_in = '';
+                while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                    $dept_in .= '?,';
+                    $args[] = $optimizeW['department'];
+                }
+                if ($dept_in !== '') {
+                    $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                    $query .= ' AND t.department IN (' . $dept_in . ') ';
+                }
+                break;
+            case 'likecode':
+                $query .= ' AND u.likeCode BETWEEN ? AND ? ';
+                $args[] = $form->tryGet('lc-start', 1);
+                $args[] = $form->tryGet('lc-end', 1);
+                $optimizeP = $dbc->prepare('
+                    SELECT p.department
+                    FROM products AS p
+                        INNER JOIN upcLike AS u ON p.upc=u.upc
+                    WHERE u.likeCode BETWEEN ? AND ?
+                    GROUP BY p.department');
+                $optimizeR = $dbc->execute($optimizeP, array($form->tryGet('lc-start', 1), $form->tryGet('lc-end', 1)));
+                $dept_in = '';
+                while ($optimizeW = $dbc->fetch_row($optimizeR)) {
+                    $dept_in .= '?,';
+                    $args[] = $optimizeW['department'];
+                }
+                if ($dept_in !== '') {
+                    $dept_in = substr($dept_in, 0, strlen($dept_in)-1);
+                    $query .= ' AND t.department IN (' . $dept_in . ') ';
+                }
+                break;
+            case 'u':
+                $upcs = $form->tryGet('u', array());
+                if (count($upcs) == 0) {
+                    $upcs[] = 'NOTREALUPC';
+                }
+                $query .= ' AND t.upc IN (';
+                foreach ($upcs as $u) {
+                    $query .= '?,';
+                    $args[] = BarcodeLib::padUPC($u);
+                }
+                $query = substr($query, 0, strlen($query)-1) . ') ';
+                break;
+        }
+
+        return array('query'=>$query, 'args'=>$args);
+    }
+
+    /**
       Method gets a value from container or returns
       a default if the value does not exist
       @c [object] container for values
