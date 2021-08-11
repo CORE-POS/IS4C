@@ -34,6 +34,8 @@ class COGSMovementReport extends FannieReportPage
     protected $title = "Fannie :  Movement Report";
     protected $header = "Cost of Goods Movement Report";
 
+    protected $queueable = true;
+
     protected $required_fields = array('date1', 'date2');
 
     public $description = '[COGS Movement] shows movement with cost of goods by account';
@@ -44,9 +46,8 @@ class COGSMovementReport extends FannieReportPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $onlyRD = FormLib::get('onlyRD', false);
         $query = '';
-        $from_where = FormLib::standardItemFromWhere();
+        $from_where = FormLib::queueableItemFromWhere($this->form);
         $from_where['query'] = str_replace('LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID', '', $from_where['query']);
         $query = "
             SELECT 
@@ -107,6 +108,7 @@ class COGSMovementReport extends FannieReportPage
                     <input type="checkbox" name="excel" value="csv" />
                     Excel
                 </label>
+                <label><input type="checkbox" name="queued" value="1" /> Email it to me</label>
             </div>
         </div>
         <p>
