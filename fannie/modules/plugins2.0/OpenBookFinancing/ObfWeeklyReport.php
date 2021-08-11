@@ -1249,6 +1249,51 @@ class ObfWeeklyReport extends FannieReportPage
         );
     }
 
+    private function getNewEquity($dbc, $dlog, $args)
+    {
+        $prep = $dbc->prepare("
+            SELECT SUM(total) AS ttl
+            FROM {$dlog}
+            WHERE tdate BETWEEN ? AND ?
+                AND department IN (991, 992)
+                AND register_no <> 30");
+        return $this->connection->getValue($prep, $args);
+    }
+
+    protected function newEquityThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly)
+    {
+        $argsTY = array(
+            date('Y-m-d', $start_ts),
+            date('Y-m-d', $end_ts),
+        );
+        $dlogTY = DTransactionsModel::selectDlog($argsTY[0], $argsTY[1]);
+        $argsTY[1] .= ' 23:59:59';
+        $this_week = $this->getNewEquity($dbc, $dlogTY, $argsTY);
+        $argsLY = array(
+            date('Y-m-d', $start_ly),
+            date('Y-m-d', $end_ly),
+        );
+        $dlogLY = DTransactionsModel::selectDlog($argsLY[0], $argsLY[1]);
+        $argsLY[1] .= ' 23:59:59';
+        $last_week = $this->getNewEquity($dbc, $dlogLY, $argsLY);
+
+        return array(
+            'New Equity This Week',
+            number_format($this_week, 0),
+            number_format($last_week, 0),
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            '',
+            'meta' => FannieReportPage::META_COLOR,
+            'meta_background' => $this->colors[0],
+            'meta_foreground' => 'black',
+        );
+    }
+
     protected function ownershipThisYear($dbc, $end_ts)
     {
         $args1 = array(
