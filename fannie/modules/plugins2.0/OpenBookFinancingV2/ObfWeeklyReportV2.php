@@ -295,7 +295,20 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
 
     private function getPlanSales($weekID)
     {
-        if ($weekID >= 218) {
+        if ($weekID >= 374) {
+            $prep = $this->connection->prepare("select c.obfCategoryID, m.superID, b.storeID, b.planGoal  
+                from " . FannieDB::fqn('ObfBudget', 'plugin:ObfDatabaseV2') . " AS b 
+                    left join " . FannieDB::fqn('ObfCategorySuperDeptMap', 'plugin:ObfDatabaseV2') . " AS m ON b.superID=m.superID 
+                    left join " . FannieDB::fqn('ObfCategories', 'plugin:ObfDatabaseV2') . " AS c ON m.obfCategoryID=c.obfCategoryID AND b.storeID=c.storeID 
+                WHERE c.hasSales=1 and obfWeekID=?");
+            $res = $this->connection->execute($prep, array($weekID));
+            $ret = array();
+            while ($row = $this->connection->fetchRow($res)) {
+                $key = $row['obfCategoryID'] . ',' . $row['superID'];
+                $ret[$key] = $row['planGoal'];
+            }
+            return $ret;
+        } elseif ($weekID >= 218) {
             $prep = $this->connection->prepare("
                 SELECT l.obfCategoryID, s.superID, (1+l.growthTarget)*s.lastYearSales AS plan
                 FROM " . FannieDB::fqn('ObfLabor', 'plugin:ObfDatabaseV2') . " AS l
@@ -948,6 +961,7 @@ class ObfWeeklyReportV2 extends ObfWeeklyReport
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
         $data[] = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly, false);
         $data[] = $this->ownershipThisYear($dbc, $end_ts);
+        $data[] = $this->newEquityThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly);
 
         $json = $this->chartData($dbc, $this->form->weekID, $store);
         $this->addOnloadCommand("obfSummary.drawChart('" . json_encode($json) . "')");

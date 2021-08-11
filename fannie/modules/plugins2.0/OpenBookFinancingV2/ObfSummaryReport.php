@@ -222,7 +222,20 @@ class ObfSummaryReport extends ObfWeeklyReportV2
 
     private function getPlanSales($weekID)
     {
-        if ($weekID >= 218) {
+        if ($weekID >= 374) {
+            $prep = $this->connection->prepare("select c.obfCategoryID, m.superID, b.storeID, b.planGoal  
+                from " . FannieDB::fqn('ObfBudget', 'plugin:ObfDatabaseV2') . " AS b 
+                    left join " . FannieDB::fqn('ObfCategorySuperDeptMap', 'plugin:ObfDatabaseV2') . " AS m ON b.superID=m.superID 
+                    left join " . FannieDB::fqn('ObfCategories', 'plugin:ObfDatabaseV2') . " AS c ON m.obfCategoryID=c.obfCategoryID AND b.storeID=c.storeID 
+                WHERE c.hasSales=1 and obfWeekID=?");
+            $res = $this->connection->execute($prep, array($weekID));
+            $ret = array();
+            while ($row = $this->connection->fetchRow($res)) {
+                $key = $row['obfCategoryID'] . ',' . $row['superID'];
+                $ret[$key] = $row['planGoal'];
+            }
+            return $ret;
+        } elseif ($weekID >= 218) {
             $prep = $this->connection->prepare("
                 SELECT l.obfCategoryID, s.superID, (1+l.growthTarget)*s.lastYearSales AS plan
                 FROM " . FannieDB::fqn('ObfLabor', 'plugin:ObfDatabaseV2') . " AS l
