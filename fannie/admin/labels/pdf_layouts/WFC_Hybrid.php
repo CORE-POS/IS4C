@@ -269,7 +269,7 @@ foreach($data as $row) {
            if ($curCnt == 0) {
                $curStr .= $word . " ";
                $length += strlen($word)+1;
-           } elseif ($curCnt == 1 && ($length + strlen($word + 1)) < 17) {
+           } elseif ($curCnt == 1 && ($length + strlen($word) + 1) < 17) {
                $curStr .= $word . " ";
                $length += strlen($word)+1;
            } elseif ($curCnt > 1 && ($length + 1) < 17) {
