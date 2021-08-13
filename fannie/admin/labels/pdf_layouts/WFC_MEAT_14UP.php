@@ -175,10 +175,8 @@ function generateMirrorMeatTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
     /*
         Add Date Text
     */
-    if ($size > 0) {
-        $pdf->SetXY($x+118,$y+24);
-        $pdf->Cell(100, 5, $date->format('Y-m-d'), 0, 1, 'L', true);
-    }
+    $pdf->SetXY($x+118,$y+24);
+    $pdf->Cell(100, 5, $date->format('Y-m-d'), 0, 1, 'L', true);
 
     /*
         Add Movement Text
