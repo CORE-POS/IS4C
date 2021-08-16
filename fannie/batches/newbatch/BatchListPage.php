@@ -147,16 +147,18 @@ class BatchListPage extends FannieRESTfulPage
         $model->discountType($discounttype);
         $model->owner($this->owner);
         // force/stop batch in step with date change
-        $curDate = new DateTime();
-        $curDate = strtotime($curDate->format('Y-m-d'));
-        $endDate = new DateTime($this->endDate);
-        $endDate = strtotime($endDate->format('Y-m-d'));
-        $startDate = new DateTime($this->startDate);
-        $startDate = strtotime($startDate->format('Y-m-d'));
-        if ($curDate > $endDate || $curDate < $startDate) {
-            $model->forceStopBatch($this->id);
-        } else if ($curDate <= $endDate && $curDate >= $startDate) {
-            $model->forceStartBatch($this->id);
+        if (in_array($this->batchType, array(1,2,10))) {
+            $curDate = new DateTime();
+            $curDate = strtotime($curDate->format('Y-m-d'));
+            $endDate = new DateTime($this->endDate);
+            $endDate = strtotime($endDate->format('Y-m-d'));
+            $startDate = new DateTime($this->startDate);
+            $startDate = strtotime($startDate->format('Y-m-d'));
+            if ($curDate > $endDate || $curDate < $startDate) {
+                $model->forceStopBatch($this->id);
+            } else if ($curDate <= $endDate && $curDate >= $startDate) {
+                $model->forceStartBatch($this->id);
+            }
         }
         $saved = $model->save();
 

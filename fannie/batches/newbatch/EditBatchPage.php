@@ -1125,6 +1125,7 @@ HTML;
         $endYMD = date('Y-m-d', strtotime($model->endDate()));
         $ret .= "<input type=\"hidden\" id=\"batchStartDate\" value=\"$startYMD\"/>";
         $ret .= "<input type=\"hidden\" id=\"batchEndDate\" value=\"$endYMD\"/>";
+        $ret .= "<input type=\"hidden\" id=\"batchType\" value=\"$type\"/>";
         $ret .= '<b>Sale Dates</b>: <input type="text" class="be-editable be-editable-date form-control"
             onchange="batchEdit.editBatchDate(\''.$startYMD.'\', \'start\'); return false;"
             name="startDate" id="startDate" value="'

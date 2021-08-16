@@ -413,13 +413,16 @@ var batchEdit = (function ($) {
 
         var stopBatch = (curDate.getTime() > checkEndDate.getTime() || curDate.getTime() < checkStartDate) ? true : false; 
         var startBatch = (curDate.getTime() <= checkEndDate.getTime() && curDate.getTime() >= checkStartDate) ? true : false;
+        var batchType = $("#batchType").val();
+        batchType = parseInt(batchType, 10);
+        var forceTypes = [1, 2, 10];
 
         var c = confirm('Change '+action+' date?');
         if (c == true) {
-            if (stopBatch === true) {
+            if (stopBatch === true && forceTypes.includes(batchType)) {
                 mod.unsaleNow(id);
             }
-            if (startBatch === true) {
+            if (startBatch === true && forceTypes.includes(batchType)) {
                 mod.forceNow(id);
             }
 
