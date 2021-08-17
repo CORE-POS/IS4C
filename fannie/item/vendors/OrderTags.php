@@ -120,12 +120,24 @@ class OrderTags extends FannieRESTfulPage
 
 
             $border = $mtLength == 7 ? 'TBR' : 'TBL';
-            $mvmt = $mvmtT[$row[5]];
+            $mvmt = '';
+            if (isset($row[5]) && isset($mvmtT[$row[5]])) {
+                $mvmt = $mvmtT[$row[5]];
+            }
             $pdf->SetXY($posX+40, $posY+4);
             $pdf->Cell(6, 3, $mvmt, $border, 1);
 
             $pdf->SetXY($posX+3, $posY+16);
+            //$pdf->Cell(0, 5, $row[2] . ' / ' . $row[1] . ' - ' . $row[4]);
             $pdf->Cell(0, 5, $row[2] . ' / ' . $row[1] . ' - ' . $row[4]);
+            $pdf->SetXY($posX+28, $posY+16);
+            if ($row[4] == 'UNFI') {
+                $pdf->SetDrawColor(0,255,255);
+                $pdf->SetFillColor(200,200,200);
+                $pdf->Rect($posX+44, $posY+17.5, 2, 2, 'F');
+            }
+
+            $pdf->SetDrawColor(0, 0, 0);
             $pdf->SetXY($posX+35, $posY+15);
             $posX += 52;
             if ($posX > 170) {
