@@ -58,6 +58,12 @@ var handheld = (function($) {
 
     mod.qtyTyped = function(ev){
         var cur = Number($('#cur_qty').val()) + Number($('#old-qty').html());
+        if (Math.abs(cur) > 9999) {
+            cur = Number($('#old-qty').html());
+            if (Math.abs(cur) > 9999) {
+                cur = 0;
+            }
+        }
         $('#live-qty').html(cur);
         // save new quantity, return cursor to upc input
         var args = 'id='+$('#cur_upc').val()+'&qty='+cur+'&store='+$('#store').val();

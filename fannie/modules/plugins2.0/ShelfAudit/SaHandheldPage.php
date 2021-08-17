@@ -167,6 +167,15 @@ class SaHandheldPage extends FannieRESTfulPage
                 WHERE upc=? AND clear=0 AND section=? AND storeID=?');
         $insP = $dbc->prepare('INSERT INTO sa_inventory (datetime,upc,clear,quantity,section,storeID)
                 VALUES ('.$dbc->now().',?,0,?,?,?)');
+        if (strlen($qty) > 7) {
+            // most likely a UPC
+            // ignore the value and reset to current quantity, if any
+            $qtyP = $dbc->prepare("SELECT quantity FROM sa_inventory WHERE upc=? AND clear=0 AND section=? AND storeID=?");
+            $qty = $dbc->getValue($qtyP, array($upc, $this->section, $store));
+            if ($qty === false) {
+                $qty = 0;
+            }
+        }
         $dbc->execute($delP, array($upc, $this->section, $store));
         if ($qty > 0 || strlen(ltrim($upc, '0')) == 5){
             $dbc->execute($insP, array($upc, $qty, $this->section, $store));
@@ -382,7 +391,7 @@ HTML;
             $this->addOnloadCommand("\$('#upc_in').focus();\n");
         }
         $this->upcForm($store);
-        $this->addScript('js/handheld.js');
+        $this->addScript('js/handheld.js?date=20210817');
 
         return ob_get_clean();
     }
