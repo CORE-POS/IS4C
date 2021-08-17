@@ -45,8 +45,27 @@ class ShrinkTool extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    public function set_newReason_handler($str)
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $reasons = new ShrinkReasonsModel($dbc);
+        $reasons->description($str);
+        $reasons->disabled(1);
+        $id = $reasons->save();
+
+        return $id;
+    }
+
     public function post_upc_description_department_cost_price_qty_reason_handler()
     {
+        $recordReason = $this->reason;
+        $newReason = FormLib::get('reason-other-text');
+        if ($this->reason == 9 && $newReason != '') {
+            $recordReason = $this->set_newReason_handler($newReason);
+        }
+
         global $FANNIE_TRANS_DB, $FANNIE_EMP_NO, $FANNIE_REGISTER_NO;
         $dbc = FannieDB::get($FANNIE_TRANS_DB);
 
@@ -65,7 +84,7 @@ class ShrinkTool extends FannieRESTfulPage
         $record['regPrice'] = $this->price;
         $record['total'] = $this->qty * $this->price;
         $record['cost'] = $this->qty * $this->cost;
-        $record['numflag'] = $this->reason;
+        $record['numflag'] = $recordReason;
         $record['charflag'] = strlen(FormLib::get('type')) > 0 ? strtoupper(substr(FormLib::get('type'), 0, 1)) : '';
         $record['trans_status'] = 'Z';
         if (FormLib::get('store', false) !== false) {
@@ -202,20 +221,23 @@ class ShrinkTool extends FannieRESTfulPage
         $ret = <<<HTML
 <script type="text/javascript">
 function keyToType(e) {
-    console.log(e.which);
-    if (e.which == 32) {
-        if ($('#select-type').val() == 'Loss') {
-            $('#select-type').val('Contribute');
-        } else {
-            $('#select-type').val('Loss');
-        } 
-    } else if (e.which == 17) {
-        console.log(cur);
-        console.log(next);
-        if (next.length == 0) {
-            next = $('#select-reason option:first');
+    var focused = $(':focus');
+    if (focused.attr('id') != 'reason-other-text') {
+        console.log(e.which);
+        if (e.which == 32) {
+            if ($('#select-type').val() == 'Loss') {
+                $('#select-type').val('Contribute');
+            } else {
+                $('#select-type').val('Loss');
+            } 
+        } else if (e.which == 17) {
+            console.log(cur);
+            console.log(next);
+            if (next.length == 0) {
+                next = $('#select-reason option:first');
+            }
+            $('#select-reason').val(next.val());
         }
-        $('#select-reason').val(next.val());
     }
 }
 </script>
@@ -270,9 +292,18 @@ function keyToType(e) {
             <div class="row form-group">
                 <label class="col-sm-3 text-right">Reason</label>
                 <div class="col-sm-9">
-                    <select name="reason" id="select-reason" class="form-control">';
+                    <select name="reason" id="select-reason" class="form-control">
                         {{shrink_opts}}
                     </select>
+                </div>
+            </div>
+            <div class="row form-group" id="reason-other" style="display: none;">
+                <label class="col-sm-3 text-right"><i>Explain (Optional)</i></label>
+                <div class="col-sm-9">
+                    <div class="input-group">
+                        <input name="reason-other-text" type="text" id="reason-other-text" class="form-control" value=''>
+                        <span class="input-group-addon" type="disabled" id="reason-other-counter">30</span>
+                    </div>
                 </div>
             </div>
             <div class="row form-group">
@@ -327,6 +358,27 @@ HTML;
                 <a href="ShrinkEditor.php" class="btn btn-default">Edit Entries From Today</a>
             </p>
             </form>';
+    }
+
+    public function javascriptContent()
+    {
+        return <<<JAVASCRIPT
+$('#select-reason').change(function(){
+    let option = $(this).find(":selected").text();
+    if (option == "OTHER") {
+        $('#reason-other').show();
+    }
+});
+$('#reason-other-text').keydown(function(e){
+    let length = $(this).val().length;
+    let counter = $('#reason-other-counter');
+    counter.text(30 - length)
+    if (length > 29 && e.keyCode !== 8) {
+        e.preventDefault();
+    }
+});
+
+JAVASCRIPT;
     }
 
     public function helpContent()
