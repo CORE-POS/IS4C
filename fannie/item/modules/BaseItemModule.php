@@ -625,6 +625,8 @@ HTML;
                         ($id == $rowItem['department'] ? 'selected':''),
                         $id,$id,$name);
             }
+            $codingP = $dbc->prepare("SELECT salesCode FROM departments WHERE dept_no=?");
+            $coding = $dbc->getValue($codingP, array($rowItem['department']));
 
             $subOpts = isset($subs[$rowItem['department']]) ? $subs[$rowItem['department']] : '';
             // subdept zero is selected
@@ -719,6 +721,7 @@ HTML;
             <option {$subZero} value="0">None</option>
             {$subOpts}
         </select>
+        {$coding}
     </td>
     <th class="small text-right sku-label" ondblclick="baseItem.toggleSkuOverride();">SKU</th>
     <td colspan="2">
