@@ -298,7 +298,7 @@ function keyToType(e) {
                 </div>
             </div>
             <div class="row form-group" id="reason-other" style="display: none;">
-                <label class="col-sm-3 text-right"><i>Explain (Optional)</i></label>
+                <label class="col-sm-3 text-right">Explain <i>(Optional)</i></label>
                 <div class="col-sm-9">
                     <div class="input-group">
                         <input name="reason-other-text" type="text" id="reason-other-text" class="form-control" value=''>
@@ -367,6 +367,7 @@ $('#select-reason').change(function(){
     let option = $(this).find(":selected").text();
     if (option == "OTHER") {
         $('#reason-other').show();
+        $('#reason-other-text').focus();
     }
 });
 $('#reason-other-text').keydown(function(e){
