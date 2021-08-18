@@ -230,13 +230,6 @@ function keyToType(e) {
             } else {
                 $('#select-type').val('Loss');
             } 
-        } else if (e.which == 17) {
-            console.log(cur);
-            console.log(next);
-            if (next.length == 0) {
-                next = $('#select-reason option:first');
-            }
-            $('#select-reason').val(next.val());
         }
     }
 }
