@@ -51,6 +51,22 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $date = $date2;
         }
         $trans_num = FormLib::get('trans_num','');
+        if (substr($trans_num, 0, 2) == 'CP' && is_numeric(substr($trans_num, 2))) {
+            $pos = 2;
+            $year = '20' . substr($trans_num, $pos, 2);
+            $pos += 2;
+            $month = substr($trans_num, $pos, 2);
+            $pos += 2;
+            $day = substr($trans_num, $pos, 2);
+            $pos += 2;
+            $emp = substr($trans_num, $pos, 5);
+            $pos += 5;
+            $reg = substr($trans_num, $pos, 3);
+            $pos += 3;
+            $trn = substr($trans_num, $pos, 4);
+            $date = $year . '-' . $month . '-' . $day;
+            $trans_num = ltrim($emp, '0') . '-' . ltrim($reg, '0') . '-' . ltrim($trn, '0');
+        }
         $card_no = FormLib::get('card_no','');
         $emp_no = FormLib::get('emp_no','');
         $register_no = FormLib::get('register_no','');
