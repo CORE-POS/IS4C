@@ -80,7 +80,7 @@ class OverShortTransfers extends FannieReportPage
                 $code,
                 sprintf('%.2f', $debit),
                 sprintf('%.2f', $credit),
-                $note,
+                sprintf('<a href="../../../purchasing/ViewPurchaseOrders.php?id=%d">%s</a>', $row['orderID'], $note),
             );
         }
 
