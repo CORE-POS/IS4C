@@ -609,7 +609,9 @@ class ESCPOSPrintHandler extends PrintHandler {
     
     private function barcodeCODE128($data) {
         $bytes = max(2, min(255, strlen($data)));
-        return ("\x1D\x6B"
+
+        return $this->barcodeWidth(2) . $this->barcodeHeight(81)
+            . ("\x1D\x6B"
             .chr(73)
             .chr($bytes)
             .str_pad(preg_replace('|[^\\x00-\\x7f]|', "\x00", substr($data, 0, $bytes)), $bytes, "\x00", STR_PAD_LEFT)

@@ -985,6 +985,8 @@ static public function printReceipt($arg1, $ref, $second=False, $email=False)
             }
         }
     }
+
+    $receipt .= self::transactionBarcode($ref);
             
     $receipt = self::cutReceipt($receipt, $second);
     
@@ -1153,6 +1155,19 @@ static public function code39($barcode, $forcePaper=false)
     return $printMod->printBarcode(PrintHandler::BARCODE_CODE39, $barcode);
 }
 
+static public function code128($barcode, $forcePaper=false)
+{
+    if (!is_object(self::$PRINT)) {
+        self::$PRINT= PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+    }
+    $printMod = self::$PRINT;
+    if ($forcePaper && (get_class(self::$PRINT) == self::$EMAIL || get_class(self::$PRINT) == self::$HTML)) {
+        $printMod = PrintHandler::factory(CoreLocal::get('ReceiptDriver'));
+    }
+
+    return $printMod->printBarcode(PrintHandler::BARCODE_CODE128, $barcode);
+}
+
 static private function haveMailer()
 {
     if (class_exists('PHPMailer')) {
@@ -1187,6 +1202,30 @@ static private function nthReceipt()
     }
 
     return false;
+}
+
+/**
+Create barcode representing transaction
+Format is: CPYYMMDDEEEEERRRTTTT
+    * CP (identifier)
+    * YY last 2 digits of year (yes, y3k problem...)
+    * MM month
+    * DD day
+    * EEEEE emp_no
+    * RRR register_no
+    * TTTT trans_no
+*/
+static private function transactionBarcode($ref)
+{
+    // {ACPYYMMDDEEEEERRRTTTT
+    list($e,$r,$t) = self::parseRef($ref);
+    $txnBarcode = '{A'
+        . 'CP'
+        . substr(date('Ymd') , -6)
+        . str_pad($e, 5, '0', STR_PAD_LEFT)
+        . str_pad($r, 3, '0', STR_PAD_LEFT)
+        . str_pad($t, 4, '0', STR_PAD_LEFT);
+    return self::code128($txnBarcode);
 }
 
 }
