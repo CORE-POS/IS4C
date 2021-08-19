@@ -52,6 +52,7 @@ public class SPH_Datacap_PDCX : SerialPortHandler
     private Object pdcLock = new Object();
     private short hideDialogs = 1;
     private string lastResponse = "";
+    private string terminalID = "";
 
     public SPH_Datacap_PDCX(string p) : base(p)
     { 
@@ -159,6 +160,10 @@ public class SPH_Datacap_PDCX : SerialPortHandler
         if (d.ContainsKey("servers")) {
             this.server_list = d["servers"];
         }
+
+        if (d.ContainsKey("terminalID")) {
+            this.terminalID = d["terminalID"];
+        }
     }
 
     /**
@@ -237,6 +242,9 @@ public class SPH_Datacap_PDCX : SerialPortHandler
                         this.lastResponse = "";
                         message = message.Replace("{{SecureDevice}}", this.device_identifier);
                         message = message.Replace("{{ComPort}}", com_port);
+                        if (this.terminalID.Length > 0) {
+                            message = message.Replace("{{TerminalID}}", this.terminalID);
+                        }
                         message = message.Trim(new char[]{'"'});
                         LogXml(message);
 
