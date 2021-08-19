@@ -41,6 +41,7 @@ class RefundComment extends NoInputCorePage
             } else {
                 $input = str_replace("'","",$input);
                 $output = $this->session->get("refundComment");
+                $override = $this->session->get('refundUnitOverride');
                 $qstr = '?reginput=' . urlencode($output) . '&repeat=1';
 
                 // add comment calls additem(), which wipes
@@ -48,6 +49,7 @@ class RefundComment extends NoInputCorePage
                 TransRecord::addcomment("RF: ".$input);
                 $this->session->set("refundComment", $output);
                 $this->session->set("refund",1);
+                $this->session->set('refundUnitOverride', $override);
             }
             $this->change_page($this->page_url."gui-modules/pos2.php" . $qstr);
             return false;

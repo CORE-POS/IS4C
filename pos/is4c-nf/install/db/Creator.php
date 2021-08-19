@@ -361,6 +361,7 @@ class Creator
                 emp_no,
                 trans_no,
                 upc,
+                description,
                 CASE 
                     WHEN trans_subtype IN ('CP','IC') OR upc LIKE '%000000052' THEN 'T' 
                     WHEN upc = 'DISCOUNT' THEN 'S' 
@@ -379,6 +380,7 @@ class Creator
                 tax,
                 foodstamp,
                 ItemQtty,
+                voided,
                 memType,
                 staff,
                 numflag,

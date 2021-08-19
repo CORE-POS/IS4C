@@ -120,6 +120,10 @@ static private function addItem($strupc, $strdescription, $strtransType, $strtra
 
     // do not clear refund flag when adding an informational log record
     if ($strtransType != 'L' && CoreLocal::get("refund") == 1) {
+        if (CoreLocal::get('refundUnitOverride')) {
+            $dblunitPrice = CoreLocal::get('refundUnitOverride');
+            $dbltotal = $dblunitPrice * $dblquantity;
+        }
         $dblquantity = (-1 * $dblquantity);
         $dbltotal = (-1 * $dbltotal);
         $dbldiscount = (-1 * $dbldiscount);
@@ -132,6 +136,7 @@ static private function addItem($strupc, $strdescription, $strtransType, $strtra
 
         CoreLocal::set("refund",0);
         CoreLocal::set("refundComment","");
+        CoreLocal::set("refundUnitOverride","");
         CoreLocal::set("autoReprint",1);
 
         if (CoreLocal::get("refundDiscountable")==0) {
