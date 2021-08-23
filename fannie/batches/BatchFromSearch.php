@@ -258,10 +258,10 @@ class BatchFromSearch extends FannieRESTfulPage
         $name = FannieAuth::checkLogin();
         $batchName = ($name ? $name : 'Batch') . ' ' . date('M j');
         $today = date('Y-m-d');
-        $owners = $dbc->query('SELECT super_name FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
+        $owners = $dbc->query('SELECT super_name, superID FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
         $oOpts = '';
         while ($row = $dbc->fetchRow($owners)) {
-            $oOpts .= '<option>' . $row['super_name'] . '</option>';
+            $oOpts .= '<option value="'.$row['superID'].'">' . $row['super_name'] . '</option>';
         }
 
         $vendors = new VendorsModel($dbc);
@@ -288,6 +288,7 @@ class BatchFromSearch extends FannieRESTfulPage
     <select name="batchOwner" class="form-control" id="batchOwner"><option value=""></option>';
         {$oOpts}
         <option>IT</option>
+        <option>MULTIPLE DEPTS.</option>
     </select>
     <label>Round Prices</label>:
     <input type="checkbox" name="priceRound" value="1">&nbsp;&nbsp;
@@ -391,7 +392,15 @@ HTML;
         }
         if ($tagPage !== false) {
             $this->add_onload_command("\$('#tagset').val($tagPage);\n");
-            $this->add_onload_command("\$('#batchOwner').val(\$('#tagset option:selected').text());\n");
+            $jsSuperDeptSel = <<<JAVASCRIPT
+var tagPage = $tagPage;
+$("#batchOwner option").each(function(){
+    if ($(this).val() == tagPage) {
+        $(this).attr('selected', 'selected');
+    }
+});
+JAVASCRIPT;
+            $this->add_onload_command($jsSuperDeptSel);
         }
         // show sale or price change tools as appropriate
         $this->add_onload_command('discountTypeFixup();');
