@@ -267,8 +267,11 @@ class memlist extends NoInputCorePage
             <p>
             <input type=\"text\" name=\"search\" size=\"15\"
                    onblur=\"\$('#reginput').focus();\" id=\"reginput\" />
-            </p>
-            <button class=\"pos-button\" type=\"button\"
+            </p>";
+        if ($this->session->get('touchscreen')) {
+            echo DisplayLib::touchScreenKeyboard();
+        }
+        echo "<button class=\"pos-button\" type=\"button\"
                 onclick=\"\$('#reginput').val('');\$('#selectform').submit();\">
                 " . _('Cancel [enter]') . "
             </button>
@@ -321,7 +324,7 @@ class memlist extends NoInputCorePage
     {
         ob_start();
         echo "<div class=\"listbox\">"
-            ."<select name=\"search\" size=\"15\" "
+            ."<select name=\"search\" id=\"search\" size=\"15\" "
             .' style="min-height: 200px; min-width: 220px; max-width: 390px;" '
             ."onblur=\"\$('#reginput').focus();\" ondblclick=\"document.forms['selectform'].submit();\" 
             id=\"reginput\">";

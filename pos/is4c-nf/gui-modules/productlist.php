@@ -219,6 +219,9 @@ class productlist extends NoInputCorePage
                 onblur="$('#search').focus();" />
             <input type="hidden" name="qty" value="<?php echo $this->quantity; ?>" />
             </p>
+            <?php if ($this->session->get('touchscreen')) {
+                echo DisplayLib::touchScreenKeyboard('#search');
+            } ?>
             <button class="pos-button" type="button"
                 onclick="$('#search').val('');$(this).closest('form').submit();">
                 <?php echo _('Cancel [enter]'); ?>

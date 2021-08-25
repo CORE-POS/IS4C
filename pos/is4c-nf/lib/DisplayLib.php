@@ -965,6 +965,74 @@ static public function touchScreenScrollButtons($selector='#search')
         </button>';
 }
 
+static public function touchScreenKeyboard($selector='#reginput')
+{
+    return '
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'Q\');">Q</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'W\');">W</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'E\');">E</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'R\');">R</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'T\');">T</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'Y\');">Y</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'U\');">U</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'I\');">I</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'O\');">O</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'P\');">P</button>
+        <button type="button" class="pos-button" style="width: 50px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s.length <=1 ? \'\' : s.substring(0, s.length - 1));">&#x232B;</button>
+        <div style="height: 10px;"></div>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'A\');">A</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'S\');">S</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'D\');">D</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'F\');">F</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'G\');">G</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'H\');">H</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'J\');">J</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'K\');">K</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'L\');">L</button>
+        <button type="button" class="pos-button" style="width: 50px;"
+            onclick="s=$(\'' . $selector . '\').closest(\'form\').submit();">&#x21A9;</button>
+        <div style="height: 10px;"></div>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'Z\');">Z</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'X\');">X</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'C\');">C</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'V\');">V</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'B\');">B</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'N\');">N</button>
+        <button type="button" class="pos-button" style="width: 25px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \'M\');">M</button>
+        <div style="height: 10px;"></div>
+        <button type="button" class="pos-button" style="width: 200px;"
+            onclick="s=$(\'' . $selector . '\').val(); $(\'' . $selector . '\').val(s + \' \');">&nbsp;</button>
+        <div style="height: 10px;"></div>
+    ';
+}
+
 static public function screenLines()
 {
     $valid = function($var) { return ($var !== '' && is_numeric($var)); };
