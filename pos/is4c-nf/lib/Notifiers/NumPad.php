@@ -118,7 +118,7 @@ $(document).ready(function() {
     <div class="numpad-row">
         <button class="pos-button numpad-btn" onclick="numpad.write('TW');numpad.enter();">TW</button>
         <button class="pos-button numpad-btn" onclick="numpad.write('*');">*</button>
-        <button class="pos-button numpad-btn" onclick="numpad.backspace();">&lt;-</button>
+        <button class="pos-button numpad-btn" onclick="numpad.backspace();">&#x232B</button>
     </div>
     <div class="numpad-row">
         <button class="pos-button numpad-btn" onclick="numpad.write('7');">7</button>
