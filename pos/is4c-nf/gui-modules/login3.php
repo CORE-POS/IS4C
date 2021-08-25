@@ -25,6 +25,7 @@ use COREPOS\pos\lib\gui\BasicCorePage;
 use COREPOS\pos\lib\Authenticate;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\DisplayLib;
+use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\UdpComm;
 include_once(dirname(__FILE__).'/../lib/AutoLoader.php');
 
@@ -78,10 +79,22 @@ class login3 extends BasicCorePage
             $this->msg = _("Password Invalid, Please Re-Enter");
         }
 
+        if ($this->session->get('CustomerDisplay') == true) {
+            $this->loadCustomerDisplay();
+        }
+
         return true;
     }
 
+    private function loadCustomerDisplay()
+    {
+        $childUrl = MiscLib::baseURL() . 'gui-modules/closed.php';
+        $this->add_onload_command("CustomerDisplay.setURL('{$childUrl}');\n");
+        $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
+    }
+
     function head_content(){
+        echo '<script type="text/javascript" src="' . $this->page_url . 'js/CustomerDisplay.js?date=20210823"></script>';
         $this->default_parsewrapper_js('scannerInput');
         $this->add_onload_command("\$('#formlocal').append('<input type=\"hidden\" name=\"scannerInput\" id=\"scannerInput\" />');");
     }

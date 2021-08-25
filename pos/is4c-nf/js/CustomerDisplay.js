@@ -9,18 +9,18 @@ var CustomerDisplay = (function($) {
     };
 
     mod.exists = function() {
-        return (win !== null && $.isWindow(win)) ? true : false;
+        return win !== null;
     };
 
     var launchCustomerDisplay = function() {
-        win = window.open(customerURL, 'Customer_Display');
+        win = window.open(customerURL, 'Customer Display');
     };
 
     mod.updateCustomerDisplay = function(identifier, content) {
         var curElem = $(document.activeElement);
 
         if (mod.exists()) {
-            win.$(identifier).html(content);
+            win.postMessage("reload");
         }
 
         if (curElem.length) {
@@ -34,7 +34,7 @@ var CustomerDisplay = (function($) {
         if (!mod.exists()) {
             launchCustomerDisplay();
         } else {
-            win.location.reload();
+            win.postMessage("reload");
         }
 
         if (curElem.length) {

@@ -89,11 +89,23 @@ class login2 extends BasicCorePage
             $this->msg = _('password invalid, please re-enter');
         }
 
+        if ($this->session->get('CustomerDisplay') == true) {
+            $this->loadCustomerDisplay();
+        }
+
         return true;
+    }
+
+    private function loadCustomerDisplay()
+    {
+        $childUrl = MiscLib::baseURL() . 'gui-modules/closed.php';
+        $this->add_onload_command("CustomerDisplay.setURL('{$childUrl}');\n");
+        $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
     }
 
     public function head_content()
     {
+        echo '<script type="text/javascript" src="' . $this->page_url . 'js/CustomerDisplay.js?date=20210823"></script>';
         ?>
         <script type="text/javascript">
         function closeFrames() {

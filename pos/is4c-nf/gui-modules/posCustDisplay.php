@@ -30,6 +30,21 @@ class posCustDisplay extends BasicCorePage
     protected $title = "COREPOS Customer Display";
     protected $hardware_polling = false;
 
+    public function head_content()
+    {
+        $this->adDOnloadCommand("addEventListener('message', messageListener);");
+        echo <<<JAVASCRIPT
+<script>
+function messageListener (ev) {
+    console.log(ev);
+    if (ev.data = "reload") {
+        window.location.reload();
+    } 
+}
+</script>
+JAVASCRIPT;
+    }
+
     public function body_content()
     {
         echo $this->noinput_header();

@@ -93,18 +93,16 @@ class pos2 extends BasicCorePage
 
     private function loadCustomerDisplay()
     {
-        if ($this->session->get('CustomerDisplay') == true) {
-            $childUrl = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
-            $this->add_onload_command("CustomerDisplay.setURL('{$childUrl}');\n");
-            $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
-        }
+        $childUrl = MiscLib::baseURL() . 'gui-modules/posCustDisplay.php';
+        $this->add_onload_command("CustomerDisplay.setURL('{$childUrl}');\n");
+        $this->add_onload_command("CustomerDisplay.reloadCustomerDisplay();\n");
     }
 
     function head_content()
     {
         ?>
         <script type="text/javascript" src="<?php echo $this->page_url; ?>js/ajax-parser.js"></script>
-        <script type="text/javascript" src="<?php echo $this->page_url; ?>js/CustomerDisplay.js"></script>
+        <script type="text/javascript" src="<?php echo $this->page_url; ?>js/CustomerDisplay.js?date=20210823"></script>
         <Script type="text/javascript" src="js/pos2.js"></script>
         <script type="text/javascript">
         function parseWrapper(str){
