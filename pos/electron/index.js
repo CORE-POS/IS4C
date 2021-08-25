@@ -32,7 +32,7 @@ function createWindow(name, display, url, parent=null) {
     // Create the browser window.
     let loc = centerOnDisplay(display, 800, 600);
     let win = windowManager.get(name);
-    win = new BrowserWindow({width: 800, height: 600, x: loc.x, y: loc.y, parent: parent});
+    win = new BrowserWindow({width: 800, height: 600, x: loc.x, y: loc.y, parent: parent, webPreferences: { nodeIntegration: true }});
           
     win.loadURL(url);
     if (options.fullscreen) {
@@ -62,6 +62,8 @@ function getScreens() {
     let ret = { primary: primary, secondary: false };
     if (others.length > 0) {
         ret.secondary = others[0];
+    } else {
+        ret.secondary = primary;
     }
 
     return ret;
@@ -91,7 +93,7 @@ app.on('ready', () => {
     createWindow("main", screens.primary, options.url);
     if (options.dualDisplay && screens.secondary) {
         createWindow("secondary", screens.secondary, options.secondaryURL, windowManager.get("main"));
-        setTimeout(() => { windowManager.get("secondary").reload(); }, 2500);
+        setTimeout(() => { windowManager.get("secondary").reload(); }, 5000);
     }
     if (options.driver) {
         driver.start();
