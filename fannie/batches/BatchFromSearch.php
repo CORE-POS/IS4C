@@ -261,7 +261,7 @@ class BatchFromSearch extends FannieRESTfulPage
         $owners = $dbc->query('SELECT super_name, superID FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
         $oOpts = '';
         while ($row = $dbc->fetchRow($owners)) {
-            $oOpts .= '<option value="'.$row['superID'].'">' . $row['super_name'] . '</option>';
+            $oOpts .= '<option data-superid="'.$row['superID'].'">' . $row['super_name'] . '</option>';
         }
 
         $vendors = new VendorsModel($dbc);
@@ -395,7 +395,7 @@ HTML;
             $jsSuperDeptSel = <<<JAVASCRIPT
 var tagPage = $tagPage;
 $("#batchOwner option").each(function(){
-    if ($(this).val() == tagPage) {
+    if ($(this).attr('data-superid') == tagPage) {
         $(this).attr('selected', 'selected');
     }
 });
