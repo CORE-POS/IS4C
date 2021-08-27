@@ -95,6 +95,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
         $dbc->selectDB($this->config->get('OP_DB'));
 
         $set = FormLib::get('deal-set');
+        $top = '';
         $optsR = $dbc->query('
             SELECT dealSet
             FROM CoopDealsItems
@@ -104,6 +105,9 @@ class CoopDealsMergePage extends FannieRESTfulPage
         while ($optsW = $dbc->fetchRow($optsR)) {
             if ($set === '') {
                 $set = $optsW['dealSet'];
+            }
+            if ($top === '') {
+                $top = $optsW['dealSet'];
             }
             $deal_opts .= sprintf('<option %s>%s</option>',
                 ($set == $optsW['dealSet'] ? 'selected' : ''),
@@ -218,6 +222,8 @@ class CoopDealsMergePage extends FannieRESTfulPage
         </form>
 html;
 
+        $disabled = ($set != $top) ? 'disabled' : '';
+
         $lists = <<<html
                 <textarea rows="5" cols="15">A
         {$upcs['a']}</textarea>
@@ -227,10 +233,11 @@ html;
         {$upcs['tpr']}</textarea>
                 <form action=CoopDealsMergePage.php method=post>
                 <p>    
-                    <button type=submit class="btn btn-default">Merge Items into Batch(es)</button>
+                    <button type=submit class="btn btn-default" $disabled>Merge Items into Batch(es)</button>
                     <a href="CoopDealsReviewPage.php" class="pull-right btn btn-default">Create New Batch(es)</a>
                 </p>
 html;
+
         return $lists.$ret;
     }
 
