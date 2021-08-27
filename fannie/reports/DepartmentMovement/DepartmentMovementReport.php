@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\jobs\QueueManager;
+
 if (!class_exists('FannieAPI')) {
     include_once(dirname(__FILE__) . '/../../classlib2.0/FannieAPI.php');
 }
@@ -38,6 +40,7 @@ class DepartmentMovementReport extends FannieReportPage
     public $themed = true;
 
     protected $new_tablesorter = true;
+    protected $queueable = true;
 
     /**
       Lots of options on this report.
@@ -48,12 +51,12 @@ class DepartmentMovementReport extends FannieReportPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $date1 = $this->form->date1;
         $date2 = $this->form->date2;
-        $deptStart = FormLib::get_form_value('deptStart','');
-        $deptEnd = FormLib::get_form_value('deptEnd','');
-        $deptMulti = FormLib::get('departments', array());
-        $buyer = FormLib::get_form_value('buyer','');
-        $groupby = FormLib::get_form_value('sort','PLU');
-        $store = FormLib::get('store', 0);
+        $deptStart = $this->form->tryGet('deptStart', '');
+        $deptEnd = $this->form->tryGet('deptEnd', '');
+        $deptMulti = $this->form->tryGet('departments', array());
+        $buyer = $this->form->tryGet('buyer','');
+        $groupby = $this->form->tryGet('sort','PLU');
+        $store = $this->form->tryGet('store', 0);
         $superP = $dbc->prepare('SELECT dept_ID FROM superdepts WHERE superID=?');
 
         /**
@@ -222,7 +225,12 @@ class DepartmentMovementReport extends FannieReportPage
             // MySQL 5.6 doesn't handle correctly
             return array();
         }
-        $likeCodes = FormLib::get('lc') ? array() : false;
+        try {
+            $likeCodes = $this->form->lc;
+            $likeCodes = array();
+        } catch (Exception $ex) {
+            $likeCodes = false;
+        }
         $ret = array();
         $dateSum = 0;
         while ($row = $dbc->fetchRow($result)) {
@@ -350,11 +358,11 @@ class DepartmentMovementReport extends FannieReportPage
 
     private function nonUpcHeaders()
     {
-        if (FormLib::get_form_value('sort')=='Weekday') {
+        if ($this->form->tryGet('sort')=='Weekday') {
             $this->report_headers = array('Day','Day','Qty','$');
             $this->sort_column = 0;
             $this->sort_direction = 0;
-        } elseif (FormLib::get_form_value('sort')=='Date') {
+        } elseif ($this->form->tryGet('sort')=='Date') {
             $this->report_headers = array('Date','Day','Qty','$', '%');
             $this->sort_column = 0;
             $this->sort_direction = 0;
@@ -380,10 +388,10 @@ class DepartmentMovementReport extends FannieReportPage
     function report_description_content()
     {
         $ret = array();
-        $ret[] = "Summed by ".FormLib::get_form_value('sort','');
-        $buyer = FormLib::get_form_value('buyer','');
+        $ret[] = "Summed by ".$this->form->tryGet('sort','');
+        $buyer = $this->form->tryGet('buyer','');
         if ($buyer === '0') {
-            $ret[] = "Department ".FormLib::get_form_value('deptStart','').' to '.FormLib::get_form_value('deptEnd','');
+            $ret[] = "Department ".$this->form->tryGet('deptStart','').' to '.$this->form->tryGet('deptEnd','');
         }
 
         return $ret;
@@ -391,6 +399,7 @@ class DepartmentMovementReport extends FannieReportPage
 
     function form_content()
     {
+        $queue = FannieAuth::hasEmail(FannieAuth::getUID()) && QueueManager::available() ? '' : 'disabled';
         ob_start();
 ?>
 <form method = "get" action="DepartmentMovementReport.php" class="form-horizontal">
@@ -420,6 +429,11 @@ class DepartmentMovementReport extends FannieReportPage
             <div class="col-sm-4">
                 <?php $ret=FormLib::storePicker();echo $ret['html']; ?>
             </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4"> Email it to me
+                <input type=checkbox <?php echo $queue; ?> name=queued value=1>
+            </label>
         </div>
     </div>
     <?php echo FormLib::standardDateFields(); ?>
