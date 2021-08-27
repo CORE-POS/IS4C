@@ -78,6 +78,14 @@ class FanniePlugin extends \COREPOS\common\CorePlugin
     {
         $plugin_list = \FannieConfig::factory()->get('PLUGIN_LIST');
         if (is_array($plugin_list)) {
+            $plugin_list = array_map(function ($i) {
+                if (strstr($i, "\\")) {
+                    $namespaceParts = explode("\\", $i);
+                    return $namespaceParts[count($namespaceParts) - 1];
+                }
+
+                return $i;
+            }, $plugin_list);
             return $plugin_list;
         }
 
