@@ -106,7 +106,7 @@ class HouseCouponList extends NoInputCorePage
         <?php echo _("use arrow keys to navigate"); ?><br />
         <p>
             <button type="submit" class="pos-button wide-button coloredArea">
-            <?php echo _('Reprint'); ?> <span class="smaller"><?php echo _('[enter]'); ?></span>
+            <?php echo _('OK'); ?> <span class="smaller"><?php echo _('[enter]'); ?></span>
             </button>
         </p>
         <p>
