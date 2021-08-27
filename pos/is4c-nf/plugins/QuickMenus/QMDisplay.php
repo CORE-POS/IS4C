@@ -23,6 +23,7 @@
 
 use COREPOS\pos\lib\gui\NoInputCorePage;
 use COREPOS\pos\lib\Database;
+use COREPOS\pos\lib\DisplayLib;
 use \COREPOS\pos\lib\FormLib;
 use COREPOS\pos\lib\MiscLib;
 include_once(dirname(__FILE__).'/../../lib/AutoLoader.php');
@@ -135,7 +136,7 @@ class QMDisplay extends NoInputCorePage
 
         $my_menu = $this->getMenu();
 
-        echo '<br /><br />';
+        echo '<div style="float: left; margin-top: 50px; margin-left: 100px;">';
         echo '<select name="ddQKselect" id="ddQKselect" style="width:380px;" size="10"
             onblur="$(\'#ddQKselect\').focus();" >';
         $count=1;
@@ -145,6 +146,13 @@ class QMDisplay extends NoInputCorePage
             $count++;
         }
         echo '</select>';
+        echo '</div>';
+        if ($this->session->get('touchscreen')) {
+            echo '<div style="float: left; margin-top: 50px; margin-left: 10px;">';
+            echo DisplayLib::touchScreenScrollButtons('#ddQKselect');
+            echo '</div>';
+        }
+        echo '<div style="float: clear;"></div>';
         $this->add_onload_command("qmNumberPress();\n");
 
         echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";    
