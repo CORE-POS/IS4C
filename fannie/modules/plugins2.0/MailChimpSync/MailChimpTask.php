@@ -260,7 +260,6 @@ class MailChimpTask extends FannieTask
                 'email_address' => $row['email_1'],
                 'status' => 'subscribed',
                 'merge_fields' => array(
-                    'CARDNO' => $row['card_no'],
                     'FNAME' => $row['FirstName'],
                     'LNAME' => $row['LastName'],
                 ),
@@ -275,6 +274,18 @@ class MailChimpTask extends FannieTask
         }
         if ($addID) {
             $res = $batch->execute();
+            /*
+            for ($i=0; $i<25; $i++) {
+                sleep(30);
+                $status = $batch->check_status();
+                if ($status['status'] == 'finished') {
+                    $resultURL = $status['response_body_url'];
+                    $this->cronMsg("Done. See results: " . $resultURL);
+                    break;
+                }
+                $this->cronMsg("Add batch status: " . json_encode($status));
+            }
+             */
         }
     }
 
