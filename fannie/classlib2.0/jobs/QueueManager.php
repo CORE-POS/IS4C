@@ -20,6 +20,17 @@ class QueueManager
         $this->logger = new FannieLogger();
     }
 
+    public static function available()
+    {
+        $conf = FannieConfig::config('PLUGIN_SETTINGS');
+        $redis_host = isset($conf['SatelliteRedis']) ? $conf['SatelliteRedis'] : '';
+        if ($redis_host === '') {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Get a connection to Redis server
      */
