@@ -61,15 +61,36 @@ class QLEdit extends FannieRESTfulPage
     protected function get_view()
     {
         $this->addScript('../../../src/javascript/vue.js');
-        $this->addScript('qlEdit.js');
+        $this->addScript('qlEdit.js?date=20210825');
+
+        $res = $this->connection->query("SELECT lookupSet, label FROM QuickLookups
+            ORDER BY lookupSet, sequence");
+        $opts = array();
+        while ($row = $this->connection->fetchRow($res)) {
+            $id = $row['lookupSet'];
+            if (!isset($opts[$id])) {
+                $opts[$id] = '(' . $id . ') ' . $row['label'];
+            } else {
+                $opts[$id] .= ', ' . $row['label'];
+                if (strlen($opts[$id]) > 50) {
+                    $opts[$id] = substr($opts[$id], 0, 50);
+                }
+            }
+        }
+        $optStr = '<option value="">Existing Menus</option>';
+        foreach ($opts as $id => $label) {
+            $optStr .= sprintf('<option value="%d">%s</option>', $id, $label);
+        }
+
 
         return <<<HTML
 <div id="lookupForm" class="form-inline">
     <label>Menu #</label>
-    <input type="text" v-model="menuNumber" class="form-control"
+    <input type="text" v-model="menuNumber" id="menuNumber" class="form-control"
         v-on:keyup.enter="getMenu();" ref="init" />
     <button type="submit" class="btn btn-default" v-on:click="getMenu();">
         Submit</button>
+    <select class="form-control" v-on:change="setMenu">{$optStr}</select>
 </div>
 <hr />
 <div id="entryTable">

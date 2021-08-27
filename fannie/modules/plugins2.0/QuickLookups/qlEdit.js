@@ -19,6 +19,10 @@ var qlEdit = (function () {
                         resp.json().then(i=> entryTable.entries = i);
                     }
                 });
+            },
+            setMenu: function(event) {
+                this.menuNumber = event.target.value;
+                this.getMenu();
             }
         },
         mounted: function() {
@@ -80,7 +84,7 @@ var qlEdit = (function () {
                 var data = new FormData();
                 var vm = this;
                 data.append('id', id);
-                var files = document.getElementById('newFile').files;
+                var files = document.getElementById('newFile' + id).files;
                 if (files.length == 0) return;
                 data.append('newImage', files[0]);
                 fetch('QuickLookupsImages.php', {
