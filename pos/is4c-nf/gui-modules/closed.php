@@ -38,6 +38,7 @@ class closed extends BasicCorePage
 
     private $boxCSS;
     private $msg;
+    protected $hardware_polling = false;
 
     public function preprocess()
     {
