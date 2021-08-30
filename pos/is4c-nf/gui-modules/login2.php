@@ -111,6 +111,16 @@ class login2 extends BasicCorePage
         function closeFrames() {
             window.top.close();
         }
+        function hideSidebar() {
+            $('#scaleTop').css('display', 'none');
+            $('#scaleBottom').css('display', 'none');
+            $('#scaleIconBox div').each(function() {
+                console.log($(this));
+                if (!$(this).hasClass('numpad') && !$(this).hasClass('numpad-row')) {
+                    $(this).css('display', 'none');
+                }
+            });
+        }
         </script>
         <?php
         $this->default_parsewrapper_js();
@@ -121,7 +131,7 @@ class login2 extends BasicCorePage
     {
         // 18Agu12 EL Add separately for readability of source.
         $this->add_onload_command("\$('#userPassword').focus();");
-        $this->add_onload_command("\$('#scalebox').css('display','none');");
+        $this->add_onload_command("hideSidebar();");
         $logger = new LaneLogger();
         $logging = $logger->isLogging() ? '' : '<div class="errorColoredArea">Default log(s) unavailable</div>';
 
