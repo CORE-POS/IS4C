@@ -226,11 +226,35 @@ class QKDisplay extends NoInputCorePage
             echo "<div class=\"qkRow\">";
         }
         if (!$clearButton) {
+            while ($count % 3 != 0) {
+                echo "<div class=\"qkBox\"><div id=\"qkDiv$count\">";
+                echo "&nbsp;";
+                echo "</div></div>";
+                $count++;
+            }
             $this->clearButton('qkBox');
             echo "</div>";
         }
         if ($num_pages > 1) {
+            $extra_close = false;
+            if ($count == 6) {
+                echo "<div class=\"qkRow\">";
+                echo "<div class=\"qkBox\"><div id=\"qkDiv$count\">";
+                echo "&nbsp;";
+                echo "</div></div>";
+                $extra_close = true;
+                $count++;
+            }
+            while ($count % 3 != 0) {
+                echo "<div class=\"qkBox\"><div id=\"qkDiv$count\">";
+                echo "&nbsp;";
+                echo "</div></div>";
+                $count++;
+            }
             $this->pageButton('Down', $page+1);
+            if ($extra_close) {
+                echo "</div>";
+            }
         }
         echo "</div>";
         echo "<input type=\"hidden\" value=\"0\" name=\"clear\" id=\"doClear\" />";    
@@ -240,7 +264,7 @@ class QKDisplay extends NoInputCorePage
 
     private function clearButton($class)
     {
-        echo "<div class=\"{$class}\"><div>";
+        echo "<div class=\"{$class} arrow-clear\"><div>";
         echo '<button type="submit" class="quick_button pos-button errorColoredArea"
             onclick="$(\'#doClear\').val(1);">
             Cancel <span class="smaller">[clear]</span>
@@ -249,7 +273,7 @@ class QKDisplay extends NoInputCorePage
 
     private function pageButton($title, $offset)
     {
-        echo "<div class=\"qkArrowBox\">";
+        echo "<div class=\"qkArrowBox arrow-{$title}\">";
         echo '<button type=submit class="qkArrow pos-button coloredBorder"
             onclick="location=\'' . $this->plugin_url . 'QKDisplay.php?offset='. ($offset) . '\'; return false;">
             ' . $title . '</button>';
@@ -259,4 +283,3 @@ class QKDisplay extends NoInputCorePage
 }
 
 AutoLoader::dispatch();
-

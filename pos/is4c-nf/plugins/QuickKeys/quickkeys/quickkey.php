@@ -72,7 +72,7 @@ class quickkey {
                 <button type="%s" onclick="%s"
                     name="quickkey_submit" id="%s"
                     value="%s"
-                    class="quick_button pos-button coloredBorder">
+                    class="quick_button_max pos-button coloredBorder">
                     %s
                 </button>
                 <input type="hidden" name="%s"
@@ -89,7 +89,7 @@ class quickkey {
             $fontSize = strlen($this->title) > 10 ? 75 : 100;
             $ret .= sprintf("<button type=\"%s\" onclick=\"%s\"
                 name=\"quickkey_submit\" id=\"%s\" value=\"%s\"
-                class=\"quick_button pos-button coloredBorder quickButtonImage\">
+                class=\"quick_button_max pos-button coloredBorder quickButtonImage\">
                 <span style=\"font-size: %d%%; line-height: 0.2em;\">%s</span><br />
                 <img src=\"%s\" />
                 </button>

@@ -131,6 +131,12 @@ class QuickKeyLauncher extends Parser
             );
         }
         if (!$clearButton) {
+            while ($i % 3 != 0) {
+                $ret .= "<div class=\"qkBox\"><div id=\"qkDiv$count\">";
+                $ret .= "&nbsp;";
+                $ret .= "</div></div>";
+                $i++;
+            }
             $ret .= '<div class="qkBox">
                 <div>
                     <button type="button" class="quick_button pos-button errorColoredArea"
