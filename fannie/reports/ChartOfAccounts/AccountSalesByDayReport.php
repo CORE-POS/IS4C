@@ -1,6 +1,7 @@
 <?php
 
 use COREPOS\Fannie\API\item\StandardAccounting;
+use COREPOS\Fannie\API\jobs\QueueManager;
 
 include(dirname(__FILE__) . '/../../config.php');
 if (!class_exists('FannieAPI')) {
