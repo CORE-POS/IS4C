@@ -379,6 +379,12 @@ HTML;
                      <th>Total</th><th class="upc">UPC</th><th class="sku">SKU</th><th class="vendor">Source</th></tr>';
             $sum = 0;
             while ($itemW = $this->connection->fetchRow($itemR)) {
+                if (!is_numeric($itemW['cases'])) {
+                    $itemW['cases'] = 0;
+                }
+                if (!is_numeric($itemW['fraction'])) {
+                    $itemW['fraction'] = 0;
+                }
                 $total = $itemW['cases'] * $itemW['price'];
                 if ($itemW['units'] != 0) {
                     $total = ($itemW['cases'] * $itemW['price']) + (($itemW['fraction'] / $itemW['units']) * $itemW['price']);
