@@ -682,6 +682,7 @@ class HouseCoupon extends SpecialUPC
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     AND h.type IN ('BOTH', 'DISCOUNT')
                     AND l.total > 0
+                    AND unitPrice < 10
                     ORDER BY unitPrice ASC 
                     LIMIT " . $qualQty;
                 $deptP = $transDB->prepare($deptQ);
