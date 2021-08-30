@@ -102,7 +102,8 @@ class OrderReviewPage extends FannieRESTfulPage
         $r = $dbc->execute($q, array($orderID));
         $confirm_date = "";
         if ($dbc->num_rows($r) > 0) {
-            $confirm_date = array_pop($dbc->fetch_row($r));
+            $w = $dbc->fetchRow($r);
+            $confirm_date = $w['entry_date'];
         }
 
         $callback = 1;
