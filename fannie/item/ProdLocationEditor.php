@@ -478,10 +478,11 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $item[$row['upc']]['desc'] = $row['pdesc'];
                 $item[$row['upc']]['brand'] = $row['brand'];
                 $item[$row['upc']]['dept_name'] = $row['dept_name'];
-                $item[$row['upc']]['curSections'] = $row['sections'];
-                $v = $row['curSections'];
-                if (!in_array($row['sections'], $sections)) {
-                    $sections[] = $row['sections'];
+                $section = isset($row['sections']) ? $row['sections'] : '';
+                $item[$row['upc']]['curSections'] = $section;
+                $v = isset($row['curSections']) ? $row['curSections'] : '';
+                if (!in_array($section, $sections)) {
+                    $sections[] = $section;
                 }
             }
             if ($dbc->error()) {
@@ -574,7 +575,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
             <td><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';
-        $this->addOnloadCommand("$('.mySortableTable').tablesorter();");
+        // tablesorter scripts not included?
+        //$this->addOnloadCommand("$('.mySortableTable').tablesorter();");
 
         return $ret;
 
