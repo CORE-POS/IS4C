@@ -90,7 +90,8 @@ class SimpleBackupTask extends FannieTask
 
             $cmd .= ' > ' . escapeshellarg($outfile);
             
-            $this->cronMsg("cmd: $cmd", FannieLogger::INFO);
+            $cmd_obfusc = preg_replace("/ -p'.*?'/", " -p'********'", $cmd, 1);
+            $this->cronMsg("cmd: $cmd_obfusc", FannieLogger::INFO);
             $retVal = 0;
             $lastLine = system($cmd, $retVal);
             $this->cronMsg("retVal: $retVal", FannieLogger::INFO);
