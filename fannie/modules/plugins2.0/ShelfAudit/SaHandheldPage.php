@@ -121,7 +121,7 @@ class SaHandheldPage extends FannieRESTfulPage
                     $ret['case_sizes'] = array();
                 }
                 if (!isset($this->current_item_data['bycount'])){
-                    $ret['bycount'] = $w['bycount'];
+                    $ret['bycount'] = isset($w['bycount']) ? $w['bycount'] : '';
                 }
                 if ($scalePrice && $w['normal_price']) {
                     $ret['case_sizes'][] = sprintf('%.2f', $scalePrice / $w['normal_price']);
