@@ -456,6 +456,9 @@ HTML;
             $mail->Body = $html;
             $mail->AltBody = $body;
             $mail->addAddress($primary['email']);
+            if ($card_no == 20976) {
+                $mail->addAddress("discover@slcsduluth.org");
+            }
             $mail->addBCC('jlepak@wholefoods.coop');
             $mail->addBCC('andy@wholefoods.coop');
             $mail->send();
