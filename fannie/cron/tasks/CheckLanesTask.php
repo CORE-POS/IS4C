@@ -44,11 +44,11 @@ class CheckLanesTask extends FannieTask
         // loop thru all defined lanes
         $number = 1;
         foreach ($this->config->get('LANES') as $lane) {
-            $this->logger->info("testing lane $number ({$lane['host']}) ...");
+            $this->cronMsg("testing lane $number ({$lane['host']}) ...");
 
             // report whether fannie "thought" lane was online
             $supposedStatus = $lane['offline'] ? "offline" : "online";
-            $this->logger->info("according to Fannie, lane $number is currently $supposedStatus");
+            $this->cronMsg("according to Fannie, lane $number is currently $supposedStatus");
 
             // assume lane is offline unless proven otherwise
             $online = false;
@@ -63,27 +63,36 @@ class CheckLanesTask extends FannieTask
 
             // report actual status
             $actualStatus = $online ? "online" : "offline";
-            $this->logger->info("in reality, lane $number is currently $actualStatus");
+            $this->cronMsg("in reality, lane $number is currently $actualStatus");
 
             if ($supposedStatus == $actualStatus) {
-                $this->logger->info("Fannie was right about lane $number, so nothing to do");
+                $this->cronMsg("Fannie was right about lane $number, so nothing to do");
 
             } else {
                 // must update fannie to reflect reality
                 $data = array('id' => $number, 'up' => $online);
-                $this->logger->debug("will POST to $url: " . print_r($data, true));
 
-                // TODO: some error handling might be nice here...
-                // TODO: in particular this will not work yet, if auth is enabled!
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // suppress output
-                curl_exec($ch);
-                curl_close($ch);
+                // but..this will only work if Fannie Authentication is *disabled*
+                if ($this->config->get('AUTH_ENABLED')) {
+                    // TODO: probably need to figure out how to do this someday
+                    $this->cronMsg("Fannie authentication is enabled, which means we CANNOT update its lane status",
+                                   FannieLogger::WARNING);
 
-                $this->logger->info("Fannie status for lane $number should now be correct");
+                } else {
+                    $this->cronMsg("will POST to $url: " . print_r($data, true),
+                                   FannieLogger::DEBUG);
+
+                    // TODO: some error handling might be nice here...
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // suppress output
+                    curl_exec($ch);
+                    curl_close($ch);
+
+                    $this->cronMsg("Fannie status for lane $number should now be correct");
+                }
             }
 
             $number++;
