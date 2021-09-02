@@ -47,7 +47,7 @@ class FannieAuth
         }
 
         if (!isset($_COOKIE['session_data'])){
-            return false;
+            return $this->checkToken();
         }
 
         $cookie_data = base64_decode($_COOKIE['session_data']);
@@ -74,6 +74,31 @@ class FannieAuth
         }
 
         return $name;
+    }
+
+    function checkToken()
+    {
+        $headers = getallheaders();
+        if (!isset($headers['Authorization'])) {
+            return false;
+        }
+        list($type,$token) = explode(':', $headers['Authorization']);
+        if (trim(strtoupper($type)) != 'BEARER') {
+            return false; 
+        }
+
+        $sql = FannieDB::getReadOnly(FannieConfig::factory()->get('OP_DB'));
+        if (!$sql->isConnected()) {
+            return false;
+        }
+        $checkP = $sql->prepare("SELECT username FROM UserTokens WHERE token=? AND revoked=0");
+        $checkR = $sql->execute($checkP, array(trim($token)));
+        if ($sql->numRows($checkR) == 0) {
+            return false;
+        }
+        $checkW = $sql->fetchRow($checkR);
+
+        return $checkW['username'];
     }
 
     /**

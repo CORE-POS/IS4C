@@ -296,7 +296,7 @@ function checkLogin(){
     return 'init';
 
   if (filter_input(INPUT_COOKIE, 'session_data') === null) {
-    return false;
+    return checkToken();
   }
 
   $cookie_data = base64_decode(filter_input(INPUT_COOKIE, 'session_data'));
@@ -328,6 +328,30 @@ function checkLogin(){
   }
 
   return $name;
+}
+
+function checkToken(){
+  $headers = getallheaders();
+  if (!isset($headers['Authorization'])) {
+    return false;
+  }
+  list($type,$token) = explode(':', $headers['Authorization']);
+  if (trim(strtoupper($type)) != 'BEARER') {
+    return false; 
+  }
+
+  $sql = dbconnect();
+  if (!$sql->isConnected()) {
+    return false;
+  }
+  $checkP = $sql->prepare("SELECT username FROM UserTokens WHERE token=? AND revoked=0");
+  $checkR = $sql->execute($checkP, array(trim($token)));
+  if ($sql->numRows($checkR) == 0) {
+    return false;
+  }
+  $checkW = $sql->fetchRow($checkR);
+
+  return $checkW['username'];
 }
 
 function getUserList()
