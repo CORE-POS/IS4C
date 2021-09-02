@@ -7,6 +7,10 @@
  */
 class LogEscalatorTask extends FannieTask
 {
+    public $name = 'Log Escalator';
+
+    public $description = 'Send email notifications for logged errors & warnings.';
+
     public $default_schedule = array(
         'min' => '*/10',
         'hour' => '*',
