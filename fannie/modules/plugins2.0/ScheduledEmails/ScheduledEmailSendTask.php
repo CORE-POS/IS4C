@@ -128,6 +128,7 @@ class ScheduledEmailSendTask extends FannieTask
 
         $mail = OutgoingEmail::get();
         $mail->isSMTP();
+        $mail->SMTPAutoTLS = false;
         $mail->Host = '127.0.0.1';
         $mail->Port = 25;
         $mail->SMTPAuth = false;
