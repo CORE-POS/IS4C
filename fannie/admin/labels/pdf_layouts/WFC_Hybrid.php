@@ -301,7 +301,8 @@ foreach($data as $row) {
    // one and reset x/y top left margins
    // otherwise if it's the end of a line,
    // reset x and move y down by tag height
-   if ($num % 32 == 0){
+   $modTagsPerPage = ($offset == 0) ? 32 : 24;
+   if ($num % $modTagsPerPage == 0){
     $pdf->AddPage();
     // full size
     $full_x = $left;
