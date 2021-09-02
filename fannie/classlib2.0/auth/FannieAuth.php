@@ -47,7 +47,7 @@ class FannieAuth
         }
 
         if (!isset($_COOKIE['session_data'])){
-            return $this->checkToken();
+            return self::checkToken();
         }
 
         $cookie_data = base64_decode($_COOKIE['session_data']);
@@ -76,7 +76,7 @@ class FannieAuth
         return $name;
     }
 
-    function checkToken()
+    private static function checkToken()
     {
         $headers = getallheaders();
         if (!isset($headers['Authorization'])) {
