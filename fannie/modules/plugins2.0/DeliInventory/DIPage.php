@@ -385,6 +385,12 @@ HTML;
                 if (!is_numeric($itemW['fraction'])) {
                     $itemW['fraction'] = 0;
                 }
+                if (!is_numeric($itemW['units'])) {
+                    $itemW['units'] = 1;
+                }
+                if (!is_numeric($itemW['price'])) {
+                    $itemW['price'] = 0;
+                }
                 $total = $itemW['cases'] * $itemW['price'];
                 if ($itemW['units'] != 0) {
                     $total = ($itemW['cases'] * $itemW['price']) + (($itemW['fraction'] / $itemW['units']) * $itemW['price']);
