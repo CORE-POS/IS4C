@@ -287,7 +287,7 @@ class RpDirectPage extends FannieRESTfulPage
             $poi->quantity(FormLib::get('qty'));
             $poi->unitCost($prod['cost']);
             $poi->caseSize(1);
-            $poi->unitSize($prod['size']);
+            $poi->unitSize(isset($prod['size']) ? $prod['size'] : '');
             $poi->brand($farm);
             $poi->description($vendor == $item['backupID'] ? $item['backupItem'] : $item['vendorItem']);
             $poi->internalUPC($upc);
