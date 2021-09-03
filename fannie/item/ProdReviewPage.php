@@ -429,7 +429,7 @@ HTML;
             <th>BatchID</th><th>Batch Name</th><th>Super Depts +</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
             <th>Comments</th><th></th><th></th><tr></thead><tbody>";
         $tableB = "<div class='table-responsive'><table class='table table-condensed table-striped small' id='forcedBatchesTable'><thead><tr>
-            <th>BatchID</th><th>Batch Name</th><th>VID</th><th>Vendor</th><th>Forced On</th>
+            <th>BatchID</th><th>Batch Name</th><th>Super Depts +</th><th>VID</th><th>Vendor</th><th>Forced On</th>
             <th>user</th><tr></thead><tbody>";
         $args = array();
         $prep = $dbc->prepare("
@@ -505,6 +505,7 @@ HTML;
                 $tableB .= "<td class='bid'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
                 $batchName = $row['batchName'];
                 $tableB .= "<td>{$batchName}</td>";
+                $tableB .= "<td>$superDepts</td>";
                 $tableB .= "<td>{$row['vid']}</td>";
                 $tableB .= "<td>{$row['vendorName']}</td>";
                 $tableB .= "<td>{$row['forced']}</td>";
