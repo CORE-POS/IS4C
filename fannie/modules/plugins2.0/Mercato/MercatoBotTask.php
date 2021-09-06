@@ -23,6 +23,7 @@ class MercatoBotTask extends FannieTask
             . ' ' . escapeshellarg('-d')
             . ' ' . escapeshellarg($dsn);
 
+        echo $cmd; exit;
         $ret = exec($cmd, $output);
         echo implode("\n", $output) . "\n";
 
