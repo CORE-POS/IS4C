@@ -280,7 +280,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         $vendorModel = new VendorItemsModel($dbc);
 
-        $ret .= "<div class=\"table-responsive\"><table class=\"table table-bordered small\" id=\"mytable\">";
+        $ret .= "<div class=\"table-responsive\"><table class=\"table table-bordered table-condensed small\" id=\"mytable\">";
 
         $ret .= "<thead><tr class=\"thead\">
             <th class=\"thead\">UPC</th>
@@ -410,7 +410,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
                 100*$row['desired_margin'],
                 $row['upc'],
                 ($row['variable_pricing']>=1?'checked':''),
-                $row['prtDesc'],
+                substr($row['prtDesc'],0,10),
                 (isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc'],
                 (!isset($batchUPCs[$row['upc']])?'collapse':''), $row['upc']
             );
