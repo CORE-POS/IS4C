@@ -28,6 +28,8 @@ class ShrinkReasonsModel extends BasicModel
 {
     protected $name = "ShrinkReasons";
 
+    protected $preferred_db = 'op';
+
     protected $columns = array(
     'shrinkReasonID' => array('type'=>'INT', 'increment'=>true, 'primary_key'=>true),
     'description' => array('type'=>'VARCHAR(30)'),
