@@ -84,15 +84,8 @@ class LaneStatus extends FannieRESTfulPage
                     $i, $lane['host'], $i);
             } else {
                 $css = 'danger';
-                $port = 3306;
-                $host = $lane['host'];
-                if (strstr($host,":")) {
-                    list($host,$port) = explode(":",$host);
-                }
                 $label = 'Down';
-                $connected = stream_socket_client('tcp://' . $host . ':' . $port, $errno, $err, 2);
-                if ($connected) {
-                    fclose($connected);
+                if (check_db_host($lane['host'], $lane['type'], $timeout=2)) {
                     $label = 'Up';
                     $css = 'success';
                 }

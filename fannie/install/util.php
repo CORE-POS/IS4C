@@ -82,7 +82,7 @@ function confset($key, $value)
   @param $dbms [string] database software identifier
   @return [boolean]
 */
-function check_db_host($host,$dbms)
+function check_db_host($host,$dbms,$timeout=1)
 {
     if (!function_exists("socket_create")) {
         return true; // test not possible
@@ -115,7 +115,7 @@ function check_db_host($host,$dbms)
 
     $test = false;
     $sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 1, 'usec' => 0)); 
+    socket_set_option($sock, SOL_SOCKET, SO_SNDTIMEO, array('sec' => $timeout, 'usec' => 0));
     socket_set_block($sock);
     try {
         $test = @socket_connect($sock,$host,$port);
