@@ -11,7 +11,7 @@ class OttoMem
 {
     public function post($cardNo, $source)
     {
-        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $settings = FannieConfig::config('PLUGIN_SETTINGS');
         $url = $settings['OttoMemUrl'];
 
         $otto = new Gohanman\Otto\Otto($url);
