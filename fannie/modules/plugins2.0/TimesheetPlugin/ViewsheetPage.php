@@ -135,7 +135,8 @@ class ViewsheetPage extends FanniePage {
                     AND t.area <> 31
                     AND t.periodID = ?
                     AND (t.vacation IS NULL OR t.vacation = 0)
-                GROUP BY t.tdate");
+                GROUP BY t.tdate
+                ORDER BY t.tdate");
 
         $periodQ = $ts_db->prepare("SELECT periodStart, periodEnd FROM 
             {$FANNIE_PLUGIN_SETTINGS['TimesheetDatabase']}.payperiods 
