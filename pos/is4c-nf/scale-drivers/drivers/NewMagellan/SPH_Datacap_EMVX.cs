@@ -771,6 +771,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return "ISC480";
             case "INGENICOLANE8000_MERCURY":
                 return "LANE8000";
+            case "LANE7000_RAPIDCONNECT_E2E":
+                return "LANE7000";
             default:
                 return device;
         }
@@ -794,6 +796,8 @@ public class SPH_Datacap_EMVX : SerialPortHandler
                 return "EMV_ISC480_RAPIDCONNECT_E2E";
             case "INGENICOLANE8000_MERCURY":
                 return "EMV_LANE8000_MERCURY";
+            case "LANE7000_RAPIDCONNECT_E2E":
+                return "EMV_LANE7000_RAPIDCONNECT_E2E";
             default:
                 return "EMV_" + device;
         }
