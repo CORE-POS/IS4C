@@ -41,6 +41,11 @@ class QueuedReport extends Job
         $logger = FannieLogger::factory();
         $op_db = $config->get('OP_DB');
         $dbc = FannieDB::get($op_db);
+        // This will fail in SQLite but should work in MySQL, SQL Server, & Postgres
+        // There's probably not a real scenario where you'd queue a report
+        // because the underlying query will take a long time, and also you're
+        // running CORE on top of SQLite.
+        $dbc->query('SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED');
         ErrorHandler::setLogger($logger);
         ErrorHandler::setErrorHandlers();
         $page->setConfig($config);
