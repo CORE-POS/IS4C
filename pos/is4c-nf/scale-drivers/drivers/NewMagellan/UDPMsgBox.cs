@@ -79,7 +79,7 @@ public class UDPMsgBox {
             while(running){
                 try {
                     Byte[] b = this.u.Receive(ref e);
-                    this.SendBytes(b);
+                    this.SendBytes(b, e);
                 }
                 catch (Exception ex){
                     System.Console.WriteLine(ex.ToString());
@@ -98,14 +98,14 @@ public class UDPMsgBox {
         IPEndPoint e = new IPEndPoint(IPAddress.Any, 0);
         Byte[] b = this.u.EndReceive(res, ref e);
         this.ReadAsync();
-        this.SendBytes(b);
+        this.SendBytes(b, e);
     }
 
-    private void SendBytes(Byte[] receiveBytes){
+    private void SendBytes(Byte[] receiveBytes, IPEndPoint ep){
         string receiveString = System.Text.Encoding.ASCII.GetString(receiveBytes);
 
         Console.WriteLine("Received: "+ receiveString);
-        parent.MsgRecv(receiveString);
+        parent.MsgRecv(receiveString, ep);
     }
 
     public void Stop(){

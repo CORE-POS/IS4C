@@ -37,7 +37,7 @@ namespace CustomForms {
 public interface DelegateForm 
 {
 
-    void MsgRecv(string msg);
+    void MsgRecv(string msg, System.Net.IPEndPoint ep);
     void MsgSend(string msg);
     void SqlLog(string key, string msg);
 }

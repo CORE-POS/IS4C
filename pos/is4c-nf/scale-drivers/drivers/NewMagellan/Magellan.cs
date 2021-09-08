@@ -182,7 +182,7 @@ public class Magellan : DelegateForm
         }
     }
 
-    public void MsgRecv(string msg)
+    public void MsgRecv(string msg, System.Net.IPEndPoint ep=null)
     {
         try {
             if (msg == "exit") {
@@ -200,6 +200,12 @@ public class Magellan : DelegateForm
             } else if (msg == "status") {
                 byte[] body = System.Text.Encoding.ASCII.GetBytes(Status());
                 getClient().Send(body, body.Length); 
+            } else if (msg == "core_detect") {
+                byte[] body = System.Text.Encoding.ASCII.GetBytes(GetIP() + ";;");
+                var client = new UdpClient(); 
+                client.Connect(ep.Address, 9451);
+                client.Send(body, body.Length); 
+                client.Close();
             } else {
                 sph.ForEach(s => { s.HandleMsg(msg); });
             }
@@ -216,6 +222,18 @@ public class Magellan : DelegateForm
         }
 
         return ret;
+    }
+
+    private string GetIP()
+    {
+        var host = System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName());
+        foreach (var ip in host.AddressList) {
+            if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) {
+                return ip.ToString();
+            }
+        }
+
+        return "127.0.0.1";
     }
 
     public void MsgSend(string msg)
