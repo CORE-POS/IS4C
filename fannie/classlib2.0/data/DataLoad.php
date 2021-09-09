@@ -64,7 +64,7 @@ class DataLoad
 
         if (file_exists($search_dir . "/$table.sql")) {
             echo " from $table.sql<br>\n";
-            $success = self::loadFromSql($table, $search_dir . '/' . $table . '.sql', $sql);
+            $success = self::loadFromSql($table, $search_dir . '/' . $table . '.sql', $sql, $loaded);
         } elseif (file_exists($search_dir . "/$table.csv")) {
             $filename = realpath($search_dir . "/$table.csv");
 
@@ -100,11 +100,14 @@ class DataLoad
         return $success;
     }
 
-    private static function loadFromSql($table, $file, $sql)
+    private static function loadFromSql($table, $file, $sql, &$loaded=null)
     {
         echo " from $table.sql<br>\n";
         $fptr = fopen($file, 'r');
         $ret = true;
+        if (!is_null($loaded)) {
+            $loaded = 0;
+        }
         while ($line = fgets($fptr)) {
             $prep = $sql->prepare("INSERT INTO $table VALUES $line");
             $try = $sql->execute($prep);
@@ -114,6 +117,10 @@ class DataLoad
                 echo "<br><small style='color:red;'>"
                     . (strlen($error)? $error : 'Unknown error')
                     . " executing:<br><code>{$prep[0]}</code></small><br>\n";
+            } else {
+                if (!is_null($loaded)) {
+                    $loaded++;
+                }
             }
         }
         fclose($fptr);
