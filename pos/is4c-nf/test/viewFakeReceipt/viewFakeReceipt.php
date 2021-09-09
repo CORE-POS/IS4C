@@ -1,3 +1,6 @@
+<?php
+// appeast PHPCS
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -1,3 +1,6 @@
+<?php
+// appeast PHPCS
+?>
 <html>
 <head><title>Available Tests</title></head>
 <body>
