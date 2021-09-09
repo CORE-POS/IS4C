@@ -44,6 +44,9 @@ class CalendarPlugin extends \COREPOS\Fannie\API\FanniePlugin {
 
     public $plugin_description = 'Plugin for calendars';
 
+    public $version = 2;
+
+    public $settingsNamespace = 'CalendarPlugin';
 
     public function settingChange()
     {

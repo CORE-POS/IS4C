@@ -21,6 +21,8 @@
 
 *********************************************************************************/
 
+use COREPOS\Fannie\API\FanniePlugin;
+
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
@@ -28,8 +30,8 @@ if (!class_exists('FannieAPI')) {
 class CalendarPluginDB {
 
     public static function get(){
-        global $FANNIE_PLUGIN_SETTINGS;
-        return FannieDB::get($FANNIE_PLUGIN_SETTINGS['CalendarDatabase']);
+        $settings = FanniePlugin::mySettings(__FILE__);
+        return FannieDB::get($settings['CalendarDatabase']);
     }
 }
 
