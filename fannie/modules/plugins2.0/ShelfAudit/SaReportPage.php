@@ -514,6 +514,7 @@ table.shelf-audit tr:hover {
         
         $table = '';
         $counter_total = 0;
+        $nfm = new NumberFormatter('en_US', NumberFormatter::PATTERN_DECIMAL);
         foreach($this->scans as $row) {
             
             if (!isset($counter_number)) {
@@ -546,12 +547,12 @@ table.shelf-audit tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
-                    <td id="col_e" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['cost']).'</td>
-                    <td id="col_h" class="right">'.NumberFormatter::formatCurrency('%!.2n', ($row['quantity']*$row['cost'])).'</td>
-                    <td id="col_e" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['normal_retail']).'</td>
-                    <td id="col_f" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['actual_retail']).'</td>
+                    <td id="col_e" class="right">'.sprintf('%.2f', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.sprintf('%.2f', ($row['quantity']*$row['cost'])).'</td>
+                    <td id="col_e" class="right">'.sprintf('%.2f', $row['normal_retail']).'</td>
+                    <td id="col_f" class="right">'.sprintf('%.2f', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
-                    <td id="col_h" class="right">'.NumberFormatter::formatCurrency('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
+                    <td id="col_h" class="right">'.sprintf('%.2f', ($row['quantity']*$row['normal_retail'])).'</td>
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
                         . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
@@ -564,7 +565,7 @@ table.shelf-audit tr:hover {
             <tfoot>
                 <tr>
                     <td colspan=6>&nbsp;</td>
-                    <td class="right">'.NumberFormatter::formatCurrency('%.2n', $counter_total).'</td>
+                    <td class="right">'.sprintf('%.2n', $counter_total).'</td>
                     <td>&nbsp;</td>
                 </tr>
             </tfoot>
@@ -592,12 +593,12 @@ table.shelf-audit tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
-                    <td id="col_e" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['cost']).'</td>
-                    <td id="col_h" class="right">'.NumberFormatter::formatCurrency('%!.2n', ($row['quantity']*$row['cost'])).'</td>
-                    <td id="col_e" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['normal_retail']).'</td>
-                    <td id="col_f" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['actual_retail']).'</td>
+                    <td id="col_e" class="right">'.sprintf('%.2f', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.sprintf('%.2f', ($row['quantity']*$row['cost'])).'</td>
+                    <td id="col_e" class="right">'.sprintf('%.2f', $row['normal_retail']).'</td>
+                    <td id="col_f" class="right">'.sprintf('%.2f', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
-                    <td id="col_h" class="right">'.NumberFormatter::formatCurrency('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
+                    <td id="col_h" class="right">'.sprintf('%.2f', ($row['quantity']*$row['normal_retail'])).'</td>
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
                         . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
@@ -612,12 +613,12 @@ table.shelf-audit tr:hover {
                     <td id="col_b">'.$row['upc'].'</td>
                     <td id="col_c">'.$row['description'].'</td>
                     <td id="col_d" class="right">'.$row['quantity'].'</td>
-                    <td id="col_e" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['cost']).'</td>
-                    <td id="col_h" class="right">'.NumberFormatter::formatCurrency('%!.2n', ($row['quantity']*$row['cost'])).'</td>
-                    <td id="col_e" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['normal_retail']).'</td>
-                    <td id="col_f" class="right">'.NumberFormatter::formatCurrency('%.2n', $row['actual_retail']).'</td>
+                    <td id="col_e" class="right">'.sprintf('%.2f', $row['cost']).'</td>
+                    <td id="col_h" class="right">'.sprintf('%.2f', ($row['quantity']*$row['cost'])).'</td>
+                    <td id="col_e" class="right">'.sprintf('%.2f', $row['normal_retail']).'</td>
+                    <td id="col_f" class="right">'.sprintf('%.2f', $row['actual_retail']).'</td>
                     <td id="col_g">'.(($row['retailstatus'])?$row['retailstatus']:'&nbsp;').'</td>
-                    <td id="col_h" class="right">'.NumberFormatter::formatCurrency('%!.2n', ($row['quantity']*$row['normal_retail'])).'</td>
+                    <td id="col_h" class="right">'.sprintf('%.2f', ($row['quantity']*$row['normal_retail'])).'</td>
                     <td id="col_i"><a href="SaReportPage.php?delete=yes&id='.$row['id'].'">'
                         . \COREPOS\Fannie\API\lib\FannieUI::deleteIcon() . '</td>
                 </tr>';
@@ -629,7 +630,7 @@ table.shelf-audit tr:hover {
             <tfoot>
                 <tr>
                     <td colspan=6>&nbsp;</td>
-                    <td class="right">'.NumberFormatter::formatCurrency('%.2n', $counter_total).'</td>
+                    <td class="right">'.sprintf('%.2n', $counter_total).'</td>
                     <td>&nbsp;</td>
                 </tr>
             </tfoot>
