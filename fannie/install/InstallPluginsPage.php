@@ -236,22 +236,14 @@ foreach($mods as $m){
              * Re-key settings w/ namespace, if applicable
              */
             if (strlen($instance->settingsNamespace) > 0) {
-                if ($instance->version = 1) {
-                    foreach (array_keys($FANNIE_PLUGIN_SETTINGS) as $key) {
-                        if (isset($info[$key])) {
-                            $nsKey = $instance->settingsNamespace . "." . $key;
-                            $FANNIE_PLUGIN_SETTINGS[$nsKey] = $FANNIE_PLUGIN_SETTINGS[$key];
-                            unset($FANNIE_PLUGIN_SETTINGS[$key]);
-                        }
-                    }
-                } elseif ($instance->version = 2) {
-                    foreach (array_keys($dbSettings) as $key) {
-                        if (isset($info[$key])) {
-                            $nsKey = $instance->settingsNamespace . "." . $key;
-                            $dbSettings[$nsKey] = $dbSettings[$key];
-                            unset($dbSettings[$key]);
-                        }
-                    }
+                if ($instance->version == 1) {
+                    $nsKey = $instance->settingsNamespace . "." . $field;
+                    $FANNIE_PLUGIN_SETTINGS[$nsKey] = $FANNIE_PLUGIN_SETTINGS[$field];
+                    unset($FANNIE_PLUGIN_SETTINGS[$field]);
+                } elseif ($instance->version == 2) {
+                    $nsKey = $instance->settingsNamespace . "." . $field;
+                    $dbSettings[$nsKey] = $dbSettings[$field];
+                    unset($dbSettings[$field]);
                 }
             }
         }
