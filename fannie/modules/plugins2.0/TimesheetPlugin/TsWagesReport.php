@@ -118,6 +118,7 @@ class TsWagesReport extends FanniePage {
                 $FANNIE_PLUGIN_SETTINGS['TimesheetDatabase'].".timesheet t 
                 WHERE t.emp_no = e.timesheetEmployeeID AND t.periodID >= ?
                 AND t.periodID <= ? AND t.area = ?");
+            $nfm = new NumberFormatter('en_US', NumberFormatter::CURRENCY);
             while ($row = $ts_db->fetch_row($result)) {
 
                 echo "<tr><td>".$row['id']."</td><td>".$row['area']."</td><td align='right'>";
@@ -143,7 +144,7 @@ class TsWagesReport extends FanniePage {
         
                 $wages = $tot * $agg;
                 
-                echo "<td align='right'>" . NumberFormatter::formatCurrency('%n', $wages) . "</td></tr>\n";
+                echo "<td align='right'>" . $nfm->format($wages) . "</td></tr>\n";
 
                 $wageArray[] = $wages;
                 // $wageArray = array();
