@@ -75,7 +75,7 @@ echo showInstallTabs("Sample Data", '../');
 
 <form action=InstallSampleDataPage.php method=post>
 <?php
-echo $this->writeCheck(dirname(__FILE__) . '/../config.php');
+echo $this->writeCheck(dirname(__FILE__) . '/../../config.php');
 ?>
 <hr />
 <div class="well"><em>
