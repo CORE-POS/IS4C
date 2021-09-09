@@ -1156,6 +1156,7 @@ function _adodb_debug_execute(&$zthis, $sql, $inputarr)
 function _adodb_backtrace($printOrArr=true,$levels=9999,$skippy=0,$ishtml=null)
 {
 	if (!function_exists('debug_backtrace')) return '';
+    $traceArr = debug_backtrace();
 
 	if ($ishtml === null) $html =  (isset($_SERVER['HTTP_USER_AGENT']));
 	else $html = $ishtml;
@@ -1167,7 +1168,6 @@ function _adodb_backtrace($printOrArr=true,$levels=9999,$skippy=0,$ishtml=null)
 	$s = ($html) ? '<pre align=left>' : '';
 
 	if (is_array($printOrArr)) $traceArr = $printOrArr;
-	else $traceArr = debug_backtrace();
 	array_shift($traceArr);
 	array_shift($traceArr);
 	$tabs = sizeof($traceArr)-2;

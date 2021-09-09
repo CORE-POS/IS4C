@@ -358,9 +358,10 @@ class DB
 	 */
 	function assertExtension($name)
 	{
+        // loading extensions via dl() is deprecated and/or gone
+        return false;
 		if (!extension_loaded($name)) {
 			$dlext = (strncmp(PHP_OS,'WIN',3) === 0) ? '.dll' : '.so';
-			@dl($name . $dlext);
 		}
 		if (!extension_loaded($name)) {
 			return false;

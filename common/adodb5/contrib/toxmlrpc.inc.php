@@ -99,13 +99,13 @@
                     if ($adodbrs->fields[$i] === null)
                         $columns[$i] = new xmlrpcval ('');
                     else
-                        $columns[$i] = xmlrpc_encode ($adodbrs->fields[$i]);
+                        $columns[$i] = $adodbrs->fields[$i];
             else
                 foreach ($adodbrs->fields as $val)
                     if ($val === null)
                         $columns[] = new xmlrpcval ('');
                     else
-                        $columns[] = xmlrpc_encode ($val);
+                        $columns[] = $val;
 
             $rows[] = new xmlrpcval ($columns, "array");
 

@@ -366,7 +366,7 @@ if (!defined('_ADODB_LAYER')) {
 		function getdirname($hash) {
 			global $ADODB_CACHE_DIR;
 			if (!isset($this->notSafeMode)) {
-				$this->notSafeMode = !ini_get('safe_mode');
+				$this->notSafeMode = true;
 			}
 			return ($this->notSafeMode) ? $ADODB_CACHE_DIR.'/'.substr($hash,0,2) : $ADODB_CACHE_DIR;
 		}
@@ -849,7 +849,7 @@ if (!defined('_ADODB_LAYER')) {
 	 * Requested by "Karsten Dambekalns" <k.dambekalns@fishfarm.de>
 	 */
 	function QMagic($s) {
-		return $this->qstr($s,get_magic_quotes_gpc());
+		return $this->qstr($s,false);
 	}
 
 	function q(&$s) {
@@ -2049,9 +2049,6 @@ if (!defined('_ADODB_LAYER')) {
 		if (!$rs) {
 		// no cached rs found
 			if ($this->debug) {
-				if (get_magic_quotes_runtime() && !$this->memCache) {
-					ADOConnection::outp("Please disable magic_quotes_runtime - it corrupts cache files :(");
-				}
 				if ($this->debug !== -1) {
 					ADOConnection::outp( " $md5file cache failure: $err (this is a notice and not an error)");
 				}
@@ -2940,7 +2937,7 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 		// undo magic quotes for "
 		$s = str_replace('\\"','"',$s);
 
-		if ($this->replaceQuote == "\\'" || ini_get('magic_quotes_sybase')) {
+		if ($this->replaceQuote == "\\'") {
 			// ' already quoted, no need to change anything
 			return $s;
 		} else {
@@ -2974,7 +2971,7 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 		// undo magic quotes for "
 		$s = str_replace('\\"','"',$s);
 
-		if ($this->replaceQuote == "\\'" || ini_get('magic_quotes_sybase')) {
+		if ($this->replaceQuote == "\\'") {
 			// ' already quoted, no need to change anything
 			return "'$s'";
 		} else {

@@ -71,7 +71,6 @@ if (!function_exists('sqlsrv_log_set_subsystems')) {
 // has datetime converstion to YYYY-MM-DD format, and also mssql_fetch_assoc
 if (ADODB_PHPVER >= 0x4300) {
 // docs say 4.2.0, but testing shows only since 4.3.0 does it work!
-	ini_set('mssql.datetimeconvert',0);
 } else {
     global $ADODB_mssql_mths;		// array, months must be upper-case
 	$ADODB_mssql_date_order = 'mdy';
@@ -528,7 +527,8 @@ class ADODB_mssqlnative extends ADOConnection {
 			$arr = $args;
 		}
 
-		array_walk($arr, create_function('&$v', '$v = "CAST(" . $v . " AS VARCHAR(255))";'));
+		//array_walk($arr, create_function('&$v', '$v = "CAST(" . $v . " AS VARCHAR(255))";'));
+        array_walk($arr, function ($v) { return 'CAST(' . $v . ' AS VARCHAR(255))'; });
 		$s = implode('+',$arr);
 		if (sizeof($arr) > 0) return "$s";
 

@@ -1304,9 +1304,7 @@ class adoSchema {
 	*/
 	function __construct( $db ) {
 		// Initialize the environment
-		$this->mgq = get_magic_quotes_runtime();
-		ini_set("magic_quotes_runtime", 0);
-		#set_magic_quotes_runtime(0);
+		$this->mgq = false;
 
 		$this->db = $db;
 		$this->debug = $this->db->debug;
@@ -2195,8 +2193,6 @@ class adoSchema {
 	* @deprecated adoSchema now cleans up automatically.
 	*/
 	function Destroy() {
-		ini_set("magic_quotes_runtime", $this->mgq );
-		#set_magic_quotes_runtime( $this->mgq );
 	}
 }
 
@@ -2211,10 +2207,6 @@ function logMsg( $msg, $title = NULL, $force = FALSE ) {
 
 		if( isset( $title ) ) {
 			echo '<h3>' . htmlentities( $title ) . '</h3>';
-		}
-
-		if( is_object( $this ) ) {
-			echo '[' . get_class( $this ) . '] ';
 		}
 
 		print_r( $msg );

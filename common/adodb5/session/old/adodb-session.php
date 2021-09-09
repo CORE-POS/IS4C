@@ -417,7 +417,6 @@ function adodb_sess_gc($maxlifetime)
 	return true;
 }
 
-session_module_name('user');
 session_set_save_handler(
 	"adodb_sess_open",
 	"adodb_sess_close",
@@ -432,7 +431,9 @@ session_set_save_handler(
 if (0) {
 
 	session_start();
-	session_register('AVAR');
+    if (!isset($_SESSION['AVAR'])) {
+        $_SESSION['AVAR'] = 0;
+    }
 	$_SESSION['AVAR'] += 1;
 	ADOConnection::outp( "
 -- \$_SESSION['AVAR']={$_SESSION['AVAR']}</p>",false);

@@ -182,7 +182,7 @@ class ADODB_mssql extends ADOConnection {
 		}
 
  		// undo magic quotes for " unless sybase is on
- 		$sybase = ini_get('magic_quotes_sybase');
+ 		$sybase = false;
  		if (!$sybase) {
  			$s = str_replace('\\"','"',$s);
  			if ($this->replaceQuote == "\\'")  // ' already quoted, no need to change anything
@@ -680,7 +680,8 @@ order by constraint_name, referenced_table_name, keyno";
                 $arr = $args;
             }
 
-            array_walk($arr, create_function('&$v', '$v = "CAST(" . $v . " AS VARCHAR(255))";'));
+            //array_walk($arr, create_function('&$v', '$v = "CAST(" . $v . " AS VARCHAR(255))";'));
+            array_walk($arr, function ($v) { return 'CAST(' . $v . ' AS VARCHAR(255))'; });
             $s = implode('+',$arr);
             if (sizeof($arr) > 0) return "$s";
 

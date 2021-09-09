@@ -244,8 +244,6 @@ class ADODB_Pager {
 
 		$this->rows = $rows;
 
-		if ($this->db->dataProvider == 'informix') $this->db->cursorType = IFX_SCROLL;
-
 		$savec = $ADODB_COUNTRECS;
 		if ($this->db->pageExecuteCountRows) $ADODB_COUNTRECS = true;
 		if ($this->cache)
