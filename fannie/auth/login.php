@@ -335,7 +335,12 @@ function checkToken(){
   if (!isset($headers['Authorization'])) {
     return false;
   }
-  list($type,$token) = explode(':', $headers['Authorization']);
+  $parts = explode(':', $headers['Authorization'], 2);
+  if (count($parts) != 2) {
+    return false;
+  }
+  $type = $parts[0];
+  $token = $parts[1];
   if (trim(strtoupper($type)) != 'BEARER') {
     return false; 
   }

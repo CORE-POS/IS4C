@@ -89,6 +89,8 @@ class FannieAuth
         $type = $parts[0];
         $token = $parts[1];
         if (trim(strtoupper($type)) != 'BEARER') {
+            $log = FannieLogger::factory();
+            $log->warning("Received Authorization header: " . $headers['Authorization']);
             return false; 
         }
 
