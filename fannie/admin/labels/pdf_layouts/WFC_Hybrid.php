@@ -54,8 +54,34 @@ $pdf=new WFC_Hybrid_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-$narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+
+$narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
+$upcs = array();
+$locations = array();
+foreach ($data as $k => $row) {
+    $upc = $row['upc'];
+    $upcs[] = $upc;
+    //$locations[$upc] = '';
+}
+list($inStr, $locationA) = $dbc->safeInClause($upcs);
+$locationP = $dbc->prepare("
+SELECT f.upc, 
+UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), '.', SUBSTR(name, -1), '-', sub.SubSection)) AS location
+FROM FloorSectionProductMap AS f
+    LEFT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
+    LEFT JOIN FloorSubSections AS sub ON f.floorSectionID=sub.floorSectionID 
+        AND sub.upc=f.upc
+    WHERE f.upc IN ($inStr)
+        AND s.storeID = ?
+");
+$locationA[count($locationA)] = $store;
+$res = $dbc->execute($locationP, $locationA);
+while ($row = $dbc->fetchRow($res)) {
+    $upc = ltrim($row['upc'],0);
+    $locations[$upc] = $row['location'];
+}
+
 $mtLength = $store == 1 ? 3 : 7;
 $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
 $mtP = $dbc->prepare('SELECT p.auto_par
@@ -122,18 +148,6 @@ $baseY = 31 + $bTopOff; // baseline Y location of label
 $baseX = 6;  // baseline X location of label
 $down = 31.0;
 
-/*
-list($inStr, $args) = $dbc->safeInClause($full);
-$query = "SELECT upc, fs.name FROM FloorSectionProductMap AS f
-    LEFT JOIN FloorSections AS fs ON f.floorSectionID=fs.floorSectionID
-    WHERE f.upc IN ({$inStr}) AND fs.storeID = 1 ORDER BY fs.name;";
-$prep = $dbc->prepare($query);
-$res = $dbc->execute($prep,$args);
-$locations = array();
-while ($row = $dbc->fetchRow($res)) {
-    $locations[$row['upc']] = $row['name'];
-}*/
-
 //cycle through result array of query
 foreach($data as $row) {
    // extract & format data
@@ -165,6 +179,8 @@ foreach($data as $row) {
             $border = $mtLength == 7 ? 'TBR' : 'TBL';
             $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
             $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
+            $pdf->SetXY($full_x+38, $full_y+8);
+            $pdf->Cell(9, 4, $locations[$upc], 0, 1, 'C');
         } else {
             //Start laying out a label
             if (strlen($upc) <= 11)
