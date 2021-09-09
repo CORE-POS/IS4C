@@ -451,6 +451,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         ob_start();
         ?>
+        <h3>Original Vendor Pricing Batch Page</h3>
         <form action=VendorPricingBatchPage.php method="get" target="_blank">
         <label>Select a Vendor</label>
         <select name="id" class="form-control">
@@ -474,6 +475,33 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         <button type=submit class="btn btn-default">Continue</button>
         </p>
         </form>
+
+        <div class="well">
+            <h3>New/Testing Vendor Pricing Batch Page</h3>
+            <form action=VPBPIII.php method="get" target="_blank">
+            <label>Select a Vendor</label>
+            <select name="id" class="form-control">
+            <?php echo $vopts; ?>
+            </select>
+            <label>and a Super Department</label>
+            <select name=super class="form-control">
+            <?php echo $opts; ?>
+            </select>
+            <label>Show all items</label>
+            <select name=filter class="form-control">
+            <option>No</option>
+            <option>Yes</option>
+            </select>
+            <label>Shelf Tag Queue</label>
+            <select name="queueID" class="form-control">
+            <?php echo $qopts; ?>
+            </select>
+            <br />
+            <p>
+            <button type=submit class="btn btn-default">Continue</button>
+            </p>
+            </form>
+        </div>
         <?php
 
         return ob_get_clean();
