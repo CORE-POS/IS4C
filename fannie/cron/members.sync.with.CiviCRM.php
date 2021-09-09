@@ -2508,7 +2508,7 @@ function getProvinceId($str) {
 /* Return the province/state abbreviation.
  * If none supplied try to deduce from city or postal code
 */
-function fixProvince($id = 0, $prov, $city, $postcode) {
+function fixProvince($id, $prov, $city, $postcode) {
 
     $retVal = "";
 
