@@ -50,11 +50,21 @@ static private $SQL_CONNECTION = null;
     {
         global $CORE_LOCAL;
 
+        /*
+         * I'm commenting this out because using $this in a static conext
+         * is not allowed. I'm not 100% sure what this used to do.
+         * I think attempts to get variables via $this would yield
+         * NULLs but I haven't found clear documentation saying that.
+         * I added a line that I believe preserves the functionality
+         * but it really is just a guess
+         *
         $availBal = $this->availCreditBalance + $CORE_LOCAL->get("memChargeTotal");
 
         $CORE_LOCAL->set("balance",$this->creditBalance);
 
         $CORE_LOCAL->set("availBal",number_format($availBal,2,'.',''));    
+         */
+        $CORE_LOCAL->set("availBal", number_format($CORE_LOCAL->get('memChargeTotal'), 2, '.', ''));
 
         $chargeOk = 1;
         /* This check has already been done.
@@ -249,7 +259,7 @@ static private $SQL_CONNECTION = null;
       @param $ref emp-lane-trans, if needed for end of transaction
       @return True or error message string.
     */
-    static public function getCCredSubtotals($tender='', $conn,
+    static public function getCCredSubtotals($tender, $conn,
         $programCode='', $table='', $ref='') 
     {
         global $CORE_LOCAL;
