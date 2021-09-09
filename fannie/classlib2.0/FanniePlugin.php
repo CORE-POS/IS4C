@@ -33,6 +33,20 @@ namespace COREPOS\Fannie\API;
 */
 class FanniePlugin extends \COREPOS\common\CorePlugin
 {
+    /*
+     * The plugin version controls where
+     * settings are stored. Version 1 keeps settings
+     * in config.php. Version 2 will store them
+     * in the database.
+     */
+    public $version = 1;
+
+    /**
+     * The settings namespace is added to each settings as a
+     * prefix to avoid collisions.
+     */
+    public $settingsNamespace = '';
+
     /**
       Get a URL for the plugin's directory    
     */
@@ -92,9 +106,81 @@ class FanniePlugin extends \COREPOS\common\CorePlugin
         return array();
     }
 
+    public static function mySettings($file)
+    {
+        $pluginClass = basename(dirname($file));
+        if (class_exists($pluginClass)) {
+            $obj = new $pluginClass();
+            return $obj->getSettings();
+        }
+        $pluginClass = "\\COREPOS\\Fannie\\Plugin\\" . $pluginClass;
+        if (class_exists($pluginClass)) {
+            $obj = new $pluginClass();
+            return $obj->getSettings();
+        }
+
+        return array();
+    }
+
     protected static function defaultSearchDir()
     {
         return realpath(__DIR__ . '/../modules/plugins2.0');
     }
+
+    /**
+     * Fetches the plugin's settings based on version.
+     * Do note that this method will return settings
+     * without their namespace prefix, if any
+     * @return [array] settings
+     */
+    public function getSettings()
+    {
+        switch ($this->version) {
+            case 2:
+                return $this->getFromDB();
+            case 1:
+                return $this->getFromConfig();
+            default:
+                return $this->getFromConfig();
+        }
+    }
+
+    private function getFromConfig()
+    {
+        $config = \FannieConfig::factory();
+        $ret = array();
+        foreach ($this->plugin_settings as $key => $definition) {
+            if (strlen($this->settingsNamespace) > 0) {
+                $key = $this->settingsNamespace . '.' . $key;
+            }
+            $ret[$key] = $config->get($key);
+        }
+
+        return $ret;
+    }
+
+    private function getFromDB()
+    {
+        $ret = array();
+        $keys = array_keys($this->plugin_settings);
+        if (strlen($this->settingsNamespace) > 0) {
+            for ($i=0; $i<count($keys); $i++) {
+                $keys[$i] = $this->settingsNamespace . '.' . $keys[$i];
+            }
+        }
+        $dbc = \FannieDB::get(\FannieConfig::config('OP_DB'));
+        list($inStr, $args) = $dbc->safeInClause($keys);
+        $prep = $dbc->prepare("SELECT * FROM PluginSettings WHERE name IN ({$inStr})");
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            if (strlen($this->settingsNamespace) > 0) {
+                $key = str_replace($this->settingsNamespace . '.', '', $row['name']);
+            }
+            $ret[$key] = $row['setting'];
+        }
+
+        return $ret;
+    }
+
 }
 
