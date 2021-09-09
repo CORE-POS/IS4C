@@ -300,7 +300,7 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
                 $actual_margin);
         } elseif (!is_numeric($price)) {
             $ret .= "<span class=\"alert-danger\">No price has been saved for this item</span><br />";
-        } else {
+        } elseif (is_numeric($desired_margin)) {
             $ret .= sprintf("<span class=\"alert-danger\">Current margin on this item is %.2f%%</span><br />",
                 $actual_margin);
             $srp = $this->getSRP($cost, $desired_margin/100.0);
