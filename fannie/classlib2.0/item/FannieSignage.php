@@ -663,7 +663,7 @@ class FannieSignage
         //Draw bars
         $full_width = 0;
         for ($i=0;$i<strlen($code);$i++) {
-            if ($code{$i}=='1') {
+            if ($code[$i]=='1') {
                 if ($vertical) {
                     $pdf->Rect($x, $y+($i*$height), $width, $height, 'F');
                 } else {

@@ -58,7 +58,7 @@ Schedule of vendor deliveries
     */
     public function autoNext()
     {
-        $now = mktime();
+        $now = time();
         switch (strtolower($this->frequency())) {
             case 'weekly':
                 $next = $now;
