@@ -230,6 +230,7 @@ class BaseLogger
     */
     private function writeLog($message, array $context, $intLevel)
     {
+        $trace = debug_backtrace();
         $file = $this->getLogLocation($intLevel);
         $verboseDebug = $this->verboseDebugging();
 
@@ -255,7 +256,7 @@ class BaseLogger
                 if (isset($context['exception']) && $context['exception'] instanceof \Exception) {
                     $stack = $this->stackTrace($context['exception']->getTrace());
                 } else {
-                    $stack = $this->stackTrace(debug_backtrace());
+                    $stack = $this->stackTrace($trace);
                 }
                 foreach ($stack as $frame) {
                     fwrite($fptr, $this->rfcLogLine($frame, $intLevel) . "\n");
