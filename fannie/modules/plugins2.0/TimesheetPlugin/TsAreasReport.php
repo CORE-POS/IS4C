@@ -92,7 +92,7 @@ class TsAreasReport extends FanniePage {
         
                 $wages = $tot * $agg;
                 
-                echo "<td align='right'>" . money_format('%#8n', $wages) . "</td></tr>\n";
+                echo "<td align='right'>" . NumberFormatter::formatCurrency('%#8n', $wages) . "</td></tr>\n";
             }
         }
         echo "</tbody></table>\n";

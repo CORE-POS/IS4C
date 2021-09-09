@@ -143,7 +143,7 @@ class TsWagesReport extends FanniePage {
         
                 $wages = $tot * $agg;
                 
-                echo "<td align='right'>" . money_format('%n', $wages) . "</td></tr>\n";
+                echo "<td align='right'>" . NumberFormatter::formatCurrency('%n', $wages) . "</td></tr>\n";
 
                 $wageArray[] = $wages;
                 // $wageArray = array();
