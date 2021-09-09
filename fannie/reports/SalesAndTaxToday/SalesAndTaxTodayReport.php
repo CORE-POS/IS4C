@@ -294,7 +294,7 @@ echo "<br />id $id";
                 number_format(($grandMemberSalesProp*100),2),
                 number_format(($grandNonMemberSalesProp*100),2),
                 ($this->selected==-1)?'collapse':'text-right',  
-                ($this->selected==-1)?0.00:($sum==0)?0.00:round($sum2/$sum*100,2)
+                (($this->selected==-1)?0.00:($sum==0))?0.00:round($sum2/$sum*100,2)
                 );
 
         // Total of each Tax
