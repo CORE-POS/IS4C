@@ -282,7 +282,23 @@ class TenderModule
     protected function frankingPrompt()
     {
         if (CoreLocal::get("enableFranking") != 1) {
-            return parent::defaultPrompt();
+            /*
+             * This is the same as defaultPrompt() above,
+             * but the inheritence structure makes calling
+             * it trickier than it should be
+             */
+            $amt = $this->DefaultTotal();
+            CoreLocal::set('boxMsg',
+                '<br />'
+              . _('tender $') . sprintf('%.2f',$amt) . ' as ' . $this->name_string 
+            );
+            CoreLocal::set('strEntered', (100*$amt).$this->tender_code);
+            CoreLocal::set('boxMsgButtons', array(
+                _('Confirm [enter]') => '$(\'#reginput\').val(\'\');submitWrapper();',
+                _('Cancel [clear]') => '$(\'#reginput\').val(\'CL\');submitWrapper();',
+            ));
+
+            return MiscLib::base_url().'gui-modules/boxMsg2.php?quiet=1';
         }
 
         CoreLocal::set('RepeatAgain', false);
