@@ -38,10 +38,10 @@ class FpdfWithBarcode extends FPDF
       //Test validity of check digit
       $sum=0;
       for($i=1;$i<=11;$i+=2)
-        $sum+=3*$barcode{$i};
+        $sum+=3*$barcode[$i];
       for($i=0;$i<=10;$i+=2)
-        $sum+=$barcode{$i};
-      return ($sum+$barcode{12})%10==0;
+        $sum+=$barcode[$i];
+      return ($sum+$barcode[12])%10==0;
    }
 
    function Barcode($x,$y,$barcode,$h,$w,$len)
@@ -61,17 +61,17 @@ class FpdfWithBarcode extends FPDF
       $codes = BarcodeLib::$CODES;
       $parities = BarcodeLib::$PARITIES;
       $code='101';
-      $pty=$parities[$barcode{0}];
+      $pty=$parities[$barcode[0]];
       for($i=1;$i<=6;$i++)
-        $code.=$codes[$pty[$i-1]][$barcode{$i}];
+        $code.=$codes[$pty[$i-1]][$barcode[$i]];
       $code.='01010';
       for($i=7;$i<=12;$i++)
-        $code.=$codes['C'][$barcode{$i}];
+        $code.=$codes['C'][$barcode[$i]];
       $code.='101';
       //Draw bars
       for($i=0;$i<strlen($code);$i++)
       {
-        if($code{$i}=='1')
+        if($code[$i]=='1')
             $this->Rect($x+$i*$w,$y,$w,$h,'F');
       }
       //Print text under barcode
