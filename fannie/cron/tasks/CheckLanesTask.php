@@ -46,6 +46,7 @@ class CheckLanesTask extends FannieTask
         $url = "http://{$this->config->get('HTTP_HOST')}{$this->config->get('URL')}admin/LaneStatus.php";
 
         // loop thru all defined lanes
+        $timeout = 2;
         $number = 1;
         foreach ($this->config->get('LANES') as $lane) {
             $this->cronMsg("testing lane $number ({$lane['host']}) ...");
@@ -56,7 +57,7 @@ class CheckLanesTask extends FannieTask
 
             // assume lane is offline unless proven otherwise
             $online = false;
-            if (check_db_host($lane['host'], $lane['type'], $timeout=2)) {
+            if (check_db_host($lane['host'], $lane['type'], $timeout)) {
                 $online = true;
             }
 

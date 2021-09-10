@@ -76,6 +76,7 @@ class LaneStatus extends FannieRESTfulPage
     protected function get_view()
     {
         $status = '';
+        $timeout = 2;
         $i = 1;
         foreach ($this->config->get('LANES') as $lane) {
             if ($lane['offline']) {
@@ -85,7 +86,7 @@ class LaneStatus extends FannieRESTfulPage
             } else {
                 $css = 'danger';
                 $label = 'Down';
-                if (check_db_host($lane['host'], $lane['type'], $timeout=2)) {
+                if (check_db_host($lane['host'], $lane['type'], $timeout)) {
                     $label = 'Up';
                     $css = 'success';
                 }
