@@ -21,6 +21,10 @@
 
 *********************************************************************************/
 
+if (!function_exists('check_db_host')) {
+    include(dirname(__FILE__).'/../../install/util.php');
+}
+
 class CheckLanesTask extends FannieTask
 {
     public $name = "Check Lane Connections";
@@ -42,6 +46,7 @@ class CheckLanesTask extends FannieTask
         $url = "http://{$this->config->get('HTTP_HOST')}{$this->config->get('URL')}admin/LaneStatus.php";
 
         // loop thru all defined lanes
+        $timeout = 2;
         $number = 1;
         foreach ($this->config->get('LANES') as $lane) {
             $this->cronMsg("testing lane $number ({$lane['host']}) ...");
@@ -52,12 +57,7 @@ class CheckLanesTask extends FannieTask
 
             // assume lane is offline unless proven otherwise
             $online = false;
-            $dbc = new SQLManager($lane['host'],
-                                  $lane['type'],
-                                  $lane['op'],
-                                  $lane['user'],
-                                  $lane['pw']);
-            if ($dbc->isConnected()) {
+            if (check_db_host($lane['host'], $lane['type'], $timeout)) {
                 $online = true;
             }
 
@@ -91,7 +91,7 @@ class CheckLanesTask extends FannieTask
                     curl_exec($ch);
                     curl_close($ch);
 
-                    $this->cronMsg("Fannie status for lane $number should now be correct");
+                    $this->cronMsg("Fannie status for lane $number should now be $actualStatus");
                 }
             }
 
