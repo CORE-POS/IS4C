@@ -20,8 +20,8 @@ class RdwImport extends FannieRESTfulPage
         $store = FormLib::get('store');
         $orderID = $this->getPO($ref, $store, $date);
         $prev = false;
-        $regex = '/([^0-9]*)([0-9]+) (.*) (\d\d\d\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (.*)/';
-        $altRegex = '/([^0-9]*)([0-9]+) (.*) (\d\d\d\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d)/';
+        $regex = '/([^0-9]*)([0-9]+) (.*) (\d\d\d\d\d) (\d*\.\d\d) (-*\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d) (.*)/';
+        $altRegex = '/([^0-9]*)([0-9]+) (.*) (\d\d\d\d\d) (\d*\.\d\d) (-*\d*\.\d\d) (\d*\.\d\d) (\d*\.\d\d)/';
         $invItems = array();
         foreach (explode("\n", $invoice) as $line) {
             $hasSku = preg_match($regex, $line, $matches);
