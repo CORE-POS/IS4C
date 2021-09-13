@@ -133,6 +133,7 @@ if (isset($_REQUEST['PLUGINLIST']) || isset($_REQUEST['psubmit'])){
 echo '<table id="install" class="table">';
 $count = 0;
 $dbSettings = array();
+$changeEvents = array();
 foreach($mods as $m){
     $enabled = False;
     $instance = new $m();
@@ -236,11 +237,11 @@ foreach($mods as $m){
              * Re-key settings w/ namespace, if applicable
              */
             if (strlen($instance->settingsNamespace) > 0) {
-                if ($instance->version == 1) {
+                if ($instance->version == 1 && isset($FANNIE_PLUGIN_SETTINGS[$field])) {
                     $nsKey = $instance->settingsNamespace . "." . $field;
                     $FANNIE_PLUGIN_SETTINGS[$nsKey] = $FANNIE_PLUGIN_SETTINGS[$field];
                     unset($FANNIE_PLUGIN_SETTINGS[$field]);
-                } elseif ($instance->version == 2) {
+                } elseif ($instance->version == 2 && isset($dbSettings[$field])) {
                     $nsKey = $instance->settingsNamespace . "." . $field;
                     $dbSettings[$nsKey] = $dbSettings[$field];
                     unset($dbSettings[$field]);
@@ -248,7 +249,7 @@ foreach($mods as $m){
             }
         }
         if ($enabled && isset($_REQUEST['psubmit'])) {
-            $instance->settingChange();
+            $changeEvents[] = $instance;
         }
         echo '</div>';
         echo '</td></tr>';
@@ -279,6 +280,10 @@ foreach ($dbSettings as $key => $val) {
     $dbc->execute($prep, array($key, $val));
 }
 $dbc->commitTransaction();
+
+foreach ($changeEvents as $instance) {
+    $instance->settingChange();
+}
 
 ?>
 <hr />
