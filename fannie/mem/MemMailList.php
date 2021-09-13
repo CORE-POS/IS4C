@@ -31,7 +31,7 @@ class MemMailList extends FannieReportPage
     protected $header = 'Mailing List';
 
     protected $required_fields = array('type');
-    protected $report_headers = array('Mem#', 'Last Name', 'First Name', 'Address', 'Address2', 'City', 'State', 'Zip', 'Phone', 'Email');
+    protected $report_headers = array('Mem#', 'Last Name', 'First Name', 'Address', 'Address2', 'City', 'State', 'Zip', 'Phone', 'Email', 'Elector ID', 'Password');
     public $description = '[Member Mailing List] lists contact information for selected customers.';
 
     protected function selectFrom()
@@ -113,6 +113,13 @@ class MemMailList extends FannieReportPage
 
         while ($row = $dbc->fetch_row($result)) {
             list($street, $addr2) = array_pad(explode("\n", $row['street'], 2), 2, null);
+            $password = $row['LastName'];
+            $password = trim($password);
+            $password = strtolower($password);
+            $password = str_replace('.', '', $password);
+            $password = str_replace('-', '', $password);
+            $password = str_replace('\'', '', $password);
+            $password = str_replace(' ', '', $password);
             $data[] = array(
                 $row['CardNo'],
                 $row['LastName'],
@@ -124,6 +131,8 @@ class MemMailList extends FannieReportPage
                 $row['zip'],
                 $row['phone'],
                 $row['email_1'] === null ? '' : $row['email_1'],
+                $row['CardNo'],
+                $password,
             );
         }
 
