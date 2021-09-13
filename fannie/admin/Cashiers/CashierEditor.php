@@ -69,7 +69,11 @@ class CashierEditor extends FannieRESTfulPage
                 $employee->backendsecurity($this->form->fes);
                 $active = $this->form->tryGet('active', '') !== '' ? 1 : 0;
                 $employee->EmpActive($active);
-                $employee->birthdate($this->form->birthdate);
+                if ($this->form->birthdate) {
+                    $employee->birthdate($this->form->birthdate);
+                } else {
+                    $employee->birthdate(null);
+                }
                 $saved = $employee->save();
 
                 $this->saveStoreMapping($dbc, $emp_no);
