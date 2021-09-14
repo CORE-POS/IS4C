@@ -253,7 +253,11 @@ HTML;
                     $ret .= '<td>' . $obj->$upcCol() . '</td>';
                 }
                 $p = $dbc->getRow($prodP, array($obj->upc()));
-                $ret .= '<td><strong>'.$p['brand'].'</strong> '.$p['description'].'</td>';
+                if ($p === false) {
+                    $ret .= '<td>(ITEM NOT FOUND)</td>';
+                } else {
+                    $ret .= '<td><strong>'.$p['brand'].'</strong> '.$p['description'].'</td>';
+                }
             }
             $ret .= '</tr>';
         }
