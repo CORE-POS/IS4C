@@ -407,7 +407,7 @@ class PcDailyReport extends FannieReportPage
                 $tN += $row[6];
                 $tS += $row[7];
             } else {
-                $pN += $row[6];
+                $pN += is_numeric($row[6]) ? $row[6] : 0;
                 $pS += $row[7];
             }
         }
