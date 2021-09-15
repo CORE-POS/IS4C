@@ -35,6 +35,8 @@ class SPINS extends \COREPOS\Fannie\API\FanniePlugin
             'description'=>'ftp.spins.com credentials'), 
     'SpinsFtpPw' => array('default'=>'', 'label'=>'FTP Password',
             'description'=>'ftp.spins.com credentials'), 
+    'SpinsFtpDir' => array('default'=>'data', 'label'=>'FTP Directory',
+            'description'=>'Remote folder into which file should be uploaded.'),
     'SpinsOffset' => array('default'=>0, 'label'=>'Week Offset',
             'description'=>'SPINS often uses non-standard week numbering. The offset
             should be the difference between an ISO week number and the SPINS week
