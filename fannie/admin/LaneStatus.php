@@ -18,27 +18,19 @@ class LaneStatus extends FannieRESTfulPage
     {
         $offline = FormLib::get('up') ? 0 : 1;
         $lanes = $this->config->get('LANES');
-        $i = 1;
-        $saveStr = 'array(';
-        foreach ($lanes as $lane) {
-            $saveStr .= "array('host'=>'" . $lane['host'] . "',"
-                    . "'type'=>'" . $lane['type'] . "',"
-                    . "'user'=>'" . $lane['user'] . "',"
-                    . "'pw'=>'" . $lane['pw'] . "',"
-                    . "'op'=>'" . $lane['op'] . "',"
-                    . "'trans'=>'" . $lane['trans'] . "',";
-            if ($i == $this->id) {
-                $saveStr .= "'offline'=>{$offline}),";
-            } else {
-                $saveStr .= "'offline'=>{$lane['offline']}),";
+
+        // nb. we must access the array element directly, via its
+        // "true" key ($i), in order to change its data.  but that is
+        // a 0-based index and we must use a 1-based index when
+        // checking the form data
+        foreach ($lanes as $i => $lane) {
+            $number = $i + 1;
+            if ($number == $this->id) {
+                $lanes[$i]['offline'] = $offline;
             }
-            $i++;
         }
-        if ($saveStr != 'array(') {
-            $saveStr = substr($saveStr, 0, strlen($saveStr)-1);
-        }
-        $saveStr .= ')';
-        confset('FANNIE_LANES', $saveStr);
+
+        update_lanes($lanes);
 
         echo json_encode(array(
             'id' => $this->id,
@@ -50,25 +42,24 @@ class LaneStatus extends FannieRESTfulPage
 
     protected function post_handler()
     {
-        $i = 1;
-        $saveStr = 'array(';
+        // nb. if *no* lanes were checked as being offline, then we do
+        // not get an array back from the form.  in which case, pretend.
         $offline = FormLib::get('offline');
-        foreach ($this->config->get('LANES') as $lane) {
-            $saveStr .= "array('host'=>'" . $lane['host'] . "',"
-                    . "'type'=>'" . $lane['type'] . "',"
-                    . "'user'=>'" . $lane['user'] . "',"
-                    . "'pw'=>'" . $lane['pw'] . "',"
-                    . "'op'=>'" . $lane['op'] . "',"
-                    . "'trans'=>'" . $lane['trans'] . "',";
-            $isOffline = in_array($i, $offline) ? 1 : 0;
-            $saveStr .= "'offline'=>{$isOffline}),";
-            $i++;
+        if (!$offline) {
+            $offline = array();
         }
-        if ($saveStr != 'array(') {
-            $saveStr = substr($saveStr, 0, strlen($saveStr)-1);
+
+        // nb. we must access the array element directly, via its
+        // "true" key ($i), in order to change its data.  but that is
+        // a 0-based index and we must use a 1-based index when
+        // checking the form data
+        $lanes = $this->config->get('LANES');
+        foreach ($lanes as $i => $lane) {
+            $number = $i + 1;
+            $lanes[$i]['offline'] = in_array($number, $offline) ? 1 : 0;
         }
-        $saveStr .= ')';
-        confset('FANNIE_LANES', $saveStr);
+
+        update_lanes($lanes);
 
         return 'LaneStatus.php';
     }

@@ -42,13 +42,14 @@ class CheckLanesTask extends FannieTask
 
     public function run()
     {
-        // url for updating lane status in fannie
-        $url = "http://{$this->config->get('HTTP_HOST')}{$this->config->get('URL')}admin/LaneStatus.php";
+        // we will only update config if any lanes change status
+        $pendingUpdate = false;
 
         // loop thru all defined lanes
+        $lanes = $this->config->get('LANES');
         $timeout = 2;
-        $number = 1;
-        foreach ($this->config->get('LANES') as $lane) {
+        foreach ($lanes as $i => $lane) {
+            $number = $i + 1;
             $this->cronMsg("testing lane $number ({$lane['host']}) ...");
 
             // report whether fannie "thought" lane was online
@@ -69,33 +70,19 @@ class CheckLanesTask extends FannieTask
                 $this->cronMsg("Fannie was right about lane $number, so nothing to do");
 
             } else {
-                // must update fannie to reflect reality
-                $data = array('id' => $number, 'up' => $online);
-
-                // but..this will only work if Fannie Authentication is *disabled*
-                if ($this->config->get('AUTH_ENABLED')) {
-                    // TODO: probably need to figure out how to do this someday
-                    $this->cronMsg("Fannie authentication is enabled, which means we CANNOT update its lane status",
-                                   FannieLogger::WARNING);
-
-                } else {
-                    $this->cronMsg("will POST to $url: " . print_r($data, true),
-                                   FannieLogger::DEBUG);
-
-                    // TODO: some error handling might be nice here...
-                    $ch = curl_init();
-                    curl_setopt($ch, CURLOPT_URL, $url);
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // suppress output
-                    curl_exec($ch);
-                    curl_close($ch);
-
-                    $this->cronMsg("Fannie status for lane $number should now be $actualStatus");
-                }
+                // flag lane for pending update
+                $lanes[$i]['offline'] = $online ? 0 : 1;
+                $pendingUpdate = true;
+                $this->cronMsg("Fannie is wrong about lane $number, so will update config at the end");
             }
+        }
 
-            $number++;
+        if ($pendingUpdate) {
+            $this->cronMsg("will now attempt to update config", FannieLogger::DEBUG);
+            update_lanes($lanes);
+            $this->cronMsg("Fannie should now have correct status for all lanes");
+        } else {
+            $this->cronMsg("no lanes changed, so skipping config update", FannieLogger::DEBUG);
         }
     }
 }

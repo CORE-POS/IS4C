@@ -75,6 +75,26 @@ function confset($key, $value)
     fclose($fptr);
 }
 
+// update the LANES setting in the config file
+function update_lanes($lanes)
+{
+    $saveStr = 'array(';
+    foreach ($lanes as $lane) {
+        $saveStr .= "array('host'=>'{$lane['host']}',"
+                 . "'type'=>'{$lane['type']}',"
+                 . "'user'=>'{$lane['user']}',"
+                 . "'pw'=>'{$lane['pw']}',"
+                 . "'op'=>'{$lane['op']}',"
+                 . "'trans'=>'{$lane['trans']}',"
+                 . "'offline'=>{$lane['offline']}),";
+    }
+    if ($saveStr != 'array(') {
+        $saveStr = substr($saveStr, 0, strlen($saveStr)-1);
+    }
+    $saveStr .= ')';
+    confset('FANNIE_LANES', $saveStr);
+}
+
 /**
   Briefly connect to host to verify it's accepting
   network connections
