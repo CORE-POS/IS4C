@@ -119,7 +119,10 @@ class SpinsSubmitTask extends FannieTask
             if (!$conn_id || !$login_id) {
                 $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
             } else {
-                ftp_chdir($conn_id, "data");
+                $remoteDir = $FANNIE_PLUGIN_SETTINGS['SpinsFtpDir'];
+                if ($remoteDir) {
+                    ftp_chdir($conn_id, $remoteDir);
+                }
                 ftp_pasv($conn_id, true);
                 $uploaded = ftp_put($conn_id, $filename, $outfile, FTP_ASCII);
                 if (!$uploaded) {
