@@ -119,7 +119,7 @@ class SpinsSubmitTask extends FannieTask
             if (!$conn_id || !$login_id) {
                 $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
             } else {
-                $remoteDir = $FANNIE_PLUGIN_SETTINGS['SpinsFtpDir'];
+                $remoteDir = isset($FANNIE_PLUGIN_SETTINGS['SpinsFtpDir']) ? $FANNIE_PLUGIN_SETTINGS['SpinsFtpDir'] : 'data';
                 if ($remoteDir) {
                     ftp_chdir($conn_id, $remoteDir);
                 }
