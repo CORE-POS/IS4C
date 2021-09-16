@@ -21,7 +21,7 @@
 
 *********************************************************************************/
 
-namespace COREPOS\Fannie\API\data {
+namespace COREPOS\Fannie\API\data;
 
 class DataConvert
 {
@@ -150,7 +150,7 @@ class DataConvert
     */
     private static function composerExcelSupport()
     {
-        if (class_exists('\\PHPExcel_Writer_OpenDocument')) {
+        if (class_exists('\\PhpOffice\\PhpSpreadsheet\\Spreadsheet') || class_exists('\\PHPExcel_Writer_OpenDocument')) {
             return true;
         } else {
             return false;
@@ -235,10 +235,16 @@ class DataConvert
     */
     private static function arrayToXlsx($array)
     {
-        $obj = new \PHPExcel();
+        if (class_exists('\\PhpOffice\\PhpSpreadsheet\\Spreadsheet')) {
+            $obj = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $firstCol = 1;
+        } else {
+            $obj = new \PhpExcel();
+            $firstCol = 0;
+        }
         $row = 1;
         foreach ($array as $row_array) {
-            $col = 0;
+            $col = $firstCol;
             if (!is_array($row_array)) {
                 $row_array = array($row_array);
             }
@@ -252,7 +258,11 @@ class DataConvert
             }
             $row++;
         }
-        $writer = \PHPExcel_IOFactory::createWriter($obj, 'Excel2007');
+        if (class_exists('\\PhpOffice\\PhpSpreadsheet\\Spreadsheet')) {
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($obj);
+        } else {
+            $writer = \PHPExcel_IOFactory::createWriter($obj, 'Excel2007');
+        }
         $filename = tempnam(sys_get_temp_dir(),"xlsx");
         $writer->save($filename);
 
@@ -261,7 +271,5 @@ class DataConvert
 
         return $ret;
     }
-}
-
 }
 

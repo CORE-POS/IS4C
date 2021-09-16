@@ -86,10 +86,10 @@ class FileData
     public static function xlsToArray($filename, $limit)
     {
         /** 
-          PHPExcel can read both file variants just fine if it's
+          PhpOffice can read both file variants just fine if it's
           available.
         */
-        if (class_exists('\\PHPExcel_IOFactory')) {
+        if (!class_exists('\\PhpOffice\\PhpSpreadsheet\\IOFactory') || class_exists('\\PHPExcel_IOFactory')) {
             return self::xlsxToArray($filename, $limit);
         }
 
@@ -128,19 +128,25 @@ class FileData
     */
     public static function xlsxToArray($filename, $limit=0)
     {
-        if (!class_exists('\\PHPExcel_IOFactory')) {
+        if (!class_exists('\\PhpOffice\\PhpSpreadsheet\\IOFactory') && !class_exists('\\PHPExcel_IOFactory')) {
             return false;
         }
 
-        $objPHPExcel = \PHPExcel_IOFactory::load($filename);
+        if (class_exists('\\PhpOffice\\PhpSpreadsheet\\IOFactory')) {
+            $objPHPExcel = \PhpOffice\PhpSpreadsheet\IOFactory::load($filename);
+            $firstCol = 1;
+        } else {
+            $objPHPExcel = \PHPExcel_IOFactory::load($filename);
+            $firstCol = 0;
+        }
         $sheet = $objPHPExcel->getActiveSheet();
         $rows = $sheet->getHighestRow();
         $cols = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
         $ret = array();
         for ($i=1; $i<=$rows; $i++) {
-            $new = array_map(function ($j) use ($i, &$sheet) {
+            $new = array_map(function ($j) use ($i, &$sheet, $firstCol) {
                 return $sheet->getCellByColumnAndRow($j, $i)->getValue();
-            }, range(0, $cols));
+            }, range($firstCol, $cols));
             $ret[] = $new;
             if ($limit > 0 && count($ret) >= $limit) {
                 break;
