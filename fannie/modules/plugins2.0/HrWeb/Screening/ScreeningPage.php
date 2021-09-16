@@ -207,7 +207,7 @@ HTML;
 </p>
 <hr />
 <p>
-<h3>Have you had direct contact with a positive COVID-19 case?</h3>
+<h3>Have you had direct contact with a positive COVID-19 case that has not yet been reported to WFC management?</h3>
 </p>
 <p style="font-size: 200%;">
     <label class="radio-inline">
