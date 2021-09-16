@@ -110,7 +110,7 @@ class FannieUI
 
     public static function itemEditorLink($upc)
     {
-        return sprintf('<a href="%sitem/ItemEditorPage.php?searchupc=%s">%s</a>',
+        return sprintf('<a target="_blank" href="%sitem/ItemEditorPage.php?searchupc=%s">%s</a>',
             \FannieConfig::config('URL'), $upc, $upc);
     }
 
