@@ -40,7 +40,7 @@ class COGSMovementReport extends FannieReportPage
 
     public $description = '[COGS Movement] shows movement with cost of goods by account';
     public $report_set = 'Movement Reports';
-    protected $report_headers = array('Sales Code', 'Retail', 'Cost', 'Margin');
+    protected $report_headers = array('Sales Code', 'Retail', 'Est. Cost', 'Est. Margin');
 
     public function fetch_report_data()
     {
@@ -55,6 +55,7 @@ class COGSMovementReport extends FannieReportPage
                 SUM(total) AS retail,
                 SUM(CASE WHEN ABS(t.cost) < 1000 THEN t.cost ELSE d.margin * total END) AS cogs
             " . $from_where['query'] . "
+                AND t.trans_type IN ('I', 'D')
             GROUP BY d.salesCode
             ORDER BY d.salesCode";
 
