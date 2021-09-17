@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "aa747d62b78fc88f71963f37765ec572",
+    "content-hash": "52d65a021a708f7f76f5002037d66b59",
     "packages": [
         {
             "name": "automattic/woocommerce",
@@ -623,24 +623,24 @@
         },
         {
             "name": "corepos/composer-installer",
-            "version": "2.0.0",
+            "version": "3.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CORE-POS/ComposerInstaller.git",
-                "reference": "08c6afda3a2ce2c2999254bdff341f86b6d01139"
+                "reference": "39ff5451808b7895f6bd67c4f9b3def1cf4729af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CORE-POS/ComposerInstaller/zipball/08c6afda3a2ce2c2999254bdff341f86b6d01139",
-                "reference": "08c6afda3a2ce2c2999254bdff341f86b6d01139",
+                "url": "https://api.github.com/repos/CORE-POS/ComposerInstaller/zipball/39ff5451808b7895f6bd67c4f9b3def1cf4729af",
+                "reference": "39ff5451808b7895f6bd67c4f9b3def1cf4729af",
                 "shasum": ""
             },
             "require": {
-                "composer-plugin-api": "^1.0"
+                "composer-plugin-api": "^2.0"
             },
             "require-dev": {
-                "composer/composer": "^1.1",
-                "phpunit/phpunit": "^5.3"
+                "composer/composer": "^2.0",
+                "phpunit/phpunit": "^6.5"
             },
             "type": "composer-plugin",
             "extra": {
@@ -656,7 +656,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "Apache2"
+                "Apache-2.0"
             ],
             "authors": [
                 {
@@ -665,7 +665,11 @@
                 }
             ],
             "description": "A composer plugin to install CORE POS plugins",
-            "time": "2016-05-28T15:57:45+00:00"
+            "support": {
+                "issues": "https://github.com/CORE-POS/ComposerInstaller/issues",
+                "source": "https://github.com/CORE-POS/ComposerInstaller/tree/3.0.3"
+            },
+            "time": "2021-09-17T15:41:44+00:00"
         },
         {
             "name": "datto/json-rpc",
@@ -2017,21 +2021,27 @@
         },
         {
             "name": "oomphinc/composer-installers-extender",
-            "version": "v1.1.2",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/oomphinc/composer-installers-extender.git",
-                "reference": "ca1c4b16b0905c81d1e77e608f36a2eff1a56f56"
+                "reference": "8d3fe38a1723e0e91076920c8bb946b1696e28ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/oomphinc/composer-installers-extender/zipball/ca1c4b16b0905c81d1e77e608f36a2eff1a56f56",
-                "reference": "ca1c4b16b0905c81d1e77e608f36a2eff1a56f56",
+                "url": "https://api.github.com/repos/oomphinc/composer-installers-extender/zipball/8d3fe38a1723e0e91076920c8bb946b1696e28ca",
+                "reference": "8d3fe38a1723e0e91076920c8bb946b1696e28ca",
                 "shasum": ""
             },
             "require": {
-                "composer-plugin-api": "^1.0",
-                "composer/installers": "^1.0"
+                "composer-plugin-api": "^1.1 || ^2.0",
+                "composer/installers": "^1.0",
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "composer/composer": "^2.0",
+                "phpunit/phpunit": "^7.2",
+                "squizlabs/php_codesniffer": "^3.3"
             },
             "type": "composer-plugin",
             "extra": {
@@ -2051,11 +2061,16 @@
                     "name": "Stephen Beemsterboer",
                     "email": "stephen@oomphinc.com",
                     "homepage": "https://github.com/balbuf"
+                },
+                {
+                    "name": "Nathan Dentzau",
+                    "email": "nate@oomphinc.com",
+                    "homepage": "http://oomph.is/ndentzau"
                 }
             ],
             "description": "Extend the composer/installers plugin to accept any arbitrary package type.",
             "homepage": "http://www.oomphinc.com/",
-            "time": "2017-03-31T16:57:39+00:00"
+            "time": "2020-08-11T21:06:11+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
@@ -6308,5 +6323,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }
