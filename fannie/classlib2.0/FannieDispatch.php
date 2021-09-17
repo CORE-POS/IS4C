@@ -87,10 +87,11 @@ class FannieDispatch
             $dbc = FannieDB::get($obj->default_db);
         }
         $obj->setConnection($dbc);
-        $obj = self::twig($obj);
+        //$obj = self::twig($obj);
         $obj->draw_page();
     }
 
+    /**
     static public function twig($obj)
     {
         if (!class_exists('Twig_Environment') || !method_exists($obj, 'setTwig')) {
@@ -111,6 +112,7 @@ class FannieDispatch
 
         return $obj;
     }
+     */
 
     /**
       Render the current page if appropriate
