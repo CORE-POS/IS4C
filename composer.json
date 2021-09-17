@@ -16,7 +16,7 @@
         "source": "https://github.com/CORE-POS/IS4C"
     },
     "require": {
-        "components/jquery": "1.11.1",
+        "components/jquery": "1.12.4",
         "components/bootstrap": "3.2.*",
         "components/bootstrap-default": "~3.2",
         "phpmailer/phpmailer": "6.5.0",
