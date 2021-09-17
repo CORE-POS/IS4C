@@ -89,16 +89,36 @@ HTML;
             $headers = "From: hillside-screening@wholefoods.coop\r\n";
             mail($to, $subject, $body, $headers);
 
+            $list = '<ul>';
+            if ($highTemp) {
+                $list .= '<li>Your temperature is at or above 100.4 degrees</li>';
+            }
+            if ($any) {
+                $list .= '<li>You have new covid symptoms</li>';
+            }
+            if ($exp) {
+                $list .= 'You have had contact to a positive covid case that you have not discussed with WFC Management</li>';
+            }
+            $list .= '</ul>';
+            $bList = base64_encode($list);
+
             return <<<HTML
 <div style="font-size: 200% !important;">
-    <div class="alert alert-danger">You've selected symptom(s)</div>
-Please isolate yourself from others immediately, <b>do not clock in for work and go home</b>.
-Contact your manager and either your Store Manager (952.687.1381) or General Manager (218.428.5747).
+You've indicated {$list}.
+<p>
+Please leave the building. Do not go into the store. Once outside, please call the store (218-728-0884),
+your manager, your store manager (952-687-1381), or general manager (218-428-5747) to discuss your symptoms
+and next steps. You cannot return to the building until you have been cleared by your manager, store manager,
+or general manager. 
+</p>
+<p>
+If this was in error, please let your manager know immediately that you incorrectly indicated yes at the Health Screening. 
+</p>
 </div>
 <p style="font-size: 200%;">
     <a href="ScreeningPage.php" class="btn btn-default btn-lg btn-block">Clear This Screen</a>
 </p>
-<form id="finishForm" action="ScreeningPage.php"><input type="hidden" name="finish" value="1" /></form>
+<form id="finishForm" action="ScreeningPage.php"><input type="hidden" name="finish" value="{$bList}" /></form>
 HTML;
         }
 
@@ -109,12 +129,19 @@ HTML;
     protected function get_finish_view()
     {
         if ($this->finish) {
+            $list = base64_decode($this->finish);
             return <<<HTML
 <div style="font-size: 200% !important;">
-    <div class="alert alert-danger">You've selected symptom(s)</div>
-Please isolate yourself from others immediately, <b>do not clock in for work and go home</b>.
-Contact your manager and either your Store Manager (952.687.1381) or General Manager (218.428.5747).
-</div>
+You've indicated {$list}.
+<p>
+Please leave the building. Do not go into the store. Once outside, please call the store (218-728-0884),
+your manager, your store manager (952-687-1381), or general manager (218-428-5747) to discuss your symptoms
+and next steps. You cannot return to the building until you have been cleared by your manager, store manager,
+or general manager. 
+</p>
+<p>
+If this was in error, please let your manager know immediately that you incorrectly indicated yes at the Health Screening. 
+</p>
 <p style="font-size: 200%;">
     <a href="ScreeningPage.php" class="btn btn-default btn-lg btn-block">Clear This Screen</a>
 </p>
