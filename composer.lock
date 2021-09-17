@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dd15eb660a8b9aff57736307b4c4e627",
+    "content-hash": "0abf36b46ae9722e4774d2b2f229bb9a",
     "packages": [
         {
             "name": "automattic/woocommerce",
@@ -3123,52 +3123,6 @@
                 "vCard"
             ],
             "time": "2016-10-07T03:20:40+00:00"
-        },
-        {
-            "name": "sebastian/git",
-            "version": "2.1.4",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/sebastianbergmann/git.git",
-                "reference": "815bbbc963cf35e5413df195aa29df58243ecd24"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/git/zipball/815bbbc963cf35e5413df195aa29df58243ecd24",
-                "reference": "815bbbc963cf35e5413df195aa29df58243ecd24",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.3.3"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.1-dev"
-                }
-            },
-            "autoload": {
-                "classmap": [
-                    "src/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Sebastian Bergmann",
-                    "email": "sebastian@phpunit.de"
-                }
-            ],
-            "description": "Simple wrapper for Git",
-            "homepage": "http://www.github.com/sebastianbergmann/git",
-            "keywords": [
-                "git"
-            ],
-            "abandoned": true,
-            "time": "2017-01-23T20:57:12+00:00"
         },
         {
             "name": "smalot/pdfparser",
