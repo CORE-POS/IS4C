@@ -244,11 +244,12 @@ HTML;
             $cycle_opts .= "<option value='$cycle' $sel>$cycle</option>";
         }
 
-        $years = '';
-        $curYear = 2022;
+        $y = new DateTime();
+        $curYear = $y->format('Y');
+        $years = "";
         $curMonth = date('m');
-        for ($i=2017; $i<$curYear; $i++) {
-            $sel = ($i == FormLib::get('year')) ? " selected " : "";
+        for ($i=$curYear-1; $i<=$curYear+1; $i++) {
+            $sel = ($i == $curYear) ? " selected " : "";
             $years .= "<option value='$i' $sel>$i</option>";
         }
 
