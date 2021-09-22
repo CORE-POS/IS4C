@@ -208,7 +208,8 @@ var orderView = (function($) {
             mod.toggleO($(this).data('order'), $(this).data('trans'));
         });
         $('.itemChkA').change(function () {
-            mod.toggleA($(this).data('order'), $(this).data('trans'));
+            var checked = $(this).is(':checked');
+            mod.toggleA($(this).data('order'), $(this).data('trans'), checked);
         });
         $('.add-po-btn').click(function(ev) {
             ev.preventDefault();
@@ -319,12 +320,13 @@ var orderView = (function($) {
             data: 'toggleMemType=1&orderID='+oid+'&transID='+tid
         });
     };
-    mod.toggleA = function (oid,tid)
+    mod.toggleA = function (oid,tid,checked)
     {
+        console.log(checked);
         $.ajax({
             type: 'post',
             dataType: 'json',
-            data: 'toggleStaff=1&orderID='+oid+'&transID='+tid
+            data: 'toggleStaff=1&orderID='+oid+'&transID='+tid+'&checked='+checked,
         }).done(function(resp) {
             if (resp.sentEmail) {
                 alert('Sent Arrival Notification');

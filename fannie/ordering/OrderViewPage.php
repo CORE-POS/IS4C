@@ -220,6 +220,7 @@ class OrderViewPage extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
+        $checked = FormLib::get('checked');
 
         $upP = $dbc->prepare('
             UPDATE PendingSpecialOrder 
@@ -229,8 +230,12 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc->execute($upP, array($this->orderID, $this->transID));
 
         $json = array();
-        $email = new OrderNotifications($dbc);
-        $json['sentEmail'] = $email->itemArrivedEmail($this->orderID, $this->transID);
+        if ($checked == 'false') {
+            $json['sentEmail'] = '';
+        } else {
+            $email = new OrderNotifications($dbc);
+            $json['sentEmail'] = $email->itemArrivedEmail($this->orderID, $this->transID);
+        }
         echo json_encode($json);
 
         return false;
