@@ -4,6 +4,7 @@ language: php
 # builds on free service. politeness.
 php:
     - "5.6"
+    - "7.2"
 
 services:
     - mysql
