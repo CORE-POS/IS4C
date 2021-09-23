@@ -203,6 +203,13 @@ class VendorItemModule extends \COREPOS\Fannie\API\item\ItemModule {
             if (empty($skus[$i]) || empty($costs[$i])) {
                 continue; // no submission. don't create a record
             }
+            /**
+             * Must have a valid value for the data type.
+             * The default in the Model is 1.
+             */
+            if (empty($units[$i])) {
+                $units[$i] = 1;
+            }
 
             $chkR = $dbc->execute($chkP,array($ids[$i],$upc));
             if ($dbc->num_rows($chkR) == 0){
