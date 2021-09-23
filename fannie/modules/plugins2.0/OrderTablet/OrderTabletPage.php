@@ -4,6 +4,9 @@ include(__DIR__ . '/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('COREPOS\\pos\\lib\\PrintHandlers\\PrintHandler')) {
+    include(__DIR__ . '/../../../../pos/is4c-nf/lib/PrintHandlers/PrintHandler.php');
+}
 if (!class_exists('COREPOS\\pos\\lib\\PrintHandlers\\ESCPOSPrintHandler')) {
     include(__DIR__ . '/../../../../pos/is4c-nf/lib/PrintHandlers/ESCPOSPrintHandler.php');
 }
