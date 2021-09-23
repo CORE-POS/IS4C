@@ -67,7 +67,7 @@ foreach ($data as $k => $row) {
 list($inStr, $locationA) = $dbc->safeInClause($upcs);
 $locationP = $dbc->prepare("
 SELECT f.upc, 
-UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), '.', SUBSTR(name, -1), '-', sub.SubSection)) AS location
+UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), '-', sub.SubSection)) AS location
 FROM FloorSectionProductMap AS f
     LEFT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
     LEFT JOIN FloorSubSections AS sub ON f.floorSectionID=sub.floorSectionID 
