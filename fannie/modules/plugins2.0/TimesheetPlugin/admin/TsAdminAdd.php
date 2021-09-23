@@ -115,7 +115,7 @@ class TsAdminAdd extends FanniePage {
                             $emp_no, $timein[$i], $timeout[$i],
                             $area[$i], $date, $periodID
                         ));
-                        if ($ts_db->affectedRows() == 1) {$successcount++;}
+                        if ($result != false) {$successcount++;}
                     }
                     if ($successcount != $entrycount) {
                         $this->errors[] = '<p>The entered hours could not be added, please try again later.</p>';

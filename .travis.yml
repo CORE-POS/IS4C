@@ -33,6 +33,7 @@ install:
     - rm composer.lock
     - composer init --name corepos/ci-env
     - composer require codeclimate/php-test-reporter johnkary/phpunit-speedtrap predis/predis
+    - if [[ $TRAVIS_PHP_VERSION = 7.2 ]]; then composer require doctrine/dbal; fi
     - mkdir -p build/logs
     - npm install acorn
 

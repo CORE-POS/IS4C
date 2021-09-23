@@ -87,6 +87,11 @@ class PgsqlAdapter implements DialectAdapter
         return 'MONEY';
     }
 
+    public function curdate()
+    {
+        return 'CURRENT_DATE';
+    }
+
     public function curtime()
     {
         return 'CURRENT_TIME';
@@ -125,6 +130,16 @@ class PgsqlAdapter implements DialectAdapter
     public function dayofweek($field)
     {
         return "EXTRACT(dow from $field)";
+    }
+
+    public function week($field)
+    {
+        return "EXTRACT(week from $field)";
+    }
+
+    public function hour($field)
+    {
+        return "EXTRACT(hour from $field)";
     }
 
     public function convert($expr, $type)

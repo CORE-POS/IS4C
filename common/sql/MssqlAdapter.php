@@ -83,6 +83,11 @@ class MssqlAdapter implements DialectAdapter
         return 'MONEY';
     }
 
+    public function curdate()
+    {
+        return 'CAST(GETDATE() AS DATE)';
+    }
+
     public function curtime()
     {
         return 'GETDATE()';
@@ -121,6 +126,16 @@ class MssqlAdapter implements DialectAdapter
     public function dayofweek($field)
     {
         return "DATEPART(dw,$field)";
+    }
+
+    public function week($field)
+    {
+        return "DATEPART(wk,$field)";
+    }
+
+    public function hour($field)
+    {
+        return "DATEPART(hh,$field)";
     }
 
     public function convert($expr, $type)

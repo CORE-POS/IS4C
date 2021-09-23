@@ -84,6 +84,11 @@ class SqliteAdapter implements DialectAdapter
         return 'REAL';
     }
 
+    public function curdate()
+    {
+        return "DATE('NOW')";
+    }
+
     public function curtime()
     {
         return "TIME('NOW')";
@@ -122,6 +127,16 @@ class SqliteAdapter implements DialectAdapter
     public function dayofweek($field)
     {
         return "STRFTIME('%w', $field)";
+    }
+
+    public function week($field)
+    {
+        return "STRFTIME('%W', $field)";
+    }
+
+    public function hour($field)
+    {
+        return "STRFTIME('%H', $field)";
     }
 
     public function convert($expr, $type)

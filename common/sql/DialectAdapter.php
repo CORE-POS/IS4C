@@ -32,6 +32,7 @@ interface DialectAdapter
     public function sep();
     public function addSelectLimit($query, $int_limit);
     public function currency();
+    public function curdate();
     public function curtime();
     public function datediff($date1, $date2);
     public function monthdiff($date1, $date2);
@@ -40,6 +41,8 @@ interface DialectAdapter
     public function seconddiff($date1, $date2);
     public function dateymd($date1);
     public function dayofweek($field);
+    public function week($field);
+    public function hour($field);
     public function convert($expr, $type);
     public function locate($substr, $str);
     public function concat($expressions);

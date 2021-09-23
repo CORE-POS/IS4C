@@ -40,10 +40,6 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $name = $sql->fieldName($result,0);
         $this->assertEquals('one',$name);
 
-        $aff = $sql->affectedRows();
-        $this->assertNotEquals(False,$aff);
-        $this->assertEquals(1,$aff);
-
         /* test various fetch methods */
         $array = $sql->fetch_array($result);
         $this->assertNotEquals(False,$array);
@@ -52,9 +48,6 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1,$array[0]);
         $this->assertEquals(1,$array['one']);
 
-        /** PDO does not support seek */
-        //$seek = $sql->dataSeek($result,0);
-        //$this->assertNotEquals(false, $seek);
         $result = $sql->query("SELECT 1 as one");
         $this->assertNotEquals(False,$result);
 

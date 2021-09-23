@@ -48,6 +48,15 @@ By default CORE will often query the status of tables to verify whether newer co
 exist before attempting to use them. Disabling these checks may yield modest performance
 gains but if database schemas are not up to date any resulting crashes will not be
 graceful.'); ?>
+<br />
+<b><?php echo _('Enable new DB layer'); ?></b>:
+<?php
+echo $form->selectField('DbalEnabled', array(1=>_('Yes'),0=>_('No')), 0);
+?>
+<br />
+<?php echo _('
+Enable new Doctrine based DB abstraction layer
+'); ?>
 <hr />
 <b><?php echo _('Log State Changes'); ?></b>: 
 <?php
