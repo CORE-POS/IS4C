@@ -162,7 +162,7 @@ function printMany(){
         <table class="table table-striped">
         <?php
 
-        $query = $dbc->prepare("
+        $queueQ = "
             SELECT s.shelfTagQueueID,
                 s.description,
                 count(distinct t.upc) AS ct
@@ -170,12 +170,12 @@ function printMany(){
                 LEFT JOIN shelftags AS t ON s.shelfTagQueueID = t.id
             GROUP BY shelfTagQueueID,
                 s.description
-            ORDER BY shelfTagQueueID");
-        $result = $dbc->execute($query);
+            ORDER BY shelfTagQueueID";
+        $result = $dbc->execute($dbc->prepare($queueQ));
         if ($dbc->numRows($result) == 0) {
             $queues = new ShelfTagQueuesModel($dbc);
             $queues->initQueues();
-            $result = $dbc->execute($query);
+            $result = $dbc->execute($dbc->prepare($queueQ));
         }
         $rows = array();
         while($row = $dbc->fetch_row($result))
