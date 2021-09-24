@@ -572,7 +572,7 @@ class SQLManager
             $result = $stmt->execute($params);
             $success = true;
         } catch (DriverException $ex) {
-            $this->dbalErrorHandler($ex, $stmt);
+            $this->dbalErrorHandler($ex, $stmt, $params, $which_connection);
         }
 
         if ($success && $this->debug_mode) {
@@ -585,7 +585,7 @@ class SQLManager
         return $stmt;
     }
 
-    private function dbalErrorHandler($ex, $stmt)
+    private function dbalErrorHandler($ex, $stmt, $params, $which_connection='')
     {
         $this->last_dbal_error = $ex->getMessage();
         /*
@@ -2064,7 +2064,7 @@ class SQLManager
                 $ret = $this->dbals[$which_connection]->prepare($sql);
                 return $ret;
             } catch (\Exception $ex) {
-                $this->dbalErrorHandler($ex, $sql);
+                $this->dbalErrorHandler($ex, $sql, array(), $which_connection);
                 return false;
             }
         }
