@@ -252,7 +252,13 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         $longdesc = FormLib::get('s_longdesc','');
         if (trim($longdesc) !== '') $desc = $longdesc;
         $price = FormLib::get('price',0);
+        $storePrices = array();
         if (is_array($price)) {
+            $stores = FormLib::get('store_id', array());
+            for ($i=0; $i<count($stores); $i++) {
+                $storeID = $stores[$i];
+                $storePrices[$storeID] = $price[$i];
+            }
             $price = array_pop($price);
         }
         if ($price == 0) {
@@ -354,6 +360,9 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
         } else {
             $item_info['Type'] = 'Random Weight';
             $item_info['ByCount'] = 0;
+        }
+        foreach ($storePrices as $sID => $p) {
+            $item_info['Price' . $sID] = $p;
         }
 
         $hashes = FormLib::get('s_text_hash');

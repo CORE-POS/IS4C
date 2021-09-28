@@ -42,6 +42,10 @@ class EpScaleLib
         $scale_fields .= 'DNO' . $scale_model->epDeptNo() . chr(253);
         $scale_fields .= 'SAD' . $scale_model->epScaleAddress() . chr(253);
 
+        if (isset($item_info['Price' . $scale_model->storeID()])) {
+            $item_info['Price'] = $item_info['Price' . $scale_model->storeID()];
+        }
+
         $labelInfo = array('labelType'=>103, 'descriptionWidth'=>26, 'textWidth'=>0);
         if (isset($item_info['Label'])) {
             $labelInfo = ServiceScaleLib::labelTranslate($item_info['Label'], $scale_model->scaleType());
