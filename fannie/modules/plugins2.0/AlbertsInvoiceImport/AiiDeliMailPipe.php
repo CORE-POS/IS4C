@@ -66,6 +66,9 @@ class AiiDeliMailPipe extends \COREPOS\Fannie\API\data\pipes\AttachmentEmailPipe
                     $caseSize = (($data[5] ? $data[5] : 1) * $data[6]);
                     if ($isBulk) {
                         $caseSize = $data[20];
+                        if ($data[2] == '68499') {
+                            $caseSize = 20;
+                        }
                     }
                     $poi->unitCost(($data[20] * $data[21]) / $caseSize);
                     $poi->caseSize($caseSize);
