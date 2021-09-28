@@ -44,6 +44,7 @@ class RpOrderItemsModel extends BasicModel
     'backupSKU' => array('type'=>'VARCHAR(13)'),
     'backupItem' => array('type'=>'VARCHAR(255)'),
     'cost' => array('type' => 'MONEY'),
+    'deleted' => array('type'=>'TINYINT', 'default'=>0),
     );
 }
 

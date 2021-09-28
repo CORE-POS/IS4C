@@ -481,6 +481,7 @@ class RpDirectPage extends FannieRESTfulPage
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
                 LEFT JOIN vendors AS b ON r.backupID=b.vendorID
             WHERE r.storeID=?
+                AND r.deleted=0
 
             UNION ALL
 

@@ -488,6 +488,7 @@ class RpOrderPage extends FannieRESTfulPage
                 LEFT JOIN vendors AS v ON r.vendorID=v.vendorID
                 LEFT JOIN vendors AS b ON r.backupID=b.vendorID
             WHERE r.storeID=?
+                AND r.deleted=0
             ORDER BY c.seq, c.name, r.vendorItem");
         $res = $this->connection->execute($prep, array($store));
         $tables = '';
