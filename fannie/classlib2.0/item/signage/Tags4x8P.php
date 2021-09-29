@@ -71,7 +71,11 @@ class Tags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
             $pak = $item['units'];
             $size = $item['units'] . "-" . $item['size'];
             $sku = $item['sku'];
-            $ppu = $item['pricePerUnit'];
+            if (array_key_exists('pricePerUnit', $item)) {
+                $ppu = $item['pricePerUnit'];
+            } else {
+                $ppu = '';
+            }
             $vendor = substr($item['vendor'],0,7);
             if ($this->noDates) {
                 $vendor = $item['vendor'];
