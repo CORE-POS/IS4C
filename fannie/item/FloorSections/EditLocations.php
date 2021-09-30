@@ -87,6 +87,7 @@ class EditLocations extends FannieRESTfulPage
     public function post_newSection_handler()
     {
         $upc = FormLib::get('upc');
+        $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $floorSectionID = FormLib::get('floorSectionID');
         $newSection = FormLib::get('newSection');
         $json = array();
@@ -95,11 +96,25 @@ class EditLocations extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $prep = $dbc->prepare("UPDATE FloorSectionProductMap SET floorSectionID = ? 
-            WHERE upc = ? AND floorSectionID = ?;");
-        $res = $dbc->execute($prep, array($newSection, $upc, $floorSectionID));
+        $args = array($upc, $storeID);
+        $prep = $dbc->prepare("SELECT * FROM FloorSectionProductMap AS m
+            LEFT JOIN FloorSections AS f ON m.floorSectionID=f.floorSectionID WHERE upc = ? AND storeID = ?");
+        $res = $dbc->execute($prep, $args);
+        $row = $dbc->fetchRow($res);
+        $exists = ($row['upc'] > 0) ? true : false;
+
+        if ($exists == true && $floorSectionID != 0) {
+            $prep = $dbc->prepare("UPDATE FloorSectionProductMap SET floorSectionID = ? 
+                WHERE upc = ? AND floorSectionID = ?;");
+            $res = $dbc->execute($prep, array($newSection, $upc, $floorSectionID));
+        } elseif ($exists == false || $floorSectionID == 0) {
+            $prep = $dbc->prepare("INSERT INTO FloorSectionProductMap (floorSectionID, upc) 
+                VALUES (?, ?) ");
+            $res = $dbc->execute($prep, array($newSection, $upc));
+        }
+
         if ($er = $dbc->error())
-                $json['error'] = $er;
+            $json['error'] = $er;
         echo json_encode($json);
 
         return false; 
@@ -132,7 +147,8 @@ class EditLocations extends FannieRESTfulPage
 
     public function floorSectionSelect($options, $floorSectionID)
     {
-        $select = "<select class=\"form-control edit-floorSection\">";
+        $select = "<select class=\"form-control edit-floorSection\" style=\"width: 175px; display: inline-block;\">
+            <option value=\"\">NEW FLOOR SECTION</option>";
         foreach ($options as $id => $name) {
             $sel = ($floorSectionID == $id) ? "selected" : "";
             $select .= "<option value=\"$id\" $sel>$name</option>";
@@ -167,7 +183,8 @@ class EditLocations extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $STORE_ID = 2;
+        //$STORE_ID = 2;
+        $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $upc = FormLib::get('upc', false);
         $upc = BarcodeLib::padUpc($upc);
@@ -187,7 +204,7 @@ class EditLocations extends FannieRESTfulPage
             $subSections[$row['floorSectionID']][] = $row['subSection'];
         }
 
-        $args = array($upc, $STORE_ID);
+        $args = array($upc, $storeID);
         $prep = $dbc->prepare("
             SELECT * 
             FROM FloorSectionProductMap AS map 
@@ -235,23 +252,38 @@ class EditLocations extends FannieRESTfulPage
 
             $stripe = ($i % 2 == 0) ? "#FFFFCC" : "transparent";
 
+            $alphabet = range('A', 'Z');
             $td .= sprintf("
-                    <tr style=\"background-color: %s;\"><td><div><strong>Floor Section (%s)</strong></div>%s</td></tr>
-                    <tr style=\"background-color: %s;\"><td><div><strong>Sub-Section (%s)</strong></div>%s</td></tr>
+                    <tr style=\"background-color: %s;\"><td><div>Floor Section<strong> %s</strong></div>%s</td></tr>
+                    <tr style=\"background-color: %s;\"><td><div>Sub-Section<strong> %s</strong></div>%s</td></tr>
                     <td class=\"row-data\" id=\"row-data\" style=\"display: none\" 
                     data-upc=\"%s\" data-floorSectionID=\"%s\" data-subSection=\"%s\" data-storeID=\"%s\">
                     </td></tr>", 
                 $stripe,
-                $i,
+                $alphabet[$i-1],
                 $this->floorSectionSelect($sections, $floorSectionID)
                     ." <span class=\"btn btn-default fas fa-trash btn-remove-section\" 
                         style=\"float:right; margin: 5px;\" data-floorSectionID=\"$floorSectionID\"></span>",
                 $stripe,
-                $i,
-                "<select class=\"form-control edit-subsection\" data-floorSection=\"$floorSectionID\">$subSectionOpts</select>",
-                $upc, $floorSectionID, $subSection, $STORE_ID
+                $alphabet[$i-1],
+                "<select class=\"form-control edit-subsection\" data-floorSection=\"$floorSectionID\" style=\"width: 75px;\">$subSectionOpts</select>",
+                $upc, $floorSectionID, $subSection, $storeID
             );
         }
+        $td .= sprintf("
+                <tr style=\"background-color: %s;\"><td><div>
+                    <b>+ ADD NEW +</b> Floor Section</div>%s</td></tr>
+                <tr style=\"background-color: %s;\"></tr>
+                <td class=\"row-data\" id=\"row-data\" style=\"display: none\" 
+                data-upc=\"%s\" data-floorSectionID=\"%s\" data-subSection=\"%s\" data-storeID=\"%s\">
+                </td></tr>", 
+            'orange',
+            $this->floorSectionSelect($sections, 0)
+                ." <span class=\"btn btn-default fas fa-trash btn-remove-section\" 
+                    style=\"float:right; margin: 5px;\" data-floorSectionID=\"$floorSectionID\"></span>",
+            'orange',
+            $upc, 0, 0, $storeID
+        );
         echo $dbc->error();
         $this->addOnloadCommand('$(\'#upc\').focus();');
         $this->addOnloadCommand("enableLinea('#upc');\n");
@@ -280,12 +312,15 @@ class EditLocations extends FannieRESTfulPage
     <div class="col-lg-4">
         <div class="form-group">
             <form name="upc-form" method="get">
-                <div class="form-group">
-                    <label for="upc">UPC</label>
-                    <input name="upc" id="upc" value="$upc" class="form-control" autofocus pattern="\d*">
+                <div class="col-xs-8">
+                    <div class="form-group">
+                        <input name="upc" id="upc" value="$upc" class="input-small small form-control" autofocus pattern="\d*">
+                    </div>
                 </div>
-                <div class="form-group" align="right">
-                    <button class="btn btn-default">Submit</button>
+                <div class="col-xs-4">
+                    <div class="form-group">
+                        <button class="btn btn-default btn-xs xs form-control">Submit</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -308,7 +343,8 @@ HTML;
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
-        $STORE_ID = 2;
+        //$STORE_ID = 2;
+        $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
         $upcs = FormLib::get('upcs', false);
         $upcs = explode("\r\n",$upcs);
@@ -378,7 +414,7 @@ HTML;
                     ." <span class=\"form-control btn btn-default btn-add-subsection\">+</span>",
                 $department,
                 $superName,
-                $upc, $floorSectionID, $subSection, $STORE_ID
+                $upc, $floorSectionID, $subSection, $storeID
             );
         }
         echo $dbc->error();
@@ -431,6 +467,14 @@ HTML;
     public function javascriptContent()
     {
         return <<<JAVASCRIPT
+$('head').append('<meta name = "viewport" content = "width=device-width, minimum-scale=1.0, maximum-scale = 1.0, user-scalable = no">');
+
+$('#upc').focus(function(){
+    $(this).select();
+});
+
+$('#fannie-outer-margin').css('margin-left', '0')
+    .css('margin-right', '0');
 $('.btn-add-subsection').click(function(){
     var p = prompt('Enter section to add');
     if (p != null) {
