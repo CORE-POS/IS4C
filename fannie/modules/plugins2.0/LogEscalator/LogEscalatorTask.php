@@ -22,9 +22,16 @@ class LogEscalatorTask extends FannieTask
 
     public function run()
     {
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $offsetPath = $settings['LogEscalateOffsetFile'];
+
         $logfile = __DIR__ . '/../../../logs/fannie.log';
-        $offset = @file_get_contents('/tmp/flmoffset');
-        $offset = $offset ? $offset : 0;
+        if (file_exists($offsetPath)) {
+            $offset = @file_get_contents($offsetPath);
+            $offset = $offset ? $offset : 0;
+        } else {
+            $offset = 0;
+        }
         $lines = exec('wc -l ' . escapeshellarg($logfile));
         if ($lines) {
             list($lines, $filname) = explode(' ', $lines);
@@ -38,8 +45,7 @@ class LogEscalatorTask extends FannieTask
             . ' | grep -E "fannie.(WARNING|ERROR|ALERT|CRITICAL|EMERGENCY)"';
         exec($chk_cmd, $output);
         if (count($output) > 0) {
-            $saved_offset = file_put_contents('/tmp/flmoffset', $lines);
-            $settings = $this->config->get('PLUGIN_SETTINGS');
+            $saved_offset = file_put_contents($offsetPath, $lines);
             $addr = $settings['LogEscalateEmail'];
             $addr = filter_var($addr, FILTER_VALIDATE_EMAIL);
             if ($addr) {
