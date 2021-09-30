@@ -278,9 +278,7 @@ class EditLocations extends FannieRESTfulPage
                 data-upc=\"%s\" data-floorSectionID=\"%s\" data-subSection=\"%s\" data-storeID=\"%s\">
                 </td></tr>", 
             'orange',
-            $this->floorSectionSelect($sections, 0)
-                ." <span class=\"btn btn-default fas fa-trash btn-remove-section\" 
-                    style=\"float:right; margin: 5px;\" data-floorSectionID=\"$floorSectionID\"></span>",
+            $this->floorSectionSelect($sections, 0),
             'orange',
             $upc, 0, 0, $storeID
         );
