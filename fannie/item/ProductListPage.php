@@ -241,7 +241,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         return array(
             'alertBox'=>$ret,
             'upc'=>ltrim($upc, '0'),
-            'enc_desc'=>$encoded_desc
+            'enc_desc'=>base64_encode($desc),
         );
     }
 
