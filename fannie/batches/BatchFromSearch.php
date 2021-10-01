@@ -340,6 +340,7 @@ class BatchFromSearch extends FannieRESTfulPage
 </div>
 <table class="table">
     <tr><th>UPC</th><th>Description</th><th>Retail</th>
+    <th>Cost</th>
     <th id="newPriceHeader">Sale Price</th></tr>
 HTML;
 
