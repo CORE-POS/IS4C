@@ -56,25 +56,31 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
         $query = '
             SELECT v.upc,
                 v.sku,
-                COALESCE(p.cost, v.cost) AS cost,
-                CASE
-                    WHEN c.margin IS NOT NULL AND c.margin <> 0 THEN c.margin 
-                    WHEN a.margin IS NOT NULL THEN a.margin
-                    WHEN b.margin IS NOT NULL THEN b.margin
-                    ELSE 0 
-                END AS margin,
+                v.cost,
+                a.margin,
                 COALESCE(n.shippingMarkup, 0) as shipping,
                 COALESCE(n.discountRate, 0) as discount
             FROM vendorItems as v 
                 LEFT JOIN vendorDepartments AS a ON v.vendorID=a.vendorID AND v.vendorDept=a.deptID
                 INNER JOIN vendors AS n ON v.vendorID=n.vendorID
-                LEFT JOIN products as p ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
+            WHERE v.vendorID=?';
+        $dbc2 = FannieDB::getReadOnly($this->config->get('OP_DB'));
+        $fetchP = $dbc2->prepare($query);
+        $fetchR = $dbc2->execute($fetchP, array($id));
+        $prodP = $dbc2->prepare("SELECT p.upc, p.cost, b.margin, c.margin AS specificMargin
+            FROM products as p 
                 LEFT JOIN departments AS b ON p.department=b.dept_no
                 LEFT JOIN VendorSpecificMargins AS c ON c.vendorID=n.vendorID AND p.department=c.deptID
-            WHERE v.vendorID=?
-                AND (a.margin IS NOT NULL OR b.margin IS NOT NULL)';
-        $fetchP = $dbc->prepare($query);
-        $fetchR = $dbc->execute($fetchP, array($id));
+            WHERE p.default_vendor_id=?");
+        $prodR = $dbc2->execute($prodP, array($id));
+        $prodData = array();
+        while ($row = $dbc2->fetchRow($prodR)) {
+            $prodData[$row['upc']] = array(
+                'cost' => $row['cost'],
+                'margin' => $row['margin'],
+                'specific' => $row['specificMargin'],
+            );
+        }
         $upP = $dbc->prepare('
             UPDATE vendorItems
             SET srp=?,
@@ -88,11 +94,22 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
         $rounder = new \COREPOS\Fannie\API\item\PriceRounder();
         $upcs = array();
         $dbc->startTransaction();
-        while ($fetchW = $dbc->fetchRow($fetchR)) {
+        while ($fetchW = $dbc2->fetchRow($fetchR)) {
             if (isset($upcs[$fetchW['upc']])) {
                 continue;
             }
             $upcs[$fetchW['upc']] = true;
+            // products data overrides, if available
+            if (isset($prodData[$upc])) {
+                if ($prodData[$upc]['cost']) {
+                    $fetchW['cost'] = $prodData[$upc]['cost'];
+                }
+                if ($prodData[$upc]['specific']) {
+                    $fetchW['margin'] = $prodData[$upc]['specific'];
+                } elseif ($prodData[$upc]['margin']) {
+                    $fetchW['margin'] = $prodData[$upc]['margin'];
+                }
+            }
             // calculate a SRP from unit cost and desired margin
             $adj = \COREPOS\Fannie\API\item\Margin::adjustedCost($fetchW['cost'], $fetchW['discount'], $fetchW['shipping']);
             $srp = \COREPOS\Fannie\API\item\Margin::toPrice($adj, $fetchW['margin']);
@@ -106,20 +123,24 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
         }
         $dbc->commitTransaction();
 
-        list($found, $vendorName) = $this->checkPriceChanges();
 
         $ret = "<div><b>SRPs have been updated</b></div>";
-        if ($found == 0) {
-            $ret .= sprintf("
-                <div>%d possible price changes found for <strong>%s</strong>
-                </div>",
-                $found, $vendorName);
-        } else {
-            $ret .= sprintf("
-                <div>%d possible price changes found for <strong>%s</strong>
-                </div><div>Please run the Vendor Pricing Batch Page.</div>",
-                $found, $vendorName);
-        }
+        echo "id: $id";
+        //if (!in_array($id, array(1,21))) {
+        //    list($found, $vendorName) = $this->checkPriceChanges();
+        //    if ($found == 0) {
+        //        $ret .= sprintf("
+        //            <div>%d possible price changes found for <strong>%s</strong>
+        //            </div>",
+        //            $found, $vendorName);
+        //    } else {
+        //        $ret .= sprintf("
+        //            <div>%d possible price changes found for <strong>%s</strong>
+        //            </div><div>Please run the Vendor Pricing Batch Page.</div>",
+        //            $found, $vendorName);
+        //    }
+        //}
+
         $ret .= sprintf('<p>
             <a class="btn btn-default" href="index.php">Price Batch Tools</a>
             <a class="btn btn-default" 
