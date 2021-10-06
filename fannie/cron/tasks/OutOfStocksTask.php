@@ -45,7 +45,7 @@ class OutOfStocksTask extends FannieTask
                 AND default_vendor_id=?");
         while ($row = $dbc->fetchRow($res)) {
             $lastOrder = $dbc->getRow($findP, array($row['upc'], $row['default_vendor_id']));
-            if ( $lastOrder['receivedQty']) {
+            if (is_array($lastOrder) && $lastOrder['receivedQty']) {
                 $dbc->execute($prodP, array(
                     ~(1 << (19 - 1)),
                     $row['upc'],
