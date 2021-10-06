@@ -323,6 +323,15 @@ class InvCountPage extends FannieRESTfulPage
                 continue;
             }
             $info = $this->getMostRecent($row['upc'], $store);
+            if ($info === false) {
+                $info['countDate'] = 'n/a';
+                $info['count'] = 0;
+                $info['par'] = 0;
+                $info['ordered'] = 0;
+                $info['sold'] = 0;
+                $info['shrunk'] = 0;
+                $info['onHand'] = 0;
+            }
             $ret .= sprintf('<tr %s>
                 <td>%s<input type="hidden" name="upc[]" value="%s" /></td>
                 <td>%s</td>
