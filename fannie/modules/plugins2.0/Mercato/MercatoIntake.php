@@ -45,6 +45,9 @@ class MercatoIntake
         $itemP = $this->dbc->prepare("SELECT description, department, tax, cost, scale FROM products WHERE upc=?");
         while (!feof($fp)) {
             $data = fgetcsv($fp);
+            if (!is_array($data)) {
+                continue;
+            }
             if (!is_numeric($data[$this->COL_ORDER_ID])) {
                 continue;
             }
