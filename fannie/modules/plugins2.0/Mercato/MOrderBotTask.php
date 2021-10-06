@@ -70,6 +70,9 @@ class MOrderBotTask extends FannieTask
         $count = 0;
         while ($fp && !feof($fp)) {
             $data = fgetcsv($fp);
+            if (!is_array($data)) {
+                continue;
+            }
             $orderID = $data[0];
             $phone = $data[1];
             $phone = str_replace('(', '', $phone);
