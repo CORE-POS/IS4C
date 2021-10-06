@@ -780,13 +780,13 @@ class RpOrderPage extends FannieRESTfulPage
             <input type="text" class="form-control input-sm" name="upc" id="newUPC" />
         </div>
     </div>
-    <div class="col-sm-5">
+    <div class="col-sm-4">
         <div class="form-group input-group">
             <span class="input-group-addon">SKU</span>
             <input type="text" class="form-control input-sm" name="sku" id="newSKU" />
         </div>
     </div>
-    <div class="col-sm-3">
+    <div class="col-sm-4">
         <div class="form-group input-group">
             <span class="input-group-addon">Case Size</span>
             <input type="text" class="form-control input-sm" name="caseSize" required id="newCase" value="1" />
