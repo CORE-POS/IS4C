@@ -109,14 +109,14 @@ class ManualSignsPage extends FannieRESTfulPage
             if ($row['upc'] != $prevUPC) {
                 if ($this->queueID == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
                     $lcRow = $this->connection->getRow($lcP, array($row['upc']));
-                    $row['origin'] = $lcRow['signOrigin'] ? $lcRow['origin'] : '';
+                    $row['origin'] = is_array($lcRow) && $lcRow['signOrigin'] ? $lcRow['origin'] : '';
                     if ($row['normal_price'] > $row['price']) {
                         $row['origin'] .= '/' . $row['normal_price'];
                     }
                     if (!$row['signText'] && $lcRow['likeCodeDesc']) {
                         $row['description'] = $lcRow['likeCodeDesc'];
                     }
-                    $row['brand'] = $lcRow['organic'] ? 'ORGANIC' : '';
+                    $row['brand'] = is_array($lcRow) && $lcRow['organic'] ? 'ORGANIC' : '';
                 } else {
                     // preserve normal behavior
                     $row['price'] = $row['normal_price'];
