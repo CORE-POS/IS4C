@@ -346,6 +346,12 @@ HTML;
             $record = array('name' => $row['likeCodeDesc']);
             $record['retail'] = $this->connection->getValue($retailP, array($row['likeCode'], $store));
             $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode'], $store));
+            if (!is_array($info)) {
+                $info = array(
+                    'movement' => 0,
+                    'caseSize' => 1,
+                );
+            }
             $record['smoothed'] = $info['movement'];
             $record['caseSize'] = $info['caseSize'];
             $record['total'] = $record['retail'] * $info['movement'];
@@ -406,6 +412,12 @@ HTML;
             $record = array('name' => $row['likeCodeDesc']);
             $record['retail'] = $this->connection->getValue($retailP, array($row['likeCode'], $store));
             $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode'], $store));
+            if (!is_array($info)) {
+                $info = array(
+                    'movement' => 0,
+                    'caseSize' => 1,
+                );
+            }
             $record['smoothed'] = $info['movement'];
             $record['caseSize'] = $info['caseSize'];
             $record['total'] = $record['retail'] * $info['movement'];
