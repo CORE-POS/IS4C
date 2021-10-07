@@ -48,6 +48,10 @@ class MercatoTask extends FannieTask
             }
             $upc = BarcodeLib::padUPC($upc);
             $info = $dbc->getRow($deptP, array($upc, $storeID));
+            if (!is_array($info)) {
+                $this->logger->warning("No record found for $upc:$storeID?");
+                continue;
+            }
             fwrite($out,$data[0] . ",");
             $name = $data[3];
             if ($data[5]) {
@@ -109,6 +113,9 @@ class MercatoTask extends FannieTask
         while ($oosW = $dbc->fetchRow($oosR)) {
             $upc = $oosW['upc'];
             $row = $dbc->getRow($prodP, array($upc, $storeID));
+            if (!is_array($prodP)) {
+                $this->logger->warning("No record found for $upc:$storeID");
+            }
             fwrite($out, $upc . ',');
             $name = $row['description'];
             if ($row['brand']) {
