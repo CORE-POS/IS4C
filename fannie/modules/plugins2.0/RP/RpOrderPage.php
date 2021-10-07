@@ -604,7 +604,7 @@ class RpOrderPage extends FannieRESTfulPage
                 $row['backupVendor'],
                 $highlight,
                 $tooltip,
-                $cost['cost'] * $row['caseSize'],
+                ($cost ? $cost['cost'] : 0) * $row['caseSize'],
                 ($row['vendorSKU'] ? '(' . $row['vendorSKU'] . ')' : ''),
                 $row['vendorItem'],
                 $startIcon, $endIcon,
