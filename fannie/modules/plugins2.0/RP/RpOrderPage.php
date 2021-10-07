@@ -524,7 +524,7 @@ class RpOrderPage extends FannieRESTfulPage
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
-            if ($row['caseSize'] != 0  && ($cost || !$cost['cost'])) {
+            if ($row['caseSize'] != 0  && $cost && $cost['cost'] > 0) {
                 $cost = array('cost' => $row['cost'] / $row['caseSize'], 'units' => $row['caseSize']);
             }
             $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
@@ -619,9 +619,9 @@ class RpOrderPage extends FannieRESTfulPage
                 $upc,
                 $orderAmt,
                 $upc, $store, $row['vendorID'],
-                ($inOrder['vendorID'] == $row['vendorID'] ? 'checked' : ''),
+                ($inOrder && $inOrder['vendorID'] == $row['vendorID'] ? 'checked' : ''),
                 $upc, $store, $row['backupID'],
-                ($inOrder['vendorID'] == $row['backupID'] ? 'checked' : ''),
+                ($inOrder && $inOrder['vendorID'] == $row['backupID'] ? 'checked' : ''),
                 ($row['backupID'] ? '' : 'disabled')
             );
         }

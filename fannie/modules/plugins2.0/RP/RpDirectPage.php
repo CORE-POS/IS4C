@@ -560,7 +560,7 @@ class RpDirectPage extends FannieRESTfulPage
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = $this->connection->getRow($costP,
                 array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
-            if ($cost['units'] > 1 && $cost['units'] != $row['caseSize']) {
+            if ($cost && $cost['units'] > 1 && $cost['units'] != $row['caseSize']) {
                 $cost['cost'] /= $cost['units'];
             }
             if (!$cost) {
@@ -680,13 +680,13 @@ class RpDirectPage extends FannieRESTfulPage
                 $upc,
                 $orderAmt,
                 $upc, $store, $row['vendorID'],
-                ($inOrder['vendorID'] == $row['vendorID'] ? 'checked' : ''),
+                ($inOrder && $inOrder['vendorID'] == $row['vendorID'] ? 'checked' : ''),
                 '', // in secondary order ($inOrder ? 'info' : ''),
                 $fieldType,
                 $upc,
                 '', // secondary order amount
                 $upc, $store, $row['backupID'],
-                ($inOrder['vendorID'] == $row['backupID'] && $row['backupID'] != null ? 'checked' : '')
+                ($inOrder && $inOrder['vendorID'] == $row['backupID'] && $row['backupID'] != null ? 'checked' : '')
             );
             if ($appendTables) {
                 $tables .= $nextRow;
