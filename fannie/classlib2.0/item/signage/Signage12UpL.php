@@ -134,6 +134,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf = $this->createPDF();
 
         $data = $this->loadItems();
+        $data = $this->sortProductsByPhysicalLocation($this->getDB(), $data, $this->store);
         $count = 0;
         $sign = 0;
         $this->top = 17;

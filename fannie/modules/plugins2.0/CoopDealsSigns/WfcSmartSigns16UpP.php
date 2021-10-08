@@ -34,6 +34,7 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Signage16UpP
         $localP = $dbc->prepare("SELECT 'true' FROM products WHERE local > 0 AND upc = ?");
 
         $data = $this->loadItems();
+        $data = $this->sortProductsByPhysicalLocation($this->getDB(), $data, $this->store);
         $count = 0;
         $sign = 0;
         $width = 53.975;

@@ -77,6 +77,7 @@ class FannieSignage
         $this->items = $items;
         $this->source = strtolower($source);
         $this->source_id = $source_id;
+        $this->store = Store::getIdByIp();
     }
 
     protected $connection = null;
@@ -1141,5 +1142,53 @@ class FannieSignage
 
         return true;
     }
+
+    static function sortProductsByPhysicalLocation($dbc, $data, $storeID)
+    {
+
+        $upcs = array();
+        foreach ($data as $k => $row) {
+            $upcs[] = $row['upc']; 
+        }
+        list($inStr, $args) = $dbc->safeInClause($upcs);
+        $args[] = $storeID;
+        $query = "SELECT p.upc, f.sections FROM FloorSectionsListView AS f INNER JOIN products AS p ON f.upc=p.upc WHERE p.upc IN ($inStr) AND storeID = ? ORDER BY sections;";
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $args);
+
+        $i = 0;
+        while ($row = $dbc->fetchRow($res)) {
+            $tmpKey = self::getKeyByUpc($data, $row['upc']);
+            $data[$tmpKey]['order'] = $i;
+            $i++;
+        }
+
+        $newData = array();
+        $i = 0;
+        $endOfList = 9999;
+        foreach ($data as $k => $row) {
+            $order = isset($row['order']) ? $row['order'] : $endOfList;
+            //$order = $i;
+            foreach ($row as $name => $value){
+                $newData[$order][$name] = $value;
+            }
+            $i++;
+            $endOfList++;
+        }
+        ksort($newData);
+
+        return $newData;
+    }
+
+    static function getKeyByUpc($data, $upc)
+    {
+        foreach ($data as $k => $row) {
+            if ($row['upc'] == $upc)
+                return $k;
+        }
+
+        return rand();
+    }
+
 }
 

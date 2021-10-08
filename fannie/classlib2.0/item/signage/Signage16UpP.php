@@ -120,8 +120,10 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
     public function drawPDF()
     {
         $pdf = $this->createPDF();
+        $store = $this->store;
 
         $data = $this->loadItems();
+        $data = $this->sortProductsByPhysicalLocation($this->getDB(), $data, $this->store);
         $count = 0;
         $sign = 0;
         $this->height = 69.35;
@@ -146,6 +148,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
         $pdf->Output('Signage16UpP.pdf', 'I');
     }
+
 }
 
 }
