@@ -67,7 +67,8 @@ foreach ($data as $k => $row) {
 list($inStr, $locationA) = $dbc->safeInClause($upcs);
 $locationP = $dbc->prepare("
 SELECT f.upc, 
-UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), '-', sub.SubSection)) AS location
+UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), '-', sub.SubSection)) AS location,
+UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1))) AS noSubLocation
 FROM FloorSectionProductMap AS f
     LEFT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
     LEFT JOIN FloorSubSections AS sub ON f.floorSectionID=sub.floorSectionID 
@@ -79,7 +80,7 @@ $locationA[count($locationA)] = $store;
 $res = $dbc->execute($locationP, $locationA);
 while ($row = $dbc->fetchRow($res)) {
     $upc = ltrim($row['upc'],0);
-    $locations[$upc] = $row['location'];
+    $locations[$upc] = ($row['location'] != null) ? $row['location'] : $row['noSubLocation'];
 }
 
 $mtLength = $store == 1 ? 3 : 7;
