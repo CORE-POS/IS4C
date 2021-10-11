@@ -62,7 +62,6 @@ $locations = array();
 foreach ($data as $k => $row) {
     $upc = $row['upc'];
     $upcs[] = $upc;
-    //$locations[$upc] = '';
 }
 list($inStr, $locationA) = $dbc->safeInClause($upcs);
 $locationP = $dbc->prepare("
@@ -80,7 +79,7 @@ $locationA[count($locationA)] = $store;
 $res = $dbc->execute($locationP, $locationA);
 while ($row = $dbc->fetchRow($res)) {
     $upc = ltrim($row['upc'],0);
-    $locations[$upc] = ($row['location'] != null) ? $row['location'] : $row['noSubLocation'];
+    $locations[$upc][] = ($row['location'] != null) ? $row['location'] : $row['noSubLocation'];
 }
 
 $mtLength = $store == 1 ? 3 : 7;
@@ -181,7 +180,11 @@ foreach($data as $row) {
             $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
             $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
             $pdf->SetXY($full_x+38, $full_y+8);
-            $pdf->Cell(9, 4, $locations[$upc], 0, 1, 'C');
+            $pdf->Cell(9, 4, current($locations[$upc]), 0, 1, 'C');
+            $key = key($locations[$upc]);
+            if (isset($locations[$upc][$key+1])) {
+                next($locations[$upc]);
+            }
         } else {
             //Start laying out a label
             if (strlen($upc) <= 11)
