@@ -155,7 +155,7 @@ HTML;
             $upc = substr($upc, 0, 7) . '000000';
             $info = $this->connection->getRow($infoP, array($upc));
         }
-        $info['cost'] = sprintf('%.2f', $info['cost']);
+        $info['cost'] = is_array($info) ? sprintf('%.2f', $info['cost']) : '0.00';
         $accounting = $this->config->get('ACCOUNTING_MODULE');
         if (!class_exists($accounting)) {
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
