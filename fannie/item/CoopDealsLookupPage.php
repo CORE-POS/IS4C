@@ -175,7 +175,8 @@ HTML;
                 v.sku,
                 p.description,
                 c.price AS srp,
-                m.super_name
+                m.super_name,
+                p.normal_price
             FROM CoopDealsItems AS c
                 LEFT JOIN products AS p ON c.upc=p.upc
                 LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
@@ -209,6 +210,7 @@ HTML;
             $brand = $row['brand'];
             $sku = $row['sku'];
             $srp = $row['srp'];
+            $normal_price = $row['normal_price'];
             $superName = $row['super_name'];
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
@@ -216,7 +218,8 @@ HTML;
             $ret .=  '<td><b>Flyer Period</b></td><td>' . $flyerPeriod . '</tr>';
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
             $srp = $row['srp'];
-            $ret .= '<td><b>Sale Price</b></td><td>' . $srp . '</td></tr>';
+            $ret .= '<td><b>Normal Price / Sale Price</b></td><td>$' . $normal_price . ' > ' . 
+                 '<b>$'.$srp . '</b></td></tr>';
             $ret .=  '<td><b>Department</b></td><td>' . $superName .'</td></tr>';
             $check = $row['upc'];
         }
