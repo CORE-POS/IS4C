@@ -85,7 +85,7 @@ class PreviousPromosReport extends FannieReportPage
                 $itemW['brand'],
                 $itemW['description'],
                 sprintf('%.2f', $itemW['auto_par']),
-                $itemW['units'],
+                $itemW['units'] === null ? '' : $itemW['units'],
             );
             $batchR = $dbc->execute($batchP, array($itemW['upc']));
             $averages = array();
