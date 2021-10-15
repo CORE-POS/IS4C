@@ -167,9 +167,10 @@ class EditLocations extends FannieRESTfulPage
         $curSub = $row['subSection'];
 
         $options = '<option value=\"0\">&nbsp;</option>';
-        foreach ($subSections as $k => $sub) {
-            $sel = ($curSub == $sub) ? ' selected' : '';
-            $options .= "<option value=\"$sub\" $sel>$sub</option>";
+        $letters = range('a', 'h');
+        foreach ($letters as $letter) {
+            $sel = ($curSub == $letter) ? ' selected' : '';
+            $options .= "<option value=\"$letter\" $sel>$letter</option>";
         }
 
         return array($curSub, $options);
@@ -227,31 +228,26 @@ class EditLocations extends FannieRESTfulPage
         $td = '';
         $th = '';
         $i = 0;
+        $rProdInfo = $dbc->execute($pProdInfo, array($upc));
+        $wProdInfo = $dbc->fetchRow($rProdInfo);
+        $brand = $wProdInfo['brand'];
+        $description = $wProdInfo['description'];
+        $department = $wProdInfo['dept_name'];
+        $superName = $wProdInfo['super_name'];
+        $td .= sprintf("
+                <tr><td>%s</td></tr>
+                <tr><td>%s</td></tr>
+                <tr><td>%s</td></tr>",
+            $upc,
+            $brand, 
+            $description
+        );
         while ($row = $dbc->fetchRow($res)) {
-            $upc = $row['upc'];
-            $rProdInfo = $dbc->execute($pProdInfo, array($upc));
-            $wProdInfo = $dbc->fetchRow($rProdInfo);
-            $brand = $wProdInfo['brand'];
-            $description = $wProdInfo['description'];
-            $department = $wProdInfo['dept_name'];
-            $superName = $wProdInfo['super_name'];
+            //$upc = $row['upc'];
             $floorSectionID = $row['floorSectionID'];
             list($subSection, $subSectionOpts) = $this->subSectionSelect($upc, $subSections[$floorSectionID], $floorSectionID, $dbc);
-
-            if ($i == 0) {
-                $td .= sprintf("
-                        <tr><td>%s</td></tr>
-                        <tr><td>%s</td></tr>
-                        <tr><td>%s</td></tr>",
-                    $upc,
-                    $brand, 
-                    $description
-                );
-            }
             $i++;
-
             $stripe = ($i % 2 == 0) ? "#FFFFCC" : "transparent";
-
             $alphabet = range('A', 'Z');
             $td .= sprintf("
                     <tr style=\"background-color: %s;\"><td><div>Floor Section<strong> %s</strong></div>%s</td></tr>
