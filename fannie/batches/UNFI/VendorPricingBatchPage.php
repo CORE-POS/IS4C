@@ -478,7 +478,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
 
         <div class="well">
             <h3>New/Testing Vendor Pricing Batch Page</h3>
-            <form action=VPBPIII.php method="get" target="_blank">
+            <form action=VPBPIV.php method="get" target="_blank">
             <label>Select a Vendor</label>
             <select name="id" class="form-control">
             <?php echo $vopts; ?>
