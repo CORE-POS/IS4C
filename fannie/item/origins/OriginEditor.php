@@ -414,7 +414,7 @@ HTML;
     <table class="table">
         <tr>
             <th><a href="{$self}?custom=1">Region</a></th>
-            <th><a href="{$self}'?state=1">State/Prov</a></th>
+            <th><a href="{$self}?state=1">State/Prov</a></th>
             <th><a href="{$self}?country=1">Country</a></th>
         </tr>
         <tr>
