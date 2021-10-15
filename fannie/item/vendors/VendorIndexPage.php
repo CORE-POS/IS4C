@@ -480,6 +480,31 @@ class VendorIndexPage extends FannieRESTfulPage
         $ret .= '</form>';
         $ret .= '</div></div>';
 
+        $prodP = $dbc->prepare("SELECT super_name, count(*)
+            FROM products AS p
+                INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE p.default_vendor_id=?
+            GROUP BY super_name");
+        $prodR = $dbc->execute($prodP, array($id));
+        $supers = array();
+        $sum = 0;
+        while ($row = $dbc->fetchRow($prodR)) {
+            $supers[$row['super_name']] = $row[1];
+            $sum += $row[1];
+        }
+        arsort($supers);
+        foreach (array_keys($supers) as $s) {
+            $supers[$s] = sprintf('%.2f%%', $supers[$s] / $sum * 100);
+        }
+        $ret .= '<div class="panel panel-default">
+            <div class="panel-heading">Product Mix</div>
+            <div class="panel-body"><ul>';
+        foreach ($supers as $s => $pct) {
+            $ret .= '<li>' . $pct . ' ' . $s . '</li>';
+        }
+            
+        $ret .= '</ul></div></div>';
+
         $stores = new StoresModel($dbc);
         $stores->hasOwnItems(1);
         $map = new AutoOrderMapModel($dbc);
