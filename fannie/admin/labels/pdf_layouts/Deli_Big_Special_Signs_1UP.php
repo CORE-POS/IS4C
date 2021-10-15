@@ -6,7 +6,7 @@ if (!class_exists('FpdfWithBarcode')) {
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
-if (!class_exists('FpdfLig')) {
+if (!class_exists('FpdfLib')) {
     include(__DIR__ . '/FpdfLib.php');
 }
 
