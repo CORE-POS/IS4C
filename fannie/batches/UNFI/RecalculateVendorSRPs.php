@@ -70,7 +70,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
         $prodP = $dbc2->prepare("SELECT p.upc, p.cost, b.margin, c.margin AS specificMargin
             FROM products as p 
                 LEFT JOIN departments AS b ON p.department=b.dept_no
-                LEFT JOIN VendorSpecificMargins AS c ON c.vendorID=n.vendorID AND p.department=c.deptID
+                LEFT JOIN VendorSpecificMargins AS c ON c.vendorID=p.default_vendor_id AND p.department=c.deptID
             WHERE p.default_vendor_id=?");
         $prodR = $dbc2->execute($prodP, array($id));
         $prodData = array();
@@ -100,6 +100,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
             }
             $upcs[$fetchW['upc']] = true;
             // products data overrides, if available
+            $upc = $fetchW['upc'];
             if (isset($prodData[$upc])) {
                 if ($prodData[$upc]['cost']) {
                     $fetchW['cost'] = $prodData[$upc]['cost'];
@@ -125,21 +126,20 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
 
 
         $ret = "<div><b>SRPs have been updated</b></div>";
-        echo "id: $id";
-        //if (!in_array($id, array(1,21))) {
-        //    list($found, $vendorName) = $this->checkPriceChanges();
-        //    if ($found == 0) {
-        //        $ret .= sprintf("
-        //            <div>%d possible price changes found for <strong>%s</strong>
-        //            </div>",
-        //            $found, $vendorName);
-        //    } else {
-        //        $ret .= sprintf("
-        //            <div>%d possible price changes found for <strong>%s</strong>
-        //            </div><div>Please run the Vendor Pricing Batch Page.</div>",
-        //            $found, $vendorName);
-        //    }
-        //}
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && !in_array($id, array(1,21))) {
+            list($found, $vendorName) = $this->checkPriceChanges();
+            if ($found == 0) {
+                $ret .= sprintf("
+                    <div>%d possible price changes found for <strong>%s</strong>
+                    </div>",
+                    $found, $vendorName);
+            } else {
+                $ret .= sprintf("
+                    <div>%d possible price changes found for <strong>%s</strong>
+                    </div><div>Please run the Vendor Pricing Batch Page.</div>",
+                    $found, $vendorName);
+            }
+        }
 
         $ret .= sprintf('<p>
             <a class="btn btn-default" href="index.php">Price Batch Tools</a>
