@@ -605,7 +605,9 @@ HTML;
             ROUND(m.lastPar, 3) AS lastPar,
             ROUND((p.auto_par * $var - m.lastPar), 3) AS diff,
             CONCAT(p.department, ' - ', d.dept_name) AS department,
-            f.name
+            f.name,
+            DATE(p.last_sold) AS last_sold,
+            DATE(p.created) AS created
         FROM products AS p
             LEFT JOIN MovementTags AS m ON p.upc=m.upc AND p.store_id = m.storeID
             LEFT JOIN FloorSectionProductMap AS fs ON fs.upc=p.upc
@@ -662,7 +664,7 @@ HTML;
 
         $table = "";
         $thead = '';
-        $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff', 'name');
+        $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff', 'name', 'created');
         foreach ($colNames as $colName)
             $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
