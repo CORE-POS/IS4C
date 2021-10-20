@@ -158,6 +158,7 @@ class SaItemList extends SaHandheldPage
 
     private function saveRowToList($dbc, $upc, $row, $settings)
     {
+        $uid = FannieAuth::getUID($this->current_user);
         $dbc->selectDB($settings['ShelfAuditDB']);
         $chkP = $dbc->prepare("
             SELECT saListID
@@ -167,7 +168,6 @@ class SaItemList extends SaHandheldPage
                 AND clear=0
                 AND uid=?
             ORDER BY tdate DESC");
-        $uid = FannieAuth::getUID($this->current_user);
         $listID = $dbc->getValue($chkP, array($upc, $this->section, $uid));
         if ($listID) {
             $upP = $dbc->prepare('UPDATE SaList SET quantity=?, tdate=? WHERE saListID=?');
