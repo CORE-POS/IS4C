@@ -46,6 +46,7 @@ class ManageComments extends FannieRESTfulPage
 
     protected function post_id_catID_handler()
     {
+        $uid = FannieAuth::getUID();
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($settings['CommentDB']);
         $comment = new CommentsModel($this->connection);
@@ -71,7 +72,7 @@ class ManageComments extends FannieRESTfulPage
         }
         $history = new CommentHistoryModel($this->connection);
         $history->commentID($this->id);
-        $history->userID(FannieAuth::getUID());
+        $history->userID($uid);
         $history->tdate(date('Y-m-d H:i:s'));
         $history->log('Changed category ' . $catName);
         $history->save();
@@ -161,6 +162,7 @@ class ManageComments extends FannieRESTfulPage
 
     protected function post_id_handler()
     {
+        $uid = FannieAuth::getUID();
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($settings['CommentDB']);
 
@@ -178,7 +180,7 @@ class ManageComments extends FannieRESTfulPage
         $response = new ResponsesModel($this->connection);
         $response->commentID($this->id);
         $response->tdate(date('Y-m-d H:i:s'));
-        $response->userID(FannieAuth::getUID($this->current_user));
+        $response->userID($uid);
         $msg = trim(FormLib::get('response'));
         $noSend = FormLib::get('noEmail', false);
         if ($msg != '') {
@@ -197,7 +199,7 @@ class ManageComments extends FannieRESTfulPage
                 $history = new CommentHistoryModel($this->connection);
                 $history->commentID($this->id);
                 $history->tdate(date('Y-m-d H:i:s'));
-                $history->userID(FannieAuth::getUID());
+                $history->userID($uid);
                 $history->log('Email ' . $email);
                 $history->save();
             }
@@ -218,6 +220,7 @@ class ManageComments extends FannieRESTfulPage
 
     protected function post_new_handler()
     {
+        $uid = FannieAuth::getUID();
         $cardno = trim(FormLib::get('cardno'));
         $name = trim(FormLib::get('name'));
         $email = trim(FormLib::get('email'));
@@ -235,7 +238,7 @@ class ManageComments extends FannieRESTfulPage
         $comment->hash(md5(FormLib::get('comment')));
         $comment->tdate(FormLib::get('tdate'));
         $comment->fromPaper(1);
-        $comment->userID(FannieAuth::getUID());
+        $comment->userID($uid);
         $comment->ownerID($cardno);
 
         $dbc = $this->connection;
@@ -265,7 +268,7 @@ class ManageComments extends FannieRESTfulPage
 
         $history = new CommentHistoryModel($this->connection);
         $history->commentID($cID);
-        $history->userID(FannieAuth::getUID());
+        $history->userID($uid);
         $history->tdate(date('Y-m-d H:i:s'));
         $history->log('Manually entered comment');
         $history->save();
