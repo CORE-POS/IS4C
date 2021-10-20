@@ -522,10 +522,9 @@ class RpOrderPage extends FannieRESTfulPage
                 $par = 0.1 * $row['caseSize'];
             }
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
-            $cost = $this->connection->getRow($costP,
-                array(isset($row['lookupID']) ? $row['lookupID'] : $row['vendorID'], $row['vendorSKU']));
-            if ($row['caseSize'] != 0  && $cost && $cost['cost'] > 0) {
-                $cost = array('cost' => $row['cost'] / $row['caseSize'], 'units' => $row['caseSize']);
+            $cost = array('cost' => $row['cost'], 'units' => $row['caseSize']);
+            if ($row['caseSize'] != 0) {
+                $cost['cost'] = $cost['cost'] / $row['caseSize'];
             }
             $onSale = $this->connection->getValue($saleP, array($row['upc'], $store));
             $startIcon = '';
