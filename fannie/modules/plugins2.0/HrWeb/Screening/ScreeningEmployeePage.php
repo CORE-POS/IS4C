@@ -107,15 +107,15 @@ HTML;
 
     protected function get_view()
     {
-        $settings = $this->config->get('PLUGIN_SETTINGS');
-        $dbc = FannieDB::get($settings['HrWebDB']);
-        $model = new COREPOS\Fannie\Plugin\HrWeb\sql\ScreeningEmployeesModel($dbc);
-        $model->deleted(0);
-
         $noEdit = 'collapse';
         if (FannieAuth::validateUserQuiet('illness_editor') || FannieAuth::validateUserQuiet('hr_editor')) {
             $noEdit = '';
         }
+
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc = FannieDB::get($settings['HrWebDB']);
+        $model = new COREPOS\Fannie\Plugin\HrWeb\sql\ScreeningEmployeesModel($dbc);
+        $model->deleted(0);
 
         $body = '';
         foreach ($model->find('name') as $obj) {

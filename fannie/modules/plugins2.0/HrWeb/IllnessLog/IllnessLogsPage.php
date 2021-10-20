@@ -21,6 +21,7 @@ class IllnessLogsPage extends FannieRESTfulPage
 
     protected function post_id_handler()
     {
+        $uid = FannieAuth::getUID($this->current_user);
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
         $model = new IllnessLogsModel($dbc);
@@ -29,7 +30,6 @@ class IllnessLogsPage extends FannieRESTfulPage
         $model->exclusionary(FormLib::get('ex') ? 1 : 0);
         $model->MDHContacted(FormLib::get('mdh') ? 1 : 0);
         $model->comments(FormLib::get('comment'));
-        $uid = FannieAuth::getUID($this->current_user);
         $model->lastModified(date('Y-m-d H:i:s'));
         $model->modifiedBy($uid);
         $model->returnToWorkDate(FormLib::get('rtw'));
@@ -42,6 +42,7 @@ class IllnessLogsPage extends FannieRESTfulPage
 
     protected function post_handler()
     {
+        $uid = FannieAuth::getUID($this->current_user);
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
         $model = new IllnessLogsModel($dbc);
@@ -50,7 +51,6 @@ class IllnessLogsPage extends FannieRESTfulPage
         $model->exclusionary(FormLib::get('ex') ? 1 : 0);
         $model->MDHContacted(FormLib::get('mdh') ? 1 : 0);
         $model->dateCreated(date('Y-m-d H:i:s'));
-        $uid = FannieAuth::getUID($this->current_user);
         $model->createdBy($uid);
         $model->lastModified(date('Y-m-d H:i:s'));
         $model->modifiedBy($uid);
@@ -142,6 +142,8 @@ class IllnessLogsPage extends FannieRESTfulPage
     private function getAccess()
     {
         $uid = FannieAuth::getUID($this->current_user);
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $dbc = FannieDB::get($settings['HrWebDB']);
         $prep = $this->connection->prepare("SELECT * FROM AccessIllness WHERE userId=?");
         $res = $this->connection->execute($prep, array($uid));
         $perms = array();
