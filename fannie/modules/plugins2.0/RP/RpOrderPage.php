@@ -33,6 +33,7 @@ class RpOrderPage extends FannieRESTfulPage
         unset($_SESSION['rpState']);
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
+        $model->dataType('RP');
         $model->delete();
 
         return 'RpOrderPage.php';
@@ -132,6 +133,7 @@ class RpOrderPage extends FannieRESTfulPage
         $_SESSION['rpState'] = json_decode($this->json, true);
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
+        $model->dataType('RP');
         $model->data($this->json);
         $model->save();
         var_dump($_SESSION['rpState']);
@@ -377,6 +379,7 @@ class RpOrderPage extends FannieRESTfulPage
         $jsState = isset($_SESSION['rpState']) ? json_encode($_SESSION['rpState']) : "false";
         if ($jsState === "false") {
             $sModel = new RpSessionsModel($this->connection);
+            $sModel->dataType('RP');
             $sModel->userID($this->userID);
             if ($sModel->load()) {
                 $jsState = $sModel->data();

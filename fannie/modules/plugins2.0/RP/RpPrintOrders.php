@@ -41,6 +41,7 @@ class RpPrintOrders extends FannieRESTfulPage
             $json = json_encode($_SESSION['rpState']);
             $model = new RpSessionsModel($this->connection);
             $model->userID(FannieAuth::getUID($this->current_user));
+            $model->dataType('RP');
             $model->data($json);
             $model->save();
         }

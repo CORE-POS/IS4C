@@ -7,6 +7,7 @@ var rpOrder = (function ($) {
         'onHand': {},
         'orderAmt': {},
         'directAmt': {},
+        'floralAmt': {},
         'priFarms': {},
         'secFarms': {}
     };

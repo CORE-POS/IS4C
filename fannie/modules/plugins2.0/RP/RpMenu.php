@@ -25,6 +25,14 @@ class RpMenu extends FannieRESTfulPage
 </ul>
 <hr />
 <ul>
+    <li>Floral</li>
+    <ul>
+        <li><a href="RpFloralPage.php">Order Guide</a></li>
+        <li><a href="../../../item/shrink/ShrinkTool.php">Enter Shrink</a></li>
+    </ul>
+</ul>
+<!--
+<ul>
     <li>Plant Pre-Orders</li>
     <ul>
         <li><a href="../Pickup/ViewPickups.php">View Customer Orders</a></li>
@@ -34,6 +42,7 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="../Pickup/PushUpdate.php">Update Website Inventory</a></li>
     </ul>
 </ul>
+-->
 <hr />
 <ul>
     <li>Data Management</li>

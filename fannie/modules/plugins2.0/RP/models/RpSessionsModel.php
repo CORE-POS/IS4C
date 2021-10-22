@@ -34,6 +34,7 @@ class RpSessionsModel extends BasicModel
     protected $columns = array(
     'userID' => array('type'=>'INT', 'primary_key'=>true),
     'data' => array('type'=>'TEXT'),
+    'dataType' => array('type'=>'VARCHAR(255)', 'default'=>"'RP'", 'primary_key'=>true),
     );
 }
 

@@ -6,63 +6,14 @@ var rpOrder = (function ($) {
         'days': [false, false, false, false, false, false, false],
         'onHand': {},
         'orderAmt': {},
+        'directAmt': {},
         'floralAmt': {},
-        'directAmt': {}
+        'priFarms': {},
+        'secFarms': {}
     };
-    var searchVendor = 0;
     var retainElem = false;
     var minDate = false;
     var maxDate = false;
-
-    mod.setSearchVendor = function(v) {
-        searchVendor = v;
-    }
-
-    mod.initAutoCompletes = function() {
-        $('input#newItem').autocomplete({
-            source: vendorAutoComplete,
-            select: function (ev, ui) {
-                ev.preventDefault();
-                var data = JSON.parse(ui.item.value);
-                $('input#newItem').val(data.item);
-                $('select#newVendor').val(data.vendorID);
-                $('input#newUPC').val(data.upc);
-                $('input#newSKU').val(data.sku);
-                $('input#newCase').val(data.caseSize);
-                $('input#newLC').val(data.likeCode);
-                $('input#newCost').val(data.cost);
-            },
-            minLength: 3
-        });
-
-        $('input#newLC').autocomplete({
-            source: lcAutoComplete,
-            minLength: 3
-        });
-    };
-
-    function ajaxAutoComplete(dstr, callback) {
-        $.ajax({
-            type: 'get',
-            data: dstr,
-            dataType: 'json'
-        }).fail(function () {
-            callback([]);
-        }).done(function (resp) {
-            callback(resp)
-        });
-    };
-
-    function vendorAutoComplete(req, callback) {
-        var dstr = 'searchVendor=' + encodeURIComponent(req.term);
-        dstr += '&vendorID=' + searchVendor;
-        ajaxAutoComplete(dstr, callback);
-    };
-
-    function lcAutoComplete(req, callback) {
-        var dstr = 'searchLC=' + encodeURIComponent(req.term);
-        ajaxAutoComplete(dstr, callback);
-    }
 
     function updateState() {
         state['retention'] = $('#retention').val();
@@ -91,43 +42,6 @@ var rpOrder = (function ($) {
         });
     };
 
-    function clearIncoming() {
-        $('input.onHand').each(function () {
-            $(this).attr('data-incoming', 0);
-            $(this).closest('td').find('span.incoming-notice').html('');
-        });
-    };
-
-    function getIncoming(min, max) {
-        var store = $('select[name=store]').val();
-        $.ajax({
-            type: 'get',
-            data: 'date1='+min+'&date2='+max+'&store='+store,
-            dataType: 'json'
-        }).done(function (resp) {
-            var qtyMap = {};
-            var textMap = {};
-            for (var i=0; i<resp.length; i++) {
-                var obj = resp[i];
-                qtyMap[obj.upc] = obj.qty;
-                textMap[obj.upc] = obj.text;
-            }
-            console.log(qtyMap);
-            $('td.upc a').each(function () {
-                var upc = $(this).text();
-                if (qtyMap.hasOwnProperty(upc)) {
-                    console.log(upc);
-                    var row = $(this).closest('tr');
-                    var onHand = $(row).find('input.onHand');
-                    $(onHand).attr('data-incoming', qtyMap[upc]);
-                    $(onHand).closest('td').find('span.incoming-notice').html(textMap[upc]);
-                    //$(onHand).closest('td').addClass('alert-success').attr('title', 'Incoming: ' + qtyMap[upc] + ' from ' + brandMap[upc]);
-                    mod.reCalcRow(row);
-                }
-            });
-        });
-    };
-
     mod.initState = function(s) {
         if (typeof s == 'object') {
             state = s;
@@ -140,6 +54,15 @@ var rpOrder = (function ($) {
             if (state['directAmt'].__proto__ == Array.prototype) {
                 state['directAmt'] = {};
             }
+            if (state['floralAmt'].__proto__ == Array.prototype) {
+                state['floralAmt'] = {};
+            }
+            if (!state.hasOwnProperty('priFarms') || state['priFarms'].__proto__ == Array.prototype) {
+                state['priFarms'] = {};
+            }
+            if (!state.hasOwnProperty('secFarms') || state['secFarms'].__proto__ == Array.prototype) {
+                state['secFarms'] = {};
+            }
             var i = 0;
             $('.daycheck').each(function() {
                 if (state['days'][i]) {
@@ -149,17 +72,6 @@ var rpOrder = (function ($) {
             });
             mod.updateDays();
 
-            var oIDs = Object.keys(state['orderAmt']);
-            for (i=0; i<oIDs.length; i++) {
-                var elemID = oIDs[i];
-                if (state['orderAmt'][elemID] !== '') {
-                    var field = document.getElementById(elemID);
-                    if (field) {
-                        field.value = Number(state['orderAmt'][elemID]);
-                    }
-                }
-            }
-
             var hIDs = Object.keys(state['onHand']);
             for (i=0; i<hIDs.length; i++) {
                 var elemID = hIDs[i];
@@ -168,13 +80,13 @@ var rpOrder = (function ($) {
                 mod.reCalcRow($(elem).closest('tr'));
             }
 
-            var oIDs = Object.keys(state['orderAmt']);
+            var oIDs = Object.keys(state['floralAmt']);
             for (i=0; i<oIDs.length; i++) {
                 var elemID = oIDs[i];
-                if (state['orderAmt'][elemID] !== '') {
+                if (state['floralAmt'][elemID] !== '') {
                     var field = document.getElementById(elemID);
                     if (field) {
-                        field.value = Number(state['orderAmt'][elemID]);
+                        field.value = Number(state['floralAmt'][elemID]);
                     }
                 }
             }
@@ -190,7 +102,7 @@ var rpOrder = (function ($) {
     };
 
     mod.updateOrder = function(elem) {
-        state['orderAmt'][elem.id] = elem.value;
+        state['floralAmt'][elem.id] = elem.value;
         mod.save();
         var inOrder = $(elem).closest('tr').find('input:checked');
         if (inOrder.length > 0) {
@@ -206,64 +118,31 @@ var rpOrder = (function ($) {
     };
 
     mod.updateDays = function() {
-        clearIncoming();
-        var week = $('#modProj').html();
-        if (week == 0) {
-            week = $('#projSales').html().replace(',', '');
-        }
         var selectedDays = 0;
-        minDate = false;
-        maxDate = false;
         $('.daycheck:checked').each(function () {
-            var pct = $(this).val().replace('%', '') / 100;
-            selectedDays += pct * week;
-            var dateID = $(this).data('dateid');
-            if (minDate === false || dateID < minDate) {
-                minDate = dateID;
-            }
-            if (maxDate === false || dateID > maxDate) {
-                maxDate = dateID;
-            }
+            selectedDays += 1;
         });
-        $('#selectedSales').html(Math.round(selectedDays * 100) / 100);
 
-        var retail = 0;
-        var numDays = $('.daycheck:checked').length;
-        $('input.basePar').each(function () {
-            var price = $(this).prev('input.price').val();
-            retail += (price * 1) * ($(this).val() * 1) * numDays;
-        });
-        $('#guessRetail').html(Math.round(retail * 100) / 100);
-
-        var scaler = selectedDays / retail;
-        var shownAs = scaler > 1 ? scaler - 1 : (-1 * (1 - scaler));
-        shownAs = Math.round(shownAs * 100 * 100) / 100 + '%';
-        if (isNaN(scaler)) {
-            shownAs = '0';
+        var scaler = selectedDays;
+        if (scaler == 0) {
+            scaler = 1;
         }
-        $('#adjDiff').html(shownAs);
 
         $('input.basePar').each(function () {
-            var adj = $(this).val() * 1 * scaler * numDays;
+            var adj = $(this).val() * 1 * scaler;
             if (isNaN(scaler)) {
                 adj = $(this).val();
             }
-            var caseSize = $(this).closest('tr').find('td.caseSize').html();
-            adj = adj / caseSize;
             var adj = Math.round(adj * 100) / 100;
             $(this).next('td.parCell').html(adj);
 
             mod.reCalcRow($(this).closest('tr'));
         });
         updateState();
-        if (minDate !== false && maxDate !== false) {
-            getIncoming(minDate, maxDate);
-        }
         mod.save();
     };
 
     mod.reCalcRow = function(elem) {
-        var caseSize = $(elem).find('td.caseSize').html();
         var adj = $(elem).find('td.parCell').html();
         var onHand = $(elem).find('input.onHand').val();
         if (onHand <= 0) {
@@ -272,24 +151,12 @@ var rpOrder = (function ($) {
         if ($('input#autoOrderCheck').prop('checked') == false) {
             return;
         }
-        if (!retainElem) {
-            retainElem = $('#retention');
-        }
-        onHand = onHand * (retainElem.val() / 100);
-        var incoming = Number($(elem).find('input.onHand').attr('data-incoming'));
-        if (!isNaN(incoming)) {
-            onHand += incoming;
-        }
 
-        var start = (adj * 1 * caseSize) - (onHand * 1 * caseSize);
-        var cases = 0;
-        while (start > (0.25 * caseSize)) {
-            cases += 1;
-            start -= caseSize;
-        }
+        var estimate = Math.round(adj - onHand);
+
         orderField = $(elem).find('input.orderAmt');
         if (orderField.val() <= 0 && orderField.is(':visible')) {
-            orderField.val(cases);
+            orderField.val(estimate);
         }
     };
 
@@ -400,19 +267,26 @@ var rpOrder = (function ($) {
         } else if (ev.which == 37) {
             ev.preventDefault();
             $(ev.target).closest('tr').find('input.onHand').focus();
+        } else if (ev.which == 39) {
+            ev.preventDefault();
+            $(ev.target).closest('tr').find('input.secondAmt').focus();
         }
     };
 
     mod.placeOrder = function(elem) {
         var id = encodeURIComponent($(elem).val());
-        var qty = $(elem).closest('tr').find('input.orderAmt').val();
-        if ($(elem).prop('checked') && qty) {
+        farm = $(elem).closest('tr').find('.primaryFarm').val();
+        id += "" + farm;
+        if ($(elem).prop('checked')) {
+            qty = $(elem).closest('tr').find('input.orderAmt').val();
+            if (farm == '' || !qty) {
+                return;
+            }
             $.ajax({
                 'type': 'post',
                 'data': 'id=' + id + '&qty=' + qty,
                 'dataType': 'json'
             }).done(function (resp) {
-                mod.all--;
                 $(elem).closest('td').addClass('info');
                 if ($('#openOrders').find('#link'+resp.orderID).length == 0) {
                     var newlink = '<li id="link' + resp.orderID + '">';
@@ -438,7 +312,6 @@ var rpOrder = (function ($) {
                 'dataType': 'json'
             }).done(function (resp) {
                 $(elem).closest('td').removeClass('info');
-                mod.all--;
             });
         }
     };
@@ -462,10 +335,15 @@ var rpOrder = (function ($) {
 
         $('input.orderPri').each(function () {
             var qty = $(this).closest('tr').find('input.orderAmt').val();
-            var secondary = $(this).closest('tr').find('input.orderSec');
-            if (qty > 0 && !$(this).prop('checked') && !secondary.prop('checked')) {
+            if (qty > 0 && !$(this).prop('checked')) {
                 $(this).prop('checked', true);
-                mod.all++;
+                mod.placeOrder(this);
+            }
+        });
+        $('input.orderSec').each(function () {
+            var qty = $(this).closest('tr').find('input.secondAmt').val();
+            if (qty > 0 && !$(this).prop('checked')) {
+                $(this).prop('checked', true);
                 mod.placeOrder(this);
             }
         });
@@ -473,11 +351,14 @@ var rpOrder = (function ($) {
         setTimeout(function () { endOrderAll(1, meters, buttons) }, 1000);
     };
 
-    mod.vendorFilter = function() {
-        $('tr.item-row').hide();
-        $('input.vFilter:checked').each(function () {
-            $('tr.vendor-' + $(this).val()).show();
-        });
+    mod.defaultFarm = function(farm) {
+        if (farm) {
+            $('.primaryFarm').val(farm);
+        } else {
+            $('.primaryFarm').each(function() {
+                $(this).val($(this).attr('data-default'));
+            });
+        }
     };
 
     return mod;
