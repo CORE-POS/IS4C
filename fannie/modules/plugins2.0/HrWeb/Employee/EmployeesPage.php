@@ -32,6 +32,7 @@ class EmployeesPage extends FannieRESTfulPage
     protected function delete_handler()
     {
         $allowed = FannieAuth::validateUserQuiet('hr_editor');
+        $this->connection->selectDB($this->default_db);
         if ($allowed) {
             try {
                 $model = new EmployeesModel($this->connection);
@@ -48,6 +49,7 @@ class EmployeesPage extends FannieRESTfulPage
     protected function post_handler()
     {
         $allowed = FannieAuth::validateUserQuiet('hr_editor');
+        $this->connection->selectDB($this->default_db);
         if ($allowed) {
             try {
                 $model = new EmployeesModel($this->connection);
@@ -124,6 +126,7 @@ class EmployeesPage extends FannieRESTfulPage
     private function viewOrEdit($emp)
     {
         $canEdit = FannieAuth::validateUserQuiet('hr_editor');
+        $this->connection->selectDB($this->default_db);
         $store = new StoresModel($this->connection);
         $dept = new DepartmentsModel($this->connection);
         $pos = new PositionsModel($this->connection);
@@ -264,6 +267,7 @@ class EmployeesPage extends FannieRESTfulPage
     public function get_view()
     {
         $editCSS = FannieAuth::validateUserQuiet('hr_editor') ? '' : 'collapse';
+        $this->connection->selectDB($this->default_db);
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($settings['HrWebDB']);
         $where = isset($this->all) ? 'WHERE 1=1' : 'WHERE e.deleted=0';
