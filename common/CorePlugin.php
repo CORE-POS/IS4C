@@ -86,8 +86,22 @@ class CorePlugin
     */
     public static function memberOf($file, $exclude='plugins')
     {
-        $file = realpath($file);
         $sep = DIRECTORY_SEPARATOR;
+
+        // nb. if parent folder of this file is a symlink, then
+        // realpath() will *resolve* that and return the "true" path
+        // for the file on disk.  but we want to allow symlinks to
+        // exist and for plugins within them to be treated as "native"
+        // so to accomplish that we use the following workaround.
+        $info = pathinfo($file);
+        if (is_link($info['dirname'])) {
+            $parent = pathinfo($info['dirname']);
+            $file = realpath($parent['dirname']) . $sep
+                  . $parent['basename'] . $sep
+                  . $info['basename'];
+        } else {
+            $file = realpath($file);
+        }
 
         $dirs = explode($sep, $file);
         for($i=0;$i<count($dirs);$i++) {
