@@ -139,8 +139,11 @@ class FannieTask
         $this->logger->log($log_level, $info->getName() . ': ' . $str); 
 
         // raise message into stderr
-        if ($severity <= $this->error_threshold) {
-            file_put_contents('php://stderr', $msg, FILE_APPEND);
+        // nb. 99 means "Never email on error"
+        if ($this->error_threshold != 99) {
+            if ($severity <= $this->error_threshold) {
+                file_put_contents('php://stderr', $msg, FILE_APPEND);
+            }
         }
 
         return '';
