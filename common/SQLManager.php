@@ -225,7 +225,7 @@ class SQLManager
             } else {
                 $dsn .= 'host=' . $server;
             }
-            if ($database) {
+            if ($database && $type != 'pdo_sqlsrv') {
                 $dsn .= ';dbname=' . $database;
             }
 
@@ -1881,6 +1881,7 @@ class SQLManager
         'pdo'       => 'COREPOS\common\sql\MysqlAdapter',
         'mssql'     => 'COREPOS\common\sql\MssqlAdapter',
         'mssqlnative' => 'COREPOS\common\sql\MssqlAdapter',
+        'pdo_sqlsrv' => 'COREPOS\common\sql\MssqlAdapter',
         'pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
         'postgres9' => 'COREPOS\common\sql\PgsqlAdapter',
         'pdo_pgsql'     => 'COREPOS\common\sql\PgsqlAdapter',
