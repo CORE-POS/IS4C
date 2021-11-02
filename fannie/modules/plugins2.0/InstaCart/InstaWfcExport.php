@@ -41,7 +41,6 @@ class InstaWfcExport extends FannieTask
          */
         $userfile = fopen('/tmp/pickupUser.csv', 'w');
         $itemfile = fopen('/tmp/pickupItem.csv', 'w');
-        $limitfile = fopen('/tmp/pickupLimits.csv', 'w');
         $userP = $dbc->prepare("SELECT
             upc, description, brand, sizing, photo, long_text, 1 AS enableOnline, soldOut, signCount, narrow
             FROM productUser WHERE upc=?");
@@ -53,7 +52,6 @@ class InstaWfcExport extends FannieTask
             idEnforced, cost, special_cost, received_cost, 1 AS inUse, numflag, subdept, deposit, local,
             store_id, default_vendor_id, current_origin_id, auto_par, price_rule_id, last_sold, id
             FROM products WHERE upc=? AND store_id=1"); 
-        $invP = $dbc->prepare("SELECT storeID, onHand FROM InventoryCache WHERE upc=?");
         $upcR = $dbc->query("SELECT upc, enabled FROM PickupEnabled");
         //while (!feof($datafile)) {
         while ($upcW = $dbc->fetchRow($upcR)) {
@@ -105,15 +103,6 @@ class InstaWfcExport extends FannieTask
             } else {
                 echo $upc . " - " . $line[0] . "\n";
             }
-            $invR = $dbc->execute($invP, array($upc));
-            while ($invW = $dbc->fetchRow($invR)) {
-                $inv = array(
-                    $upc,
-                    round($invW['onHand'] * .80),
-                    $invW['storeID'],
-                );
-                fputcsv($limitfile, $inv);
-            }
         }
         unset($dbc);
 
@@ -128,13 +117,6 @@ class InstaWfcExport extends FannieTask
         $dbc->query('TRUNCATE TABLE productUser');
         $dbc->query("LOAD DATA LOCAL INFILE '/tmp/pickupUser.csv'
             INTO TABLE productUser
-            FIELDS TERMINATED BY ','
-            OPTIONALLY ENCLOSED BY '\"'
-            LINES TERMINATED BY '\\n'");
-
-        $dbc->query("TRUNCATE TABLE productOrderLimits");
-        $dbc->query("LOAD DATA LOCAL INFILE '/tmp/pickupLimits.csv'
-            INTO TABLE productOrderLimits
             FIELDS TERMINATED BY ','
             OPTIONALLY ENCLOSED BY '\"'
             LINES TERMINATED BY '\\n'");
