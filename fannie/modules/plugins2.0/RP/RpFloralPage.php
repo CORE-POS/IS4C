@@ -270,7 +270,11 @@ class RpFloralPage extends FannieRESTfulPage
             INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
             WHERE o.orderID IN ({$ioStr}) AND i.internalUPC=?");
 
-        $farmOpts = "<option value=218>Duluth Flower Farm</option>
+        $farmOpts = "
+                <option value=380>Koehler and Dramm</option>
+                <option value=218>Duluth Flower Farm</option>
+                <option value=315>Jane's Flowers</option>
+                <option value=62>Wild Hollow Farm</option>
                 <option value=\"-2\">Direct</option>";
         $opt1 = '<option value=""></option>' . $farmOpts;
 
@@ -315,7 +319,7 @@ class RpFloralPage extends FannieRESTfulPage
             $tooltip = '';
             $nextRow = sprintf('<tr>
                 <td class="upc">%s %s</td>
-                <td><select class="primaryFarm form-control input-sm" id="pf%s" onchange="rpOrder.updateFarm(this);">%s</option></td>
+                <td><select class="primaryFarm form-control input-sm" id="pf%s">%s</option></td>
                 <td style="display:none;" class="caseSize">1</td>
                 <td style="display:none;" class="realSize">1</td>
                 <td><input %s class="form-control input-sm onHand" value="" 
