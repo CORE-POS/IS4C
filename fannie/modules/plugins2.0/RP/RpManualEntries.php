@@ -13,12 +13,13 @@ class RpManualEntries extends FannieReportPage
     public $discoverable = false;
     protected $new_tablesorter = true;
     protected $required_fields = array();
-    protected $report_headers = array('LC', 'Item', 'Category', 'Store', 'Vendor', 'Added/Deleted');
+    protected $report_headers = array('LC', 'Item', 'Category', 'Store', 'Vendor', 'Case Size', 'Cost', 'Added/Deleted');
 
     public function fetch_report_data()
     {
         $res = $this->connection->query("
-            SELECT r.upc, r.vendorItem, c.name, s.description, v.vendorName, r.deleted
+            SELECT r.upc, r.vendorItem, c.name, s.description, v.vendorName, r.deleted,
+                r.caseSize, r.cost
             FROM RpOrderItems AS r
                 LEFT JOIN Stores AS s ON r.storeID=s.storeID
                 LEFT JOIN RpOrderCategories AS c ON c.rpOrderCategoryID=r.categoryID
@@ -38,6 +39,8 @@ class RpManualEntries extends FannieReportPage
                 $row['name'],
                 $row['description'],
                 str_replace(' (Produce)', '', $row['vendorName']),
+                $row['caseSize'],
+                $row['cost'],
                 ($row['deleted'] ? 'Deleted' : 'Added'),
             );
         }
