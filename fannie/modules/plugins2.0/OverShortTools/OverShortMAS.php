@@ -541,7 +541,7 @@ class OverShortMAS extends FannieRESTfulPage {
         $records = \COREPOS\Fannie\API\data\DataCache::getFile('daily');
         if ($records !== False)
             $records = unserialize($records);
-        if (!is_array($records) || FormLib::get('no-cache') == '1'){
+        if (!is_array($records) || FormLib::get('no-cache') == '1' || $this->startDate == $this->endDate){
             $records = $this->get_data();
             \COREPOS\Fannie\API\data\DataCache::putFile('daily', serialize($records));
         }
