@@ -7,7 +7,7 @@ class CTDB
     {
         $config = FannieConfig::factory();
         $settings = $config->get('PLUGIN_SETTINGS');
-        return new SQLManager($settings['CTHost'],'mssqlnative','DataDir',$settings['CTUser'],$settings['CTPassword']);
+        return new SQLManager($settings['CTHost'],'pdo_sqlsrv','DataDir',$settings['CTUser'],$settings['CTPassword']);
     }
 
     public static function get($name='DataDir')
