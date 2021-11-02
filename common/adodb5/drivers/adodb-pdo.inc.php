@@ -137,7 +137,8 @@ class ADODB_pdo extends ADOConnection {
 		if ($argDatabasename) {
 			switch($this->dsnType){
 				case 'sqlsrv':
-					$argDSN .= ';database='.$argDatabasename;
+					$argDSN .= ';Database='.$argDatabasename;
+                    $argDSN = str_replace('host=', 'Server=', $argDSN);
 					break;
 				case 'mssql':
 				case 'mysql':

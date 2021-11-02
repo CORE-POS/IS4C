@@ -100,7 +100,7 @@ class ADORecordSet_pdo_sqlsrv extends ADORecordSet_pdo
 	}
 }
 
-class ADORecordSet_array_pdo_sqlsrv extends ADORecordSet_array_pdo
+class ADORecordSet_array_pdo_sqlsrv extends ADORecordSet_array
 {
 
 	/**
