@@ -251,7 +251,7 @@ class SalesBatchTask extends FannieTask
         // No sale items; need a filler value for
         // the query below
         if (count($sale_upcs) == 0) {
-            $this->cronMsg('Notice: nothing is currently on sale', FannieLogger::WARNING);
+            $this->cronMsg('Notice: nothing is currently on sale', FannieLogger::NOTICE);
             $sale_upcs = array(1 => array('notValidUPC'));
         }
 
