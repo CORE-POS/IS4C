@@ -36,6 +36,7 @@ class FloorSectionsModel extends BasicModel
     'mapX' => array('type'=>'INT', 'default'=>0),
     'mapY' => array('type'=>'INT', 'default'=>0),
     'mapRotate' => array('type'=>'INT', 'default'=>0),
+    'route' => array('type'=>'INT', 'default'=>0),
     );
 
     public function toOptions($selected=0, $id_as_label=false)
