@@ -137,7 +137,7 @@ function generateMirrorTagServiceCase12($x, $y, $guide, $width, $height, $pdf, $
         WHERE plu = ?");
     $res = $dbc->execute($prep, $args);
     $array = $dbc->fetchRow($res);
-    $ingr = $array['text'];
+    $ingr = $array ? $array['text'] : '';
 
     $lines = WFC_Dark_ServiceCase_12UP_PDF::stringToLines($desc);
     if (strstr($desc, "\r\n")) {
