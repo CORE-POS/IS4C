@@ -256,7 +256,7 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             $query .= " AND v.vendorID = ? ";
         }
 
-        $query .= " AND m.SuperID IN (1, 3, 4, 5, 8, 9, 13, 17, 18) ";
+        //$query .= " AND m.SuperID IN (1, 3, 4, 5, 8, 9, 13, 17, 18) ";
         if ($superID == -2) {
             $query .= " AND m.superID<>0 ";
         } elseif ($superID != -1) {
