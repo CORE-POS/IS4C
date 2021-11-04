@@ -735,12 +735,14 @@ class FannieReportPage extends FanniePage
                 break;
             case 'csv':
             case 'txt':
-                $sep = strtolower($format) == 'txt' ? "\t" : ',';
-                foreach ($this->defaultDescriptionContent(count($data)) as $line) {
-                    $ret .= $this->csvLine(array(strip_tags($line)), $sep);
-                }
-                foreach ($this->report_description_content() as $line) {
-                    $ret .= $this->csvLine(array(strip_tags($line)), $sep);
+                if ($this->multi_counter == 1) {
+                    $sep = strtolower($format) == 'txt' ? "\t" : ',';
+                    foreach ($this->defaultDescriptionContent(count($data)) as $line) {
+                        $ret .= $this->csvLine(array(strip_tags($line)), $sep);
+                    }
+                    foreach ($this->report_description_content() as $line) {
+                        $ret .= $this->csvLine(array(strip_tags($line)), $sep);
+                    }
                 }
             case 'xls':
                 break;
