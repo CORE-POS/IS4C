@@ -192,7 +192,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         if ($vendorID !== '') {
             $item = new VendorItemsModel($dbc);
             $item->createIfMissing($upc, $vendorID);
-            $item->updateCostByUPC($upc, $cost, $vendorID);
+            $item->updateCostByUPC($upc, $form->cost, $vendorID);
         }
         
         COREPOS\Fannie\API\data\ItemSync::sync($upc);
