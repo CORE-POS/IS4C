@@ -74,11 +74,22 @@ class SimpleBackupTask extends FannieTask
                 $this->cronMsg('Could not locate mysqldump program', FannieLogger::ALERT);
                 break; // no point in trying other databases
             }
+
+            // write temporary config file w/ credentials, to avoid passing them
+            // via command line, since that can trigger warning from mysqldump
+            $creds = tempnam(sys_get_temp_dir(), 'SimpleBackupTask');
+            $fh = fopen($creds, 'w');
+            fwrite($fh, <<<EOF
+[mysqldump]
+user = {$FANNIE_SERVER_USER}
+password = {$FANNIE_SERVER_PW}
+EOF);
+            fclose($fh);
+
             $cmd = escapeshellcmd($cmd);
+            $cmd .= ' --defaults-extra-file=' . escapeshellarg($creds);
             $cmd .= ' -q ' .
                 ' -h ' . escapeshellarg($FANNIE_SERVER) .
-                ' -u ' . escapeshellarg($FANNIE_SERVER_USER) .
-                ' -p' . escapeshellarg($FANNIE_SERVER_PW) .
                 ' ' .  escapeshellarg($db);
             $outfile = $dir . '/' . $db . date('Ymd') . '.sql';
 
@@ -90,12 +101,14 @@ class SimpleBackupTask extends FannieTask
 
             $cmd .= ' > ' . escapeshellarg($outfile);
             
-            $cmd_obfusc = preg_replace("/ -p'.*?'/", " -p'********'", $cmd, 1);
-            $this->cronMsg("cmd: $cmd_obfusc", FannieLogger::INFO);
+            $this->cronMsg("cmd: $cmd", FannieLogger::INFO);
             $retVal = 0;
             $lastLine = system($cmd, $retVal);
             $this->cronMsg("retVal: $retVal", FannieLogger::INFO);
             $this->cronMsg("lastLine: $lastLine", FannieLogger::INFO);
+
+            // remove config file w/ mysqldump credentials!
+            unlink($creds);
 
             if (file_exists($outfile) && $retVal == 0) {
                 $this->cronMsg('Backup successful: ' . $outfile, FannieLogger::INFO);
