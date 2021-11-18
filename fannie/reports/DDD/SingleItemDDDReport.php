@@ -62,7 +62,6 @@ class SingleItemDDDReport extends FannieReportPage
             $args = array($upc, $id);
             $prep = $tx_dbc->prepare("
                 SELECT 
-                    datetime, description, upc, sum(ItemQtty),
                     SUM(CASE WHEN DATE(datetime) >= DATE(NOW()) - INTERVAL 7 DAY THEN ItemQtty ELSE 0 END) AS Week1,
                     SUM(CASE WHEN DATE(datetime) < DATE(NOW()) - INTERVAL 7 DAY AND DATE(datetime) >= DATE(NOW()) - INTERVAL 14 DAY THEN ItemQtty ELSE 0 END) AS Week2,
                     SUM(CASE WHEN DATE(datetime) < DATE(NOW()) - INTERVAL 14 DAY AND DATE(datetime) >= DATE(NOW()) - INTERVAL 21 DAY THEN ItemQtty ELSE 0 END) AS Week3,
