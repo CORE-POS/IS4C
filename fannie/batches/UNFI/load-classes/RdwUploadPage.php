@@ -177,7 +177,7 @@ class RdwUploadPage extends \COREPOS\Fannie\API\FannieUploadPage {
     {
         $phpunit->assertEquals(false, $this->getVendorID());
         $phpunit->assertEquals(false, $this->process_file(array(), array()));
-        $phpunit->assertEquals('1234', $this->cleanUPC('91234'));
+        $phpunit->assertEquals('0000000001234', $this->cleanUPC('91234'));
         $phpunit->assertEquals('0001234512345', $this->cleanUPC('12345 12345-0'));
         $phpunit->assertInternalType('string', $this->results_content());
     }
