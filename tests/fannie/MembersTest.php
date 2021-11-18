@@ -185,7 +185,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         }
 
         $account_changed = $account;
-        $account_changed['idCardUPC'] = '12345';
+        $account_changed['idCardUPC'] = '0000000012345';
         $account_changed['startDate'] = date('Y-m-d 00:00:00');
         $account_changed['endDate'] = date('Y-m-d 00:00:00', strtotime('+1 year'));
         $account_changed['addressFirstLine'] = '123 4th St';
