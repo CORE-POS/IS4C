@@ -143,7 +143,7 @@ class WebServicesTest extends PHPUnit_Framework_TestCase
         $mock->setConfig(FannieConfig::factory());
         $mock->setLogger(new FannieLogger());
         $mock->setConnection(null);
-        $this->assertEquals(null, MockJEP::dispatch());
+        $this->assertEquals(null, MockJEP::dispatch(null));
         ob_start();
         $mock->draw_page();
         ob_end_clean();
