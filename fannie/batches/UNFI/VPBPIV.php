@@ -855,13 +855,13 @@ JAVASCRIPT;
             $cleanDate = $row['date'];
             $row['date'] = ($row['date']) ? "<span class='grey'> <i>on</i> </span> ".$row['date'] : "";
             $change = $row['srp'] - $row['normal_price'];
-            if (abs($change) > 1.99) {
-                $change = (abs($change) < 1.99) ? 0 : round($change / 2);
-                $row['srp'] = $row['srp'] - $change;
-                $row['srp'] = $rounder->round($row['srp']);
-            }
-            if (abs(abs($row['normal_price']) - abs($row['rawSRP'])) < 0.03)
-                continue;
+            //if (abs($change) > 1.99) {
+            //    $change = (abs($change) < 1.99) ? 0 : round($change / 2);
+            //    $row['srp'] = $row['srp'] - $change;
+            //    $row['srp'] = $rounder->round($row['srp']);
+            //}
+            //if (abs(abs($row['normal_price']) - abs($row['rawSRP'])) < 0.03)
+            //    continue;
             $date = new DateTime();
             $date = $date->format('Y-m-d');
             $changeClassA = ($date == substr($row['date'], -10)) ? 'highlight' : '';
