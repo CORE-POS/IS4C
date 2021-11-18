@@ -141,7 +141,7 @@ class CoopDealsMergePage extends FannieRESTfulPage
                 t.abtpr,
                 multiplier,
                 t.cost
-            ORDER BY s.super_name,t.upc
+            ORDER BY CASE WHEN s.super_name IS NULL THEN 'sale' ELSE s.super_name END, t.upc
         ");
         $result = $dbc->execute($query, array($set));
         $upcomingP = $dbc->prepare('
