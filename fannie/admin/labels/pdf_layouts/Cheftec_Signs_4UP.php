@@ -6,9 +6,6 @@ if (!class_exists('FpdfWithBarcode')) {
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
-if (!class_exists('CTDB')) {
-    include(__DIR__ . '/CTDB.php');
-}
 
 class Cheftec_Signs_4UP_PDF extends FpdfWithBarcode { }
 
@@ -62,6 +59,9 @@ function Cheftec_Signs_4UP($data,$offset=0)
 
 function generateChefTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
+    if (!class_exists('CTDB')) {
+        return false;
+    }
 
     $dbc = CTDB::get();
     $recipeID = $row['recipeID'];
