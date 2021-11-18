@@ -93,7 +93,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(array('slope'=>1, 'y_intercept'=>0), $lsq);
 
         $exp = \COREPOS\Fannie\API\lib\Stats::exponentialFit($points);
-        $this->internalTypeWrapper('object', $exp);
+        $this->assertInternalType('object', $exp);
     }
 
     public function testHelp()
@@ -115,24 +115,24 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
         $signs = new \COREPOS\Fannie\API\item\FannieSignage(array(), 'shelftags', 1);
         $signs->setDB($dbc);
-        $this->internalTypeWrapper('array', $signs->loadItems());
+        $this->assertInternalType('array', $signs->loadItems());
 
         $signs = new \COREPOS\Fannie\API\item\FannieSignage(array(), 'batchbarcodes', 1);
         $signs->setDB($dbc);
-        $this->internalTypeWrapper('array', $signs->loadItems());
+        $this->assertInternalType('array', $signs->loadItems());
 
         $signs = new \COREPOS\Fannie\API\item\FannieSignage(array(), 'batch', 1);
         $signs->setDB($dbc);
-        $this->internalTypeWrapper('array', $signs->loadItems());
+        $this->assertInternalType('array', $signs->loadItems());
 
         foreach (range(0, 3) as $i) {
             $signs = new \COREPOS\Fannie\API\item\FannieSignage(array('0000000000111'), '', $i);
             $signs->setDB($dbc);
-            $this->internalTypeWrapper('array', $signs->loadItems());
+            $this->assertInternalType('array', $signs->loadItems());
         }
 
         $source = new \COREPOS\Fannie\API\item\TagDataSource();
-        $this->internalTypeWrapper('array', $source->getTagData($dbc, '4011', false));
+        $this->assertInternalType('array', $source->getTagData($dbc, '4011', false));
 
         $signs->addOverride('0000000004011', 'description', 'foo');
         $signs->addExclude('0000000004011'); 
@@ -302,16 +302,16 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
     public function testDataUtil()
     {
-        $this->internalTypeWrapper('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MYSQLI'));
-        $this->internalTypeWrapper('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MSSQL'));
-        $this->internalTypeWrapper('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'PGSQL'));
-        $this->internalTypeWrapper('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'FOOBAR'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MYSQLI'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'MSSQL'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'PGSQL'));
+        $this->assertInternalType('boolean', COREPOS\Fannie\API\data\Util::checkHost('127.0.0.1', 'FOOBAR'));
     }
 
     public function testUploadLib()
     {
         foreach (array(UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE, UPLOAD_ERR_PARTIAL, UPLOAD_ERR_NO_FILE, UPLOAD_ERR_NO_TMP_DIR, UPLOAD_ERR_CANT_WRITE, 'foo') as $error_code) {
-            $this->internalTypeWrapper('string', COREPOS\Fannie\API\lib\UploadLib::errorToMessage($error_code));
+            $this->assertInternalType('string', COREPOS\Fannie\API\lib\UploadLib::errorToMessage($error_code));
         }
     }
 
@@ -353,7 +353,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
 
     public function testAudit()
     {
-        $this->internalTypeWrapper('boolean', AuditLib::itemUpdate('0000000000111', true));
+        $this->assertInternalType('boolean', AuditLib::itemUpdate('0000000000111', true));
     }
 
     public function testCSS()
@@ -368,7 +368,7 @@ class ApiLibTest extends PHPUnit_Framework_TestCase
         if (!function_exists('cron_msg')) {
             include(__DIR__ . '/../../fannie/src/cron_msg.php');
         }
-        $this->internalTypeWrapper('string', cron_msg('foo'));
+        $this->assertInternalType('string', cron_msg('foo'));
 
         if (!function_exists('select_to_table')) {
             include(__DIR__ . '/../../fannie/src/functions.php');

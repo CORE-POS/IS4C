@@ -31,10 +31,10 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             //$obj = FannieDispatch::twig($obj);
 
             $pre = $obj->preprocess();
-            $this->internalTypeWrapper('boolean',$pre);
+            $this->assertInternalType('boolean',$pre);
 
             $auth = $obj->checkAuth();
-            $this->internalTypeWrapper('boolean',$pre);
+            $this->assertInternalType('boolean',$pre);
 
             $html_form = $obj->form_content();
             $this->assertNotEquals(0, strlen($html_form), 'Report form is empty for ' . $report_class);
@@ -49,9 +49,9 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             }
             $obj->setForm($form);
             $preamble = $obj->report_description_content();
-            $this->internalTypeWrapper('array', $preamble, 'Report did not return description content ' . $report_class);
+            $this->assertInternalType('array', $preamble, 'Report did not return description content ' . $report_class);
             $results = $obj->fetch_report_data();
-            $this->internalTypeWrapper('array', $results, 'Report did not return results ' . $report_class);
+            $this->assertInternalType('array', $results, 'Report did not return results ' . $report_class);
         }
     }
 
@@ -93,13 +93,13 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             ob_start();
             $pre = $obj->preprocess();
             ob_get_clean();
-            $this->internalTypeWrapper('boolean',$pre);
+            $this->assertInternalType('boolean',$pre);
 
             $help = $obj->helpContent();
-            $this->internalTypeWrapper('string', $help, 'Missing help content on ' . $page_class);
+            $this->assertInternalType('string', $help, 'Missing help content on ' . $page_class);
 
             $auth = $obj->checkAuth();
-            $this->internalTypeWrapper('boolean',$pre);
+            $this->assertInternalType('boolean',$pre);
 
             $t1 = microtime(true);
             $obj->unitTest($this);

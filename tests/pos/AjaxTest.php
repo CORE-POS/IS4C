@@ -35,7 +35,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('strRemembered', 'invalidInput');
         CoreLocal::set('msgrepeat', 1);    
         $json = $ajax->ajax();
-        $this->internalTypeWrapper('array', $json);
+        $this->assertInternalType('array', $json);
         $this->assertEquals(true, substr($json['main_frame'], -9) == 'login.php');
 
         CoreLocal::set('strRemembered', 'invalidInput');
@@ -73,7 +73,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
     {
         $ajax = new COREPOS\pos\ajax\AjaxDecision(new WrappedStorage(), new ValueContainer());
         $json = $ajax->ajax();
-        $this->internalTypeWrapper('array', $json);
+        $this->assertInternalType('array', $json);
         $this->assertEquals(false, $json['endorse']);
         $this->assertEquals(true, $json['cleared']);
         $this->assertEquals('gui-modules/pos2.php', $json['dest_page']);
@@ -141,7 +141,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $ajax = new COREPOS\pos\ajax\AjaxScale(new WrappedStorage(), new ValueContainer());
         $this->assertEquals('0.00 lb', $ajax->ajax());
         $ajax = new COREPOS\pos\ajax\AjaxScale(new WrappedStorage(), new ValueContainer());
-        $this->internalTypeWrapper('string', $ajax->ajax());
+        $this->assertInternalType('string', $ajax->ajax());
     }
 
     public function testPoll()

@@ -14,7 +14,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         /* test create connection */
         $this->assertInstanceOf('SQLManager',$sql);
         $this->assertObjectHasAttribute('connections',$sql);
-        $this->internalTypeWrapper('array',$sql->connections);
+        $this->assertInternalType('array',$sql->connections);
         $this->assertArrayHasKey($OP_DB ,$sql->connections);
         $this->assertInstanceOf('ADOConnection',$sql->connections[$OP_DB]);
         
@@ -23,7 +23,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(False,$result);
 
         $escape = $sql->escape('some str');
-        $this->internalTypeWrapper('string',$escape);
+        $this->assertInternalType('string',$escape);
 
         $rows = $sql->num_rows($result);
         $this->assertNotEquals(False,$rows);
@@ -81,72 +81,72 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
 
         $field = $sql->fetchField($result,0);
         $this->assertNotEquals(False,$field);
-        $this->internalTypeWrapper('object',$field);
+        $this->assertInternalType('object',$field);
         $this->assertObjectHasAttribute('name',$field);
         $this->assertEquals(1,$field->max_length);
 
         $now = $sql->now();
-        $this->internalTypeWrapper('string',$now);
+        $this->assertInternalType('string',$now);
         $this->assertNotEquals('',$now);
 
         $datediff = $sql->datediff('d1','d2');
-        $this->internalTypeWrapper('string',$datediff);
+        $this->assertInternalType('string',$datediff);
         $this->assertNotEquals('',$datediff);
 
         $dateeq = $sql->dateEquals('d1',date('Y-m-d'));
-        $this->internalTypeWrapper('string',$dateeq);
+        $this->assertInternalType('string',$dateeq);
         $this->assertNotEquals('',$dateeq);
 
         $monthdiff = $sql->monthdiff('d1','d2');
-        $this->internalTypeWrapper('string',$monthdiff);
+        $this->assertInternalType('string',$monthdiff);
         $this->assertNotEquals('',$monthdiff);
 
         $seconddiff = $sql->seconddiff('d1','d2');
-        $this->internalTypeWrapper('string',$seconddiff);
+        $this->assertInternalType('string',$seconddiff);
         $this->assertNotEquals('',$seconddiff);
 
         $weekdiff = $sql->weekdiff('d1','d2');
-        $this->internalTypeWrapper('string',$weekdiff);
+        $this->assertInternalType('string',$weekdiff);
         $this->assertNotEquals('',$weekdiff);
 
         $dow = $sql->dayofweek('col1');
-        $this->internalTypeWrapper('string',$dow);
+        $this->assertInternalType('string',$dow);
         $this->assertNotEquals(False,$dow);
 
         $ymd = $sql->dateymd('d1');
-        $this->internalTypeWrapper('string',$ymd);
+        $this->assertInternalType('string',$ymd);
         $this->assertNotEquals('',$ymd);
 
         $hour = $sql->hour('d1');
-        $this->internalTypeWrapper('string',$hour);
+        $this->assertInternalType('string',$hour);
         $this->assertNotEquals('',$hour);
 
         $convert = $sql->convert("'1'",'INT');
-        $this->internalTypeWrapper('string',$convert);
+        $this->assertInternalType('string',$convert);
         $this->assertNotEquals('',$convert);
 
         $locate = $sql->locate("'1'",'col_name');
-        $this->internalTypeWrapper('string',$locate);
+        $this->assertInternalType('string',$locate);
         $this->assertNotEquals('',$locate);
 
         $concat = $sql->concat('col1','col2','');
-        $this->internalTypeWrapper('string',$concat);
+        $this->assertInternalType('string',$concat);
         $this->assertNotEquals('',$concat);
 
         $currency = $sql->currency();
-        $this->internalTypeWrapper('string',$currency);
+        $this->assertInternalType('string',$currency);
         $this->assertNotEquals('',$currency);
 
         $limit = $sql->addSelectLimit("SELECT 1",1);
-        $this->internalTypeWrapper('string',$limit);
+        $this->assertInternalType('string',$limit);
         $this->assertNotEquals('',$limit);
 
         $sep = $sql->sep();
-        $this->internalTypeWrapper('string',$sep);
+        $this->assertInternalType('string',$sep);
         $this->assertNotEquals('',$sep);
 
         $error = $sql->error();
-        $this->internalTypeWrapper('string',$error);
+        $this->assertInternalType('string',$error);
         $this->assertEquals('',$error);
 
         /* bad query on purpose 
@@ -158,7 +158,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$fail);
 
         $error = $sql->error();
-        $this->internalTypeWrapper('string',$error);
+        $this->assertInternalType('string',$error);
         $this->assertNotEquals('',$error);
         */
 
@@ -169,7 +169,7 @@ class FannieSQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(False,$exec);
         $row = $sql->fetch_row($exec);
         $this->assertNotEquals(False,$row);
-        $this->internalTypeWrapper('array',$row);
+        $this->assertInternalType('array',$row);
         $this->assertArrayHasKey(0,$row);
         $this->assertEquals(2,$row[0]);
     }

@@ -24,10 +24,10 @@ class ModelsTest extends PHPUnit_Framework_TestCase
             $columns = $obj->getColumns();
 
             // check column definitions
-            $this->internalTypeWrapper('array', $columns);
+            $this->assertInternalType('array', $columns);
             foreach ($columns as $column_name => $column_definition) {
                 // must be array, must have a type
-                $this->internalTypeWrapper('array', $column_definition);
+                $this->assertInternalType('array', $column_definition);
                 $this->assertArrayHasKey('type', $column_definition, $model_class . ' missing type for ' . $column_name);
 
                 // must have a get/set method for each collumn
@@ -36,7 +36,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
                 $this->assertEquals($val, $obj->$column_name(), 'Get/set busted for ' . $model_class . ' :: ' . $column_name);
             }
 
-            $this->internalTypeWrapper('string', $obj->doc());
+            $this->assertInternalType('string', $obj->doc());
 
             if (!$normalized && $obj->preferredDB() === 'op') {
                 $dbc = FannieDB::forceReconnect(FannieConfig::config('OP_DB'));

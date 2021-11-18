@@ -65,12 +65,12 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             $obj = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\DiscountType',$obj);
             
-            $this->internalTypeWrapper('boolean',$obj->isSale());
-            $this->internalTypeWrapper('boolean',$obj->isMemberOnly());
-            $this->internalTypeWrapper('boolean',$obj->isMemberSale());
+            $this->assertInternalType('boolean',$obj->isSale());
+            $this->assertInternalType('boolean',$obj->isMemberOnly());
+            $this->assertInternalType('boolean',$obj->isMemberSale());
             $this->assertEquals($obj->isMemberOnly(),$obj->isMemberSale());
-            $this->internalTypeWrapper('boolean',$obj->isStaffOnly());
-            $this->internalTypeWrapper('boolean',$obj->isStaffSale());
+            $this->assertInternalType('boolean',$obj->isStaffOnly());
+            $this->assertInternalType('boolean',$obj->isStaffSale());
             $this->assertEquals($obj->isStaffSale(),$obj->isStaffOnly());
         }
 
@@ -82,7 +82,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $norm = new DiscountType($session);
         $info = $norm->priceInfo($row, 1);
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -92,7 +92,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $norm = new NormalPricing($session);
         $info = $norm->priceInfo($row, 1);
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -107,7 +107,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
 
         $norm = new EveryoneSale($session);
         $info = $norm->priceInfo($row, 1);
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -125,7 +125,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $row['upc'] = '0000000004011';
         $row['mixmatchcode'] = '';
         $info = $norm->priceInfo($row, 1);
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -142,7 +142,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('isMember',1);
         $norm = new MemberSale($session);
         $info = $norm->priceInfo($row, 1);
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -159,7 +159,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $norm = new StaffSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals($info, $norm->priceInfo($row, 1));
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -178,7 +178,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $norm = new SlidingMemSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals($info, $norm->priceInfo($row, 1));
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -196,7 +196,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         $norm = new PercentMemSale($session);
         $info = $norm->priceInfo($row, 1);
         $this->assertEquals($info, $norm->priceInfo($row, 1));
-        $this->internalTypeWrapper('array',$info);
+        $this->assertInternalType('array',$info);
         $this->assertArrayHasKey('regPrice',$info);
         $this->assertArrayHasKey('unitPrice',$info);
         $this->assertArrayHasKey('discount',$info);
@@ -572,7 +572,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         foreach($all as $class){
             $obj = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialUPC',$obj);
-            $this->internalTypeWrapper('boolean',$obj->isSpecial('silly nonsense input'));
+            $this->assertInternalType('boolean',$obj->isSpecial('silly nonsense input'));
         }
 
         $cc = new CouponCode($session);
@@ -847,9 +847,9 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             $obj = new $class($session);
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Scanning\\SpecialDept',$obj);
             $map = $obj->register(1,$map);
-            $this->internalTypeWrapper('array',$map);
+            $this->assertInternalType('array',$map);
             $this->assertArrayHasKey(1,$map);
-            $this->internalTypeWrapper('array',$map[1]);
+            $this->assertInternalType('array',$map[1]);
             $this->assertContains($class,$map[1]);
             $this->assertNotEquals(0, strlen($obj->help_text()));
         }
@@ -859,24 +859,24 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         // first call should set warn vars
         $arwarn = new ArWarnDept($session);
         $json = $arwarn->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertNotEmpty($json['main_frame']);
 
         CoreLocal::set('msgrepeat',1);
 
         // second call should clear vars and proceed
         $json = $arwarn->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertEmpty($json['main_frame']);
 
         CoreLocal::set('autoReprint',0);
         $auto = new AutoReprintDept($session);
         $json = $auto->handle(1,1.00,array());
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertEquals(1, CoreLocal::get('autoReprint'));    
 
         CoreLocal::set('msgrepeat',0);
@@ -885,26 +885,26 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         // error because member is required
         $eEndorse = new EquityEndorseDept($session);
         $json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertNotEmpty($json['main_frame']);
 
         // show endorse warning screen
         CoreLocal::set('memberID',123);
         $json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertNotEmpty($json['main_frame']);
 
         // clear warning and proceed
         CoreLocal::set('memberID',123);
         CoreLocal::set('msgrepeat', 1);
         $json = $eEndorse->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertEmpty($json['main_frame']);
 
         CoreLocal::set('memberID',0);
@@ -913,9 +913,9 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         // error because member is required
         $eWarn = new EquityWarnDept($session);
         $json = $eWarn->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertNotEmpty($json['main_frame']);
 
         CoreLocal::set('memberID',123);
@@ -923,18 +923,18 @@ class ScanningTest extends PHPUnit_Framework_TestCase
         // show warning screen
         CoreLocal::set('memberID',123);
         $json = $eWarn->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertNotEmpty($json['main_frame']);
 
         // clear warning and proceed
         CoreLocal::set('memberID',123);
         CoreLocal::set('msgrepeat', 1);
         $json = $eWarn->handle(1,1.00,array('main_frame'=>''));
-        $this->internalTypeWrapper('array',$json);
+        $this->assertInternalType('array',$json);
         $this->assertArrayHasKey('main_frame',$json);
-        $this->internalTypeWrapper('string',$json['main_frame']);
+        $this->assertInternalType('string',$json['main_frame']);
         $this->assertEmpty($json['main_frame']);
 
         CoreLocal::set('memberID', '0');

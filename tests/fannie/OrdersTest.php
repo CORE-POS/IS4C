@@ -8,7 +8,7 @@ class OrdersTest extends PHPUnit_Framework_TestCase
     public function testPricing()
     {
         $item = OrderItemLib::getItem('fakeItem');
-        $this->internalTypeWrapper('array', $item);
+        $this->assertInternalType('array', $item);
         $item['normal_price'] = 10;
         $item['cost'] = 1;
         $is_member = array(

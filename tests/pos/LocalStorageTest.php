@@ -18,27 +18,27 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
             $this->assertInstanceOf('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage',$obj);
 
             $unk = $obj->get('unknownKey');
-            $this->internalTypeWrapper('string',$unk);
+            $this->assertInternalType('string',$unk);
             $this->assertEquals('',$unk, 'Unknown key failed for ' . $class);
 
             $obj->set('testKey','testVal');
             $get = $obj->get('testKey');
-            $this->internalTypeWrapper('string',$get, 'String test failed for ' . $class);
+            $this->assertInternalType('string',$get, 'String test failed for ' . $class);
             $this->assertEquals('testVal',$get, 'String equality failed for ' . $class);
 
             $obj->set('testInt',1);
             $get = $obj->get('testInt');
-            $this->internalTypeWrapper('integer',$get, 'Int test failed for ' . $class);
+            $this->assertInternalType('integer',$get, 'Int test failed for ' . $class);
             $this->assertEquals(1, $get, 'Int equality failed for ' . $class);
 
             $obj->set('testBool',False);
             $get = $obj->get('testBool');
-            $this->internalTypeWrapper('boolean',$get, 'Bool test failed for ' . $class);
+            $this->assertInternalType('boolean',$get, 'Bool test failed for ' . $class);
             $this->assertEquals(false, $get, 'Bool equality failed for ' . $class);
 
             $obj->set('testArray',array(1,2));
             $get = $obj->get('testArray');
-            $this->internalTypeWrapper('array',$get, 'Array test failed for ' . $class);
+            $this->assertInternalType('array',$get, 'Array test failed for ' . $class);
             $this->assertEquals(array(1, 2), $get, 'Array equality failed for ' . $class);
 
             foreach ($obj as $key => $val) {
@@ -53,6 +53,6 @@ class LocalStorageTest extends PHPUnit_Framework_TestCase
         CoreLocal::refresh();
         CoreLocal::migrateSettings();
         $json = CoreLocal::convertIniPhpToJson();
-        $this->internalTypeWrapper('array', json_decode($json, true));
+        $this->assertInternalType('array', json_decode($json, true));
     }
 }

@@ -119,7 +119,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         /** get account and verify structure **/
         $TEST_ACCOUNT = 1;
         $account = \COREPOS\Fannie\API\member\MemberREST::get($TEST_ACCOUNT);
-        $this->internalTypeWrapper('array', $account);
+        $this->assertInternalType('array', $account);
         $all_fields = array(
             'cardNo',
             'memberStatus',
@@ -145,7 +145,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         foreach ($all_fields as $field) {
             $this->assertArrayHaskey($field, $account, 'Account missing field: ' . $field);
         }
-        $this->internalTypeWrapper('array', $account['customers']);
+        $this->assertInternalType('array', $account['customers']);
 
         $customer_fields = array(
             'customerID',
@@ -206,7 +206,7 @@ class MembersTest extends PHPUnit_Framework_TestCase
         foreach ($post_accounts as $a) {
             /** post account structure back and verify it did not change **/
             $resp = \COREPOS\Fannie\API\member\MemberREST::post($TEST_ACCOUNT, $a);
-            $this->internalTypeWrapper('array', $resp);
+            $this->assertInternalType('array', $resp);
             $this->assertArrayHasKey('errors', $resp);
             $this->assertEquals(0, $resp['errors']);
             $this->assertArrayHasKey('account', $resp);

@@ -19,7 +19,7 @@ class ScaleTest extends PHPUnit_Framework_TestCase
         $nm->ReadFromScale();
         $read = json_decode(ob_get_clean(), true);
         $this->assertEquals(false, file_exists($ss_output));
-        $this->internalTypeWrapper('array', $read);
+        $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scale', $read);
         $this->assertNotEquals(0, strlen($read['scale']));
 
@@ -28,7 +28,7 @@ class ScaleTest extends PHPUnit_Framework_TestCase
         $nm->ReadFromScale();
         $read = json_decode(ob_get_clean(), true);
         $this->assertEquals(false, file_exists($ss_output));
-        $this->internalTypeWrapper('array', $read);
+        $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scans', $read);
         $this->assertEquals('12345', $read['scans']);
 
@@ -46,14 +46,14 @@ class ScaleTest extends PHPUnit_Framework_TestCase
         ob_start();
         $ssd->ReadFromScale();
         $read = json_decode(ob_get_clean(), true);
-        $this->internalTypeWrapper('array', $read);
+        $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scale', $read);
         $this->assertNotEquals(0, strlen($read['scale']));
         file_put_contents($dir . 'scanner', '12345');
         ob_start();
         $ssd->ReadFromScale();
         $read = json_decode(ob_get_clean(), true);
-        $this->internalTypeWrapper('array', $read);
+        $this->assertInternalType('array', $read);
         $this->assertArrayHasKey('scans', $read);
         $this->assertEquals('12345', $read['scans']);
 

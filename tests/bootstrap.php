@@ -6,30 +6,29 @@ include(dirname(__FILE__) . '/fannie/bootstrap.php');
 if (!class_exists('PHPUnit_Framework_TestCase') && class_exists('PHPUnit\Framework\TestCase')) {
     class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase
     {
-        public function internalTypeWrapper($type, $var, $message='')
+        public static function assertInternalType($type, $var, $message='')
         {
-            if (method_exists($this, 'assertIsObject')) {
-                switch (strtolower($type)) {
-                    case 'object':
-                        $this->assertIsObject($var, $message);
-                        break;
-                    case 'array':
-                        $this->assertIsArray($var, $message);
-                        break;
-                    case 'string':
-                        $this->assertIsStrong($var, $message);
-                        break;
-                    case 'boolean':
-                    case 'bool':
-                        $this->assertIsBool($var, $message);
-                        break;
-                    case 'integer':
-                    case 'int':
-                        $this->assertIsInt($var, $message);
-                        break;
-                }
-            } else {
-                $this->assertInternalType($type, $var, $message);
+            switch (strtolower($type)) {
+                case 'object':
+                    self::assertIsObject($var, $message);
+                    break;
+                case 'array':
+                    self::assertIsArray($var, $message);
+                    break;
+                case 'string':
+                    self::assertIsStrong($var, $message);
+                    break;
+                case 'boolean':
+                case 'bool':
+                    self::assertIsBool($var, $message);
+                    break;
+                case 'integer':
+                case 'int':
+                    self::assertIsInt($var, $message);
+                    break;
+                default:
+                    parent::assertInternalType($type, $var, $message);
+                    break;
             }
         }
     }

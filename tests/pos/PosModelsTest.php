@@ -39,7 +39,7 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
             $obj = new $class($dbc);
             // this just improves coverage; the doc method isn't
             // user-facing functionality
-            $this->internalTypeWrapper('string', $obj->doc());
+            $this->assertInternalType('string', $obj->doc());
             if (strstr($class, 'EWic')) continue;
             if (substr($class, 0, 26) == 'COREPOS\\pos\\lib\\models\\op\\') {
                 $dbname = CoreLocal::get('pDatabase');
@@ -79,7 +79,7 @@ class PosModelsTest extends PHPUnit_Framework_TestCase
     public function testTendersModel()
     {
         $obj = new COREPOS\pos\lib\models\op\TendersModel(Database::pDataConnect());
-        $this->internalTypeWrapper('array', $obj->getMap());
+        $this->assertInternalType('array', $obj->getMap());
         $obj->hookAddColumnTenderModule();
     }
 
