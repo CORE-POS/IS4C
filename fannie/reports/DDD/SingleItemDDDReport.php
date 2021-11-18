@@ -52,7 +52,7 @@ class SingleItemDDDReport extends FannieReportPage
         $stores = array();
         $args = array($upc);
         $prep = $op_dbc->prepare("SELECT storeID, description FROM Stores WHERE hasOwnItems = 1;");
-        $res = $op_dbc->execute($prep, $args);
+        $res = $op_dbc->execute($prep);
         while ($row = $op_dbc->fetchRow($res)) {
             $stores[$row['storeID']] = $row['description'];
         }
