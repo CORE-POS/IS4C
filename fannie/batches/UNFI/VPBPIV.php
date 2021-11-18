@@ -556,6 +556,7 @@ JAVASCRIPT;
 
     public function helpContent()
     {
+        return parent::helpContent();
     }
 
     public function unitTest($phpunit)

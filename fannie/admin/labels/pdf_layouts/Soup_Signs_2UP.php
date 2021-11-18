@@ -7,7 +7,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
 
-class Soup_Signs_2UP extends FpdfWithBarcode
+class Soup_Signs_2UP_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     public function setTagDate($str){
@@ -25,7 +25,7 @@ class Soup_Signs_2UP extends FpdfWithBarcode
 function Soup_Signs_2UP($data,$offset=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new Soup_Signs_2UP('P','mm','Letter');
+    $pdf = new Soup_Signs_2UP_PDF('P','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
