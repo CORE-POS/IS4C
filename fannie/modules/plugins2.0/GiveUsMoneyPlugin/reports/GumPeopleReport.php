@@ -38,7 +38,7 @@ class GumPeopleReport extends FannieReportPage
 
     protected $required_fields = array();
     protected $report_headers = array('Mem#', 'First Name', 'Last Name', 'Loan Date', 'Principal', 'Interest Rate', 'Term (Months)', 
-                                    'Maturity Date', 'MaturityAmount', 'C Shares', 'Loan Paid Date', 'Check Number'); 
+                                    'Maturity Date', 'MaturityAmount', 'C Shares', 'Loan Paid Date', 'Check Number', 'Tax ID'); 
 
     public function preprocess()
     {
@@ -66,7 +66,9 @@ class GumPeopleReport extends FannieReportPage
                     CASE WHEN l.principal IS NULL THEN 0
                         ELSE principal * POW(1+interestRate, DATEDIFF(DATE_ADD(loanDate, INTERVAL termInMonths MONTH), loanDate)/365.25)
                     END as maturityAmount,
-                    l.gumLoanAccountID
+                    l.gumLoanAccountID,
+                    i.maskedTaxIdentifier,
+                    i.encryptedTaxIdentifier
                   FROM ' . $FANNIE_OP_DB . $dbc->sep() . 'custdata AS c
                         LEFT JOIN GumLoanAccounts AS l 
                             ON l.card_no=c.CardNo AND c.personNum=1
@@ -75,6 +77,7 @@ class GumPeopleReport extends FannieReportPage
                             FROM GumEquityShares
                             GROUP BY card_no
                         ) AS e ON c.cardNo=e.card_no AND c.personNum=1
+                        LEFT JOIN GumTaxIdentifiers AS i ON i.card_no = c.CardNo
                   WHERE 
                     (l.card_no IS NOT NULL
                     AND l.principal > 0)
@@ -117,6 +120,14 @@ class GumPeopleReport extends FannieReportPage
                 $record[] = 'n/a';
                 $record[] = 'n/a';
             }
+            $ssn = 'xxx-xx-' . $row['maskedTaxIdentifier'];
+            if (false) {
+                $key = file_get_contents('/path/to/key');
+                $privkey = openssl_pkey_get_private($key);
+                $try = openssl_private_decrypt($row['encryptedTaxIdentifier'], $decrypted, $privkey);
+                if ($try) $ssn = $decrypted;
+            }
+            $record[] = $ssn;
             $data[] = $record;
         }
 
