@@ -6,7 +6,7 @@ include(dirname(__FILE__) . '/fannie/bootstrap.php');
 if (!class_exists('PHPUnit_Framework_TestCase') && class_exists('PHPUnit\Framework\TestCase')) {
     class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase
     {
-        public static function assertInternalType($type, $var, $message='')
+        public static function assertInternalType(string $type, $var, string $message='')
         {
             switch (strtolower($type)) {
                 case 'object':
