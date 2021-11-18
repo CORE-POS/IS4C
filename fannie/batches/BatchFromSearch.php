@@ -258,7 +258,7 @@ class BatchFromSearch extends FannieRESTfulPage
         $name = FannieAuth::checkLogin();
         $batchName = ($name ? $name : 'Batch') . ' ' . date('M j');
         $today = date('Y-m-d');
-        $owners = $dbc->query('SELECT super_name, superID FROM MasterSuperDepts GROUP BY super_name ORDER BY super_name');
+        $owners = $dbc->query('SELECT super_name, superID FROM MasterSuperDepts GROUP BY super_name, superID ORDER BY super_name');
         $oOpts = '';
         while ($row = $dbc->fetchRow($owners)) {
             $oOpts .= '<option data-superid="'.$row['superID'].'">' . $row['super_name'] . '</option>';
