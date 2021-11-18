@@ -45,7 +45,6 @@ class RoundUpAccountReport extends FannieReportPage
         $res = $this->connection->execute($prep,
                 array($start . ' 00:00:00', $end . ' 23:59:59', $this->guessDepartment()));
         $data = array();
-        var_dump($this->connection->numRows($res));
         while ($row = $this->connection->fetchRow($res)) {
             $time = mktime(0,0,0,$row['month'],1,$year);
             $data[] = array(
