@@ -257,7 +257,7 @@ class PaymentPlanEditor extends FannieRESTfulPage
         $values->_method = 'post';
         $values->id = 1;
         $values->name = 'Test';
-        $values->final = '123';
+        $values->final = '123.00';
         $values->initial = '12';
         $values->recurring = '23';
         $values->cycle = '5W';
