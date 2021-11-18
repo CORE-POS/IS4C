@@ -131,7 +131,7 @@ HTML;
             $args = array($upc);
             $prep = $dbc->prepare("SELECT *, p.brand AS pbrand, p.description AS pdesc FROM products AS p LEFT JOIN vendorItems AS v ON    
                 p.default_vendor_id=v.vendorID AND p.upc=v.upc WHERE p.upc = ? 
-                GROUP BY p.upc");
+                GROUP BY p.upc, p.brand, p.description");
             $res = $dbc->execute($prep, $args);
             while ($row = $dbc->fetchRow($res)) {
                 $price = $row['normal_price'];
