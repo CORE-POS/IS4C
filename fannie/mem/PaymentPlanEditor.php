@@ -258,8 +258,8 @@ class PaymentPlanEditor extends FannieRESTfulPage
         $values->id = 1;
         $values->name = 'Test';
         $values->final = '123.00';
-        $values->initial = '12';
-        $values->recurring = '23';
+        $values->initial = '12.00';
+        $values->recurring = '23.00';
         $values->cycle = '5W';
         $values->basis = 1;
         $values->overdue = 90;
