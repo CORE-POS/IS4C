@@ -130,8 +130,7 @@ HTML;
         foreach ($upcs as $k => $upc) {
             $args = array($upc);
             $prep = $dbc->prepare("SELECT *, p.brand AS pbrand, p.description AS pdesc FROM products AS p LEFT JOIN vendorItems AS v ON    
-                p.default_vendor_id=v.vendorID AND p.upc=v.upc WHERE p.upc = ? 
-                GROUP BY p.upc, p.brand, p.description");
+                p.default_vendor_id=v.vendorID AND p.upc=v.upc WHERE p.upc = ? ");
             $res = $dbc->execute($prep, $args);
             while ($row = $dbc->fetchRow($res)) {
                 $price = $row['normal_price'];
@@ -153,6 +152,7 @@ HTML;
                 $td .= "<tr><td>$upc</td><td>$brand</td><td>$desc</td><td>$units</td>
                     <td>$size</td><td>$sku</td><td>$scale</td></tr>";
                 $i++;
+                break; // only need one result per UPC
             }
         }
 
