@@ -94,7 +94,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
     public function testDeliveries()
     {
-        $del = new VendorDeliveriesModel();
+        $del = new VendorDeliveriesModel(null);
         $del->frequency('weekly');
         $del->monday(1);
         $del->autoNext();

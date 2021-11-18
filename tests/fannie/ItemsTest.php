@@ -203,12 +203,12 @@ class ItemsTest extends PHPUnit_Framework_TestCase
             'OriginText' => '',
         );
 
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj));
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj, true));
         $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getIngredientLine($item_info, $obj));
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj));
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj, false));
         $item_info['RecordType'] = 'ChangeOneItem';
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj));
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj));
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj, true));
+        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj, false));
     }
 
 }
