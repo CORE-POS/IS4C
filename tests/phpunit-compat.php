@@ -30,6 +30,10 @@ class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase
 
     public static function assertContains($needle, $haystack, string $message = '', bool $ignoreCase = false, bool $checkForObjectIdentity = true, bool $checkForNonObjectIdentity = false): void
     {
-        self::assertStringContainsString($needle, $haystack, $message);
+        if (is_string($haystack)) {
+            self::assertStringContainsString($needle, $haystack, $message);
+        } else {
+            parent::assertContains($needle, $haystack, $message);
+        }
     }
 }
