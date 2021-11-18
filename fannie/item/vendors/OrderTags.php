@@ -159,11 +159,6 @@ class OrderTags extends FannieRESTfulPage
         return $this->get_id_print_handler();
     }
 
-    protected function post_id_view()
-    {
-        return '<div id="alert-area"></div>' . $this->get_id_view();
-    }
-
     protected function get_view()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
@@ -256,13 +251,6 @@ class OrderTags extends FannieRESTfulPage
             </p>';
     }
 
-    public function unitTest($phpunit)
-    {
-        $this->id = 1;
-        $phpunit->assertInternalType('string', $this->get_id_view());
-        $phpunit->assertInternalType('string', $this->post_id_view());
-        $phpunit->assertEquals(true, $this->post_id_handler());
-    }
 }
 
 FannieDispatch::conditionalExec();
