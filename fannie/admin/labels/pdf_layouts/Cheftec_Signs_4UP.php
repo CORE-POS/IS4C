@@ -64,6 +64,9 @@ function generateChefTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     }
 
     $dbc = CTDB::get();
+    if (!$dbc->isConnected()) {
+        return false;
+    }
     $recipeID = $row['recipeID'];
 
     $CTR = new CTRecipesStandalone();
