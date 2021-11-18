@@ -1,4 +1,10 @@
 <?php
+if (class_exists('FpdfLib', false)) {
+    // no idea how this is happening in CI.
+    // There are only two include of this file, and both appear
+    // gated by class existing checks...
+    return;
+}
 class FpdfLib 
 {
     static function abbreviation_to_upper($text)
