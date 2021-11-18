@@ -42,10 +42,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0.00, MiscLib::truncate2(""));
 
         $hostCheck = MiscLib::pingport(CoreLocal::get('localhost'),CoreLocal::get('DBMS'));
-        $this->assertInternalType('integer', $hostCheck);
+        $this->internalTypeWrapper('integer', $hostCheck);
 
         $hostCheck = MiscLib::win32();
-        $this->assertInternalType('integer', $hostCheck);
+        $this->internalTypeWrapper('integer', $hostCheck);
 
         $scale = MiscLib::scaleObject();
         if ($scale !== 0){
@@ -79,7 +79,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $db = Database::tDataConnect();
         $matches = Database::localMatchingColumns($db, 'localtrans', 'localtemptrans');
-        $this->assertInternalType('string', $matches);
+        $this->internalTypeWrapper('string', $matches);
         $this->assertRegExp('/(.+)/',$matches);
 
         $globals = array(
@@ -139,7 +139,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(false, $result, 'Could not query suspended record');
         $this->assertEquals(1, $db->num_rows($result), 'Could not find suspended record');
         $row = $db->fetch_row($result);
-        $this->assertInternalType('array', $row, 'Invalid suspended record');
+        $this->internalTypeWrapper('array', $row, 'Invalid suspended record');
         foreach ($record as $column => $value) {
             $this->assertArrayHasKey($column, $row, 'Suspended missing ' . $column);
             $this->assertEquals($value, $row[$column], 'Suspended mismatch on column ' . $column);
@@ -186,9 +186,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, Authenticate::checkPermission('56', 10));
 
         $this->assertEquals(false, Authenticate::getEmployeeByPassword('asdf'));
-        $this->assertInternalType('array', Authenticate::getEmployeeByPassword('56'));
+        $this->internalTypeWrapper('array', Authenticate::getEmployeeByPassword('56'));
         $this->assertEquals(false, Authenticate::getEmployeeByNumber(75));
-        $this->assertInternalType('array', Authenticate::getEmployeeByNumber(56));
+        $this->internalTypeWrapper('array', Authenticate::getEmployeeByNumber(56));
 
         $this->assertEquals(0, Authenticate::getPermission(55));
         $this->assertEquals(20, Authenticate::getPermission(56));
@@ -202,7 +202,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(true, class_exists('COREPOS\\pos\\lib\\LocalStorage\\LocalStorage', false));
 
         $class_map = AutoLoader::loadMap();
-        $this->assertInternalType('array', $class_map);
+        $this->internalTypeWrapper('array', $class_map);
         $this->assertNotEmpty($class_map);
         
         /**
@@ -219,7 +219,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         }
 
         $mods = AutoLoader::listModules('COREPOS\\pos\\parser\\Parser');
-        $this->assertInternalType('array',$mods);
+        $this->internalTypeWrapper('array',$mods);
         $this->assertNotEmpty($mods);
         foreach($mods as $m){
             $obj = new $m(null);
@@ -231,7 +231,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         );
         foreach ($listable as $base_class) {
             $mods = AutoLoader::listModules($base_class);
-            $this->assertInternalType('array',$mods);
+            $this->internalTypeWrapper('array',$mods);
         }
     }
 
@@ -248,7 +248,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $this->assertFileExists($file);
         $bitmap = $ph->RenderBitmapFromFile($file);
-        $this->assertInternalType('string',$bitmap);
+        $this->internalTypeWrapper('string',$bitmap);
         $this->assertNotEmpty($bitmap);
     }
 
@@ -272,7 +272,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         CoreState::initiateSession();
 
         $str = CoreState::getCustomerPref('asdf');
-        $this->assertInternalType('string',$str);
+        $this->internalTypeWrapper('string',$str);
         $this->assertEquals('',$str);
         CoreLocal::set('memberID', 1);
         $str = CoreState::getCustomerPref('asdf');
@@ -289,47 +289,47 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     {
         CoreLocal::set('FooterModules', ''); // force re-init
         $footer = DisplayLib::printfooter();
-        $this->assertInternalType('string',$footer);
+        $this->internalTypeWrapper('string',$footer);
         $this->assertNotEmpty($footer);
 
         $pmsg = DisplayLib::plainmsg('test message');
-        $this->assertInternalType('string',$pmsg);
+        $this->internalTypeWrapper('string',$pmsg);
         $this->assertNotEmpty($pmsg);
         $this->assertContains('test message',$pmsg);
 
         $mbox = DisplayLib::msgbox('test msgbox','',True);
-        $this->assertInternalType('string',$mbox);
+        $this->internalTypeWrapper('string',$mbox);
         $this->assertNotEmpty($mbox);
         $this->assertContains('test msgbox',$mbox);
 
         $xbox = DisplayLib::xboxMsg('test xboxMsg');
-        $this->assertInternalType('string',$xbox);
+        $this->internalTypeWrapper('string',$xbox);
         $this->assertNotEmpty($xbox);
         $this->assertContains('test xboxMsg',$xbox);
 
         $bmsg = DisplayLib::boxMsg('test boxMsg','',True);
-        $this->assertInternalType('string',$bmsg);
+        $this->internalTypeWrapper('string',$bmsg);
         $this->assertNotEmpty($bmsg);
         $this->assertContains('test boxMsg',$bmsg);
 
         $unk = DisplayLib::inputUnknown();
-        $this->assertInternalType('string',$unk);
+        $this->internalTypeWrapper('string',$unk);
         $this->assertNotEmpty($unk);
 
         $headerb = DisplayLib::printheaderb();
-        $this->assertInternalType('string',$headerb);
+        $this->internalTypeWrapper('string',$headerb);
         $this->assertNotEmpty($headerb);
 
         $item = DisplayLib::printItem('name','weight','1.99','T',1);
-        $this->assertInternalType('string',$item);
+        $this->internalTypeWrapper('string',$item);
         $this->assertNotEmpty($item);
 
         $itemC = DisplayLib::printItemColor('004080','name','weight','1.99','T',2);
-        $this->assertInternalType('string',$itemC);
+        $this->internalTypeWrapper('string',$itemC);
         $this->assertNotEmpty($itemC);
 
         $itemH = DisplayLib::printItemColorHilite('004080','name','weight','1.99','T');
-        $this->assertInternalType('string',$itemH);
+        $this->internalTypeWrapper('string',$itemH);
         $this->assertNotEmpty($itemH);
 
         CoreLocal::set('weight',0);
@@ -337,7 +337,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('SNR',0);
 
         $basic = DisplayLib::scaledisplaymsg();
-        $this->assertInternalType('string',$basic);
+        $this->internalTypeWrapper('string',$basic);
         $this->assertEquals('0.00 lb',$basic);
 
         $scale_in_out = array(
@@ -355,7 +355,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         foreach($scale_in_out as $input => $output){
             $test = DisplayLib::scaledisplaymsg($input);
-            $this->assertInternalType('array',$test);
+            $this->internalTypeWrapper('array',$test);
             $this->assertArrayHasKey('display',$test);
             $this->assertEquals($output, $test['display']);
         }
@@ -365,7 +365,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('SNR','4011');
         $both = DisplayLib::scaledisplaymsg('S11050');
-        $this->assertInternalType('array',$both);
+        $this->internalTypeWrapper('array',$both);
         $this->assertArrayHasKey('display',$both);
         $this->assertArrayHasKey('upc',$both);
         $this->assertEquals('0.50 lb',$both['display']);
@@ -373,17 +373,17 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('screenLines', ''); // force re-init
         $list = DisplayLib::listItems(0,0);
-        $this->assertInternalType('string',$list);
+        $this->internalTypeWrapper('string',$list);
 
         $rf = DisplayLib::printReceiptFooter();
-        $this->assertInternalType('string',$rf);
+        $this->internalTypeWrapper('string',$rf);
 
         $draw = DisplayLib::drawItems(0,11,0);
-        $this->assertInternalType('string',$draw);
+        $this->internalTypeWrapper('string',$draw);
 
         CoreLocal::set('screenLines', ''); // force re-init
         $lp = DisplayLib::lastpage();
-        $this->assertInternalType('string',$lp);
+        $this->internalTypeWrapper('string',$lp);
 
         $this->assertEquals($lp,$list);
     }
@@ -402,7 +402,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         $json = JsonLib::array_to_json($test);
         $good = "[[1,2,3],\"test string\",5,6,9.7,true,\"bad\\\\char\\tacters\"]";
-        $this->assertInternalType('string',$json);
+        $this->internalTypeWrapper('string',$json);
         $this->assertEquals($good,$json);
     }
 
@@ -419,10 +419,10 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('infoRecordQueue','not-array');
         TransRecord::addQueued('1234567890123','UNIT TEST',1,'UT',1.99);
         $queue = CoreLocal::get('infoRecordQueue');
-        $this->assertInternalType('array',$queue);
+        $this->internalTypeWrapper('array',$queue);
         $this->assertEquals(1,count($queue));
         $this->assertArrayHasKey(0,$queue);
-        $this->assertInternalType('array',$queue[0]);
+        $this->internalTypeWrapper('array',$queue[0]);
         $this->assertArrayHasKey('upc',$queue[0]);
         $this->assertEquals('1234567890123',$queue[0]['upc']);
         $this->assertArrayHasKey('description',$queue[0]);
@@ -436,7 +436,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         TransRecord::emptyQueue();
         $queue = CoreLocal::get('infoRecordQueue');
-        $this->assertInternalType('array',$queue);
+        $this->internalTypeWrapper('array',$queue);
         $this->assertEquals(0,count($queue));
         $record = lttLib::genericRecord();
         $record['upc'] = '1234567890123';
@@ -450,7 +450,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
 
         CoreLocal::set('infoRecordQueue','not-array');
         TransRecord::emptyQueue();
-        $this->assertInternalType('array', CoreLocal::get('infoRecordQueue'));
+        $this->internalTypeWrapper('array', CoreLocal::get('infoRecordQueue'));
 
         lttLib::clear();
 
@@ -696,19 +696,19 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('cashierAgeOverride', 0);
         list($age_required, $json) = PrehLib::ageCheck(21, array());
         $this->assertEquals(true, $age_required);
-        $this->assertInternalType('array', $json);
+        $this->internalTypeWrapper('array', $json);
         CoreLocal::set('cashierAgeOverride', 1);
         list($age_required, $json) = PrehLib::ageCheck(21, array());
         $this->assertEquals(true, $age_required);
-        $this->assertInternalType('array', $json);
+        $this->internalTypeWrapper('array', $json);
         CoreLocal::set('memAge', date('Ymd', strtotime('21 years ago')));
         list($age_required, $json) = PrehLib::ageCheck(21, array());
         $this->assertEquals(false, $age_required);
-        $this->assertInternalType('array', $json);
+        $this->internalTypeWrapper('array', $json);
         CoreLocal::set('memAge', date('Ymd', strtotime('20 years ago')));
         list($age_required, $json) = PrehLib::ageCheck(21, array());
         $this->assertEquals(true, $age_required);
-        $this->assertInternalType('array', $json);
+        $this->internalTypeWrapper('array', $json);
     }
 
     public function testDiscountModules()
@@ -788,9 +788,9 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
     public function testDynamicKey()
     {
         $key = new DynamicKey('label', 'entry', true, true);
-        $this->assertInternalType('object', $key);
+        $this->internalTypeWrapper('object', $key);
         $json = json_encode($key);
-        $this->assertInternalType('string', $json);
+        $this->internalTypeWrapper('string', $json);
     }
 
     public function testUndo()

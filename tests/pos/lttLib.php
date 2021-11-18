@@ -27,7 +27,7 @@ class lttLib {
         $r = $db->execute($p, array($trans_id));
         $testObj->assertEquals(1,$db->num_rows($r),'Record not found');
         $w = $db->fetch_row($r);
-        $testObj->assertInternalType('array',$w);
+        $testObj->internalTypeWrapper('array',$w);
         foreach($values as $col => $val){
             $testObj->assertArrayHasKey($col,$w,'missing column '.$col);
             $testObj->assertEquals($val,$w[$col],'wrong value '.$col);

@@ -86,7 +86,7 @@ class AuthTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(false, init_check());
         $this->assertEquals(true, is_numeric(getNumUsers()));
         $this->assertEquals(true, is_numeric(getNumAdmins()));
-        $this->assertInternalType('string', genSessID());
+        $this->internalTypeWrapper('string', genSessID());
     }
 
     public function testPrivs()

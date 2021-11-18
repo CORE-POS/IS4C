@@ -37,9 +37,9 @@ class FooterBoxesTest extends PHPUnit_Framework_TestCase
             $this->assertObjectHasAttribute('display_css',$obj);
 
             $header = $obj->header_content();
-            $this->assertInternalType('string',$header);
+            $this->internalTypeWrapper('string',$header);
             $display = $obj->display_content();
-            $this->assertInternalType('string',$display);
+            $this->internalTypeWrapper('string',$display);
         }
 
         $session = new WrappedStorage();

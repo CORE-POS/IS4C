@@ -15,10 +15,10 @@ class ItemsTest extends PHPUnit_Framework_TestCase
             $obj = new $item_class();
             $obj->setConnection($con);
             $obj->setConfig($conf);
-            $this->assertInternalType('string', $obj->showEditForm('0000000004011'));
-            $this->assertInternalType('int', $obj->width());
-            $this->assertInternalType('array', $obj->summaryRows('0000000004011'));
-            $this->assertInternalType('string', $obj->getFormJavascript('0000000004011'));
+            $this->internalTypeWrapper('string', $obj->showEditForm('0000000004011'));
+            $this->internalTypeWrapper('int', $obj->width());
+            $this->internalTypeWrapper('array', $obj->summaryRows('0000000004011'));
+            $this->internalTypeWrapper('string', $obj->getFormJavascript('0000000004011'));
         }
     }
 
@@ -203,12 +203,12 @@ class ItemsTest extends PHPUnit_Framework_TestCase
             'OriginText' => '',
         );
 
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj, true));
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getIngredientLine($item_info, $obj));
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj, false));
+        $this->internalTypeWrapper('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj, true));
+        $this->internalTypeWrapper('string', COREPOS\Fannie\API\item\EpScaleLib::getIngredientLine($item_info, $obj));
+        $this->internalTypeWrapper('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj, false));
         $item_info['RecordType'] = 'ChangeOneItem';
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj, true));
-        $this->assertInternalType('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj, false));
+        $this->internalTypeWrapper('string', COREPOS\Fannie\API\item\EpScaleLib::getItemLine($item_info, $obj, true));
+        $this->internalTypeWrapper('string', COREPOS\Fannie\API\item\HobartDgwLib::getItemLine($item_info, $obj, false));
     }
 
 }

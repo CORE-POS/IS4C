@@ -24,9 +24,9 @@ class KickersTest extends PHPUnit_Framework_TestCase
             $test1 = $obj->kickOnSignIn();
             $test2 = $obj->kickOnSignOut();
             $test3 = $obj->doKick('9999-99-1');
-            $this->assertInternalType('boolean',$test1);
-            $this->assertInternalType('boolean',$test2);
-            $this->assertInternalType('boolean',$test3);
+            $this->internalTypeWrapper('boolean',$test1);
+            $this->internalTypeWrapper('boolean',$test2);
+            $this->internalTypeWrapper('boolean',$test3);
         }
     }
 

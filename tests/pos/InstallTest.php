@@ -13,9 +13,9 @@ class InstallTest extends PHPUnit_Framework_TestCase
         $db = Database::pDataConnect();
         $errors = COREPOS\pos\install\db\Creator::createOpDBs($db, CoreLocal::get('pDatabase'));
 
-        $this->assertInternalType('array', $errors);
+        $this->internalTypeWrapper('array', $errors);
         foreach ($errors as $error) {
-            $this->assertInternalType('array', $error, 'Invalid status entry');
+            $this->internalTypeWrapper('array', $error, 'Invalid status entry');
             $this->assertArrayHasKey('error', $error, 'Status entry missing key: error; detail ' . print_r($error, true));
             $this->assertEquals(0, $error['error'], 'Error creating ' . $error['struct'] 
                 . ', ' . (isset($error['details']) ? $error['details'] : ''));
@@ -29,11 +29,11 @@ class InstallTest extends PHPUnit_Framework_TestCase
         $db = Database::tDataConnect();
         $errors = COREPOS\pos\install\db\Creator::createTransDBs($db, CoreLocal::get('tDatabase'));
 
-        $this->assertInternalType('array', $errors);
+        $this->internalTypeWrapper('array', $errors);
 
-        $this->assertInternalType('array', $errors);
+        $this->internalTypeWrapper('array', $errors);
         foreach ($errors as $error) {
-            $this->assertInternalType('array', $error, 'Invalid status entry');
+            $this->internalTypeWrapper('array', $error, 'Invalid status entry');
             $this->assertArrayHasKey('error', $error, 'Status entry missing key: error');
             $this->assertEquals(0, $error['error'], 'Error creating ' . $error['struct']
                 . ', ' . print_r($error, true));
@@ -83,11 +83,11 @@ class InstallTest extends PHPUnit_Framework_TestCase
         $db = Database::mDataConnect();
         $errors = COREPOS\pos\install\db\Creator::createMinServer($db, CoreLocal::get('mDatabase'));
 
-        $this->assertInternalType('array', $errors);
+        $this->internalTypeWrapper('array', $errors);
 
-        $this->assertInternalType('array', $errors);
+        $this->internalTypeWrapper('array', $errors);
         foreach ($errors as $error) {
-            $this->assertInternalType('array', $error, 'Invalid status entry');
+            $this->internalTypeWrapper('array', $error, 'Invalid status entry');
             $this->assertArrayHasKey('error', $error, 'Status entry missing key: error');
             $this->assertEquals(0, $error['error'], 'Error creating ' . $error['struct']
                 . ', ' . print_r($error, true));

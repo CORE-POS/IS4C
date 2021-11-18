@@ -23,7 +23,7 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
             $this->assertEquals(false, $class::adminLoginCallback(false));
             $this->assertEquals($url, substr($class::adminLoginCallback(true), -1*strlen($url)));
             list($str, $level) = $class::messageAndLevel();
-            $this->assertInternalType('string', $str);
+            $this->internalTypeWrapper('string', $str);
             $this->assertEquals(true, is_numeric($level));
         }
 
@@ -45,7 +45,7 @@ class AdminLoginTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(false, COREPOS\pos\parser\parse\VoidCmd::adminLoginCallback(false));
         $this->assertEquals(0, CoreLocal::get('voidOverride'));
         list($str, $level) = COREPOS\pos\parser\parse\VoidCmd::messageAndLevel();
-        $this->assertInternalType('string', $str);
+        $this->internalTypeWrapper('string', $str);
         $this->assertEquals(true, is_numeric($level));
         CoreLocal::set('msgrepeat', 0);
     }

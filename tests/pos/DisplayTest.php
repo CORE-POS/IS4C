@@ -232,8 +232,8 @@ class DisplayTest extends PHPUnit_Framework_TestCase
 
     private function compareArrays($one, $two)
     {
-        $this->assertInternalType('array', $one);
-        $this->assertInternalType('array', $two);
+        $this->internalTypeWrapper('array', $one);
+        $this->internalTypeWrapper('array', $two);
         foreach ($one as $key => $val) {
             $this->assertArrayHasKey($key, $two, 'Missing key ' . $key);
             $this->assertEquals($val, $two[$key], 'Value differs for ' . $key);

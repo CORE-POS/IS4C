@@ -14,15 +14,15 @@ class SearchTest extends PHPUnit_Framework_TestCase
 
             $this->assertInstanceOf('COREPOS\\pos\\lib\\Search\\Products\\ProductSearch',$obj);
 
-            $this->assertInternalType('integer',$obj->result_size);
+            $this->internalTypeWrapper('integer',$obj->result_size);
 
             $search_terms = array('0000000004011', 'BANANA');
 
             foreach($search_terms as $term) {
                 $results = $obj->search($term);
-                $this->assertInternalType('array', $results);
+                $this->internalTypeWrapper('array', $results);
                 foreach($results as $result) {
-                    $this->assertInternalType('array', $result);
+                    $this->internalTypeWrapper('array', $result);
                     $this->assertArrayHasKey('upc', $result);
                     $this->assertArrayHasKey('description', $result);
                     $this->assertArrayHasKey('normal_price', $result);
@@ -41,8 +41,8 @@ class SearchTest extends PHPUnit_Framework_TestCase
 
             $this->assertInstanceOf('COREPOS\\pos\\lib\\MemberLookup',$obj);
 
-            $this->assertInternalType('boolean', $obj->handle_numbers());
-            $this->assertInternalType('boolean', $obj->handle_text());
+            $this->internalTypeWrapper('boolean', $obj->handle_numbers());
+            $this->internalTypeWrapper('boolean', $obj->handle_text());
 
             $search_terms = array('JOHNSON', 1, 2354, 'RO');
             foreach($search_terms as $term) {
@@ -59,7 +59,7 @@ class SearchTest extends PHPUnit_Framework_TestCase
                     $result = $obj->lookup_by_text($term);
                 }
 
-                $this->assertInternalType('array', $result);
+                $this->internalTypeWrapper('array', $result);
                 $this->assertArrayHasKey('url', $result);
                 $this->assertArrayHasKey('results', $result);
                 $this->assertThat($result['url'],
@@ -68,11 +68,11 @@ class SearchTest extends PHPUnit_Framework_TestCase
                         $this->isType('string',$result['url'])
                     )
                 );
-                $this->assertInternalType('array', $result['results']);
+                $this->internalTypeWrapper('array', $result['results']);
 
                 foreach($result['results'] as $key => $value) {
-                    $this->assertInternalType('string', $key);
-                    $this->assertInternalType('string', $value);
+                    $this->internalTypeWrapper('string', $key);
+                    $this->internalTypeWrapper('string', $value);
                     $this->assertRegExp('/\d+::\d+/', $key);
                 }
             }

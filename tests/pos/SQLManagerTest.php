@@ -14,7 +14,7 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         /* test create connection */
         $this->assertInstanceOf('\\COREPOS\\pos\\lib\\SQLManager', $sql);
         $this->assertObjectHasAttribute('connections',$sql);
-        $this->assertInternalType('array',$sql->connections);
+        $this->internalTypeWrapper('array',$sql->connections);
         $this->assertArrayHasKey(CoreLocal::get('pDatabase'),$sql->connections);
         $con = $sql->connections[CoreLocal::get('pDatabase')];
         // mysql gives resource; PDO gives object
@@ -29,7 +29,7 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(False,$result);
 
         $escape = $sql->escape('some str');
-        $this->assertInternalType('string',$escape);
+        $this->internalTypeWrapper('string',$escape);
 
         $rows = $sql->num_rows($result);
         $this->assertNotEquals(False,$rows);
@@ -67,31 +67,31 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(1,$array['one']);
 
         $now = $sql->now();
-        $this->assertInternalType('string',$now);
+        $this->internalTypeWrapper('string',$now);
         $this->assertNotEquals('',$now);
 
         $datediff = $sql->datediff('d1','d2');
-        $this->assertInternalType('string',$datediff);
+        $this->internalTypeWrapper('string',$datediff);
         $this->assertNotEquals('',$datediff);
 
         $dow = $sql->dayofweek('col1');
-        $this->assertInternalType('string',$dow);
+        $this->internalTypeWrapper('string',$dow);
         $this->assertNotEquals(False,$dow);
 
         $convert = $sql->convert("'1'",'INT');
-        $this->assertInternalType('string',$convert);
+        $this->internalTypeWrapper('string',$convert);
         $this->assertNotEquals('',$convert);
 
         $concat = $sql->concat('col1','col2','');
-        $this->assertInternalType('string',$concat);
+        $this->internalTypeWrapper('string',$concat);
         $this->assertNotEquals('',$concat);
 
         $sep = $sql->sep();
-        $this->assertInternalType('string',$sep);
+        $this->internalTypeWrapper('string',$sep);
         $this->assertNotEquals('',$sep);
 
         $error = $sql->error();
-        $this->assertInternalType('string',$error);
+        $this->internalTypeWrapper('string',$error);
         $this->assertEquals('',$error);
 
         /* bad query on purpose */
@@ -99,7 +99,7 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(False,$fail);
 
         $error = $sql->error();
-        $this->assertInternalType('string',$error);
+        $this->internalTypeWrapper('string',$error);
         $this->assertNotEquals('',$error);
 
         /* prepared statements */
@@ -109,7 +109,7 @@ class SQLManagerTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(False,$exec);
         $row = $sql->fetch_row($exec);
         $this->assertNotEquals(False,$row);
-        $this->assertInternalType('array',$row);
+        $this->internalTypeWrapper('array',$row);
         $this->assertArrayHasKey(0,$row);
         $this->assertEquals(2,$row[0]);
     }

@@ -22,7 +22,7 @@ class TotalActionsTest extends PHPUnit_Framework_TestCase
             $this->assertInstanceOf('COREPOS\\pos\\lib\\TotalActions\\TotalAction', $obj, $class . ' is not a TotalAction');
 
             $result = $obj->apply();
-            $this->assertInternalType('boolean', $result, $class . ' apply() does not return boolean');
+            $this->internalTypeWrapper('boolean', $result, $class . ' apply() does not return boolean');
         }
 
     }

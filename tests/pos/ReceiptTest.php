@@ -40,19 +40,19 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $obj->setPrintHandler($ph);
 
             $selectStr = $obj->select_condition();
-            $this->assertInternalType('string', $selectStr);
+            $this->internalTypeWrapper('string', $selectStr);
 
             $queryResult = $db->query('SELECT '.$selectStr.' FROM localtemptrans');
             $this->assertNotEquals(false, $queryResult, $selectStr . ' creates a failing query, '. $db->error());
 
             $msg = $obj->message(1, '1-1-1', false);
-            $this->assertInternalType('string', $msg);
+            $this->internalTypeWrapper('string', $msg);
 
-            $this->assertInternalType('boolean', $obj->paper_only);
-            $this->assertInternalType('string', $obj->standalone_receipt_type);
+            $this->internalTypeWrapper('boolean', $obj->paper_only);
+            $this->internalTypeWrapper('string', $obj->standalone_receipt_type);
 
             $receipt = $obj->standalone_receipt('1-1-1', false);
-            $this->assertInternalType('string', $receipt);
+            $this->internalTypeWrapper('string', $receipt);
         }
 
         $m = new StoreCreditIssuedReceiptMessage();
@@ -192,7 +192,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
                 $this->assertArrayHasKey('print', $output);
                 $this->assertArrayHasKey('any', $output);
             } else {
-                $this->assertInternalType('string', $output);
+                $this->internalTypeWrapper('string', $output);
             }
         }
 
@@ -258,10 +258,10 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             $dbc->setTestData($this->test_records);
 
             $resultset = $obj->filter($dbc, $this->test_records);
-            $this->assertInternalType('array', $resultset);
+            $this->internalTypeWrapper('array', $resultset);
 
             foreach($resultset as $result) {
-                $this->assertInternalType('array', $result);
+                $this->internalTypeWrapper('array', $result);
                 $this->assertArrayHasKey('upc', $result);
                 $this->assertArrayHasKey('trans_type', $result);
             }
@@ -285,10 +285,10 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
             
             foreach($this->record_sets as $set) {
                 $sorted = $obj->sort($set);
-                $this->assertInternalType('array', $set);
+                $this->internalTypeWrapper('array', $set);
 
                 foreach($set as $result) {
-                    $this->assertInternalType('array', $result);
+                    $this->internalTypeWrapper('array', $result);
                     $this->assertArrayHasKey('upc', $result);
                     $this->assertArrayHasKey('trans_type', $result);
                 }
@@ -315,10 +315,10 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
 
             foreach($this->record_sets as $set) {
                 $tagged = $obj->tag($set);
-                $this->assertInternalType('array', $set);
+                $this->internalTypeWrapper('array', $set);
 
                 foreach($tagged as $result) {
-                    $this->assertInternalType('array', $result);
+                    $this->internalTypeWrapper('array', $result);
                     $this->assertArrayHasKey('upc', $result);
                     $this->assertArrayHasKey('trans_type', $result);
                     $this->assertArrayHasKey('tag', $result);
@@ -342,13 +342,13 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
         foreach($mods as $format_class) {
             $obj = new $format_class();
 
-            $this->assertInternalType('boolean', $obj->is_bold);
+            $this->internalTypeWrapper('boolean', $obj->is_bold);
 
             foreach($this->record_sets as $set) {
                 foreach($set as $line) {
                    $output = $obj->format($line); 
 
-                   $this->assertInternalType('string', $output);
+                   $this->internalTypeWrapper('string', $output);
                 }
             }
         }
@@ -420,7 +420,7 @@ class ReceiptTest extends PHPUnit_Framework_TestCase
     {
         $mods = AutoLoader::listModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport', true);
         foreach ($mods as $mod) {
-            $this->assertInternalType('string', $mod::get(new WrappedStorage()));
+            $this->internalTypeWrapper('string', $mod::get(new WrappedStorage()));
         }
     }
 

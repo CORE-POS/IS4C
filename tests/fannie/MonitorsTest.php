@@ -12,8 +12,8 @@ class MonitorsTest extends PHPUnit_Framework_TestCase
         foreach ($mods as $class) {
             $obj = new $class($conf);
             $json = $obj->check();
-            $this->assertInternalType('boolean', $obj->escalate($json));
-            $this->assertInternalType('string', $obj->display($json));
+            $this->internalTypeWrapper('boolean', $obj->escalate($json));
+            $this->internalTypeWrapper('string', $obj->display($json));
         }
     }
 }

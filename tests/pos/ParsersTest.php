@@ -33,7 +33,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($res, $res2);
 
         $this->assertEquals(10, $res->count());
-        $this->assertInternalType('array', $res->toArray());
+        $this->internalTypeWrapper('array', $res->toArray());
         $this->assertEquals('main_frame', $res->key());
         $this->assertEquals(false, $res->current());
         $res->next();
@@ -49,7 +49,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
     {
         $session = new WrappedStorage();
         $chain = PreParser::get_preparse_chain();
-        $this->assertInternalType('array',$chain);
+        $this->internalTypeWrapper('array',$chain);
         $this->assertNotEmpty($chain);
         foreach($chain as $class){
             $instance = new $class($session);
@@ -59,7 +59,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         }
 
         $chain = Parser::get_parse_chain();
-        $this->assertInternalType('array',$chain);
+        $this->internalTypeWrapper('array',$chain);
         $this->assertNotEmpty($chain);
         foreach($chain as $class){
             $instance = new $class($session);
@@ -110,7 +110,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             foreach($chain as $class){
                 $obj = new $class($session);
                 $chk = $obj->check($input);
-                $this->assertInternalType('boolean',$chk);
+                $this->internalTypeWrapper('boolean',$chk);
                 if ($chk){
                     $input = $obj->parse($input);
                 }
@@ -169,12 +169,12 @@ class ParsersTest extends PHPUnit_Framework_TestCase
             foreach($chain as $class){
                 $obj = new $class($session);
                 $chk = $obj->check($input);
-                $this->assertInternalType('boolean',$chk, $class . ' returns non-boolean');
+                $this->internalTypeWrapper('boolean',$chk, $class . ' returns non-boolean');
                 if ($chk){
                     $actual = $obj->parse($input);
                     break;
                 }
-                $this->assertInternalType('string', $obj->doc());
+                $this->internalTypeWrapper('string', $obj->doc());
             }
             $this->assertEquals($output, $actual);
         }
@@ -706,7 +706,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('SpecialDeptMap', false);
         $out = $d->parse('1.00DP');
         $this->assertNotEquals(false, strstr($out['main_frame'], '/deptlist.php'));
-        $this->assertInternalType('array', CoreLocal::get('SpecialDeptMap'));
+        $this->internalTypeWrapper('array', CoreLocal::get('SpecialDeptMap'));
         CoreLocal::set('refundComment', '');
         CoreLocal::set('SecurityRefund', 21, true);
         $out = $d->parse('100DP10');
@@ -1157,7 +1157,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $this->assertInstanceOf('COREPOS\\pos\\parser\\ParseResult', $t->parse('CA'));
         $d = new COREPOS\pos\parser\parse\DeptKey($session);
         $d->parse('100DP10'); // avoid ending transaction
-        $this->assertInternalType('array', $t->parse('1CA'));
+        $this->internalTypeWrapper('array', $t->parse('1CA'));
         lttLib::clear();
     }
 
@@ -1234,7 +1234,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $pre->doc();
 
         $this->assertEquals(array(), $post->parse(array()));
-        $this->assertInternalType('array', PostParser::getPostParseChain());
+        $this->internalTypeWrapper('array', PostParser::getPostParseChain());
 
         $parser->check('');
         $parser->parse('');

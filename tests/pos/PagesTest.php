@@ -59,9 +59,9 @@ class PagesTest extends PHPUnit_Framework_TestCase
             ob_start();
             $pre = $obj->preprocess();
             ob_end_clean();
-            $this->assertInternalType('boolean',$pre);
+            $this->internalTypeWrapper('boolean',$pre);
 
-            $this->assertInternalType('string',$output);
+            $this->internalTypeWrapper('string',$output);
             if ($pre === True){
                 // output is a complete page
                 $this->assertEquals('</html>',substr($output,-7));
