@@ -6,6 +6,32 @@ include(dirname(__FILE__) . '/fannie/bootstrap.php');
 if (!class_exists('PHPUnit_Framework_TestCase') && class_exists('PHPUnit\Framework\TestCase')) {
     class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase
     {
+        public function assertInternalType($type, $var, $message='')
+        {
+            if (method_exists($this, 'assertIsObject')) {
+                switch (strtolower($type)) {
+                    case 'object':
+                        $this->assertIsObject($var, $message);
+                        break;
+                    case 'array':
+                        $this->assertIsArray($var, $message);
+                        break;
+                    case 'string':
+                        $this->assertIsStrong($var, $message);
+                        break;
+                    case 'boolean':
+                    case 'bool':
+                        $this->assertIsBool($var, $message);
+                        break;
+                    case 'integer':
+                    case 'int':
+                        $this->assertIsInt($var, $message);
+                        break;
+                }
+            } else {
+                parent::assertInternalType($type, $var, $message);
+            }
+        }
     }
 }
 
