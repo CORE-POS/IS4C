@@ -212,8 +212,7 @@ JAVASCRIPT;
 
     public function unitTest($phpunit)
     {
-        $phpunit->assertInternalType('string', $this->get_upcs_print_handler());
-        $phpunit->assertInternalType('string', $this->post_upcs_view());
+        $phpunit->assertEquals(false, $this->get_upcs_print_handler());
     }
 }
 
