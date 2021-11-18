@@ -635,6 +635,7 @@ class RpOrderPage extends FannieRESTfulPage
         }
         $weekStart = date('Y-m-d', $ts);
         $weekP = $this->connection->prepare("SELECT * FROM RpSegments WHERE startDate=? AND storeID=?");
+        $nextWeekStart = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts) + 7, date('Y', $ts)));
         $projected = 'n/a';
         $baseRetain = 60;
         $days = array(
@@ -647,6 +648,7 @@ class RpOrderPage extends FannieRESTfulPage
             'Sun' => 'n/a',
         );
         $week = $this->connection->getRow($weekP, array($weekStart, $store));
+        $nextWeek = $this->connection->getRow($weekP, array($nextWeekStart, $store));
         $modProj = 0;
         if ($week) {
             $projected = number_format($week['sales']);
@@ -680,6 +682,13 @@ class RpOrderPage extends FannieRESTfulPage
                  */
                 $modProj = round($modProj, 2);
             }
+        }
+
+        if ($nextWeek && (date('N') == 6 || date('N') == 7)) {
+            $nextWeekDays = json_decode($nextWeek['segmentation'], true);
+            $mondayTarget = $nextWeek['sales'] * $nextWeekDays['Mon'];
+            $mondayShare = $mondayTarget / $week['sales'];
+            $days['Mon'] = sprintf('%.2f%%', $mondayShare * 100);
         }
 
         $mStamp = date('N') == 1 ? strtotime('today') : strtotime('last monday');
