@@ -12,7 +12,7 @@ class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase
                 self::assertIsArray($var, $message);
                 break;
             case 'string':
-                self::assertIsStrong($var, $message);
+                self::assertIsString($var, $message);
                 break;
             case 'boolean':
             case 'bool':
