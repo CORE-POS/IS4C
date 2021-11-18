@@ -222,7 +222,7 @@ class BaseLibsTest extends PHPUnit_Framework_TestCase
         $this->assertInternalType('array',$mods);
         $this->assertNotEmpty($mods);
         foreach($mods as $m){
-            $obj = new $m();
+            $obj = new $m(null);
             $this->assertInstanceOf('COREPOS\\pos\\parser\\Parser',$obj);
         }
 
