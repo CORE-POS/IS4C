@@ -36,6 +36,11 @@ class ScaleIngredientHistoryReport extends FannieReportPage
 
         return $data;
     }
+
+    public function form_content()
+    {
+        return '<div class="alert alert-error">Access this via Item Editor</div>';
+    }
 }
 
 FannieDispatch::conditionalExec();

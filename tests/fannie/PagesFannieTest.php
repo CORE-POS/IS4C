@@ -96,7 +96,7 @@ class PagesFannieTest extends PHPUnit_Framework_TestCase
             $this->assertInternalType('boolean',$pre);
 
             $help = $obj->helpContent();
-            $this->assertInternalType('string', $help);
+            $this->assertInternalType('string', $help, 'Missing help content on ' . $page_class);
 
             $auth = $obj->checkAuth();
             $this->assertInternalType('boolean',$pre);

@@ -10,7 +10,7 @@ if (!class_exists('FpdfLib')) {
     include(__DIR__ . '/FpdfLib.php');
 }
 
-class Deli_Big_Special_Signs_1UP extends FpdfWithBarcode
+class Deli_Big_Special_Signs_1UP_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     public function setTagDate($str){
@@ -28,7 +28,7 @@ class Deli_Big_Special_Signs_1UP extends FpdfWithBarcode
 function Deli_Big_Special_Signs_1UP($data,$offset=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    $pdf = new Deli_Big_Special_Signs_1UP('L','mm','Letter');
+    $pdf = new Deli_Big_Special_Signs_1UP_PDF('L','mm','Letter');
     $pdf->AddPage();
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
