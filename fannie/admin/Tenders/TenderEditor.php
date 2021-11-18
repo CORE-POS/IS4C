@@ -254,7 +254,7 @@ class TenderEditor extends FannieRESTfulPage
                 $row->MinAmount(),$row->TenderID(),
                 $row->MaxAmount(),$row->TenderID(),
                 $row->MaxRefund(),$row->TenderID(),
-				$row->TenderModule(),$row->TenderID(),
+                $row->TenderModule(),$row->TenderID(),
                 $row->SalesCode(),$row->TenderID()
             );
         }
