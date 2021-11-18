@@ -27,4 +27,9 @@ class PHPUnit_Framework_TestCase extends PHPUnit\Framework\TestCase
                 break;
         }
     }
+
+    public static function assertContains($needle, $haystack, string $message = '', bool $ignoreCase = false, bool $checkForObjectIdentity = true, bool $checkForNonObjectIdentity = false): void
+    {
+        self::assertStringContainsString($needle, $haystack, $message);
+    }
 }
