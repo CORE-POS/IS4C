@@ -83,7 +83,8 @@ class SimpleBackupTask extends FannieTask
 [mysqldump]
 user = {$FANNIE_SERVER_USER}
 password = {$FANNIE_SERVER_PW}
-EOF);
+EOF
+            );
             fclose($fh);
 
             $cmd = escapeshellcmd($cmd);
