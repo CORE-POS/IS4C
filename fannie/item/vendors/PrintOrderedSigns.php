@@ -129,8 +129,10 @@ HTML;
         $i = 0;
         foreach ($upcs as $k => $upc) {
             $args = array($upc);
-            $prep = $dbc->prepare("SELECT *, p.brand AS pbrand, p.description AS pdesc FROM products AS p LEFT JOIN vendorItems AS v ON    
-                p.default_vendor_id=v.vendorID AND p.upc=v.upc WHERE p.upc = ? ");
+            $prep = $dbc->prepare("SELECT *, p.brand AS pbrand, p.description AS pdesc, vendors.vendorName AS vendor,
+                CONCAT(ROUND(normal_price / substring_index(v.size, ' ', 1), 3), '/', substring_index(v.size, ' ', -1)) AS pricePerUnit
+                FROM products AS p LEFT JOIN vendorItems AS v ON    
+                p.default_vendor_id=v.vendorID AND p.upc=v.upc LEFT JOIN vendors ON v.vendorID=vendors.vendorID WHERE p.upc = ? ");
             $res = $dbc->execute($prep, $args);
             while ($row = $dbc->fetchRow($res)) {
                 $price = $row['normal_price'];
@@ -141,6 +143,8 @@ HTML;
                 $sku = $row['sku'];
                 $upc = $row['upc'];
                 $scale = $row['scale'];
+                $vendor = (isset($row['vendor'])) ? $row['vendor'] : '';
+                $ppu = isset($row['pricePerUnit']) ? $row['pricePerUnit'] : '';
                 $data[$i]['normal_price'] = $price;
                 $data[$i]['description'] = $desc;
                 $data[$i]['brand'] = $brand;
@@ -149,6 +153,8 @@ HTML;
                 $data[$i]['sku'] = $sku;
                 $data[$i]['upc'] = $upc;
                 $data[$i]['scale'] = $scale;
+                $data[$i]['vendor'] = $vendor;
+                $data[$i]['pricePerUnit'] = $ppu;
                 $td .= "<tr><td>$upc</td><td>$brand</td><td>$desc</td><td>$units</td>
                     <td>$size</td><td>$sku</td><td>$scale</td></tr>";
                 $i++;
