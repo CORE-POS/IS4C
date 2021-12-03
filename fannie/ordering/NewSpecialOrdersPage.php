@@ -258,8 +258,8 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         }
 
         $status = array(
-            0 => "New, No Call",
-            3 => "New, Call",
+            0 => "Ready to Order",
+            3 => "Call before Ordering",
             1 => "Called/waiting",
             2 => "Pending",
             4 => "Placed",
@@ -412,6 +412,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                     <thead>
                     <tr>
                     <th>Order Date</th>
+                    <th>Owner #</th>
                     <th>Name</th>
                     <th>Desc</th>
                     <th>Supplier</th>
@@ -440,6 +441,8 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             list($date, $time) = explode(' ', $w['orderDate'], 2);
             $ret .= sprintf('<td><a href="OrderViewPage.php?orderID=%d&k=%s">%s</a></td>',
                             $oid, $key, $date);
+
+            $ret .= '<td>' . $w['card_no'] . '</td>';
 
             $ret .= sprintf('<td><a href="" onclick="applyMemNum(%d); return false;">%s</a></td>',
                             $w['card_no'], $w['name']);

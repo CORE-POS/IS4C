@@ -80,8 +80,8 @@ if (isset($_REQUEST['card_no'])){
 }
 
 $status = array(
-    0 => "New",
-    3 => "New, Call",
+    0 => "Ready to Order",
+    3 => "Call before Ordering",
     1 => "Called/waiting",
     2 => "Pending",
     4 => "Placed",
