@@ -45,6 +45,9 @@ class PISuspensionPage extends PIKillerPage {
 
       Route get<id><fixaddress>
       Special case clear suspension for bad address only
+
+      Route get<id><fixpaperwork>
+      Special case clear suspension for missing paperwork only
     */
 
     function preprocess(){
@@ -60,6 +63,7 @@ class PISuspensionPage extends PIKillerPage {
 
         $this->__routes[] = 'get<id><edit>';
         $this->__routes[] = 'get<id><fixaddress>';
+        $this->__routes[] = 'get<id><fixpaperwork>';
         return parent::preprocess();
     }
 
@@ -87,6 +91,23 @@ class PISuspensionPage extends PIKillerPage {
             return False;
         }
         else if ($susp->reasoncode() == 16){
+            // clear suspension for bad address
+            return $this->post_id_handler();
+        }
+        else
+            return $this->unknown_request_handler();
+    }
+
+    protected function get_id_fixpaperwork(){
+        global $FANNIE_OP_DB;
+        $susp = new SuspensionsModel(FannieDB::get($FANNIE_OP_DB));
+        $susp->cardno($this->id);
+        if (!$susp->load()){
+            // not currently suspended
+            header('Location: PIMemberPage.php?id='.$this->id);
+            return False;
+        }
+        else if ($susp->reasoncode() == 256){
             // clear suspension for bad address
             return $this->post_id_handler();
         }

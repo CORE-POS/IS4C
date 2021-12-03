@@ -330,6 +330,10 @@ class PIMemberPage extends PIKillerPage {
             echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?fixaddress=1&id='.$this->card_no.'"
                 onclick="return confirm(\'Address is correct?\');">Address Corrected</a>';
         }
+        else if ($this->auth_mode == 'Limited' && isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() == 256){
+            echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?fixpaperwork=1&id='.$this->card_no.'"
+                onclick="return confirm(\'Paperwork is signed?\');">Paperwork completed</a>';
+        }
         echo '</td>';
         echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no="
             . ($this->card_no == 11 ? 0 : $this->card_no) ."\">Special Orders</a></td>";
