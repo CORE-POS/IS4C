@@ -341,7 +341,7 @@ class GumMainPage extends FannieRESTfulPage
 
     public function get_id_view()
     {
-        global $FANNIE_URL;
+        global $FANNIE_PLUGIN_SETTINGS, $FANNIE_URL;
         $this->addScript('js/main.js');
         $ret = '';
 
@@ -375,6 +375,7 @@ class GumMainPage extends FannieRESTfulPage
         $ret .= '<td>Email: <input type="text" class="form-control" name="email" value="' . $this->meminfo->email_1() . '" /></td>';
         $ret .= '<td>Address: <input type="text" class="form-control" name="addr2" value="' . $addr2 . '" /></td>';
         $ssn = 'Unknown';
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['GiveUsMoneyDB']);
         if ($this->taxid->load()) {
             $ssn = 'Ends In ' . $this->taxid->maskedTaxIdentifier();
         }
