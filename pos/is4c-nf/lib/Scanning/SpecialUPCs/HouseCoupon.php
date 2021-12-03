@@ -819,7 +819,7 @@ class HouseCoupon extends SpecialUPC
                     $value = 80;
                 }
                 $discountable = 0;
-                $curR = $transDB->prepare("SELECT SUM(-1 * total) AS ttl FROM translog.localtemptrans WHERE upc='0049999900370'");
+                $curR = $transDB->prepare("SELECT SUM(-1 * total) AS ttl FROM translog.localtemptrans WHERE upc='0049999900467'");
                 $current = $transDB->getValue($curR);
                 if ($value - $current) {
                     TransRecord::addtender('Store Credit', 'SC', $value - $current);
