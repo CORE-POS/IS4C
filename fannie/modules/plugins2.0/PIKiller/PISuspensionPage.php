@@ -98,7 +98,7 @@ class PISuspensionPage extends PIKillerPage {
             return $this->unknown_request_handler();
     }
 
-    protected function get_id_fixpaperwork(){
+    protected function get_id_fixpaperwork_handler(){
         global $FANNIE_OP_DB;
         $susp = new SuspensionsModel(FannieDB::get($FANNIE_OP_DB));
         $susp->cardno($this->id);
