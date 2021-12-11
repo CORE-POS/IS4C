@@ -987,7 +987,7 @@ HTML;
                 $model->normal_price($price[$i]);
             }
             $cost = $this->formNoEx('cost', array());
-            if (isset($cost[$i])) {
+            if (isset($cost[$i]) && $cost[$i] != '') {
                 $model->cost($cost[$i]);
             }
             $desc = $this->formNoEx('descript', array());
