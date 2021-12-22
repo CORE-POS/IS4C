@@ -164,8 +164,6 @@ HTML;
 
         //$month = $this->session->month;
         $month = FormLib::get('month');
-        $mono = new DateTime($month);
-        $mono = $mono->format('m');
         $args = array($upc, $month);
         $prep = $dbc->prepare('
             SELECT
