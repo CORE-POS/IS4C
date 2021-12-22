@@ -193,6 +193,7 @@ class VendorAliasesPage extends FannieRESTfulPage
                 v.sku,
                 v.isPrimary,
                 v.multiplier,
+                p.brand,
                 p.description,
                 p.size
             FROM VendorAliases AS v
@@ -205,7 +206,8 @@ class VendorAliasesPage extends FannieRESTfulPage
             <thead>
                 <th>Vendor SKU</th>
                 <th>Our UPC</th>
-                <th>Item</th>
+                <th>Brand</th>
+                <th>Description</th>
                 <th>Unit Size</th>
                 <th>Multiplier</th>
                 <th>&nbsp;</th>
@@ -218,6 +220,7 @@ class VendorAliasesPage extends FannieRESTfulPage
                 <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
                 <td>%s</td>
                 <td>%s</td>
+                <td>%s</td>
                 <td>%.2f</td>
                 <td><a class="btn btn-default btn-xs btn-danger" href="?_method=delete&id=%d&sku=%s&upc=%s">%s</a></td>
                 <td><input type="checkbox" class="printUPCs" name="printUPCs[]" value="%d" /></td>
@@ -225,6 +228,7 @@ class VendorAliasesPage extends FannieRESTfulPage
                 ($row['isPrimary'] ? 'class="info"' : ''),
                 $row['sku'],
                 $row['upc'], $row['upc'],
+                $row['brand'],
                 $row['description'],
                 $row['size'],
                 $row['multiplier'],
