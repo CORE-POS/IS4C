@@ -233,6 +233,14 @@ HTML;
         }
 
         $year = date('Y');
+        $str = '';
+        preg_match_all('!\d!', $month, $matches);
+        foreach ($matches[0] as $chr) {
+            $str .= $chr;
+        }
+        while ($chr = next($matches[0]));
+        $year = (strlen($str) == 4) ? $str : $year;
+
         if (!isset($months[$this->session->month])) {
             $months[$this->session->month] = date('m');
         }
