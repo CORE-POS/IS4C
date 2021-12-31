@@ -45,6 +45,9 @@ class SQLManager extends \COREPOS\common\SQLManager
     public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
         $this->setQueryLog(FannieLogger::factory());
+        if (false && FannieConfig::config('ALLOW_DBAL') != 'Yes') {
+            $this->dbal_enabled = false;
+        }
 
         parent::__construct(
             $server, 

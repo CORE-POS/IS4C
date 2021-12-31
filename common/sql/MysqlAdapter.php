@@ -78,6 +78,11 @@ class MysqlAdapter implements DialectAdapter
         return 'decimal(10,2)';
     }
 
+    public function curdate()
+    {
+        return 'CURDATE()';
+    }
+
     public function curtime()
     {
         return 'CURTIME()';
@@ -117,6 +122,16 @@ class MysqlAdapter implements DialectAdapter
     public function dayofweek($field)
     {
         return "DATE_FORMAT($field,'%w')+1";
+    }
+
+    public function week($field)
+    {
+        return "DATE_FORMAT($field,'%U')";
+    }
+
+    public function hour($field)
+    {
+        return "DATE_FORMAT($field,'%H')";
     }
 
     public function convert($expr, $type)

@@ -25,6 +25,10 @@ namespace COREPOS\common;
 use COREPOS\common\sql\CharSets;
 use COREPOS\common\sql\Result;
 use \Exception;
+use \ReflectionClass;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\FetchMode;
+use Doctrine\DBAL\Exception\DriverException;
 
 if (!function_exists("ADONewConnection")) {
     include(dirname(__FILE__).'/adodb5/adodb.inc.php');
@@ -57,6 +61,8 @@ class SQLManager
     public $connections;
     /** Default database connection */
     public $default_db;
+    /** Array of Doctrine connections **/
+    public $dbals = array();
 
     protected $reconnect_info = array();
 
@@ -67,6 +73,9 @@ class SQLManager
     protected $structure_cache = array();
 
     protected $last_connect_error = false;
+
+    protected $dbal_enabled = true;
+    protected $last_dbal_error = false;
 
     protected $query_counter = 0;
     protected $queries = array();
@@ -93,7 +102,8 @@ class SQLManager
         if ($this->isConnected($database)) {
             $this->default_db = $database;
             $adapter = $this->getAdapter(strtolower($type));
-            $this->query($adapter->useNamedDB($database));
+            // force to ADOdb; DBAL handled separately
+            $this->query($adapter->useNamedDB($database), $database, false, true);
         }
     }
 
@@ -179,7 +189,80 @@ class SQLManager
         }
         $this->saveConnection($server, $type, $username, $password, $database);
 
+        $this->addDBAL($server, $type, $username, $password, $database);
+
         return true;
+    }
+
+    private function addDBAL($server, $type, $username, $password, $database)
+    {
+        if (!$this->dbal_enabled || !class_exists('\\Doctrine\\DBAL\\DriverManager')) {
+            return false;
+        }
+        $savedDB = $database;
+        if (strtolower($type) == 'postgres9') {
+            $database = $username; // $database arg passed in is really schema
+            $type = 'pdo_pgsql';
+        } elseif (strtolower($type) == 'mssql') {
+            $type = 'sqlsrv';
+        }
+
+        $params = array(
+            'driver' => strtolower($type),
+            'user' => $username,
+            'password' => $password,
+            'host' => $server,
+        );
+        if (strpos($server, ':')) {
+            list($host, $port) = explode(':', $server, 2);
+            $params['host'] = $host;
+            $params['port'] = $port;
+        }
+        if (strtolower($type) == 'sqlite3') {
+            $params['path'] = $database;
+            unset($params['dbname']);
+        }
+
+        $this->dbals[$savedDB] = DriverManager::getConnection($params);
+
+        /*
+         * Database name is ommitted when creating the inital connection
+         * so that subsequent attempts to get the current namepsace will
+         * query the server to find out rather than blindly returning
+         * the originally specified paramter. This may be MySQL-specific;
+         * I haven't look at the internals of other drivers yet.
+         *
+         * CORE assumes it can issue queries like "USE core_trans" at
+         * runtime and this should ensure different DBAL components
+         * handle this more reliably
+         */
+        $adapter = $this->getAdapter($this->connectionType($savedDB));
+        $selectDbQuery = $adapter->useNamedDB($savedDB);
+        $this->dbalRawQuery($selectDbQuery, $savedDB);
+    }
+
+    /**
+     * DBAL doesn't provide a way to issue non-prepared queries.
+     * This is fine, generally, but a simple "USE core_op" crashes
+     * with some drivers because the underlying prepared statements
+     * protocol does not support that command (which makes sense
+     * given you probably can't use placeholders for the database
+     * name anyway)
+     */
+    private function dbalRawQuery($query, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+        switch ($this->connectionType($which_connection)) {
+            case 'mysqli':
+                $link = $this->dbals[$which_connection]->getWrappedConnection()->getWrappedResourceHandle();
+                $link->query($query);
+                break;
+            default:
+                $this->dbals[$which_connection]->executeQuery($query);
+                break;
+        }
     }
 
     /**
@@ -291,6 +374,11 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
+        if (isset($this->dbals[$which_connection])) {
+            $params = $this->dbals[$which_connection]->getParams();
+            // for backward compatibility with behavior using ADOdb
+            return $params['driver'] == 'pdo_mysql' ? 'pdo' : $params['driver'];
+        }
         if ($this->isConnected($which_connection)) {
             $reflect = new \ReflectionClass($this->connections[$which_connection]);
             if (substr($reflect->name, 0, 6) == 'ADODB_') {
@@ -323,6 +411,11 @@ class SQLManager
         $con = $this->connections[$which_connection];
         unset($this->connections[$which_connection]);
 
+        if (isset($this->dbals[$which_connection])) {
+            $this->dbals[$which_connection]->close();
+            unset($this->dbals[$which_connection]);
+        }
+
         return $con->Close();
     }
 
@@ -335,9 +428,12 @@ class SQLManager
     */
     private function setDBorSchema($db_name)
     {
+        $adapter = $this->getAdapter($this->connectionType($db_name));
+        $selectDbQuery = $adapter->useNamedDB($db_name);
+        if (isset($this->dbals[$db_name])) {
+            $this->dbalRawQuery($selectDbQuery, $db_name);
+        }
         if (strtolower($this->connectionType($db_name)) === 'postgres9') {
-            $adapter = $this->getAdapter($this->connectionType($db_name));
-            $selectDbQuery = $adapter->useNamedDB($db_name);
             return $this->connections[$db_name]->Execute($selectDbQuery);
         }
 
@@ -390,6 +486,9 @@ class SQLManager
         }
 
         $this->connections[$db_name] = $this->connections[$which_connection];
+        if (isset($this->dbals[$which_connection])) {
+            $this->dbals[$db_name] = $this->dbals[$which_connection];
+        }
 
         return $this->setDefaultDB($db_name);
     }
@@ -406,8 +505,20 @@ class SQLManager
       @param which_connection see method close
       @return A result object on success, False on failure
     */
-    public function query($query_text,$which_connection='',$params=false)
+    public function query($query_text,$which_connection='',$params=false, $forceADO=false)
     {
+        /**
+         * Use Dotrine DBAL if available
+         */
+        if (is_a($query_text, '\\Doctrine\\DBAL\\Statement')) {
+            return $this->dbalQuery($query_text, $which_connection, $params);
+        } elseif (!$forceADO && $this->dbal_enabled && class_exists('\\Doctrine\\DBAL\\Statement')) {
+            $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
+            if (isset($this->dbals[$which_connection])) {
+                $stmt = $this->prepare($query_text, $which_connection);
+                return $stmt ? $this->dbalQuery($stmt, $which_connection, $params) : false;
+            } 
+        }
         if (php_sapi_name() != 'cli' && memory_get_usage() > 67108864) {
             $this->logger("High memory on query: " . print_r($query_text, true));
         }
@@ -444,6 +555,70 @@ class SQLManager
         }
 
         return $result;
+    }
+
+    private function dbalQuery($stmt,$which_connection='',$params=false)
+    {
+        if ($params === false) {
+            $params = array();
+        }
+        if (php_sapi_name() != 'cli' && memory_get_usage() > 67108864) {
+            $this->logger("High memory on query: " . print_r($query_text, true));
+        }
+
+        $success = false;
+        try {
+            $this->last_dbal_error = false;
+            $result = $stmt->execute($params);
+            $success = true;
+        } catch (DriverException $ex) {
+            $this->dbalErrorHandler($ex, $stmt, $params, $which_connection);
+        }
+
+        if ($success && $this->debug_mode) {
+            $logMsg = 'Successful query on ' . filter_input(INPUT_SERVER, 'PHP_SELF') . "\n"
+                . $query_text . "\n"
+                . (is_array($params) ? 'Parameters: ' . implode("\n", $params) : '');
+            $this->logger($logMsg);
+        }
+
+        return $stmt;
+    }
+
+    private function dbalErrorHandler($ex, $stmt, $params, $which_connection='')
+    {
+        $this->last_dbal_error = $ex->getMessage();
+        /*
+         * I don't know why the interface is inconsistent w/ PDOStatement
+         * and the underlying query text is only sometimes available
+         * without reflection...
+         */
+        if (is_object($stmt)) {
+            $refl = new ReflectionClass($stmt);
+            $prop = $refl->getProperty('sql');
+            $prop->setAccessible(true);
+            $query_text = $prop->getValue($stmt);
+        } else {
+            $query_text = $stmt;
+        }
+
+        // recover from "MySQL server has gone away" error
+        // @see: restoreConnection method
+        if ($ex->getSQLState() == 2006) {
+            $dbName = ($which_connection === '') ? $this->default_db : $which_connection;
+            $restored = $this->restoreConnection($dbName);
+            if ($restored) {
+                $stmt->execute($params);
+                $success = true;
+            }
+        }
+
+        $errorMsg = $this->failedQueryMsg($query_text, $params, $which_connection);
+        $this->logger($errorMsg);
+
+        if ($this->throw_on_fail) {
+            throw new \Exception($errorMsg);
+        }
     }
 
     protected function failedQueryMsg($query_text, $params, $which_connection)
@@ -504,6 +679,10 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection = $this->default_db;
         }
+        if (isset($this->dbals[$which_connection])) {
+            $platform = $this->dbals[$which_connection]->getDatabasePlatform();
+            return $platform->quoteStringLiteral($query_text);
+        }
 
         return $this->connections[$which_connection]->qstr($query_text);
     }
@@ -523,6 +702,9 @@ class SQLManager
     */
     public function numRows($result_object,$which_connection='')
     {
+        if (is_a($result_object, '\\Doctrine\\DBAL\\Statement')) {
+            return $result_object->rowCount();
+        }
         if (!is_object($result_object)) {
             return false;
         }
@@ -540,22 +722,6 @@ class SQLManager
     }
 
     /**
-      Move result cursor to specified record
-      @param $result_object A result set
-      @param $rownum The record index
-      @param $which_connection see method close()
-      @return True on success, False on failure
-    */
-    public function dataSeek($result_object,$rownum,$which_connection='')
-    {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-
-        return $result_object->Move((int)$rownum);
-    }
-
-    /**
       Get number of fields in a result set
       @param $result_object A result set
       @param $which_connection see method close()
@@ -563,6 +729,9 @@ class SQLManager
     */
     public function numFields($result_object,$which_connection='')
     {
+        if (is_a($result_object, '\\Doctrine\\DBAL\\Statement')) {
+            return $result_object->columnCount();
+        }
         if ($which_connection == '') {
             $which_connection = $this->default_db;
         }
@@ -578,6 +747,9 @@ class SQLManager
     */
     public function fetchArray($result_object,$which_connection='')
     {
+        if (is_a($result_object, '\\Doctrine\\DBAL\\Statement')) {
+            return $result_object->fetch(FetchMode::MIXED);
+        }
         if (is_null($result_object)) return false;
         if ($result_object === false) return false;
 
@@ -609,6 +781,10 @@ class SQLManager
     */
     public function fetchObject($result_object,$which_connection='')
     {
+        if (is_a($result_object, '\\Doctrine\\DBAL\\Statement')) {
+            $ret = $result_object->fetchAssociative();
+            return (object)$ret;
+        }
         return $result_object->FetchNextObject(False);
     }
 
@@ -638,6 +814,10 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection = $this->default_db;
         }
+        if (isset($this->dbals[$which_connection])) {
+            $platform = $this->dbals[$which_connection]->getDatabasePlatform();
+            return $platform->getNowExpression();
+        }
 
         return $this->connections[$which_connection]->sysTimeStamp;
     }
@@ -652,11 +832,9 @@ class SQLManager
     */
     public function curdate($which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-
-        return $this->connections[$which_connection]->sysDate;
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->curdate();
     }
 
     /**
@@ -829,6 +1007,9 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection = $this->default_db;
         }
+        if (is_a($result_object, '\\Doctrine\\DBAL\\Statement')) {
+            return $this->dbalGetField($result_object, $index, $which_connection);
+        }
 
         return $result_object->FetchField($index);
     }
@@ -841,6 +1022,9 @@ class SQLManager
     {
         if ($which_connection == '') {
             $which_connection = $this->default_db;
+        }
+        if (isset($this->dbals[$which_connection])) {
+            return $this->dbals[$which_connection]->beginTransaction();
         }
 
         return $this->connections[$which_connection]->BeginTrans();
@@ -855,6 +1039,9 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection = $this->default_db;
         }
+        if (isset($this->dbals[$which_connection])) {
+            return $this->dbals[$which_connection]->commit();
+        }
 
         return $this->connections[$which_connection]->CommitTrans();
     }
@@ -867,6 +1054,9 @@ class SQLManager
     {
         if ($which_connection == '') {
             $which_connection = $this->default_db;
+        }
+        if (isset($this->dbals[$which_connection])) {
+            return $this->dbals[$which_connection]->rollBack();
         }
 
         return $this->connections[$which_connection]->RollbackTrans();
@@ -1030,7 +1220,11 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection = $this->default_db;
         }
-        $fld = $result_object->FetchField($index);
+        if (is_a($result_object, '\\Doctrine\\DBAL\\Statement')) {
+            return $this->dbalFieldType($result_object, $index, $which_connection);
+        } else {
+            $fld = $result_object->FetchField($index);
+        }
         // mysqli puts a integer constant in the type property
         // ADOdb provides MetaType to convert to relative type
         $dbtype = $this->connectionType($which_connection);
@@ -1060,6 +1254,86 @@ class SQLManager
         }
 
         return $fld->type;
+    }
+
+    private function dbalGetField($stmt, $index, $which_connection='')
+    {
+        $ret = new \stdClass;
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        $dbtype = $this->connectionType($which_connection);
+        switch ($dbtype) {
+            case 'mysqli':
+                $link = $stmt->getWrappedStatement();
+                $refl = new ReflectionClass($link);
+                $prop = $refl->getProperty('_stmt');
+                $prop->setAccessible(true);
+                $raw = $prop->getValue($link);
+                $result = $raw->result_metadata();
+                if ($result) {
+                    $fields = $result->fetch_fields();
+                    if (isset($fields[$index])) {
+                        $ret->name = $fields[$index]->name;
+                        $ret->type = $fields[$index]->type;
+                        $ret->max_length = $fields[$index]->max_length;
+                        $ret->precision = $fields[$index]->decimals;
+                    }
+                }
+                return $ret;
+            default:
+                $meta = $stmt->getWrappedStatement()->getColumnMeta($index);
+                $ret->name = $meta['name'];
+                $ret->type = $meta['native_type'];
+                $ret->max_length = $meta['len'];
+                $ret->precision = $meta['precision'];
+                return $ret;
+        }
+    }
+
+    /**
+     * Fetch field information for Doctrine DBAL statement
+     * For PDO related drivers this is typically available w/o
+     * extra hacks. Getting the info for mysqli is messier.
+     * Presumably DBAL is going for some level of purity and
+     * only purposefully exposing things that will work on
+     * all their supported platforms.
+     */
+    private function dbalFieldType($stmt, $index, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection = $this->default_db;
+        }
+        $field = $this->dbalGetField($stmt, $index, $which_connection);
+        $dbtype = $this->connectionType($which_connection);
+        switch ($dbtype) {
+            case 'mysqli':
+                switch ($field->type) {
+                case 1: //TINYINT
+                case 2: //SMALLINT
+                case 3: //INT
+                case 8: //BIGINT
+                case 9: //MEDIUMINT
+                    return 'int';
+                case 4: //FLOAT
+                case 5: //DOUBLE
+                case 246: //DECIMAL or NUMERIC
+                    return 'numeric';
+                case 12:
+                    return 'datetime';
+                case 252:
+                case 253:
+                case 254:
+                    $flags = $fields[$index]->flags;
+                    if (($flags & 16) > 0 || ($flags & 128) > 0) {
+                        return 'blob';
+                    }
+                    return 'varchar';
+                }
+                return 'unknown';
+            default:
+                return $field->type;
+        }
     }
 
     /**
@@ -1099,12 +1373,9 @@ class SQLManager
     */
     public function hour($field,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        $conn = $this->connections[$which_connection];
-
-        return $conn->SQLDate("H",$field);
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->hour($field);
     }
 
     /**
@@ -1115,12 +1386,9 @@ class SQLManager
     */
     public function week($field,$which_connection='')
     {
-        if ($which_connection == '') {
-            $which_connection = $this->default_db;
-        }
-        $conn = $this->connections[$which_connection];
-
-        return $conn->SQLDate("W",$field);
+        $which_connection = $which_connection === '' ? $this->default_db : $which_connection;
+        $adapter = $this->getAdapter($this->connectionType($which_connection));
+        return $adapter->week($field);
     }
 
     /**
@@ -1156,6 +1424,9 @@ class SQLManager
     */
     public function tableExists($table_name,$which_connection='')
     {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
         /**
           Check whether the definition is in cache
         */
@@ -1163,7 +1434,11 @@ class SQLManager
             return true;
         }
 
-        $conn = $this->getNamedConnection($which_connection);
+        $conn = isset($this->connections[$which_connection]) ? $this->connections[$which_connection] : null;
+        $dbal = isset($this->dbals[$which_connection]) ? $this->dbals[$which_connection] : null;
+        if (is_object($dbal)) {
+            return $this->dbalTableExists($table_name, $which_connection);
+        }
         if (!is_object($conn)) {
             return false;
         }
@@ -1180,6 +1455,30 @@ class SQLManager
         return $this->tableExists($table_name, $which_connection);
     }
 
+    private function dbalTableExists($table_name,$which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+        $dbal = isset($this->dbals[$which_connection]) ? $this->dbals[$which_connection] : null;
+        if (!is_object($dbal)) {
+            return false;
+        }
+
+        $schema = $dbal->getSchemaManager();
+        $sep = $this->sep($which_connection);
+        $dbname = null;
+        if (strstr($table_name, $sep)) {
+            $parts = explode($sep, $table_name);
+            $table_name = array_pop($parts);
+            $dbname = implode($sep, $parts);
+        }
+
+        $cols = $schema->listTableColumns($table_name, $dbname);
+
+        return count($cols) > 0;
+    }
+
     public function isView($table_name, $which_connection='')
     {
         if ($which_connection == '') {
@@ -1188,6 +1487,9 @@ class SQLManager
 
         if (!$this->tableExists($table_name, $which_connection)) {
             return false;
+        }
+        if (isset($this->dbals[$which_connection])) {
+            return $this->dbalIsView($table_name, $which_connection);
         }
 
         $conn = $this->connections[$which_connection];
@@ -1200,6 +1502,44 @@ class SQLManager
         } else {
             return false;
         }
+    }
+
+    private function dbalIsView($table_name, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+        $dbal = $this->dbals[$which_connection];
+        $schema = $dbal->getSchemaManager();
+        /*
+         * This is proof-of-conept for handling namespaced
+         * values like "core_trans.dlog". It's commented out
+         * to mimic the behavior of the existing isView()
+         * for backward-compatibility
+        $sep = $this->sep($which_connection);
+        $currentDB = false;
+        if (strstr($table_name, $sep)) {
+            $parts = explode($sep, $table_name);
+            $table_name = array_pop($parts);
+            $dbname = implode($sep, $parts);
+            $currentDB = $this->defaultDatabase($which_connection);
+            $this->selectDB($dbname);
+        }
+         */
+        $found = false;
+        foreach ($schema->listViews() as $v) {
+            if ($v->getShortestName(null) == strtolower($table_name)) {
+                $found = true;
+                break;
+            }
+        }
+        /*
+        if ($currentDB) {
+            $this->selectDB($currentDB);
+        }
+         */
+
+        return $found;
     }
 
     /**
@@ -1229,6 +1569,13 @@ class SQLManager
         - Array of (column name, column type) table found
         - False No such table
         - -1 Operation not supported for this database type
+
+        The column type names returned by this method will differ
+        depending whether or not doctrine/dbal is being used.
+        I think this is probably fine. BasicModel table introspection
+        relies on the detailedDefintion() method instead. This
+        method is generally just used to get the column names which
+        are consistent
     */
     public function tableDefinition($table_name,$which_connection='')
     {
@@ -1243,6 +1590,10 @@ class SQLManager
             return $this->structure_cache[$which_connection][$table_name];
         }
 
+        if (isset($this->dbals[$which_connection])) {
+            return $this->dbalTableDefinition($table_name, $which_connection);
+        }
+
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
@@ -1251,6 +1602,47 @@ class SQLManager
                 function ($carry, $c) {
                     if (is_object($c)) {
                         $carry[$c->name] = $c->type;
+                    }
+                    return $carry;
+                },
+                array()
+            );
+            return $return;
+        }
+
+        return false;
+    }
+
+    private function dbalTableDefinition($table_name, $which_connection='')
+    {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
+
+        /**
+          Check whether the definition is in cache
+        */
+        if (isset($this->structure_cache[$which_connection]) && isset($this->structure_cache[$which_connection][$table_name])) {
+            return $this->structure_cache[$which_connection][$table_name];
+        }
+
+        $dbal = $this->dbals[$which_connection];
+        $schema = $dbal->getSchemaManager();
+        $sep = $this->sep($which_connection);
+        $dbname = null;
+        if (strstr($table_name, $sep)) {
+            $parts = explode($sep, $table_name);
+            $table_name = array_pop($parts);
+            $dbname = implode($sep, $parts);
+        }
+
+        $cols = $schema->listTableColumns($table_name, $dbname);
+
+        if (count($cols) > 0) {
+            $return = array_reduce($cols,
+                function ($carry, $c) {
+                    if (is_object($c)) {
+                        $carry[$c->getName()] = $c->getType()->getName();
                     }
                     return $carry;
                 },
@@ -1277,6 +1669,9 @@ class SQLManager
     public function detailedDefinition($table_name,$which_connection='')
     {
         $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
+        if (isset($this->dbals[$which_connection])) {
+            return $this->dbalDetailedDefinition($table_name, $which_connection);
+        }
         $conn = $this->connections[$which_connection];
         $cols = $conn->MetaColumns($table_name);
 
@@ -1290,6 +1685,76 @@ class SQLManager
         }
 
         return false;
+    }
+
+    /*
+     * This method transforms the default output from Doctrine DBAL's
+     * schema examination functions to match the same format as the original
+     * detailedDefinition() method. It's been tested for consistency on
+     * several wide tables with lots of columns, but there may still be
+     * some edge cases where it doesn't match. Please file an issue if
+     * you come accross one.
+     */
+    public function dbalDetailedDefinition($table_name,$which_connection='')
+    {
+        $which_connection = ($which_connection === '') ? $this->default_db : $which_connection;
+        $dbal = $this->dbals[$which_connection];
+        $schema = $dbal->getSchemaManager();
+        $platform = $dbal->getDatabasePlatform();
+
+        $sep = $this->sep($which_connection);
+        $currentDB = false;
+        if (strstr($table_name, $sep)) {
+            $parts = explode($sep, $table_name);
+            $table_name = array_pop($parts);
+            $dbname = implode($sep, $parts);
+            $currentDB = $this->defaultDatabase($which_connection);
+            $this->selectDB($dbname);
+        }
+
+        $cols = $schema->listTableColumns($table_name);
+        $idxs = $schema->listTableIndexes($table_name);
+
+        $return = array();
+        if (count($cols) > 0) {
+            foreach($cols as $c) {
+                $name = $c->getName();
+                $return[$name] = array();
+                $return[$name]['type'] = $c->getType()->getSQLDeclaration(array($c), $platform);
+                if ($return[$name]['type'] == 'VARCHAR(255)') {
+                    $return[$name]['type'] = str_replace('255', $c->getLength(), $return[$name]['type']);
+                } elseif ($return[$name]['type'] == 'TINYINT(1)') {
+                    $return[$name]['type'] = 'TINYINT';
+                } elseif ($return[$name]['type'] == 'DOUBLE PRECISION') {
+                    $return[$name]['type'] = 'DOUBLE';
+                } elseif (substr($return[$name]['type'], 0, 8) == 'NUMERIC(') {
+                    $return[$name]['type'] = 'DECIMAL(' . $c->getPrecision() . ',' .$c->getScale() . ')';
+                }
+
+                if ($c->getUnsigned() && !strpos($return[$name]['type'], 'UNSIGNED')) {
+                    $return[$name]['type'] .= ' UNSIGNED';
+                }
+
+                $return[$name]['increment'] = $c->getAutoincrement();
+                $return[$name]['primary_key'] = false;
+                $return[$name]['default'] = $c->getDefault();
+            }
+        }
+        foreach ($idxs as $name => $idx) {
+            if ($idx->isPrimary()) {
+                foreach ($idx->getColumns() as $c) {
+                    if (isset($return[$c])) {
+                        $return[$c]['primary_key'] = true;
+                    }
+                }
+            }
+        }
+
+        if ($currentDB) {
+            $this->selectDB($currentDB);
+        }
+
+        return count($return) == 0 ? false : $return;
     }
 
     private function columnBooleanProperty($col, $prop)
@@ -1338,6 +1803,13 @@ class SQLManager
     {
         if ($which_connection == '') {
             $which_connection=$this->default_db;
+        }
+        if (isset($this->dbals[$which_connection])) {
+            $schema = $this->dbals[$which_connection]->getSchemaManager();
+            $tables = $schema->listTableNames();
+            $views = $schema->listViews();
+            $views = array_map(function ($v) { return $v->getName(); }, $views);
+            return array_merge($tables, array_values($views));
         }
         $conn = $this->connections[$which_connection];
 
@@ -1438,7 +1910,13 @@ class SQLManager
     */
     public function error($which_connection='')
     {
+        if ($which_connection == '') {
+            $which_connection=$this->default_db;
+        }
         $con = $this->getNamedConnection($which_connection);
+        if (isset($this->dbals[$which_connection])) {
+            return $this->last_dbal_error;
+        }
 
         if (!is_object($con)) {
             if ($this->last_connect_error) {
@@ -1462,23 +1940,11 @@ class SQLManager
             $which_connection=$this->default_db;
         }
         $con = $this->connections[$which_connection];
+        if (isset($this->dbals[$which_connection])) {
+            return $this->dbals[$which_connection]->lastInsertId();
+        }
 
         return $con->Insert_ID();
-    }
-
-    /**
-      Check how many rows the last query affected
-      @param which_connection see method close
-      @returns Number of rows
-    */
-    public function affectedRows($which_connection='')
-    {
-        if ($which_connection == '') {
-            $which_connection=$this->default_db;
-        }
-        $con = $this->connections[$which_connection];
-
-        return $con->Affected_Rows();
     }
 
     /** 
@@ -1591,6 +2057,18 @@ class SQLManager
         if ($which_connection == '') {
             $which_connection=$this->default_db;
         }
+
+        if (isset($this->dbals[$which_connection])) {
+            try {
+                $this->last_dbal_error = false;
+                $ret = $this->dbals[$which_connection]->prepare($sql);
+                return $ret;
+            } catch (\Exception $ex) {
+                $this->dbalErrorHandler($ex, $sql, array(), $which_connection);
+                return false;
+            }
+        }
+
         $con = $this->connections[$which_connection];
 
         return is_object($con) ? $con->Prepare($sql) : false;

@@ -530,6 +530,10 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
             <label class="control-label col-sm-2">Remote Syslog Protocol</label>
             <div class="col-sm-3">' . installSelectField('FANNIE_SYSLOG_PROTOCOL', $FANNIE_SYSLOG_PROTOCOL, array('tcp', 'udp'), 'udp') . '</div>
             </div>';
+        echo '<div class="row form-group">
+            <label class="control-label col-sm-2">Enable new Database Layer</label>
+            <div class="col-sm-3">' . installSelectField('FANNIE_ALLOW_DBAL', $FANNIE_ALLOW_DBAL, array('No', 'Yes'), 'No') . '</div>
+            </div>';
 
         ?>
         <hr />

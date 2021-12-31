@@ -176,7 +176,6 @@ class CommonTest extends PHPUnit_Framework_TestCase
         $this->assertNotEquals(false, $res);
         $this->assertEquals(1, $dbc->numRows($res));
         $this->assertEquals(false, $dbc->numRows(false));
-        $this->assertEquals(true, $dbc->dataSeek($res, 0));
 
         $res = $dbc->query('SELECT ' . $dbc->curtime() . ' AS val');
         $this->assertNotEquals(false, $res);

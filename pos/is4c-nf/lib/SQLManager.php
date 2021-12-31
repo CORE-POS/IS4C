@@ -38,6 +38,9 @@ class SQLManager extends \COREPOS\common\SQLManager
     public function __construct($server,$type,$database,$username,$password='',$persistent=false, $new=false)
     {
         $this->setQueryLog(new \COREPOS\pos\lib\LaneLogger());
+        if (false && CoreLocal::get('DbalEnabled') != 1) {
+            $this->dbal_enabled = false;
+        }
 
         parent::__construct(
             $server, 
