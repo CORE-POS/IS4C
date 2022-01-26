@@ -34,7 +34,7 @@ class VendorAliasesPage extends FannieRESTfulPage
     protected $header = "Vendor Aliases";
 
     protected $must_authenticate = true;
-    protected $auth_classes = array('pricechange');
+    protected $auth_classes = array('admin');
 
     public $description = '[Vendor Aliases] manages items that are sold under one or more UPCs that
         differ from the vendor catalog UPC.';
