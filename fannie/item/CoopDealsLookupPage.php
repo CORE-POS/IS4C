@@ -299,6 +299,14 @@ HTML;
             ';
             $result = $dbc->execute($selMonthQ,$selMonthA);
             while ($row = $dbc->fetchRow($result)) {
+                $batchCycle = '';
+                if ($flyerPeriod == ' A') {
+                    $batchCycle = 'A';
+                } elseif ($flyerPeriod == ' B') {
+                    $batchCycle = 'B';
+                } else {
+                    $batchCycle = 'TPR';
+                }
                 $sel = "";
                 $option = "option";
                 $add = "";
@@ -310,10 +318,12 @@ HTML;
                     $add = "# ";
                 }
                 if (strpos(strtolower($row['batchName']), strtolower($superName)) !== false) {
-                    if ($sel == "") {
-                        $sel = "selected";
-                    } else {
-                        $sel = " ";
+                    if (strpos($row['batchName'], $batchCycle) !== false) {
+                        if ($sel == "") {
+                            $sel = "selected";
+                        } else {
+                            $sel = " ";
+                        }
                     }
                 }
                 $ret .= "<$option value='$batchID' $sel>$add $condensed</option>";
