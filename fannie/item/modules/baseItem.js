@@ -60,10 +60,10 @@ var baseItem = (function() {
         $('#CatalogContents tr').each(function(){
             let tmpVendorName = $(this).find('td:nth-child(1)').text();
             let tmpSku = $(this).find('td:nth-child(2)').text();
+            let tmpUnits = $(this).find('td:nth-child(4)').text();
             if (tmpVendorName == newVal) {
                 $('input[name="vendorSKU"]').val(tmpSku);
-            } else {
-                $('input[name="vendorSKU"]').val('');
+                $('input[name="caseSize"]').val(tmpUnits);
             }
         });
         $.ajax({
