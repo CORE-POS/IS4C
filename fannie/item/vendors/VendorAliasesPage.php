@@ -219,7 +219,7 @@ class VendorAliasesPage extends FannieRESTfulPage
         while ($row = $dbc->fetchRow($res)) {
             $ret .= sprintf('<tr %s>
                 <td>%s</td>
-                <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
+                <td><a href="../ItemEditorPage.php?searchupc=%s" target="_blank">%s</a></td>
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
