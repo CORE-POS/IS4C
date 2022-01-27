@@ -62,6 +62,8 @@ var baseItem = (function() {
             let tmpSku = $(this).find('td:nth-child(2)').text();
             if (tmpVendorName == newVal) {
                 $('input[name="vendorSKU"]').val(tmpSku);
+            } else {
+                $('input[name="vendorSKU"]').val('');
             }
         });
         $.ajax({
