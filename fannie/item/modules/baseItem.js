@@ -57,6 +57,13 @@ var baseItem = (function() {
     };
 
     mod.vendorChanged = function(newVal) {
+        $('#CatalogContents tr').each(function(){
+            let tmpVendorName = $(this).find('td:nth-child(1)').text();
+            let tmpSku = $(this).find('td:nth-child(2)').text();
+            if (tmpVendorName == newVal) {
+                $('input[name="vendorSKU"]').val(tmpSku);
+            }
+        });
         $.ajax({
             url: 'modules/ajax/BaseItemAjax.php',
             data: 'vendorChanged='+newVal,
