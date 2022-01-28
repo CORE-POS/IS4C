@@ -57,17 +57,25 @@ var baseItem = (function() {
     };
 
     mod.vendorChanged = function(newVal) {
+        var vendors = [];
         $('#CatalogContents tr').each(function(){
             let tmpVendorName = $(this).find('td:nth-child(1)').text();
             let tmpSku = $(this).find('td:nth-child(2)').text();
             let tmpUnits = $(this).find('td:nth-child(4)').text();
             let tmpCost = $(this).find('td:nth-child(5)').text();
+            vendors.push(tmpVendorName);
             if (tmpVendorName == newVal) {
                 $('input[name="vendorSKU"]').val(tmpSku);
                 $('input[name="caseSize"]').val(tmpUnits);
                 $('input[name="cost[]"]').val(tmpCost);
             }
         });
+        if (vendors.indexOf(newVal) == -1) {
+            $('input[name="vendorSKU"]').val('');
+            $('input[name="caseSize"]').val('');
+            $('input[name="cost[]"]').val(0);
+        }
+        console.log('H:'+vendors.indexOf(newVal) );
         $.ajax({
             url: 'modules/ajax/BaseItemAjax.php',
             data: 'vendorChanged='+newVal,
