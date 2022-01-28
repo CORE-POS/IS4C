@@ -61,9 +61,11 @@ var baseItem = (function() {
             let tmpVendorName = $(this).find('td:nth-child(1)').text();
             let tmpSku = $(this).find('td:nth-child(2)').text();
             let tmpUnits = $(this).find('td:nth-child(4)').text();
+            let tmpCost = $(this).find('td:nth-child(5)').text();
             if (tmpVendorName == newVal) {
                 $('input[name="vendorSKU"]').val(tmpSku);
                 $('input[name="caseSize"]').val(tmpUnits);
+                $('input[name="cost[]"]').val(tmpCost);
             }
         });
         $.ajax({

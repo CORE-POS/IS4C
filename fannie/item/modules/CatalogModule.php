@@ -40,7 +40,7 @@ class CatalogModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         $upc = BarcodeLib::padUPC($upc);
         $dbc = $this->db();
-        $listP = $dbc->prepare('SELECT i.vendorID, v.vendorName, i.sku, i.units, i.description
+        $listP = $dbc->prepare('SELECT i.vendorID, v.vendorName, i.sku, i.units, i.description, i.cost
             FROM vendorItems AS i 
                 INNER JOIN vendors AS v ON i.vendorID=v.vendorID
             WHERE i.upc=?
@@ -55,11 +55,11 @@ class CatalogModule extends \COREPOS\Fannie\API\item\ItemModule
                 $vendors[$vID] = array('name' => $listW['vendorName'], 'count' => 0);
             }
             $vendors[$vID]['count']++;
-            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
+            $table .= sprintf('<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
                     <td><input type="checkbox" name="catalogDel[]" value="%d:%s" %s 
                     title="Delete this catalog entry" /></td></tr>',
                     $listW['vendorName'], $listW['sku'], $listW['description'], $listW['units'],
-                    $vID, $listW['sku'], $disabled);
+                    $listW['cost'], $vID, $listW['sku'], $disabled);
         }
         $vendors = array_map(function ($i) { return $i['name'] . ' (' . $i['count'] . ')'; }, $vendors);
         $vendors = count($vendors) == 0 ? 'None' : implode(',', $vendors);
@@ -103,7 +103,7 @@ class CatalogModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '<div id="CatalogContents" class="panel-body' . $css . '">';
 
         $ret .= 'In Vendor catalog(s): ' . $vendors . '<br />'
-            . '<table class="table small table-bordered"><tr><th>Vendor</th><th>SKU</th><th>Item</th><th>Case Size</th>
+            . '<table class="table small table-bordered"><tr><th>Vendor</th><th>SKU</th><th>Item</th><th>Case Size</th><th>Cost</th>
                 <th><button class="btn btn-danger btn-xs" type="button">' . FannieUI::deleteIcon() . '</button></td></tr>'
             . $table . '</table><br />'
             . $mapped
