@@ -448,6 +448,10 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $(this).addClass('alert-danger');
         }
     });
+    $('textarea').each(function(){
+        $(this).attr('rows', 2)
+            .css('width', '200px');
+    });
     $('textarea').on('change', function(){
         $(this).removeClass('alert-danger');
     });
