@@ -57,6 +57,10 @@ class GumPeopleReport extends FannieReportPage
         $query = 'SELECT c.CardNo AS card_no,
                     c.FirstName, 
                     c.LastName,
+                    m.street,
+                    m.city,
+                    m.state,
+                    m.zip,
                     l.loanDate,
                     CASE WHEN l.principal IS NULL THEN 0 ELSE l.principal END as principal,
                     CASE WHEN l.termInMonths IS NULL THEN 0 ELSE l.termInMonths END as termInMonths,
@@ -70,6 +74,7 @@ class GumPeopleReport extends FannieReportPage
                     i.maskedTaxIdentifier,
                     i.encryptedTaxIdentifier
                   FROM ' . $FANNIE_OP_DB . $dbc->sep() . 'custdata AS c
+                        LEFT JOIN ' . FannieDB::fqn('meminfo', 'op') . ' AS m ON c.CardNo=m.card_no
                         LEFT JOIN GumLoanAccounts AS l 
                             ON l.card_no=c.CardNo AND c.personNum=1
                         LEFT JOIN (
@@ -98,6 +103,10 @@ class GumPeopleReport extends FannieReportPage
                $row['card_no'],
                $row['LastName'],
                $row['FirstName'],
+               $row['street'],
+               $row['city'],
+               $row['state'],
+               $row['zip'],
                ($row['loanDate'] == '' ? 'n/a' : date('Y-m-d', strtotime($row['loanDate']))),
                sprintf('%.2f', $row['principal']), 
                sprintf('%.2f', $row['interestRate'] * 100), 
