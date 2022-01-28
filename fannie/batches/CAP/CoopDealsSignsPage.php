@@ -172,7 +172,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
 {$this->get_view()}
 <form method="get" class="form-inline">
     </br>
-    <h4>Print Signs for $month $cycle $year </h4>
+    <h4>Print Signs for <strong>$month $cycle $year</strong> </h4>
     <div class="form-group">
         <a class="btn btn-success" onclick="
             window.open('{$batchLists["12CD"]["MERCH"]}');
@@ -219,6 +219,7 @@ HTML;
 
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+        $yx = FormLib::get('year', false);
 
         $set = FormLib::get('deal-set');
         $optsR = $dbc->query('
@@ -250,6 +251,7 @@ HTML;
         $curMonth = date('m');
         for ($i=$curYear-1; $i<=$curYear+1; $i++) {
             $sel = ($i == $curYear) ? " selected " : "";
+            $sel = ($yx != false) ? " selected " : "";
             $years .= "<option value='$i' $sel>$i</option>";
         }
 
