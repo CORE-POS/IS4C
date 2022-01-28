@@ -311,7 +311,7 @@ table.shelf-audit tr:hover {
             if ($row['salesCode'] != $code) {
                 continue;
             }
-            if ($row['cost'] == 0 || $row['cost'] == $row['normal_retail']) {
+            if ($row['cost'] == 0 || $row['normal_retail'] == 0 || $row['cost'] == $row['normal_retail']) {
                 $noMatch++;
             } else {
                 $match++;

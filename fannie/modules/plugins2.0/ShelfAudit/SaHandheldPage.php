@@ -172,7 +172,7 @@ class SaHandheldPage extends FannieRESTfulPage
             // ignore the value and reset to current quantity, if any
             $qtyP = $dbc->prepare("SELECT quantity FROM sa_inventory WHERE upc=? AND clear=0 AND section=? AND storeID=?");
             $qty = $dbc->getValue($qtyP, array($upc, $this->section, $store));
-            if ($qty === false) {
+            if ($qty === false || strlen($qty) > 7) {
                 $qty = 0;
             }
         }
