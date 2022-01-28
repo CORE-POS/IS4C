@@ -45,10 +45,24 @@ class MercatoTags extends FannieRESTfulPage
             $pdf->Cell(100,10,'Order #' . FormLib::get('order'),0,1,'C');
 
             $pdf->SetXY($posX, $posY + 70);
-            $pdf->Cell(100,10,($i+1) . '/' . $multi,0,1,'C');
+            $pdf->SetFont('Arial','B','20');
+            $label = ($i+1) . ' of ' . $multi . ($multi > 1 ? ' bags' : ' bag');
+            $pdf->Cell(100,10,$label,0,1,'C');
         }
         $fileName = FormLib::get('name') . '_' . $date;
         $pdf->Output($fileName.'.pdf', 'I');
+
+        return false;
+    }
+
+    protected function post_id_handler()
+    {
+        $note = FormLib::get('note');
+        if ($this->id != md5(trim($hash))) {
+            $prep = $this->connection->prepare("INSERT INTO MercatoNotes (name, modified, note)
+                VALUES (?, ?, ?)");
+            $this->connection->execute($prep, array(FormLib::get('name'), date('Y-m-d H:i:s'), $note));
+        }
 
         return false;
     }
@@ -72,6 +86,8 @@ class MercatoTags extends FannieRESTfulPage
                 AND storeID=?
             ORDER BY pDate");
         $res = $this->connection->execute($prep, array($today, $tomorrow . ' 23:59:59', $store));
+        $noteQ = $this->connection->addSelectLimit("SELECT note FROM MercatoNotes WHERE name=? ORDER BY modified DESC", 1);
+        $noteP = $this->connection->prepare($noteQ);
         $orders = '<ul>';
         $dataSet = array();
         $i = 0;
@@ -83,8 +99,11 @@ class MercatoTags extends FannieRESTfulPage
                 'date' => date('Y-m-d', $stamp),
                 'time' => date('g:ia', $stamp),
             );
+            $note = $this->connection->getValue($noteP, array($row['name']));
+            $json['note'] = $note ? $note : '';
+            $json['hash'] = md5(trim($note));
             $dataSet[] = $json;
-            $orders .= sprintf('<li><a href="" onclick="setFields(%s); return false;">%s %s</li>',
+            $orders .= sprintf('<li><a href="" onclick="setFields(%s); return false;">%s %s</a></li>',
                 $i, date('D g:ia', $stamp), $row['name']);
             $i++;
         }
@@ -143,8 +162,16 @@ class MercatoTags extends FannieRESTfulPage
 </p>
 </form>
 </div>
-<div class="col-sm-6" id="ordersColumn">
-    {$orders['html']}
+<div class="col-sm-6">
+    <div id="ordersColumn">
+        {$orders['html']}
+    </div>
+
+    <div style="margin: 20px; text-decoration: none !important;">
+        <textarea id="customerNotes" rows="10" class="form-control" placeholder="Save notes about the customer" onchange="saveNote();"></textarea>
+        <input type="hidden" id="noteHash" />
+        <input type="hidden" id="noteName" />
+    </div>
 </div>
 </div>
 <script>
@@ -155,6 +182,9 @@ function setFields(i) {
     $('input[name=pdate]').val(obj.date);
     $('input[name=ptime]').val(obj.time);
     $('input[name=order]').val(obj.orderID);
+    $('#customerNotes').val(obj.note);
+    $('#noteHash').val(obj.hash);
+    $('#noteName').val(obj.name);
 }
 function refreshData() {
     $.ajax({
@@ -167,6 +197,15 @@ function refreshData() {
         setTimeout(refreshData, 15 * 60 * 1000);
     });
 };
+function saveNote() {
+    var dstr = 'id=' + $('#noteHash').val() + '&note=' + $('#customerNotes').val();
+    dstr += '&name=' + $('#noteName').val();
+    $.ajax({
+        method: 'post',
+        data: dstr
+    }).done(function (resp) {
+    });
+}
 </script>
 HTML;
     }
