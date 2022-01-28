@@ -39,7 +39,7 @@ class NonMovementReport extends FannieReportPage {
     public $report_set = 'Movement Reports';
     public $themed = true;
 
-    protected $report_headers = array('UPC', 'Brand', 'Description', 'Dept#', 'Department', '', '');
+    protected $report_headers = array('UPC', 'Brand', 'Description', 'Dept#', 'Department', 'Last Sold', '', '');
 
     function preprocess()
     {
@@ -134,7 +134,8 @@ class NonMovementReport extends FannieReportPage {
                 p.brand,
                 p.description,
                 d.dept_no,
-                d.dept_name 
+                d.dept_name,
+                p.last_sold 
             FROM products AS p 
                 LEFT JOIN departments AS d ON p.department=d.dept_no ";
         if ($buyer !== '' && $buyer > -1) {
@@ -176,6 +177,7 @@ class NonMovementReport extends FannieReportPage {
         $record[] = $row[2];
         $record[] = $row[3];
         $record[] = $row[4];
+        $record[] = $row['last_sold'] ? $row['last_sold'] : '';
         if ($this->report_format == 'html') {
             $record[] = sprintf('<a href="" id="del%s"
                     onclick="nonMovement.backgroundDeactivate(\'%s\');return false;">
