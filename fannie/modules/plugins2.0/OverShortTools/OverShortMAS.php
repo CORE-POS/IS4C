@@ -91,6 +91,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'AD' => 66600,
         'RB' => 31140,
         'PP' => 10295,
+        'TC' => 10730,
         'NCGA' => 66600,
         'Member Discounts' => 66601,
         'Staff Discounts' => 61170,
@@ -192,7 +193,7 @@ class OverShortMAS extends FannieRESTfulPage {
             WHERE d.trans_type IN ('I','D')
             AND " . DTrans::isStoreID($store, 'd') . "
             AND tdate BETWEEN ? AND ?
-            AND m.superID > 0
+            AND (m.superID > 0 OR department=600)
             AND register_no <> 20
             " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
             " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
@@ -427,6 +428,7 @@ class OverShortMAS extends FannieRESTfulPage {
             AND tdate BETWEEN ? AND ?
             AND m.superID = 0
             AND d.department <> 703
+            AND d.department <> 600
             AND register_no <> 20
             " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
             " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
