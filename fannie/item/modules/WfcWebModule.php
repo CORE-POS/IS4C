@@ -86,6 +86,8 @@ class WfcWebModule extends \COREPOS\Fannie\API\item\ItemModule
         $pu->soldOut(FormLib::get('u_soldout') == 1 ? 1 : 0);
         $pu->save();
 
+        return; // db connection is failing currently
+
         include(dirname(__FILE__) . '/../../src/Credentials/OutsideDB.tunneled.php');
         $remote = $dbc;
 
