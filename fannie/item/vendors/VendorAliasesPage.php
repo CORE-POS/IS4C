@@ -266,7 +266,16 @@ $(window).scroll(function () {
     }
 });
 JAVASCRIPT;
+        $trimInputWhitespace = <<<HTML
+$('input[type="text"]').on('keyup', function(){
+    let text = $(this).val();
+    text = text.replace(/\D/g, '');
+    $(this).val(text);
+});
+HTML;
+
         $this->addOnloadCommand($formOnTopJs);
+        $this->addOnloadCommand($trimInputWhitespace);
 
         return $ret;
     }
