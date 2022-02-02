@@ -58,10 +58,11 @@ class MercatoTags extends FannieRESTfulPage
     protected function post_id_handler()
     {
         $note = FormLib::get('note');
-        if ($this->id != md5(trim($hash))) {
+        if ($this->id != md5(trim($note))) {
             $prep = $this->connection->prepare("INSERT INTO MercatoNotes (name, modified, note)
                 VALUES (?, ?, ?)");
             $this->connection->execute($prep, array(FormLib::get('name'), date('Y-m-d H:i:s'), $note));
+            echo "Saved the note";
         }
 
         return false;
@@ -204,6 +205,7 @@ function saveNote() {
         method: 'post',
         data: dstr
     }).done(function (resp) {
+        window.location.reload();
     });
 }
 </script>
