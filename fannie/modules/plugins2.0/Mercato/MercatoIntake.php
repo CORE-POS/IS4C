@@ -217,6 +217,7 @@ class MercatoIntake
                 case 'PER ORDER FEE':
                 case 'PROMO CODE':
                 case 'SALE REFUND':
+                case 'SALE ADJUSTMENT':
                     $total = $data[$this->COL_AMT];
                     $dtrans['upc'] = $total . 'DP802';
                     $dtrans['description'] = substr($data[$this->COL_ITEM], 0, 30);
@@ -360,7 +361,7 @@ class MercatoIntake
 
     private function getMemType($dbc, $card)
     {
-        $prep = $dbc->prepare("SELECT memType FROM custdata WHERE CardNo=?");
+        $prep = $dbc->prepare("SELECT memType FROM custdata WHERE CardNo=? AND personNum=1");
         return $dbc->getValue($prep, array($card));
     }
 }
