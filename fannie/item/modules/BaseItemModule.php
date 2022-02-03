@@ -994,11 +994,11 @@ HTML;
             }
             $desc = $this->formNoEx('descript', array());
             if (isset($desc[$i])) {
-                $model->description($desc[$i]);
+                $model->description(strtoupper($desc[$i]));
             }
             $brand = $this->formNoEx('manufacturer', array());
             if (isset($brand[$i])) {
-                $model->brand($brand[$i]);
+                $model->brand(strtoupper($brand[$i]));
             }
             /**
             $model->pricemethod(0);
