@@ -30,6 +30,7 @@ class SearchComments extends FannieRESTfulPage
             }
             $ret .= '</p>';
         }
+        $cat = FormLib::get('category');
 
         $results = false;
         $table = '<table class="table table-bordered">';
@@ -46,10 +47,14 @@ class SearchComments extends FannieRESTfulPage
                 FROM {$prefix}Comments AS c
                     LEFT JOIN {$prefix}Categories AS t ON t.categoryID=c.categoryID
                     LEFT JOIN {$prefix}Responses AS r ON r.commentID=c.commentID
-                WHERE (c.comment LIKE ? OR r.response LIKE ?)
-                    AND c.categoryID <> -1
+                WHERE (MATCH(c.comment) AGAINST(?) OR MATCH(r.response) AGAINST(?))
+                    AND c.categoryID " . ($cat ? ' = ?' : ' <> -1') . "
                 ORDER BY c.commentID DESC");
-            $searchR = $this->connection->execute($searchP, array('%' . $this->id . '%', '%' . $this->id . '%')); 
+            $args = array($this->id, $this->id);
+            if ($cat) {
+                $args[] = $cat;
+            }
+            $searchR = $this->connection->execute($searchP, $args);
             $prevID = null;
             while ($row = $this->connection->fetchRow($searchR)) {
                 if ($prevID == $row['commentID']) {
@@ -89,6 +94,10 @@ class SearchComments extends FannieRESTfulPage
     protected function get_view()
     {
         $this->addOnloadCommand("\$('#search-comments').focus();");
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $categories = new CategoriesModel($this->connection);
+        $categories->whichDB($settings['CommentDB']);
+        $opts = $categories->toOptions();
         return <<<HTML
 <form method="get" action="SearchComments.php">
 <p>
@@ -98,6 +107,14 @@ class SearchComments extends FannieRESTfulPage
         <span class="input-group-btn">
             <button class="btn btn-default">Go</button>
         </span>
+    </div>
+    <br />
+    <div class="input-group">
+        <span class="input-group-addon">Category</span>
+        <select name="category" class="form-control">
+            <option value="0">Any</option>
+            {$opts}
+        </select>
     </div>
 </p>
 </form>
