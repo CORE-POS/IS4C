@@ -54,6 +54,8 @@ class FileData
                 return self::xlsxToArray($filename, $limit);
             case 'pdf':
                 return self::pdfToArray($filename, $limit);
+            case 'txt':
+                return self::txtToArray($filename, $limit);
         }
 
         return array();
@@ -225,6 +227,24 @@ class FileData
         $lines = explode("\n", $pdf->getText());
 
         return $limit ? array_slice($lines, 0, $limit) : $lines;
+    }
+
+    public static function txtToArray($filename, $limit=0)
+    {
+        $fptr = fopen($filename,'r');
+        if (!$fptr) {
+            return array();
+        }
+        $ret = array();
+        while (!feof($fptr)) {
+            $ret[] = fgetcsv($fptr, 0, "\t");
+            if ($limit > 0 && count($ret) >= $limit) {
+                break;
+            }
+        }
+        fclose($fptr);
+
+        return $ret;
     }
 }
 

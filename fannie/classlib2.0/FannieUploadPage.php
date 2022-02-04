@@ -70,7 +70,7 @@ class FannieUploadPage extends \FanniePage
 
     protected $upload_field_name = 'FannieUploadFile';
     protected $upload_file_name = '';
-    protected $allowed_extensions = array('csv','xls','xlsx');
+    protected $allowed_extensions = array('csv','xls','xlsx', 'txt');
 
     protected $error_details = 'n/a';
 
@@ -775,6 +775,8 @@ class FannieUploadPage extends \FanniePage
         } elseif (substr(basename($this->upload_file_name),0,3) == 'lsx') {
             // php tempfile nameing only allows a three character prefix
             return $this->xlsxToArray($limit);
+        } elseif (substr(basename($this->upload_file_name),0,3) == 'txt') {
+            return $this->txtToArray($limit);
         } else {
             return array();
         }
@@ -799,6 +801,11 @@ class FannieUploadPage extends \FanniePage
     protected function xlsxToArray($limit)
     {
         return \COREPOS\Fannie\API\data\FileData::xlsxToArray($this->upload_file_name, $limit);
+    }
+
+    protected function txtToArray($limit=0)
+    {
+        return \COREPOS\Fannie\API\data\FileData::txtToArray($this->upload_file_name, $limit);
     }
 
     protected function simpleStats($stats, $key='imported')
