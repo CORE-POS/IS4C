@@ -97,7 +97,7 @@ class LbmxImport extends COREPOS\Fannie\API\FannieUploadPage
             }
 
             $storeID = $this->connection->getValue($getStoreP, array($line[$indexes['customerID']]));
-            $vendorID = $this->connection->getValue($getStoreP, array($line[$indexes['vendorID']]));
+            $vendorID = $this->connection->getValue($getVendorP, array($line[$indexes['vendorID']]));
             $exists = $this->connection->getValue($getPoP, array($storeID, $vendorID, $line[$indexes['invoice']]));
             $invDate = date('Y-m-d', strtotime($line[$indexes['date']]));
             $poDates[$key] = $invDate;
