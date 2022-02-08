@@ -1,7 +1,8 @@
 <?php
 use COREPOS\pos\lib\ReceiptLib;
 include('test_env.php');
-$mods = AutoLoader::ListModules('TenderReport');
+use COREPOS\pos\lib\LocalStorage\WrappedStorage;
+$mods = AutoLoader::ListModules('COREPOS\\pos\\lib\\ReceiptBuilding\\TenderReports\\TenderReport');
 ?>
 <form action="testTenderReport.php">
 <select name='t_mod'>
@@ -25,9 +26,11 @@ Emp# <input type="text" size="3" name="emp_no" />
 if (isset($_REQUEST['t_mod']) && isset($_REQUEST['emp_no'])){
     CoreLocal::set('CashierNo',$_REQUEST['emp_no']);
     $tmod = $_REQUEST['t_mod'];
+    $session = new WrappedStorage();
     echo "Output for $tmod:<br />";
     echo '<pre>';
-    $report = $tmod::get();
+    $report = $tmod::get($session);
+    echo $report;
     echo '</pre>';
 
     if (isset($_REQUEST['print']) && $_REQUEST['print'] == 1){
