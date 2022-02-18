@@ -198,7 +198,7 @@ class MercatoIntake
                     $dtrans['upc'] = $upc;
                     $dtrans['description'] = $item['description'];
                     $dtrans['trans_type'] = 'I';
-                    $dtrans['department'] = $item['department'];
+                    $dtrans['department'] = isset($item['department']) ? $item['department'] : 0;
                     $dtrans['quantity'] = $qty;
                     $dtrans['scale'] = $item['scale'];
                     $dtrans['cost'] = $item['cost'] * $qty;
