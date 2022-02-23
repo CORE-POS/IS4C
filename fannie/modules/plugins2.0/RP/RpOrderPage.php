@@ -285,15 +285,11 @@ class RpOrderPage extends FannieRESTfulPage
         $sku = $vendor == $item['backupID'] ? $item['backupSKU'] : $item['vendorSKU'];
         if ($item['caseSize'] != 0) {
             $prod['cost'] = $item['cost'] / $item['caseSize'];
+        } else {
+            $prod['cost'] = $item['cost'];
         }
         if ($sku == 'DIRECT') {
             $sku = $upc;
-        } else {
-            $vcostP = $this->connection->prepare("SELECT cost FROM vendorItems WHERE vendorID=? AND sku=?");
-            $vcost = $this->connection->getValue($vcostP, array($vendor, $sku));
-            if ($vcost) {
-                $prod['cost'] = $vcost;
-            }
         }
 
         $poi = new PurchaseOrderItemsModel($this->connection);
