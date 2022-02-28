@@ -282,6 +282,8 @@ class StaffArAccountsPage extends FannieRESTfulPage
         $ret .= '&nbsp;&nbsp;&nbsp;&nbsp;';
         $ret .= '<button type="submit" onclick="changeAmount(); return false;" 
             class="btn btn-default">Change Deduction</button>';
+        $ret .= '<hr />';
+        $ret .= '<a href="StaffArDiscrepancies.php" class="btn btn-default">Check for Account Discrepancies</a>';
         $ret .= '</div>';
 
         return $ret;
