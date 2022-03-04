@@ -142,14 +142,16 @@ class AjaxCallback
     public static function ajaxFatal()
     {
         $error = error_get_last();
-        if ($error["type"] == E_ERROR 
-            || $error['type'] == E_PARSE 
-            || $error['type'] == E_CORE_ERROR
-            || $error['type'] == E_COMPILE_ERROR) {
+        if ($error != null) {
+            if ($error["type"] == E_ERROR 
+                || $error['type'] == E_PARSE 
+                || $error['type'] == E_CORE_ERROR
+                || $error['type'] == E_COMPILE_ERROR) {
 
-            $msg = "{$error['message']} ({$error['file']} line {$error['line']})";
-            $json = array('error' => $msg);
-            echo json_encode($json);
+                $msg = "{$error['message']} ({$error['file']} line {$error['line']})";
+                $json = array('error' => $msg);
+                echo json_encode($json);
+            }
         }
     }
 }
