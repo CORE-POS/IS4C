@@ -409,9 +409,6 @@ class DatabarCoupon extends SpecialUPC
            prefix will "line up" with matching items in
            localtemptrans
 
-           The offer code is converted to base-36 to 
-           reduce its character count.
-
            Offer code won't always fit. This is just best
            effort. I've already seen a real coupon using
            a 10 digit prefix. In theory there could even
@@ -419,7 +416,6 @@ class DatabarCoupon extends SpecialUPC
            offer code at all.
         */
         $upcStart = "0" . $valReq->prefix;
-        $offer = base_convert($offer,10,36);
         $remaining = 13 - strlen($upcStart);
         if (strlen($offer) < $remaining) {
             $offer = str_pad($offer,$remaining,'0',STR_PAD_LEFT);
@@ -512,13 +508,13 @@ class DatabarCoupon extends SpecialUPC
         $chkR = $dbc->query($chkQ);
         $ttlRequired = MiscLib::truncate2($req->value / 100.00);
         if ($dbc->num_rows($chkR) == 0) {
-            $json['output'] = DisplayLib::boxMsg(_(sprintf("Coupon requires transaction of at least \$%.2f"), $ttlRequired));
+            $json['output'] = DisplayLib::boxMsg(_(sprintf("Coupon requires transaction of at least \$%.2f", $ttlRequired)));
             return array($req, $json);
         }
 
         $chkW = $dbc->fetch_row($chkR);
         if ($chkW[0] < $ttlRequired) {
-            $json['output'] = DisplayLib::boxMsg(_(sprintf("Coupon requires transaction of at least \$%.2f"), $ttlRequired));
+            $json['output'] = DisplayLib::boxMsg(_(sprintf("Coupon requires transaction of at least \$%.2f", $ttlRequired)));
             return array($req, $json);
         }
 
