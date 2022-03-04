@@ -104,7 +104,7 @@ class AutoCoupon extends TotalAction
             }
 
             $next_val = $add['value'] - $val;
-            if (abs($next_val) < 0.005) {
+            if (abs($next_val) < 0.01) {
                 // no need to add another line item
                 // previous one(s) sum to correct total
                 continue;
