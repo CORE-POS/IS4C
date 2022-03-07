@@ -247,6 +247,8 @@ class FannieSignage
                   FROM shelftags AS s
                     ' . DTrans::joinProducts('s', 'p', 'INNER') . '
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
+                    LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
+                    LEFT JOIN vendors AS ven ON ven.vendorID=v.vendorID
                   WHERE s.id=?
                   ORDER BY p.department, s.upc';
         $args = array($this->source_id);
