@@ -64,7 +64,6 @@ class StaffArAutoTask extends FannieTask
             $mail->From = $this->config->get('ADMIN_EMAIL');
             $mail->FromName = 'WFC Staff AR';
             $mail->isHTML = false;
-            $mail->addAddress('tracyjohnson@wholefoods.coop');
             $mail->addAddress('jlepak@wholefoods.coop');
             $mail->addAddress('shannigan@wholefoods.coop');
             $mail->addAddress('skvale@wholefoods.coop');
