@@ -269,7 +269,7 @@ JAVASCRIPT;
         $trimInputWhitespace = <<<HTML
 $('input[type="text"]').on('keyup', function(){
     let text = $(this).val();
-    text = text.replace(/\D/g, '');
+    text = text.replace(/\W/g, '');
     $(this).val(text);
 });
 HTML;
