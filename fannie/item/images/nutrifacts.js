@@ -8,6 +8,13 @@ var nutriFacts = (function($) {
     };
 
     mod.doLookup = function(e) {
+
+        $('input[type=text]').each(function(){
+            let name = $(this).attr('name');
+            if (name != 'upc') 
+                $(this).val(null);
+        });
+
         $.ajax({
             url: 'NutriFacts.php',
             data: 'id=' + $(this).val(),
@@ -44,5 +51,7 @@ var nutriFacts = (function($) {
 }(jQuery));
 
 $(document).ready(function() {
+    var upc = $('input[name=dummy-upc]').val();
     $('input[name=upc]').change(nutriFacts.doLookup);
+    $('input[name=upc]').val(upc).trigger('change');
 });
