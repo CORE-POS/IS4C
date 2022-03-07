@@ -115,7 +115,7 @@ class SmartDDDReport extends FannieReportPage
                 COALESCE(p.brand, '') AS brand,
                 CASE WHEN p.description IS NULL THEN t.description ELSE p.description END as description, "
                 . DTrans::sumQuantity('t')." as qty,
-                SUM(t.total) AS total,
+                SUM(t.cost) AS total,
                 t.department,
                 d.dept_name,
                 m.super_name,
@@ -135,11 +135,24 @@ class SmartDDDReport extends FannieReportPage
                 v.vendorName
             ORDER BY SUM(t.total) DESC";
         $prep = $dbc->prepare($query);
+        $saleQ = str_replace("='Z'", "<>'Z'", $query);
+        $saleQ = str_replace("SUM(t.cost)", "SUM(t.total)", $saleQ);
+        $saleP = $dbc->prepare($saleQ);
         try {
             $result = $dbc->execute($prep, $from_where['args']);
+            $saleR = $dbc->execute($saleP, $from_where['args']);
         } catch (Exception $ex) {
             // MySQL 5.6 GROUP BY problem
             return array();
+        }
+        $sales = array();
+        while ($row = $dbc->fetchRow($saleR)) {
+            $upc = $row['upc'];
+            if ($upc == '0068031488891') echo $row['total'];
+            $sales[$upc] = array(
+                'qty' => $row['qty'],
+                'ttl' => $row['total'],
+            );
         }
         $data = array();
         while ($row = $dbc->fetch_row($result)) {
@@ -149,6 +162,8 @@ class SmartDDDReport extends FannieReportPage
                     $row['description'],
                     sprintf('%.2f', $row['qty']),
                     sprintf('%.2f', $row['total']),
+                    //sprintf('%.2f', isset($sales[$row['upc']]['qty']) ? $sales[$row['upc']]['qty'] : 0),
+                    //sprintf('%.2f', isset($sales[$row['upc']]['ttl']) ? $sales[$row['upc']]['ttl'] : 0),
                     $row['department'],
                     $row['dept_name'],
                     $row['super_name'],
@@ -162,7 +177,8 @@ class SmartDDDReport extends FannieReportPage
 
     public function calculate_footers($data)
     {
-        $this->report_headers = array('UPC','Brand','Description','Qty','$',
+        $this->report_headers = array('UPC','Brand','Description','Shrink Qty','Shrink $',
+            //'Sales Qty', 'Sales $',
             'Dept#','Department','Super','Vendor', 'SKU');
         $this->sort_column = 4;
         $this->sort_direction = 1;
