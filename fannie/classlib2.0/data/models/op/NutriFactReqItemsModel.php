@@ -45,6 +45,7 @@ class NutriFactReqItemsModel extends BasicModel
     'totalCarbs' => array('type'=>'VARCHAR(15)'),
     'fiber' => array('type'=>'VARCHAR(15)'),
     'sugar' => array('type'=>'VARCHAR(15)'),
+    'addedSugar' => array('type'=>'VARCHAR(15)'),
     'protein' => array('type'=>'VARCHAR(15)'),
     );
 
