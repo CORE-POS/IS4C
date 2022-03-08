@@ -158,7 +158,7 @@ static private function addItem($strupc, $strdescription, $strtransType, $strtra
         'register_no'    => CoreLocal::get('laneno'),
         'emp_no'    => CoreLocal::get('CashierNo'),
         'trans_no'    => MiscLib::nullwrap(CoreLocal::get('transno')),
-        'upc'        => MiscLib::nullwrap($strupc),
+        'upc'        => MiscLib::nullwrap(substr($strupc, 0, 13)),
         'description'    => substr($strdescription, 0, 30),
         'trans_type'    => MiscLib::nullwrap($strtransType),
         'trans_subtype'    => MiscLib::nullwrap($strtranssubType, true),
