@@ -62,10 +62,15 @@ class TableSyncPage extends FanniePage
         $sync = SyncLanes::pushTable($table, 'op', SyncLanes::TRUNCATE_DESTINATION, $offline);
 
         $this->results = "<p>Syncing table $table <br />";
+        $messages = explode("Lane", $sync['messages']);
         if ($sync['sending'] === true) {
-            $this->results .= $sync['messages'];
+            foreach ($messages as $message) {
+                $this->results .= "<div>$message</div>";
+            }
         } else {
-            $this->errors .= $sync['messages'];
+            foreach ($messages as $message) {
+                $this->errors .= "<div>$message</div>";
+            }
         }
         $this->results .= '</p>';
         
