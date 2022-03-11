@@ -30,8 +30,8 @@ if (!class_exists('UIGLib')) {
 
 class MyUIGTask extends FannieTask
 {
-    public $username_field = 'UnfiInvoiceUser';
-    public $password_field = 'UnfiInvoicePass';
+    public $username_field = 'MyUnfiInvoiceUser';
+    public $password_field = 'MyUnfiInvoicePass';
     public $vendor_id = 1;
 
     public function run()
@@ -54,6 +54,7 @@ class MyUIGTask extends FannieTask
         if ($ret != 0) {
             $this->cronMsg("UNFI download errored\n" . implode("\n", $output) . "\n", FannieLogger::ALERT);
         }
+        return;
 
         $dir = opendir('/tmp/un');
         while (($file = readdir($dir)) !== false) {
