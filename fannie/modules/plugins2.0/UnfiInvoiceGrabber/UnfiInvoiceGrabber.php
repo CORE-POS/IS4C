@@ -35,6 +35,8 @@ class UnfiInvoiceGrabber extends \COREPOS\Fannie\API\FanniePlugin
                     'description'=>'Username to log into UNFI website'), 
     'UnfiInvoicePass' => array('default'=>'','label'=>'Password',
                     'description'=>'Password to log into UNFI website'), 
+    'UnfiAccount' => array('default'=>'','label'=>'Account #',
+                    'description'=>'UNFI Account Number'), 
     );
 
     public $plugin_description = 'Plugin for downloading UNFI invoices and importing them as purchase orders';
