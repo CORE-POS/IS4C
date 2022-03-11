@@ -1336,6 +1336,7 @@ HTML;
         $this->get_orderID_customer_handler();
         $customerInfo = ob_get_clean();
         $customerInfo = json_decode($customerInfo, true);
+        $messageOpts = $this->arrivedMessageOptions($orderID);
         ob_start();
         $this->get_orderID_items_handler();
         $itemInfo = ob_get_clean();
@@ -1359,6 +1360,7 @@ HTML;
                     <option value="0">Select a message</option>
                     <option value="1">Didn't arrive, will re-order</option>
                     <option value="2">Not available, cancelling order</option>
+                    {$messageOpts}
                 </select>
                 <span class="input-group-btn">
                     <button onclick="orderView.sendMsg();" class="btn btn-default">Send</button>
@@ -1381,6 +1383,35 @@ HTML;
         }
 
         return $ret;
+    }
+
+    private function arrivedMessageOptions($orderID)
+    {
+        $config = FannieConfig::factory();
+        $settings = $config->get('PLUGIN_SETTINGS');
+        $dbc = $this->connection;
+        $dbc->selectDB($settings['ScheduledEmailDB']);
+        $template = new ScheduledEmailTemplatesModel($dbc);
+        $template->scheduledEmailTemplateID($config->get('SO_TEMPLATE'));
+        $template->load();
+        $msg = $template->textCopy();
+        $notice = new OrderNotifications($this->connection);
+
+        $itemsP = $this->connection->prepare("
+            SELECT description, ItemQtty, quantity, total FROM "
+            . FannieDB::fqn('PendingSpecialOrder', 'trans') . "
+            WHERE order_id = ? AND trans_id > 0");
+        $items = $this->connection->getAllRows($itemsP, array($orderID));
+        $opts = '';
+        foreach ($items as $item) {
+            $formatted = $notice->formatItems(array($item)); 
+            $store = $notice->getStore($orderID);
+            $msg = str_replace('{{store}}', $store, $msg);
+            $msg = str_replace('{{text}}', $formatted['text'], $msg);
+            $opts .= '<option>' . $msg . '</option>';
+        }
+
+        return $opts;
     }
 
     public function unitTest($phpunit)

@@ -140,7 +140,7 @@ class OrderNotifications
     /**
       Convert item information array(s) to string
     */
-    private function formatItems($items)
+    public function formatItems($items)
     {
         $ret = array('text'=>'', 'html'=>'');
         foreach ($items as $item) {
@@ -156,7 +156,7 @@ class OrderNotifications
         return $ret;
     }
 
-    private function getStore($orderID)
+    public function getStore($orderID)
     {
         $config = FannieConfig::factory();
         $query = '
