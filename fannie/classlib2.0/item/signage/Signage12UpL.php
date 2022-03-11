@@ -72,6 +72,12 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width/2, 12, 'FREE', 0, 1, 'L');
         }
 
+        if ($item['originShortName'] != '') {
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 35.5));
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'R');
+        }
+
         if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
             // intl would be nice
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
@@ -85,10 +91,10 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $item['nonSalePrice'] = $item['normal_price'];
         }
 
-        if ($item['originShortName'] != '' || (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price'])) {
+        if (isset($item['nonSalePrice']) && $item['nonSalePrice'] > $item['normal_price']) {
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 35.5));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
-            $text = ($item['originShortName'] != '') ? $item['originShortName'] : sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+            $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
             $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 33));
             $pdf->Cell($effective_width, 20, $item['upc'], 0, 1, 'L');
