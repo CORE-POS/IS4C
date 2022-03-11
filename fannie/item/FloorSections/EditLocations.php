@@ -303,31 +303,41 @@ class EditLocations extends FannieRESTfulPage
 </div>
 
 <div class="row">
+    <div class="col-lg-4"></div>
     <div class="col-lg-4">
         <div class="form-group">
             <form name="upc-form" method="get">
-                <div class="col-xs-8">
-                    <div class="form-group">
-                        <input name="upc" id="upc" value="$upc" class="input-small small form-control" autofocus pattern="\d*">
+                <div class="row">
+                    <div class="col-lg-1"></div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <input name="upc" id="upc" value="$upc" class="input-small small form-control" autofocus pattern="\d*">
+                        </div>
                     </div>
-                </div>
-                <div class="col-xs-4">
-                    <div class="form-group">
-                        <button class="btn btn-default btn-xs xs form-control">Submit</button>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <button class="btn btn-default btn-xs xs form-control">Submit</button>
+                        </div>
                     </div>
                 </div>
             </form>
         </div>
     </div>
     <div class="col-lg-4"></div>
-    <div class="col-lg-4">
-    </div>
 </div>
-<form class="form-inline" id="table-update">
-<div class="table-responsive"><table class="table table-bordered table-sm small" id="handheldtable"><thead>$th</thead><tbody>$td</tbody></table></div>
-</form>
-<div class="form-group">
-    <a class="btn btn-default" href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Menu</a>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4"></div>
+        <div class="col-lg-4">
+            <form class="form-inline" id="table-update">
+            <div class="table-responsive"><table class="table table-bordered table-sm small" id="handheldtable"><thead>$th</thead><tbody>$td</tbody></table></div>
+            </form>
+            <div class="form-group">
+                <a class="btn btn-default" href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Menu</a>
+            </div>
+        </div>
+        <div class="col-lg-4"></div>
+    </div>
 </div>
 HTML;
     }
