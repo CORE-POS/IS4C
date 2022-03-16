@@ -154,10 +154,16 @@ return <<<HTML
                     <input type="checkbox" id="vendorSale" name="vendorSale" class="checkbox-inline" disabled />
                 </label>
                  | 
-                <label class="small" for="in_use">
-                    InUse
-                    <input type="checkbox" name="in_use" id="in_use" value="1" checked class="checkbox-inline" />
-                </label>
+                <span class="form-inline">
+                    <label class="small" for="in_use">
+                        InUse
+                    </label>
+                    <select class="form-control input-sm" id="in_use" name="in_use">
+                        <option value="1">Here</option>
+                        <option value="2">Anywhere</option>
+                        <option value="0">All</option>
+                    </select>
+                </span>
             </td>
         </tr>
         <tr>

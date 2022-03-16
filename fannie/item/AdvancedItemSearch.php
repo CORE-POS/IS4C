@@ -509,11 +509,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
     */
     private function searchInUse($search, $form)
     {
-        if ($form->in_use !== '') {
-            /*
-            $search->where .= ' AND p.inUse=? ';
-            $search->args[] = $form->in_use;
-             */
+        if ($form->in_use == 1) {
+            $search->where .= ' AND p.inUse=1 ';
+        } elseif ($form->in_use == 2) { 
             $search->where .= ' AND p.upc IN (SELECT upc FROM products WHERE inUse=1 GROUP BY upc) ';
         }
 
