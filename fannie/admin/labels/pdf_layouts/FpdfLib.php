@@ -113,7 +113,21 @@ class FpdfLib
         }
         list($inStr, $args) = $dbc->safeInClause($upcs);
         $args[] = $storeID;
-        $query = "SELECT p.upc, f.sections FROM FloorSectionsListView AS f INNER JOIN products AS p ON f.upc=p.upc WHERE p.upc IN ($inStr) AND storeID = ? ORDER BY sections;";
+        $query = "
+SELECT f.upc, v.sections,
+UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), '-', sub.SubSection)) AS location,
+UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1))) AS noSubLocation
+FROM FloorSectionProductMap AS f
+    LEFT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
+    LEFT JOIN FloorSectionsListView AS v ON v.upc=f.upc
+        AND v.storeID=s.storeID
+    LEFT JOIN FloorSubSections AS sub ON f.floorSectionID=sub.floorSectionID
+        AND sub.upc=f.upc
+    WHERE f.upc IN ($inStr)
+        AND s.storeID = ? 
+ORDER BY SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), sub.SubSection;
+
+        ";
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
 
@@ -139,6 +153,15 @@ class FpdfLib
         ksort($newData);
 
         return $newData;
+    }
+
+    static function organicToAsterisk($text)
+    {
+        $newtext = str_replace("Organic", "*", $text);
+        $newtext = str_replace("organic", "*", $newtext);
+        $newtext = str_replace("Certified", "", $newtext);
+
+        return $newtext;
     }
 
 }
