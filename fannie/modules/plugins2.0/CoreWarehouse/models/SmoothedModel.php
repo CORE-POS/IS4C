@@ -97,7 +97,7 @@ class SmoothedModel extends CoreWarehouseModel
             WHERE tdate BETWEEN ? AND ?
                 AND trans_type='I'
                 AND trans_status <> 'R'
-                AND charflag <> 'SO'
+                AND charflag NOT IN ('SO', 'PO')
             GROUP BY upc, store_id");
         $upcR = $dbc->execute($upcP, array($date, $date . ' 23:59:59'));
         echo $dbc->numRows($upcR) . "\n";
@@ -131,7 +131,7 @@ class SmoothedModel extends CoreWarehouseModel
                     AND upc IN ({$inStr})
                     AND trans_type='I'
                     AND trans_status <> 'R'
-                    AND charflag <> 'SO'
+                    AND charflag NOT IN ('SO', 'PO')
                 GROUP BY store_id");
             $upcR = $dbc->execute($upcP, $args);
             $lcUPC = 'LC' . $lcW['likeCode'];
