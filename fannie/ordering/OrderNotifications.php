@@ -161,7 +161,7 @@ class OrderNotifications
         $config = FannieConfig::factory();
         $query = '
             SELECT s.description
-            FROM SpecialOrders AS o
+            FROM ' . FannieDB::fqn('SpecialOrders', 'trans') . ' AS o
                 INNER JOIN ' . $config->get('OP_DB') . $this->dbc->sep() . 'Stores AS s
                     ON s.storeID=o.storeID
             WHERE o.specialOrderID=?';
