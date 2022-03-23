@@ -176,8 +176,8 @@ class MercatoIntake
                 case 'SALE ITEM':
                     $upc = BarcodeLib::padUPC($data[$this->COL_UPC]);
                     if (strstr($upc, ",")) {
-                        list($first,) = explode(",", $upc, 2);
-                        $upc = BarcodeLib::padUPC(trim($first));
+                        list($first,$second) = explode(",", $upc, 2);
+                        $upc = BarcodeLib::padUPC(trim($second));
                     }
                     if ($upc == '0000000000000' && is_numeric($data[$this->COL_UPC - 1])) {
                         $upc = BarcodeLib::padUPC($data[$this->COL_UPC - 1]);
