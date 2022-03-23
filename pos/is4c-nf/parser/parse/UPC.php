@@ -83,6 +83,8 @@ class UPC extends Parser
     {
         if (is_numeric($str) && strlen($str) < 16) {
             return true;
+        } elseif (is_numeric($str) && substr($str, 0, 4) == '8110') {
+            return true;
         } elseif ($this->getPrefix($str) !== false) { 
             return true;
         }

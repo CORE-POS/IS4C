@@ -51,7 +51,7 @@ class paycardEntered extends Parser
         } elseif ($this->isE2E($str) || $this->isE2E(substr($str, 2))) {
             $this->swipetype = PaycardLib::PAYCARD_TYPE_ENCRYPTED;
             return true;
-        } elseif ((is_numeric($str) && strlen($str) >= 16) || (is_numeric(substr($str,2)) && strlen($str) >= 18) && substr($str, 0, 2) != 'CP') {
+        } elseif ((is_numeric($str) && strlen($str) >= 16 && substr($str, 0, 4) != '8110') || (is_numeric(substr($str,2)) && strlen($str) >= 18) && substr($str, 0, 2) != 'CP') {
             $this->manual = true;
             return true;
         } elseif ($str === 'VD') {
