@@ -203,10 +203,10 @@ class NutriFactEntry extends FannieRESTfulPage
 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
 LEFT JOIN NutriFactReqItems AS n ON p.upc=n.upc 
 LEFT JOIN NutriFactOptItems AS o ON o.upc=n.upc
-WHERE p.last_sold > NOW() - INTERVAL 90 DAY
-AND p.upc < 1000
+WHERE p.upc < 1000
 AND p.inUse = 1
 AND m.superID = 1
+AND (p.last_sold > NOW() - INTERVAL 90 DAY OR p.last_sold IS NULL)
 GROUP BY p.upc
 ");
         $res = $dbc->execute($prep);
@@ -372,9 +372,10 @@ var ingredientChange = function(upc, value)
 // search upc
 var lookupUpc = null;
 var lastKey = null;
-var numericKeyCodes = [98,99,100,101,102,103,104,105,50,51,52,53,54,55,56,57,48];
+var numericKeyCodes = [97,98,99,100,101,102,103,104,105,50,51,52,53,54,55,56,57,48];
 $('#search-upc').keyup(function(e){
     lastKey = e.keyCode;
+    console.log(lastKey);
     // only allow numeric chars in search
     if (!numericKeyCodes.includes(lastKey)) {
         return false;
