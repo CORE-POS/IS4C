@@ -24,7 +24,7 @@
 class PosKeysModel extends BasicModel 
 {
 
-    protected $name = 'employees';
+    protected $name = 'PosKeys';
 
     protected $preferred_db = 'op';
 
