@@ -132,11 +132,15 @@ class HouseCouponEditor extends FanniePage
             $this->coupon_id = $max+1;
             
             $insQ = $dbc->prepare("INSERT INTO houseCoupons (coupID) values (?)");
-            $dbc->execute($insQ,array($this->coupon_id));
+            $saved = $dbc->execute($insQ,array($this->coupon_id));
 
             $this->display_function='editCoupon';
 
-            $msgs[] = array('type'=>'success', 'text'=>'Created new coupon');
+            if ($saved) {
+                $msgs[] = array('type'=>'success', 'text'=>'Updated coupon settings');
+            } else {
+                $msgs[] = array('type'=>'danger', 'text'=>'Error saving coupon settings');
+            }
             
             $dbc->close();
         } elseif (FormLib::get_form_value('submit_save') !== '' 
@@ -190,9 +194,13 @@ class HouseCouponEditor extends FanniePage
             $model->maxValue($maxVal);
             $model->label($label);
             $model->auto($auto);
-            $model->save();
+            $saved = $model->save();
 
-            $msgs[] = array('type'=>'success', 'text'=>'Updated coupon settings');
+            if ($saved) {
+                $msgs[] = array('type'=>'success', 'text'=>'Updated coupon settings');
+            } else {
+                $msgs[] = array('type'=>'danger', 'text'=>'Error saving coupon settings');
+            }
 
             $this->display_function = 'editCoupon';
 
@@ -203,8 +211,12 @@ class HouseCouponEditor extends FanniePage
                 $query = $dbc->prepare("DELETE FROM houseCouponItems
                     WHERE upc=? AND coupID=?");
                 foreach (FormLib::get_form_value('del',array()) as $upc) {
-                    $dbc->execute($query,array($upc,$this->coupon_id));
-                    $msgs[] = array('type'=>'success', 'text'=>'Deleted ' . $upc);
+                    $saved = $dbc->execute($query,array($upc,$this->coupon_id));
+                    if ($saved) {
+                        $msgs[] = array('type'=>'success', 'text'=>'Deleted ' . $upc);
+                    } else {
+                        $msgs[] = array('type'=>'danger', 'text'=>'Error deleting ' . $upc);
+                    }
                 }
             }
 
@@ -410,7 +422,7 @@ class HouseCouponEditor extends FanniePage
                 <label class="col-sm-1 control-label">Receipt Label</label>
                 <div class="col-sm-3"><input type=text name=description value="%s" class="form-control" /></div>
                 <label class="col-sm-1 control-label">Limit</label>
-                <div class="col-sm-3"><input type=text name=limit class="form-control" value="%s" /></div>
+                <div class="col-sm-3"><input type=text name=limit required class="form-control" value="%s" /></div>
             </div>
             <div class="row">
                 <label class="col-sm-1 control-label">Begins</label>
