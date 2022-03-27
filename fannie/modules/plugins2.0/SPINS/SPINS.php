@@ -31,6 +31,8 @@ if (!class_exists('FannieAPI')) {
 class SPINS extends \COREPOS\Fannie\API\FanniePlugin 
 {
     public $plugin_settings = array(
+    'SpinsFtpServer' => array('default'=>'ftp.spins.com', 'label'=>'FTP Server',
+            'description'=>'FTP server to which file should be uploaded.'),
     'SpinsFtpUser' => array('default'=>'', 'label'=>'FTP Username',
             'description'=>'ftp.spins.com credentials'), 
     'SpinsFtpPw' => array('default'=>'', 'label'=>'FTP Password',
@@ -43,6 +45,10 @@ class SPINS extends \COREPOS\Fannie\API\FanniePlugin
             number for a given date.'),
     'SpinsPrefix' => array('default'=>'', 'label'=>'Filename prefix',
             'description'=>'Prefix attached to files submitted to SPINS'), 
+    'SpinsUploadAttempts' => array('default'=>'1', 'label'=>'Upload Attempts',
+            'description'=>'Attempt the FTP upload this many times.'),
+    'SpinsRetryDelay' => array('default'=>'30', 'label'=>'Retry Delay',
+            'description'=>'Delay in seconds between upload attempts.'),
     );
 
     public $plugin_description = 'Plugin for submitting SPINS data';
