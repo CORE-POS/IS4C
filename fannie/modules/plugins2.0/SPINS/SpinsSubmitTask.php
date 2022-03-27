@@ -114,29 +114,51 @@ class SpinsSubmitTask extends FannieTask
         fclose($fp);
 
         if ($upload) {
-            $conn_id = ftp_connect('ftp.spins.com');
-            $login_id = ftp_login($conn_id, $FANNIE_PLUGIN_SETTINGS['SpinsFtpUser'], $FANNIE_PLUGIN_SETTINGS['SpinsFtpPw']);
-            if (!$conn_id || !$login_id) {
-                $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
-            } else {
-                $remoteDir = isset($FANNIE_PLUGIN_SETTINGS['SpinsFtpDir']) ? $FANNIE_PLUGIN_SETTINGS['SpinsFtpDir'] : 'data';
-                if ($remoteDir) {
-                    ftp_chdir($conn_id, $remoteDir);
-                }
-                ftp_pasv($conn_id, true);
-                $uploaded = ftp_put($conn_id, $filename, $outfile, FTP_ASCII);
-                if (!$uploaded) {
-                    $this->cronMsg('FTP upload failed', FannieLogger::ERROR);
-                } else {
+            $server = isset($FANNIE_PLUGIN_SETTINGS['SpinsFtpServer']) ? $FANNIE_PLUGIN_SETTINGS['SpinsFtpServer'] : 'ftp.spins.com';
+            $this->cronMsg("will attempt FTP upload to: $server", FannieLogger::INFO);
+
+            $attempts = 0;
+            $maxAttempts = isset($FANNIE_PLUGIN_SETTINGS['SpinsUploadAttempts']) ? $FANNIE_PLUGIN_SETTINGS['SpinsUploadAttempts'] : 1;
+            $delay = isset($FANNIE_PLUGIN_SETTINGS['SpinsRetryDelay']) ? $FANNIE_PLUGIN_SETTINGS['SpinsRetryDelay'] : 30;
+            while (true) {
+                if ($this->upload($server, $outfile, $filename)) {
                     $this->cronMsg('FTP upload successful', FannieLogger::INFO);
+                    break;
                 }
-                ftp_close($conn_id);
+                $attempts++;
+                $this->cronMsg("FTP upload attempt #$attempts of $maxAttempts failed", FannieLogger::WARNING);
+                if ($attempts >= $maxAttempts) {
+                    $this->cronMsg("Reached max of $maxAttempts attempts; giving up on FTP upoad", FannieLogger::ERROR);
+                    break;
+                }
+                sleep($delay);
             }
+
             unlink($outfile);
+
         } else {
             rename($outfile, './' . $filename);    
             $this->cronMsg('Generated file: ' . $filename, FannieLogger::INFO);
         }
     }
-}
 
+    public function upload($server, $localPath, $filename) {
+        global $FANNIE_PLUGIN_SETTINGS;
+
+        $conn_id = ftp_connect($server);
+        $login_id = ftp_login($conn_id, $FANNIE_PLUGIN_SETTINGS['SpinsFtpUser'], $FANNIE_PLUGIN_SETTINGS['SpinsFtpPw']);
+        if (!$conn_id || !$login_id) {
+            $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
+            return false;
+        }
+
+        $remoteDir = isset($FANNIE_PLUGIN_SETTINGS['SpinsFtpDir']) ? $FANNIE_PLUGIN_SETTINGS['SpinsFtpDir'] : 'data';
+        if ($remoteDir) {
+            ftp_chdir($conn_id, $remoteDir);
+        }
+        ftp_pasv($conn_id, true);
+        $uploaded = ftp_put($conn_id, $filename, $localPath, FTP_ASCII);
+        ftp_close($conn_id);
+        return $uploaded;
+    }
+}
