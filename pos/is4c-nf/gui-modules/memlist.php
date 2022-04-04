@@ -324,7 +324,7 @@ class memlist extends NoInputCorePage
     {
         ob_start();
         echo "<div class=\"listbox\">"
-            ."<select name=\"search\" id=\"search\" size=\"15\" "
+            ."<select name=\"search\" size=\"15\" "
             .' style="min-height: 200px; min-width: 220px; max-width: 390px;" '
             ."onblur=\"\$('#reginput').focus();\" ondblclick=\"document.forms['selectform'].submit();\" 
             id=\"reginput\">";
