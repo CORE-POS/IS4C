@@ -625,6 +625,11 @@ function fadeAlerts()
 {
     $('#ajax-resp').fadeOut(1500);
 }
+
+$('#upc').focusout(function(){
+    let newval = $(this).val().replace(/\s/g, "");
+    $(this).val(newval);
+});
 JAVASCRIPT;
     }
 
