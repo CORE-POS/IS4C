@@ -126,7 +126,7 @@ class ViewModel extends BasicModel
         if (!$this->connection->table_exists($this->name)) {
             return $this->normalizeCreate($mode, $doCreate);
         } elseif (!$this->connection->isView($this->name)) {
-            return $this->normalizeTableToView($mode, $doCrate);
+            return $this->normalizeTableToView($mode, $doCreate);
         }
 
         return 0;
