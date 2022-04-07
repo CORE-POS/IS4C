@@ -111,7 +111,7 @@ HTML;
         $date = date('Y-m-d');
         $this->addOnloadCommand("\$('input[name=emp]').focus();");
         return <<<HTML
-<form method="get" action="OsEmpCountsPage.php">
+<form method="get" action="OsEmpCountsPage.php" onkeydown="return event.key != 'Enter';">
 <p class="form-inline">
     <label>Cashier #</label>
     <input type="text" name="emp" class="form-control" value="" />
