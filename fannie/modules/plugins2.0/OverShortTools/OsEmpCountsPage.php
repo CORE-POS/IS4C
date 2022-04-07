@@ -56,7 +56,7 @@ class OsEmpCountsPage extends FannieRESTfulPage
         $storeID = FormLib::get('store');
         $empID = FormLib::get('emp');
         $type = FormLib::get('submit');
-        $empP = $this->connection->prepare("SELECT FirstName, LastName FROM " FAnnieDB::fqn('employees', 'op') . " WHERE emp_no=?");
+        $empP = $this->connection->prepare("SELECT FirstName, LastName FROM " . FannieDB::fqn('employees', 'op') . " WHERE emp_no=?");
         $emp = $this->connection->getRow($empP, array($empID));
         if ($type == 'drop') {
             $prep = $this->connection->prepare("SELECT dropAmount 
