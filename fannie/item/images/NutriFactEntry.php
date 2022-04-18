@@ -259,7 +259,17 @@ HTML;
 
     public function javascriptContent()
     {
+        $dbc = $this->connection;
+        $json = array();
+        $prep = $dbc->prepare("SELECT * FROM NutriFactStd");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $json[$row['name']] = $row['units'];
+        }
+        $json = json_encode($json);
+
         return <<<JAVASCRIPT
+var nutriFactStd = $json;
 var mode = $('#mode');
 var upc = 0;
 // don't allow this, it messes up the ajax for nutrients and ingredients, they are listening for keypreess
@@ -349,6 +359,17 @@ var nutriChange = function(col, value, upc, name)
         {
             //console.log(value); console.log(upc); console.log(col);
             console.log(resp);
+            
+            // calculate & replace PercentDV text
+            let target = $("td:contains('"+name+"')");
+            let testvalue = nutriFactStd[name];
+            var v = value.replace('mg', '');
+            v = v.replace('mcg', '');
+            let dv = v / parseFloat(testvalue);
+            dv = dv * 100;
+            dv = Math.round(dv);
+            target.parent().find('td:nth-child(3)').text(dv);
+
         }
     });
     
