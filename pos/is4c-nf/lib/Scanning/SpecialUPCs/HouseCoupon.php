@@ -318,7 +318,8 @@ class HouseCoupon extends SpecialUPC
                     sum(ItemQtty) end
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type = ";
-                $minR = $transDB->query($minQ . "'QUALIFIER'");
+                //$minR = $transDB->query($minQ . "'QUALIFIER'");
+                $minR = $transDB->query($minQ . "'QUALIFIER' OR h.type = 'BOTH'");
                 $minW = $transDB->fetch_row($minR);
                 $validQtty = $minW[0];
 
@@ -855,12 +856,13 @@ class HouseCoupon extends SpecialUPC
                 $discountable = 0;
                 break;
             case "%I": // percent discount on all relevant items
-                $valQ = "select sum(total) 
+                $valQ = "select sum(total), max(tax)
                     " . $this->baseSQL($transDB, $coupID, 'upc') . "
                     and h.type in ('BOTH', 'DISCOUNT')";
                 $valR = $transDB->query($valQ);
                 $row = $transDB->fetch_row($valR);
                 $value = $row[0] * $infoW["discountValue"];
+                $tax = $row[1];
                 break;
             case "%D": // percent discount on all items in give department(s)
                 $valQ = "select sum(total) 
