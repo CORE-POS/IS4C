@@ -61,6 +61,7 @@ class MSRender extends FannieRESTfulPage
             }
             return sprintf('<span class="dual-priced-text">%s</span><span class="dual-price1">%s</span><span class="dual-price2">%s</span>', $meta['text'], $meta['price'], $meta['price2']);
         case 'header':
+            if ($meta['text'] == "USE YOUR OWN" || $meta['text'] == "MUG & SAVE 0.50!")                                                                                                     return sprintf('<span class="msheader">%s</span>', $meta['text']);
             return sprintf('<span class="msheader">%s</span><span class="dual-price1">12oz</span><span class="dual-price2">16oz</span>', $meta['text']);
         case 'description':
             if (preg_match('/(.+)(\(.+?\))(.*)/', $meta['text'], $matches)) {
