@@ -157,7 +157,9 @@ class BulkBinTags extends FannieRESTfulPage
             }
         }
         */
-        $pdf->Output('barcodes'.uniqid().'.pdf', 'I');
+        $filename = "/var/www/html/Scannie/content/Testing/test.pdf";
+        $pdf->Output($filename, 'F');
+        //$pdf->Output('barcodes'.uniqid().'.pdf', 'I');
 
         return false;
     }
@@ -169,54 +171,6 @@ class BulkBinTags extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $dbc = FannieDB::get($this->config->get('OP_DB'));
-        $ret = '';
-
-        $prep = $dbc->prepare("
-            SELECT v.upc,
-                v.sku,
-                v.isPrimary,
-                v.multiplier,
-                p.description,
-                p.size
-            FROM VendorAliases AS v
-                " . DTrans::joinProducts('v') . "
-            WHERE v.vendorID=?
-            ORDER BY v.sku,
-                v.isPrimary DESC,
-                v.upc");
-        $ret .= '<table class="table table-bordered hidden">
-            <thead>
-                <th>Vendor SKU</th>
-                <th>Our UPC</th>
-                <th>Item</th>
-                <th>Unit Size</th>
-                <th>Multiplier</th>
-                <th>&nbsp;</th>
-                <th><span class="fas fa-print" onclick="$(\'.printUPCs\').prop(\'checked\', true);"></span></th>
-            </thead><tbody>';
-        $res = $dbc->execute($prep, array($this->id));
-        while ($row = $dbc->fetchRow($res)) {
-            $ret .= sprintf('<tr %s>
-                <td>%s</td>
-                <td><a href="../ItemEditorPage.php?searchupc=%s">%s</a></td>
-                <td>%s</td>
-                <td>%s</td>
-                <td>%.2f</td>
-                <td><a class="btn btn-default btn-xs btn-danger" href="?_method=delete&id=%d&sku=%s&upc=%s">%s</a></td>
-                <td><input type="checkbox" class="printUPCs" name="printUPCs[]" value="%d" /></td>
-                </tr>',
-                ($row['isPrimary'] ? 'class="info"' : ''),
-                $row['sku'],
-                $row['upc'], $row['upc'],
-                $row['description'],
-                $row['size'],
-                $row['multiplier'],
-                $this->id, $row['sku'], $row['upc'], FannieUI::deleteIcon(),
-                $row['upc']
-            );
-        }
-        $ret .= '</tbody></table>';
         $test = FormLib::get('items');
         $items = preg_split('/\r\n|[\r\n]/', $test);
         $ret .= '<form id="tagForm" method="post">
