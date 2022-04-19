@@ -930,7 +930,7 @@ HTML;
         <div class="panel-body" style="text-align: left;">
             <div class="row">
                 <div class="col-lg-6">
-                    <label>Other Pages</label>
+                    <label>Related Pages</label>
                     <ul>
                         <li><a href="ProdLocationEditor.php">Product <strong>Location</strong> Editor</a></li>
                         <li><a href="ProdReviewPage.php?batchLog=1">Review <strong>Batch Log</strong></a></li>
@@ -939,21 +939,6 @@ HTML;
                     </ul>
                 </div>
                 <div class="col-lg-6">
-                    <form class="form" method="get" action="../batches/UNFI/VendorPricingBatchPage.php">
-                        <div class="form-group">
-                            <label>Rolling Price Changes</label>
-                            <input type="hidden" name="id" value=1 />
-                            <div class="form-group">
-                                <input type="text" name="forcedStart" class="form-control date-field" placeholder="Start Date" />
-                            </div>
-                            <div class="form-group">
-                                <input type="text" name="forcedEnd" class="form-control date-field" placeholder="End Date" />
-                            </div>
-                            <div class="form-group">
-                                <input type="submit" class="form-control btn btn-default" />
-                            </div>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
