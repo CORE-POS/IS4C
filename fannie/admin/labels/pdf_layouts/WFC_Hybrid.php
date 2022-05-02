@@ -46,6 +46,43 @@ class WFC_Hybrid_PDF extends FpdfWithBarcode
             $this->Text($x,$y+$h+11/$this->k,substr($barcode,-$len));
         }
     }
+
+    function Circle($x, $y, $r, $style='D')
+    {
+        $this->Ellipse($x,$y,$r,$r,$style);
+    }
+
+    function Ellipse($x, $y, $rx, $ry, $style='D')
+    {
+        if($style=='F')
+            $op='f';
+        elseif($style=='FD' || $style=='DF')
+            $op='B';
+        else
+            $op='S';
+        $lx=4/3*(M_SQRT2-1)*$rx;
+        $ly=4/3*(M_SQRT2-1)*$ry;
+        $k=$this->k;
+        $h=$this->h;
+        $this->_out(sprintf('%.2F %.2F m %.2F %.2F %.2F %.2F %.2F %.2F c',
+            ($x+$rx)*$k,($h-$y)*$k,
+            ($x+$rx)*$k,($h-($y-$ly))*$k,
+            ($x+$lx)*$k,($h-($y-$ry))*$k,
+            $x*$k,($h-($y-$ry))*$k));
+        $this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c',
+            ($x-$lx)*$k,($h-($y-$ry))*$k,
+            ($x-$rx)*$k,($h-($y-$ly))*$k,
+            ($x-$rx)*$k,($h-$y)*$k));
+        $this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c',
+            ($x-$rx)*$k,($h-($y+$ly))*$k,
+            ($x-$lx)*$k,($h-($y+$ry))*$k,
+            $x*$k,($h-($y+$ry))*$k));
+        $this->_out(sprintf('%.2F %.2F %.2F %.2F %.2F %.2F c %s',
+            ($x+$lx)*$k,($h-($y+$ry))*$k,
+            ($x+$rx)*$k,($h-($y+$ly))*$k,
+            ($x+$rx)*$k,($h-$y)*$k,
+            $op));
+    }
 }
 
 function WFC_Hybrid($data,$offset=0){
@@ -59,13 +96,14 @@ $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 $narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
 $upcs = array();
 $locations = array();
+$dots = array();
 foreach ($data as $k => $row) {
     $upc = $row['upc'];
     $upcs[] = $upc;
 }
 list($inStr, $locationA) = $dbc->safeInClause($upcs);
 $locationP = $dbc->prepare("
-SELECT f.upc, 
+SELECT f.upc,
 UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), '-', sub.SubSection)) AS location,
 UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1))) AS noSubLocation
 FROM FloorSectionProductMap AS f
@@ -82,10 +120,25 @@ while ($row = $dbc->fetchRow($res)) {
     $locations[$upc][] = ($row['location'] != null) ? $row['location'] : $row['noSubLocation'];
 }
 
+list($superIn, $superA) = $dbc->safeInClause($upcs);
+$superP = $dbc->prepare("
+SELECT p.upc, m.super_name
+FROM products AS p
+    LEFT JOIN MasterSuperDepts AS m ON m.dept_ID=p.department
+WHERE p.upc IN ($superIn)
+AND p.store_id = ?
+");
+$superA[] = $store;
+$superR = $dbc->execute($superP, $superA);
+while ($row = $dbc->fetchRow($superR)) {
+    $upc = ltrim($row['upc'],0);
+    $dots[$upc] = $row['super_name'];
+}
+
 $mtLength = $store == 1 ? 3 : 7;
 $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
 $mtP = $dbc->prepare('SELECT p.auto_par
-    FROM MovementTags AS m
+    FROM MovementTags AS m 
         INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.store_id
     WHERE m.upc=? AND m.storeID=?');
 $updateMT = $dbc->prepare('
@@ -192,6 +245,14 @@ foreach($data as $row) {
             else
             $pdf->EAN13($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
         }
+
+        //if (current($dots[$upc]) == 'REFRIGERATED') {
+        $pdf->SetXY($full_x+48.5, $full_y+3);
+        if ($dots[$upc] == 'REFRIGERATED' && $store == 2) {
+            $pdf->SetFillColor(0, 100, 255);
+            $pdf->Circle($full_x+48.5, $full_y+6, 1.5, 'F');
+        }
+        $pdf->SetFillColor(0, 0, 0);
 
         // writing data
         // basically just set cursor position
