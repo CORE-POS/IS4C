@@ -96,6 +96,7 @@ $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 $narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
 $upcs = array();
 $locations = array();
+$locNames = array();
 $dots = array();
 foreach ($data as $k => $row) {
     $upc = $row['upc'];
@@ -105,7 +106,8 @@ list($inStr, $locationA) = $dbc->safeInClause($upcs);
 $locationP = $dbc->prepare("
 SELECT f.upc,
 UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), '-', sub.SubSection)) AS location,
-UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1))) AS noSubLocation
+UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1))) AS noSubLocation,
+name AS name
 FROM FloorSectionProductMap AS f
     LEFT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
     LEFT JOIN FloorSubSections AS sub ON f.floorSectionID=sub.floorSectionID 
@@ -118,6 +120,7 @@ $res = $dbc->execute($locationP, $locationA);
 while ($row = $dbc->fetchRow($res)) {
     $upc = ltrim($row['upc'],0);
     $locations[$upc][] = ($row['location'] != null) ? $row['location'] : $row['noSubLocation'];
+    $locNames[$upc][] = $row['name'];
 }
 
 list($superIn, $superA) = $dbc->safeInClause($upcs);
@@ -246,11 +249,21 @@ foreach($data as $row) {
             $pdf->EAN13($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
         }
 
-        //if (current($dots[$upc]) == 'REFRIGERATED') {
+        // add a blue dot to items in REFRIGERATED department
         $pdf->SetXY($full_x+48.5, $full_y+3);
         if ($dots[$upc] == 'REFRIGERATED' && $store == 2) {
-            $pdf->SetFillColor(0, 100, 255);
-            $pdf->Circle($full_x+48.5, $full_y+6, 1.5, 'F');
+            foreach ($locNames[$upc] as $name) {
+                if (strpos(strtoupper($name), 'BEV') !== false) {
+                    $pdf->SetFillColor(0, 100, 255);
+                    $pdf->Circle($full_x+48.5, $full_y+4.5, 1.25, 'F');
+                }
+            }
+        }
+
+        // add a red dot to items with > 1 physical location
+        if (count($locations[$upc]) > 1 && $store == 2) {
+            $pdf->SetFillColor(255, 100, 0);
+            $pdf->Circle($full_x+48.5, $full_y+7, 1.25, 'F');
         }
         $pdf->SetFillColor(0, 0, 0);
 
@@ -362,6 +375,20 @@ foreach($data as $row) {
         }
         $pdf->SetX($baseX);
         $pdf->Cell(0, 3, $curStr);
+
+        // add a blue dot to items in REFRIGERATED department
+        $pdf->SetXY($baseX+48.5, $baseY+3);
+        if ($dots[$upc] == 'REFRIGERATED' && $store == 2) {
+            $pdf->SetFillColor(0, 100, 255);
+            $pdf->Circle($baseX+27.5, $baseY-10, 1.25, 'F');
+        }
+
+        // add a red dot to items with > 1 physical location
+        if (count($locations[$upc]) > 1 && $store == 2) {
+            $pdf->SetFillColor(255, 100, 0);
+            $pdf->Circle($baseX+27.5, $baseY-7.5, 1.25, 'F');
+        }
+        $pdf->SetFillColor(0, 0, 0);
    }
 
    // move right by tag width
