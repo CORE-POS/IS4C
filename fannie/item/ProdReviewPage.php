@@ -929,7 +929,7 @@ HTML;
     <div class="panel panel-default " style="max-width: 800px;">
         <div class="panel-body" style="text-align: left;">
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <label>Related Pages</label>
                     <ul>
                         <li><a href="ProdLocationEditor.php">Product <strong>Location</strong> Editor</a></li>
@@ -938,7 +938,14 @@ HTML;
                         <li><a href="ProdReviewPage.php?schedule=1&setup=1">Vendor Schedule <strong>Setup</strong></a></li>
                     </ul>
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-4">
+                    <ul>
+                        <li><a href="MultiMerchEditor.php">Products with <strong>Multiple Locations</strong></a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4">
+                    <ul>
+                    </ul>
                 </div>
             </div>
         </div>
