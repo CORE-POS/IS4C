@@ -86,6 +86,7 @@ class OverShortIndexPage extends FanniePage {
                         <b>Very WFC specific</b>');
             ?>
         </li> 
+        <li><a href="OsEmpCountsPage.php">Daily Employee Counts</a></li>
         <li><a href="OverShortDepositSlips.php" target="_DepositSlips">Deposit Slips</a>
             <?php
             echo \COREPOS\Fannie\API\lib\FannieHelp::ToolTip('<br />Uses information from the Safe Count tool to generate

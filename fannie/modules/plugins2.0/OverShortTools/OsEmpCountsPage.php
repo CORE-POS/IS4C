@@ -7,7 +7,6 @@ if (!class_exists('FannieAPI')) {
 
 class OsEmpCountsPage extends FannieRESTfulPage 
 {
-    protected $must_authenticate = true;
 
     protected $header = 'Daily Employee Counts';
     protected $title = 'Daily Employee Counts';
@@ -58,6 +57,10 @@ class OsEmpCountsPage extends FannieRESTfulPage
         $type = FormLib::get('submit');
         $empP = $this->connection->prepare("SELECT FirstName, LastName FROM " . FannieDB::fqn('employees', 'op') . " WHERE emp_no=?");
         $emp = $this->connection->getRow($empP, array($empID));
+        if ($emp === false) {
+            return '<div class="alert alert-danger">Invalid Employee Number</div>'
+                . $this->get_view();
+        }
         if ($type == 'drop') {
             $prep = $this->connection->prepare("SELECT dropAmount 
                 FROM " . FannieDB::fqn('DailyTillCounts', 'plugin:OverShortDatabase') . "

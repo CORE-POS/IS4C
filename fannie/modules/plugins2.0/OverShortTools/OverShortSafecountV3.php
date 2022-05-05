@@ -26,7 +26,7 @@ if (!class_exists('FannieAPI')) {
     include_once(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
-class OverShortSafecountV2 extends FanniePage {
+class OverShortSafecountV3 extends FanniePage {
 
     protected $window_dressing = False;
     protected $auth_classes = array('overshorts');
@@ -35,8 +35,6 @@ class OverShortSafecountV2 extends FanniePage {
     public $description = '[Safe Count] stores information about cash on hand and change buys.';
 
     function preprocess(){
-        header('Location: OverShortSafecountV3.php');
-        return false;
         $action = FormLib::get_form_value('action',False);
         if ($action !== False){
             $this->ajaxRequest($action);
@@ -364,7 +362,7 @@ class OverShortSafecountV2 extends FanniePage {
         $ret .= '<br /><br />';
 
         $ret .= "<table cellspacing=0 border=1 cellpadding=4>";
-        $ret .= '<tr><th>Date</th><th>MOD Count</th><th>Drop</th><th>POS</th><th>Var.</th><th>Notes</th></tr>';
+        $ret .= '<tr><th>Date</th><th>Cashier Count</th><th>Drop</th><th>POS</th><th>Var.</th><th>Notes</th><th>Checks</th></tr>';
 
         $model = new DailyDepositNotesModel($dbc);
         $model->dateStr($dateStr);
@@ -376,7 +374,10 @@ class OverShortSafecountV2 extends FanniePage {
 
         $startTS = strtotime($startDate);
         $endTS = strtotime($endDate);
-        $ttlP = $dbc->prepare("SELECT SUM(dropAmount) FROM DailyTillCounts WHERE dateID=? AND storeID=?");
+        $dropP = $dbc->prepare("SELECT dropAmount, registerNo, FirstName 
+            FROM DailyTillCounts AS c
+                LEFT JOIN " . FannieDB::fqn('employees', 'op') . " as e on c.registerNo=e.emp_no
+                WHERE dateID=? AND storeID=?");
         $count = 0;
         $dropTTL = 0;
         $dropVar = 0;
@@ -386,30 +387,40 @@ class OverShortSafecountV2 extends FanniePage {
 
             $dlog = DTransactionsModel::selectDlog($date);
             $caP = $dbc->prepare("SELECT -1 * SUM(total) FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_type='T' AND store_id=?
-                AND (trans_subtype='CA' OR (trans_subtype='CK' AND description='Check'))");
+                AND (trans_subtype='CA' OR (trans_subtype='CK' AND description='Check')) AND emp_no=?");
 
-            $class = $count % 2 == 0 ? 'color' : '';
-            $ret .= '<tr class="' . $class . '">';
-            $ret .= '<td>' . $date . '</td>';
-            $ttl = $dbc->getValue($ttlP, array($dateID, $store));
-            $ret .= '<td>' . $ttl . '</td>';
-            $cur = 0;
-            if (isset($holding['drop' . $dateID]) && isset($holding['drop' . $dateID]['ttl'])) {
-                $cur = $holding['drop' . $dateID]['ttl'];
+            $dropR = $dbc->execute($dropP, array($dateID, $store));
+            $first = true;
+            while ($row = $dbc->fetchRow($dropR)) {
+                $class = $count % 2 == 0 ? 'color' : '';
+                $ret .= '<tr class="' . $class . '">';
+                $ret .= '<td>' . $date . ' ' . $row['FirstName'] . '</td>';
+                $ret .= '<td>' . $row['dropAmount'] . '</td>';
+                $cur = 0;
+                $key = $dateID . '-' . $row['registerNo'];
+                if (isset($holding['drop' . $key]) && isset($holding['drop' . $key]['ttl'])) {
+                    $cur = $holding['drop' . $key]['ttl'];
+                }
+                $ret .= '<td><input type="text" size="4" class="drop" id="drop' . $key . '" value="' . $cur . '" 
+                    onchange="recalcDropVariance(event);" /></td>';
+                $cash = $dbc->getValue($caP, array($date, $date . ' 23:59:59', $store, $row['registerNo']));
+                $ret .= '<td class="pos">' . sprintf('%.2f', $cash) . '</td>';
+                $ret .= '<td class="var">' . sprintf('%.2f', $cur - $cash) . '</td>';
+                $note = isset($notes['note' . $key]) ? $notes['note' . $key] : '';
+                $ret .= '<td class="day-notes"><input type="text" class="day-notes" id="note' . $key . '" value="' . $note . '" /></td>';
+                if ($first) {
+                    $ret .= '<td rowspan="4" valign="top">
+                        <textarea class="day-notes" id="noteChecks' . $dateID . '" rows="7">';
+                    $ret .= isset($notes['noteChecks' . $dateID]) ? $notes['noteChecks' . $dateID] : '';
+                    $ret .= '</textarea></td>';
+                }
+                $ret .= '</tr>';
+                $dropTTL += $cur;
+                $dropVar += ($cur - $cash);
+                $count++;
+                $first = false;
             }
-            $ret .= '<td><input type="text" size="4" class="drop" id="drop' . $dateID . '" value="' . $cur . '" 
-                onchange="recalcDropVariance(event);" /></td>';
-            $cash = $dbc->getValue($caP, array($date, $date . ' 23:59:59', $store));
-            $ret .= '<td class="pos">' . sprintf('%.2f', $cash) . '</td>';
-            $ret .= '<td class="var">' . sprintf('%.2f', $cur - $cash) . '</td>';
-            $note = isset($notes['note' . $dateID]) ? $notes['note' . $dateID] : '';
-            $ret .= '<td class="day-notes"><input type="text" class="day-notes" id="note' . $dateID . '" value="' . $note . '" /></td>';
-
-            $ret .= '</tr>';
             $startTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS) + 1, date('Y', $startTS));
-            $count++;
-            $dropTTL += $cur;
-            $dropVar += ($cur - $cash);
         }
         $class = $count % 2 == 0 ? 'color' : '';
         $ret .= '<tr class="' . $class . '"><td>Open Safe</td><td>n/a</td>';
@@ -465,7 +476,7 @@ class OverShortSafecountV2 extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/countV2.js?date=20210712');
+        $this->addScript('js/countV3.js?date=20210712');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');
