@@ -227,6 +227,10 @@ GROUP BY p.upc
 
         return <<<HTML
 <input type="hidden" id="mode" value=1 />
+<ul>
+    <li><a href= "ScannieBulkWrapper.php">Print Bulk Bin Labels</a></li>
+    <li><a href= "IngredientSOPFormatter.php">Ingredients SOP Formatter</a></li>
+</ul>
 <div class="form-group">
     <button id="show-all" class="btn btn-default">Show All</button>
 </div>
