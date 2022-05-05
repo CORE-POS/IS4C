@@ -38,7 +38,7 @@ class WfcLimitedTenderReport extends TenderReport
         $fieldNames = self::standardFieldNames();
         $time = ReceiptLib::build_time(time()); 
 
-        $receipt = ReceiptLib::biggerFont(ReceiptLib::centerBig('R E G I S T E R  ' . $session->get('laneno')))."\n\n";
+        $receipt = ReceiptLib::biggerFont(ReceiptLib::centerBig('CASHIER  ' . $session->get('CashierNo') . ' ' . $session->get('cashier')))."\n\n";
         $receipt .= ReceiptLib::biggerFont(ReceiptLib::centerBig($time)) . "\n\n";
         $receipt .=    ReceiptLib::centerString("------------------------------------------------------") . "\n";
         $dba = Database::mDataConnect();
@@ -50,10 +50,10 @@ class WfcLimitedTenderReport extends TenderReport
         $receipt .= $fieldNames;
 
         $query = $dba->prepare("select tdate,register_no,trans_no,-total AS tender
-                   from dlog where register_no=?
+                   from dlog where emp_no=?
                    and trans_type='T' AND trans_subtype='TK'
                   ORDER BY tdate");
-        $res = $dba->execute($query, array($session->get('laneno')));
+        $res = $dba->execute($query, array($session->get('CashierNo')));
         $numRows = $dba->numRows($res);
 
         $sum = 0;
