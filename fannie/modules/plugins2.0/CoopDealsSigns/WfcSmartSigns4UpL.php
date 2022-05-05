@@ -78,7 +78,10 @@ class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP
 
             $pdf = $this->drawItem($pdf, $item, $row, $column);
 
-            $item['basic'] = $dbc->getValue($basicP, $item['upc']);
+            $item['basic'] = $dbc->getValue($basicP, array($item['upc']));
+            if (trim(strtolower($item['brand'])) == 'field day') {
+                $item['basic'] = 1;
+            }
             $item['organicLocal'] = $dbc->getValue($organicLocalP, $item['upc']);
             $item['organic'] = $dbc->getValue($organicP, $item['upc']);
             $item['local'] = $dbc->getValue($localP, $item['upc']);
