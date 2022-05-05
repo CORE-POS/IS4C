@@ -2,8 +2,8 @@
 
 class WfcUnfiTask extends FannieTask
 {
-    private $qStart = '2019-04-28';
-    private $qEnd = '2019-07-28';
+    private $qStart = '2022-01-02';
+    private $qEnd = '2022-03-31';
     private $qWeeks = 13;
     private $goal = 80001;
 
@@ -61,7 +61,7 @@ class WfcUnfiTask extends FannieTask
             $msg .= "Week {$key}    $" . number_format($w, 2) . "\n";
         }
 
-        mail('andy@wholefoods.coop,sbroome@wholefoods.coop,lisa@wholefoods.coop,michael@wholefoods.coop,shannigan@wholefoods.coop', 'Cost+ Update', $msg, "From: costplus@wholefoods.coop\r\n");
+        mail('andy@wholefoods.coop', 'Cost+ Update', $msg, "From: costplus@wholefoods.coop\r\n");
     }
 }
 
