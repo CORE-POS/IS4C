@@ -576,6 +576,9 @@ class UPC extends Parser
         if ($this->source == self::GS1_PREFIX) {
             return $entered;
         }
+        if (substr($entered, 0, 4) == '8110' && strlen($entered) > 16) {
+            return $entered;
+        }
 
         /* exapnd UPC-E */
         if (substr($entered, 0, 1) == 0 && strlen($entered) == 7) {
