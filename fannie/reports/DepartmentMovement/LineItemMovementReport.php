@@ -13,7 +13,7 @@ class LineItemMovementReport extends FannieReportPage
 
     protected $required_fields = array('date1', 'date2');
 
-    public $description = '[Line Item Discount Movement] shows movement for service-scale items that have been reduced';
+    public $description = '[Line Item Discount Movement] shows movement for items that have been reduced at checkout';
     public $report_set = 'Movement Reports';
     protected $report_headers = array('UPC', 'Brand', 'Item', 'Qty', '$', 'Reduced Qty', 'RQ%', 'Reduced $', 'R$%');
 
@@ -40,7 +40,7 @@ class LineItemMovementReport extends FannieReportPage
             GROUP BY t.upc,
                 COALESCE(p.brand, ''),
                 CASE WHEN p.description IS NULL THEN t.description ELSE p.description END
-            ORDER BY SUM(CASE WHEN charflag='RD' THEN total ELSE 0 END) DESC";
+            ORDER BY SUM(CASE WHEN charflag='PO' THEN total ELSE 0 END) DESC";
 
         $prep = $dbc->prepare($query);
         try {
