@@ -33,7 +33,7 @@ class MemberPreferences extends FannieRESTfulPage
     public $description = '[Member Preferences] manages a set of per-member preference settings.';
 
     protected $must_authenticate = true;
-    protected $auth_classes = array('editmembers');
+    protected $auth_classes = array('editmembers', 'editmembers_csc');
 
     public function get_view()
     {
