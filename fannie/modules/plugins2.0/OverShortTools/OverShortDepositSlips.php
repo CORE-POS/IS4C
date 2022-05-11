@@ -255,7 +255,7 @@ class OverShortDepositSlips extends FanniePage
         if (isset($dbstack['depositAmount']['50.00'])) $cash += $dbstack['depositAmount']['50.00'];
         if (isset($dbstack['depositAmount']['100.00'])) $cash += $dbstack['depositAmount']['100.00'];
 
-        $cashP = $dbc->prepare("SELECT rowName, amt FROM dailyDeposit WHERE dateStr=? AND storeID=? AND countFormat=2 AND rowName LIKE 'drop%'");
+        $cashP = $dbc->prepare("SELECT LEFT(rowName, 12) AS rowName, SUM(amt) AS amt FROM dailyDeposit WHERE dateStr=? AND storeID=? AND countFormat=2 AND rowName LIKE 'drop%' GROUP BY LEFT(rowName, 12)");
         $cashR = $dbc->execute($cashP, array($dateClause, $store));
         $cashTTL = 0;
         while ($cashW = $dbc->fetchRow($cashR)) {
