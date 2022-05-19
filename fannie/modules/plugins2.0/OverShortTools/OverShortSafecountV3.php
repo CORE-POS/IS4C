@@ -377,7 +377,7 @@ class OverShortSafecountV3 extends FanniePage {
         $dropP = $dbc->prepare("SELECT dropAmount, registerNo, FirstName 
             FROM DailyTillCounts AS c
                 LEFT JOIN " . FannieDB::fqn('employees', 'op') . " as e on c.registerNo=e.emp_no
-                WHERE dateID=? AND storeID=?");
+                WHERE dateID=? AND storeID=? AND registerNo=?");
         $count = 0;
         $dropTTL = 0;
         $dropVar = 0;
@@ -386,24 +386,30 @@ class OverShortSafecountV3 extends FanniePage {
             $dateID = date('Ymd', $startTS);
 
             $dlog = DTransactionsModel::selectDlog($date);
-            $caP = $dbc->prepare("SELECT -1 * SUM(total) FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND trans_type='T' AND store_id=?
-                AND (trans_subtype='CA' OR (trans_subtype='CK' AND description='Check')) AND emp_no=?");
+            $caP = $dbc->prepare("SELECT d.emp_no, e.FirstName, -1 * SUM(total) AS ttl
+                FROM {$dlog} AS d
+                    LEFT JOIN " . FannieDB::fqn('employees', 'op') . " AS e ON d.emp_no=e.emp_no
+                WHERE tdate BETWEEN ? AND ? AND trans_type='T' AND store_id=?
+                AND (trans_subtype='CA' OR (trans_subtype='CK' AND description='Check'))
+                GROUP BY d.emp_no, e.FirstName
+                HAVING ABS(SUM(total)) > 0.005");
 
-            $dropR = $dbc->execute($dropP, array($dateID, $store));
+            $caR  = $dbc->execute($caP, array($date, $date . ' 23:59:59', $store));
             $first = true;
-            while ($row = $dbc->fetchRow($dropR)) {
+            while ($row = $dbc->fetchRow($caR)) {
                 $class = $count % 2 == 0 ? 'color' : '';
                 $ret .= '<tr class="' . $class . '">';
                 $ret .= '<td>' . $date . ' ' . $row['FirstName'] . '</td>';
-                $ret .= '<td>' . $row['dropAmount'] . '</td>';
+                $drop = $dbc->getRow($dropP, array($dateID, $store, $row['emp_no']));
+                $ret .= '<td>' . $drop['dropAmount'] . '</td>';
                 $cur = 0;
-                $key = $dateID . '-' . $row['registerNo'];
+                $key = $dateID . '-' . $row['emp_no'];
                 if (isset($holding['drop' . $key]) && isset($holding['drop' . $key]['ttl'])) {
                     $cur = $holding['drop' . $key]['ttl'];
                 }
                 $ret .= '<td><input type="text" size="4" class="drop" id="drop' . $key . '" value="' . $cur . '" 
                     onchange="recalcDropVariance(event);" /></td>';
-                $cash = $dbc->getValue($caP, array($date, $date . ' 23:59:59', $store, $row['registerNo']));
+                $cash = $row['ttl'];
                 $ret .= '<td class="pos">' . sprintf('%.2f', $cash) . '</td>';
                 $ret .= '<td class="var">' . sprintf('%.2f', $cur - $cash) . '</td>';
                 $note = isset($notes['note' . $key]) ? $notes['note' . $key] : '';
