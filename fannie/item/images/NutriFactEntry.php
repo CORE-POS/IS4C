@@ -38,7 +38,7 @@ class NutriFactEntry extends FannieRESTfulPage
         "servingSize" => '',
         "numServings" => '',
         "calories" => '',
-        "fatCalories" => '',
+        //"fatCalories" => '',
         "totalFat" => 'g',
         "saturatedFat" => 'g',
         "transFat" => 'g',
@@ -94,6 +94,7 @@ class NutriFactEntry extends FannieRESTfulPage
     public function post_nutrient_handler()
     {
         $dbc = $this->connection;
+        $mode = FormLib::get('nutrient');
         $upc = FormLib::get('upc');
         $upc = BarcodeLib::padUPC($upc);
         $col = FormLib::get('col');
@@ -102,24 +103,47 @@ class NutriFactEntry extends FannieRESTfulPage
         $name = FormLib::get('name');
         $stdDVs = array();
 
-        $prep = $dbc->prepare("SELECT * FROM NutriFactStd");
-        $res = $dbc->execute($prep);
-        while ($row = $dbc->fetchRow($res)) {
-            $stdDVs[$row['name']]['units'] = $row['units'];
-            $stdDVs[$row['name']]['stdUnit'] = $row['stdUnit'];
+        // lastly, if both numbers were already entered, don't make a change to the other if it's within 1 percent of being correct?
+
+        if ($mode == 1) {
+            $prep = $dbc->prepare("SELECT * FROM NutriFactStd");
+            $res = $dbc->execute($prep);
+            while ($row = $dbc->fetchRow($res)) {
+                $stdDVs[$row['name']]['units'] = $row['units'];
+                $stdDVs[$row['name']]['stdUnit'] = $row['stdUnit'];
+            }
+            $perDV = 100 * ($val / $stdDVs[$name]['units']);
+            $val = $val . $stdDVs[$name]['stdUnit'];
+
+            $updateA = array($val, $perDV, $upc, $name);
+            $updateP = $dbc->prepare("UPDATE NutriFactOptItems SET amount = ?, percentDV = ? WHERE upc = ? AND name = ?"); 
+            $updateW = $dbc->execute($updateP, $updateA);
         }
-        $perDV = 100 * $val / $stdDVs[$name]['units'];
-        $val = $val . $stdDVs[$name]['stdUnit'];
+        if ($mode == 2) {
+            $prep = $dbc->prepare("SELECT * FROM NutriFactStd");
+            $res = $dbc->execute($prep);
+            while ($row = $dbc->fetchRow($res)) {
+                $stdDVs[$row['name']]['units'] = $row['units'];
+                $stdDVs[$row['name']]['stdUnit'] = $row['stdUnit'];
+            }
+            //$perDV = 100 * $val / $stdDVs[$name]['units'];
+            $perDV = $val;
+            //$val = $val . $stdDVs[$name]['stdUnit'];
+            $val = $stdDVs[$name]['units'] * ($perDV / 100);
+            $val = $val . $stdDVs[$name]['stdUnit'];
 
-        $updateA = array($val, $perDV, $upc, $name);
-        $updateP = $dbc->prepare("UPDATE NutriFactOptItems SET amount = ?, percentDV = ? WHERE upc = ? AND name = ?"); 
-        $updateW = $dbc->execute($updateP, $updateA);
+            $updateA = array($val, $perDV, $upc, $name);
+            $updateP = $dbc->prepare("UPDATE NutriFactOptItems SET amount = ?, percentDV = ? WHERE upc = ? AND name = ?"); 
+            $updateW = $dbc->execute($updateP, $updateA);
+        }
 
-        $json = array('test'=>'yes, the test was successful');
+        $json = array('test'=>'yes, the test was successful, whoo');
         $json['col'] = $col;
         $json['upc'] = $upc;
         $json['val'] = $val;
         $json['name'] = $name;
+        $json['dv'] = floor($perDV);
+        $json['mode'] = $mode;
 
         echo json_encode($json); 
         return false;
@@ -135,9 +159,30 @@ class NutriFactEntry extends FannieRESTfulPage
         $args = array($upc);
         $prep = $dbc->prepare("SELECT * FROM NutriFactOptItems WHERE upc = ?");
         $res = $dbc->execute($prep, $args);
+        $numRows = $dbc->numRows($res);
         while ($row = $dbc->fetchRow($res)) {
             $json[$row['name']]['amount'] = $row['amount'];
             $json[$row['name']]['percentDV'] = $row['percentDV'];
+        }
+
+        if ($numRows == 0) {
+            $args = array($upc, $upc, $upc, $upc);
+            $prep = $dbc->prepare("
+                INSERT INTO NutriFactOptItems (upc, name, amount, percentDV) VALUES (?, 'Calcium', null, null);
+                INSERT INTO NutriFactOptItems (upc, name, amount, percentDV) VALUES (?, 'Iron', null, null);
+                INSERT INTO NutriFactOptItems (upc, name, amount, percentDV) VALUES (?, 'Potassium', null, null);
+                INSERT INTO NutriFactOptItems (upc, name, amount, percentDV) VALUES (?, 'Vitamin D', null, null);
+            ");
+            $dbc->execute($prep, $args);
+
+            $args = array($upc);
+            $prep = $dbc->prepare("SELECT * FROM NutriFactOptItems WHERE upc = ?");
+            $res = $dbc->execute($prep, $args);
+            $numRows = $dbc->numRows($res);
+            while ($row = $dbc->fetchRow($res)) {
+                $json[$row['name']]['amount'] = $row['amount'];
+                $json[$row['name']]['percentDV'] = $row['percentDV'];
+            }
         }
 
         $prep = $dbc->prepare("SELECT long_text FROM productUser WHERE upc = ?");
@@ -192,7 +237,8 @@ class NutriFactEntry extends FannieRESTfulPage
     {
         $dbc = $this->connection;
 
-        $nutriCols = array("servingSize","calories","fatCalories","totalFat","saturatedFat","transFat","cholesterol","sodium","totalCarbs","fiber","sugar","addedSugar","protein");
+        //$nutriCols = array("servingSize","calories","fatCalories","totalFat","saturatedFat","transFat","cholesterol","sodium","totalCarbs","fiber","sugar","addedSugar","protein");
+        $nutriCols = array("servingSize","calories","totalFat","saturatedFat","transFat","cholesterol","sodium","totalCarbs","fiber","sugar","addedSugar","protein");
         $th = "<th>upc</th><th>description</th>";
         foreach ($nutriCols as $col) {
             $th .= "<th>$col</th>";
@@ -206,7 +252,11 @@ LEFT JOIN NutriFactOptItems AS o ON o.upc=n.upc
 WHERE p.upc < 1000
 AND p.inUse = 1
 AND m.superID = 1
-AND (p.last_sold > NOW() - INTERVAL 90 DAY OR p.last_sold IS NULL)
+AND (
+    (p.last_sold > NOW() - INTERVAL 90 DAY OR p.last_sold IS NULL)
+OR
+    ((p.created > NOW() - INTERVAL 30 DAY) OR (p.modified > NOW() - INTERVAL 7 DAY))
+)
 GROUP BY p.upc
 ");
         $res = $dbc->execute($prep);
@@ -276,6 +326,8 @@ HTML;
 var nutriFactStd = $json;
 var mode = $('#mode');
 var upc = 0;
+var amSA = null;
+var dvSA = null;
 // don't allow this, it messes up the ajax for nutrients and ingredients, they are listening for keypreess
 //$('.upc').click(function(){
 //    upc = $(this).text();
@@ -338,15 +390,16 @@ var ajaxCall2 = function(upc) {
                     if (name != 'ingredients') {
                         let amount = value.amount;
                         let dv = value.percentDV;
-                        let content = "<tr><td>"+name+"</td><td contentEditable='true' onFocusOut='nutriChange(\"amount\", this.innerHTML, "+upc+", \""+name+"\" );'>"+amount+"</td><td>"+dv+"</td></tr>";
+                        let content = "<tr><td>"+name+"</td><td class='nutriChangeElement' contentEditable='true' onFocus='amSA=this.innerHTML;' onFocusOut='nutriChange(\"amount\", this.innerHTML, "+upc+", \""+name+"\" );'>"+amount+"</td><td contentEditable='true' onFocus='dvSA=this.innerHTML;' onFocusOut='dvChange(\"dv\", this.innerHTML, "+upc+", \""+name+"\" );'>"+dv+"</td></tr>";
                         $('#nutriTableBody').append(content);
                     }
                     if (name == 'ingredients') {
                         let content = '<label>Ingredients</label><textarea id="ingredients" rows=4 onFocusOut="ingredientChange('+upc+', this.value);" class="form-control">'+value+'</textarea>';
                         $("#ingredients-placeholder").append(content);
-                        console.log(name+','+value);
+                        //console.log(name+','+value);
                     }
                     //console.log(name+','+amount+','+dv);
+                    console.log(resp);
                 });
             }
         }
@@ -354,31 +407,53 @@ var ajaxCall2 = function(upc) {
 }
 var nutriChange = function(col, value, upc, name)
 {
-    $.ajax({
-        type: 'post', 
-        data: 'upc='+upc+'&col='+col+'&value='+value+'&name='+name+'&nutrient=1',
-        dataType: 'json',
-        url: 'NutriFactEntry.php',
-        success: function(resp)
-        {
-            //console.log(value); console.log(upc); console.log(col);
-            console.log(resp);
-            
-            // calculate & replace PercentDV text
-            let target = $("td:contains('"+name+"')");
-            let testvalue = nutriFactStd[name];
-            var v = value.replace('mg', '');
-            v = v.replace('mcg', '');
-            let dv = v / parseFloat(testvalue);
-            dv = dv * 100;
-            dv = Math.round(dv);
-            target.parent().find('td:nth-child(3)').text(dv);
-
-        }
-    });
-    
+    if (value != amSA) {
+        $.ajax({
+            type: 'post', 
+            data: 'upc='+upc+'&col='+col+'&value='+value+'&name='+name+'&nutrient=1',
+            dataType: 'json',
+            url: 'NutriFactEntry.php',
+            success: function(resp)
+            {
+                //console.log(value); console.log(upc); console.log(col);
+                console.log(resp);
+                
+                // calculate & replace PercentDV text
+                let target = $("td:contains('"+name+"')");
+                let testvalue = nutriFactStd[name];
+                var v = value.replace('mg', '');
+                v = v.replace('mcg', '');
+                let dv = v / parseFloat(testvalue);
+                dv = dv * 100;
+                dv = Math.round(dv);
+                target.parent().find('td:nth-child(3)').text(resp.dv);
+            }
+        });
+    }
 }
 
+var dvChange = function(col, value, upc, name)
+{
+    if (value != dvSA) {
+        $.ajax({
+            type: 'post', 
+            data: 'upc='+upc+'&col='+col+'&value='+value+'&name='+name+'&nutrient=2',
+            dataType: 'json',
+            url: 'NutriFactEntry.php',
+            success: function(resp)
+            {
+                //console.log(value); console.log(upc); console.log(col);
+                console.log(resp);
+                
+                // calculate & replace PercentDV text
+                let target = $("td:contains('"+name+"')");
+                target.parent().find('td:nth-child(2)').text(resp.val);
+
+            }
+        });
+    }
+    
+}
 var ingredientChange = function(upc, value)
 {
     $.ajax({
