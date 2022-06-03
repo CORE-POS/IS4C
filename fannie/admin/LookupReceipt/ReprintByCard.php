@@ -32,7 +32,7 @@ class ReprintByCard extends FannieRESTfulPage
         }
         $date = date('Ymd', $ts);
 
-        $pan = trim(FormLib::get('pan'));
+        $pan = trim(FormLib::get('PAN'));
         $name = trim(FormLib::get('name'));
         if ($pan == '' && $name == '') {
             $this->error = 'Last 4 or name is required';
