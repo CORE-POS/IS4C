@@ -1384,6 +1384,7 @@ HTML;
         if ($dbc->numRows($fetchR) > 0) {
             $ret .= '<p>
                 <a href="BatchImportExportPage.php?id=' . $id . '">Export as JSON</a>
+                | <a href="BatchExportExcel.php?id=' . $id . '">Export as Excel</a>
                 | <a href="" onclick="$(\'#previousPromos\').submit(); return false;">Previous Promos</a>
                 | <a href="" onclick="$(\'#searchForm\').submit(); return false;">Search These</a>
                 <form method="post" id="previousPromos" action="../../reports/from-search/PreviousPromos/PreviousPromosReport.php">
