@@ -90,6 +90,9 @@ class OrderAjax extends FannieRESTfulPage
             $this->post_id_close_handler();
             break;
         }
+        if (!is_numeric($this->commID) && strlen($this->commID) > 25) {
+            $msg = $this->commID;
+        }
 
         if ($msg) {
             $email = new OrderNotifications($dbc);
