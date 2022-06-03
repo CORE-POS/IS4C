@@ -110,6 +110,7 @@ class ScaleDiscrepancyCheck extends FannieRESTfulPage
 
         };
 
+        $ret = '';
         if (!$diffsExist) {
             $ret .= "<div class=\"well\">There are no discrepancies at this time.</div>";
         } else {
