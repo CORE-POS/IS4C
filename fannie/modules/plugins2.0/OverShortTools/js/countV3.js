@@ -3,7 +3,8 @@ function loader(){
 	var date1 = $('#startDate').val();
 	var date2 = $('#endDate').val();
     var store = $('select[name=store]').val();
-	var args = 'action=loader&date1='+date1+'&date2='+date2+'&store='+store;
+    var type = $('select[name=type]').val();
+	var args = 'action=loader&date1='+date1+'&date2='+date2+'&store='+store+'&type='+type;
 	$.ajax({
 		url: 'OverShortSafecountV3.php',
 		data: args,
@@ -17,6 +18,7 @@ function save(){
 	var date1 = $('#startDate').val();
 	var date2 = $('#endDate').val();
     var store = $('#savedStore').val();
+    var type = $('#savedType').val();
 
 	var changeOrder = saveChangeOrder();
 	var openSafeCount = saveOpenSafeCount();
@@ -25,7 +27,7 @@ function save(){
     var tillCount = saveTillCounts();
     var notes = saveNotes();
 
-	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&buyAmount='+buyAmount+'&atmAmount='+atmAmount+'&tillCount='+tillCount+'&notes='+notes+'&store='+store;
+	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&buyAmount='+buyAmount+'&atmAmount='+atmAmount+'&tillCount='+tillCount+'&notes='+notes+'&store='+store+'&type='+type;
 
 	$.ajax({
 		url: 'OverShortSafecountV3.php',

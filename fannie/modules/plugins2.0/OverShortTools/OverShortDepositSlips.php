@@ -233,7 +233,7 @@ class OverShortDepositSlips extends FanniePage
         $dbstack = array('buyAmount'=>array(),
                  'depositAmount'=>array());
         $dbQ = "SELECT rowName,denomination,amt FROM dailyDeposit WHERE
-            dateStr = ? AND storeID=? AND rowName IN ('buyAmount','depositAmount')";
+            dateStr = ? AND storeID=? AND countType='Regular' AND rowName IN ('buyAmount','depositAmount')";
         $dbP = $dbc->prepare($dbQ);
         $dbR = $dbc->execute($dbP,array($dateClause,$store));
         while($dbW = $dbc->fetch_row($dbR)){
@@ -255,7 +255,7 @@ class OverShortDepositSlips extends FanniePage
         if (isset($dbstack['depositAmount']['50.00'])) $cash += $dbstack['depositAmount']['50.00'];
         if (isset($dbstack['depositAmount']['100.00'])) $cash += $dbstack['depositAmount']['100.00'];
 
-        $cashP = $dbc->prepare("SELECT LEFT(rowName, 12) AS rowName, SUM(amt) AS amt FROM dailyDeposit WHERE dateStr=? AND storeID=? AND countFormat=2 AND rowName LIKE 'drop%' GROUP BY LEFT(rowName, 12)");
+        $cashP = $dbc->prepare("SELECT LEFT(rowName, 12) AS rowName, SUM(amt) AS amt FROM dailyDeposit WHERE dateStr=? AND storeID=? AND countFormat=2 AND countType='Regular' AND rowName LIKE 'drop%' GROUP BY LEFT(rowName, 12)");
         $cashR = $dbc->execute($cashP, array($dateClause, $store));
         $cashTTL = 0;
         while ($cashW = $dbc->fetchRow($cashR)) {

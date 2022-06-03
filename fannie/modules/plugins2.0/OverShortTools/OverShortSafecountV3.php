@@ -49,15 +49,16 @@ class OverShortSafecountV3 extends FanniePage {
         $d1 = FormLib::get_form_value('date1');
         $d2 = FormLib::get_form_value('date2');
         $store = FormLib::get('store');
+        $type = FormLib::get('type', 'Regular');
     
         $dateStr = $d1." ".$d2;
         if ($d1 == $d2) $dateStr = $d1;
         switch($action){
         case 'loader':
-            echo $this->displayUI($dateStr, $store);
+            echo $this->displayUI($dateStr, $store, $type);
             break;
         case 'save':
-            echo $this->save($dateStr, $store,
+            echo $this->save($dateStr, $store, $type,
                 FormLib::get_form_value('changeOrder'),
                 FormLib::get_form_value('openSafeCount'),
                 FormLib::get_form_value('buyAmount'),
@@ -69,24 +70,25 @@ class OverShortSafecountV3 extends FanniePage {
         }
     }
 
-    function save($dateStr,$store,$changeOrder,$openSafeCount,$buyAmount,$atmAmount,$tillCount,$notes){
-        $this->saveInputs($dateStr,$store,'changeOrder',$changeOrder);
-        $this->saveInputs($dateStr,$store,'openSafeCount',$openSafeCount);
-        $this->saveInputs($dateStr,$store,'buyAmount',$buyAmount);
-        $this->saveInputs($dateStr,$store,'atm',$atmAmount);
-        $this->saveTillCounts($dateStr, $store, $tillCount);
-        $this->saveNotes($dateStr, $store, $notes);
+    function save($dateStr,$store,$type,$changeOrder,$openSafeCount,$buyAmount,$atmAmount,$tillCount,$notes){
+        $this->saveInputs($dateStr,$store,$type,'changeOrder',$changeOrder);
+        $this->saveInputs($dateStr,$store,$type,'openSafeCount',$openSafeCount);
+        $this->saveInputs($dateStr,$store,$type,'buyAmount',$buyAmount);
+        $this->saveInputs($dateStr,$store,$type,'atm',$atmAmount);
+        $this->saveTillCounts($dateStr, $store, $type, $tillCount);
+        $this->saveNotes($dateStr, $store, $type, $notes);
     
         return 'Saved';
     }
 
-    function saveInputs($dateStr,$store,$row,$data){
+    function saveInputs($dateStr,$store,$type,$row,$data){
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 
         $model = new DailyDepositModel($dbc);
         $model->dateStr($dateStr);
         $model->storeID($store);
+        $model->countType($type);
         $model->rowName($row);
         $model->countFormat(2);
 
@@ -105,7 +107,7 @@ class OverShortSafecountV3 extends FanniePage {
         }
     }
 
-    function saveTillCounts($dateStr, $store, $data)
+    function saveTillCounts($dateStr, $store, $type, $data)
     {
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
@@ -113,6 +115,7 @@ class OverShortSafecountV3 extends FanniePage {
         $model = new DailyDepositModel($dbc);
         $model->dateStr($dateStr);
         $model->storeID($store);
+        $model->countType($type);
         $model->countFormat(2);
         $temp = explode('|',$data);
         foreach($temp as $t){
@@ -130,13 +133,14 @@ class OverShortSafecountV3 extends FanniePage {
         }
     }
 
-    function saveNotes($dateStr, $store, $data)
+    function saveNotes($dateStr, $store, $type, $data)
     {
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
         $model = new DailyDepositNotesModel($dbc);
         $model->dateStr($dateStr);
         $model->storeID($store);
+        $model->countType($type);
         $temp = explode('|',$data);
         foreach($temp as $t){
             $temp2 = explode(':',$t, 2);
@@ -147,7 +151,7 @@ class OverShortSafecountV3 extends FanniePage {
         }
     }
 
-    function displayUI($dateStr, $store){
+    function displayUI($dateStr, $store, $type){
         global $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
 
@@ -178,6 +182,7 @@ class OverShortSafecountV3 extends FanniePage {
         $model = new DailyDepositModel($dbc);
         $model->dateStr($dateStr);
         $model->storeID($store);
+        $model->countType($type);
         foreach($model->find() as $obj){
             if (!isset($holding[$obj->rowName()])) {
                 $holding[$obj->rowName()] = array();
@@ -367,6 +372,7 @@ class OverShortSafecountV3 extends FanniePage {
         $model = new DailyDepositNotesModel($dbc);
         $model->dateStr($dateStr);
         $model->storeID($store);
+        $model->countType($type);
         $notes = array();
         foreach ($model->find() as $obj) {
             $notes[$obj->noteID()] = $obj->note();
@@ -396,6 +402,7 @@ class OverShortSafecountV3 extends FanniePage {
 
             $caR  = $dbc->execute($caP, array($date, $date . ' 23:59:59', $store));
             $first = true;
+            $dayTTL = 0;
             while ($row = $dbc->fetchRow($caR)) {
                 $class = $count % 2 == 0 ? 'color' : '';
                 $ret .= '<tr class="' . $class . '">';
@@ -423,9 +430,13 @@ class OverShortSafecountV3 extends FanniePage {
                 $ret .= '</tr>';
                 $dropTTL += $cur;
                 $dropVar += ($cur - $cash);
+                $dayTTL += $cur;
                 $count++;
                 $first = false;
             }
+            $class = $count % 2 == 0 ? 'color' : '';
+            $ret .= '<tr class="' . $class . '"><th>Total</th><td>&nbsp;</td><td>' . $dayTTL . '</td><td>&nbsp;</td><td>&nbsp;</td></tr>';
+            $count++;
             $startTS = mktime(0, 0, 0, date('n', $startTS), date('j', $startTS) + 1, date('Y', $startTS));
         }
         $class = $count % 2 == 0 ? 'color' : '';
@@ -458,6 +469,7 @@ class OverShortSafecountV3 extends FanniePage {
         $ret .= "<input type=hidden id=savedDate1 value=\"$startDate\" />";
         $ret .= "<input type=hidden id=savedDate2 value=\"$endDate\" />";
         $ret .= "<input type=hidden id=savedStore value=\"$store\" />";
+        $ret .= "<input type=hidden id=savedType value=\"$type\" />";
         foreach($denoms as $d){
             $ret .= "<input type=\"hidden\" class=\"denom\" value=\"$d\" />";
         }
@@ -482,7 +494,7 @@ class OverShortSafecountV3 extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/countV3.js?date=20210712');
+        $this->addScript('js/countV3.js?date=20220531');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');
@@ -531,6 +543,13 @@ class OverShortSafecountV3 extends FanniePage {
             $stores = FormLib::storePicker('store', false);
             echo $stores['html'];
             ?>
+            </td>
+            <td>Type</td>
+            <td>
+            <select name="type">
+                <option>Regular</option>
+                <option>Month End</option>
+            </select>
             </td>
         </tr>
         </table>

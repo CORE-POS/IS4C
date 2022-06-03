@@ -28,8 +28,9 @@ class DailyDepositNotesModel extends BasicModel {
 
     protected $columns = array(
     'dateStr' => array('type'=>'VARCHAR(21)','primary_key'=>true),
-    'noteID' => array('type'=>'VARCHAR(15)','primary_key'=>true),
+    'noteID' => array('type'=>'VARCHAR(255)','primary_key'=>true),
     'storeID' => array('type'=>'INT','primary_key'=>true),
+    'countType' => array('type'=>'VARCHAR(255)', 'default'=>"'Regular'", 'primary_key'=>true),
     'note' => array('type'=>'TEXT'),
     );
 }
