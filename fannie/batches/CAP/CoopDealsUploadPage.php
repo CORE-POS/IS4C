@@ -67,6 +67,10 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             'display_name' => 'Promo Cost',
             'default' => 25,
         ),
+        'promoPrice' => array(
+            'display_name' => 'Promo Price',
+            'default' => 28,
+        ),
     );
 
     private function setupTables($dbc)
@@ -84,6 +88,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     private function prepStatements($dbc)
     {
         $upcP = $dbc->prepare('SELECT upc FROM products WHERE upc=? AND inUse=1');
+        $priceP = $dbc->prepare("SELECT normal_price FROM products WHERE upc=?");
         $skuP = $dbc->prepare('
             SELECT s.upc 
             FROM VendorAliases AS s
@@ -96,7 +101,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             VALUES
                 (?, ?, ?, ?, ?, ?, ?, ?)');
 
-        return array($upcP, $skuP, $insP);
+        return array($upcP, $skuP, $insP, $priceP);
     }
 
     private function checkSku($dbc, $upc, $sku, $skuP)
@@ -156,7 +161,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $month = FormLib::get('deal-month', 'not specified');
         $delP = $dbc->prepare('DELETE FROM CoopDealsItems WHERE dealSet=?');
         $dbc->execute($delP, array($month));
-        list($upcP, $skuP, $insP) = $this->prepStatements($dbc);
+        list($upcP, $skuP, $insP, $priceP) = $this->prepStatements($dbc);
 
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
         $col_max = max($indexes);
@@ -192,6 +197,13 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $cost = 0;
             if ($indexes['cost'] && isset($data[$indexes['cost']])) {
                 $cost = trim($data[$indexes['cost']],"\$");
+            }
+            if ($indexes['promoPrice'] && isset($data[$indexes['promoPrice']])) {
+                $promoPrice = strtoupper($data[$indexes['promoPrice']]);
+                if (substr($promoPrice, 0, 4) == 'BOGO') {
+                    $mult = -3;
+                    $price = $dbc->getValue($priceP, array($upc));
+                }
             }
             $promo = $data[$indexes['promoDiscount']];
             foreach ($this->dealTypes($data[$indexes['abt']]) as $type){

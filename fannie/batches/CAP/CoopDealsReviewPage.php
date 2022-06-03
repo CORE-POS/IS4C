@@ -117,14 +117,14 @@ class CoopDealsReviewPage extends FanniePage
         ');
 
         $blDef = $dbc->tableDefinition('batchList');
-        $insQ = "INSERT INTO batchList (upc, batchID, salePrice, active";
+        $insQ = "INSERT INTO batchList (upc, batchID, salePrice, active, groupSalePrice, pricemethod, quantity";
         if (isset($blDef['signMultiplier'])) {
             $insQ .= ", signMultiplier";
         }
         if (isset($blDef['cost'])) {
             $insQ .= ", cost";
         }
-        $insQ .= ") VALUES (?, ?, ?, 0";
+        $insQ .= ") VALUES (?, ?, ?, 0, ?, ?, ?";
         if (isset($blDef['signMultiplier'])) {
             $insQ .= ", ?";
         }
@@ -166,6 +166,15 @@ class CoopDealsReviewPage extends FanniePage
             $id = $batchIDs[$row['batch']];
 
             $args = array($row['upc'], $id, sprintf('%.2f', $row['price']));
+            if ($row['multiplier'] == -3) {
+                $args[] = sprintf('%.2f', $row['price'];
+                $args[] = 2;
+                $args[] = 2;
+            } else {
+                $args[] = null;
+                $args[] = 0;
+                $args[] = 0;
+            }
             if (isset($blDef['signMultiplier'])) {
                 $args[] = $row['multiplier'];
             }
