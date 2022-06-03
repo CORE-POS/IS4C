@@ -114,19 +114,28 @@ HTML;
         $posY = 105;
 
         foreach (array(0,1,2,3) as $k => $v) {
-
-            $img = Image_Barcode2::draw($myskus[$k], 'code128', 'png', false, 15, 1, false);
+            // create SKU barcode
+            $img = Image_Barcode2::draw($myskus[$k], 'code128', 'png', false, 7, 1, false);
             $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
             imagepng($img, $file);
 
+            // create UPC barcode
+            $img2 = Image_Barcode2::draw($upcs[$k], 'code128', 'png', false, 7, 1, false);
+            $file2 = tempnam(sys_get_temp_dir(), 'imgo') . '.png';
+            imagepng($img2, $file2);
+
             if ($v == 0) {
-                $pdf->Image($file, $posX-3, $posY-2);
+                $pdf->Image($file, $posX-3, $posY-5);
+                $pdf->Image($file2, $posX-3, $posY+1);
             } elseif ($v == 1) {
-                $pdf->Image($file, $posX+94, $posY-2);
+                $pdf->Image($file, $posX+94, $posY-5);
+                $pdf->Image($file2, $posX+94, $posY+1);
             } elseif ($v == 2) {
-                $pdf->Image($file, $posX-3, $posY+100);
+                $pdf->Image($file, $posX-3, $posY+97);
+                $pdf->Image($file2, $posX-3, $posY+103);
             } elseif ($v == 3) {
-                $pdf->Image($file, $posX+94, $posY+100);
+                $pdf->Image($file, $posX+94, $posY+97);
+                $pdf->Image($file2, $posX+94, $posY+103);
             }
             unlink($file);
         }
