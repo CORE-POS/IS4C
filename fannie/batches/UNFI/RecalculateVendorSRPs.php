@@ -126,7 +126,7 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
 
 
         $ret = "<div><b>SRPs have been updated</b></div>";
-        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && !in_array($id, array(1,21))) {
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && !in_array($id, array(1,2))) {
             list($found, $vendorName) = $this->checkPriceChanges();
             if ($found == 0) {
                 $ret .= sprintf("
