@@ -236,10 +236,12 @@ foreach($data as $row) {
             $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
             $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
             $pdf->SetXY($full_x+38, $full_y+8);
-            $pdf->Cell(9, 4, current($locations[$upc]), 0, 1, 'C');
-            $key = key($locations[$upc]);
-            if (isset($locations[$upc][$key+1])) {
-                next($locations[$upc]);
+            $pdf->Cell(9, 4, isset($locations[$upc]) ? current($locations[$upc]) : '', 0, 1, 'C');
+            if (isset($locations[$upc])) {
+                $key = key($locations[$upc]);
+                if (isset($locations[$upc][$key+1])) {
+                    next($locations[$upc]);
+                }
             }
         } else {
             //Start laying out a label
@@ -261,7 +263,7 @@ foreach($data as $row) {
         }
 
         // add a red dot to items with > 1 physical location
-        if (count($locations[$upc]) > 1 && $store == 2) {
+        if (count(isset($locations[$upc]) ? $locations[$upc] : array()) > 1 && $store == 2) {
             $pdf->SetFillColor(255, 100, 0);
             $pdf->Circle($full_x+48.5, $full_y+7, 1.25, 'F');
         }
