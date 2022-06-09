@@ -384,7 +384,7 @@ foreach($data as $row) {
         }
 
         // add a red dot to items with > 1 physical location
-        if (count($locations[$upc]) > 1 && $store == 2) {
+        if (count(isset($locations[$upc]) ? $locations[$upc] : array()) > 1 && $store == 2) {
             $pdf->SetFillColor(255, 100, 0);
             $pdf->Circle($baseX+27.5, $baseY-7.5, 1.25, 'F');
         }
