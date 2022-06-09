@@ -78,7 +78,6 @@ Contains: " . ucwords($allergens);
                 </div>
             </form>
             <table class="table table-bordered">
-                $td
             </table>
 
             <div class="form-group">
