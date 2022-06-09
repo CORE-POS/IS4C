@@ -61,7 +61,7 @@ class NutriFactEntry extends FannieRESTfulPage
 
     private function normalizeVal($col)
     {
-        $suffix = $this->valSuffix[$col];
+        $suffix = isset($this->valSuffix[$col]) ? $this->valSuffix[$col] : '';
         return $suffix;
     }
 
