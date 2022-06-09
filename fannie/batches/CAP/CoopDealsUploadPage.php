@@ -158,6 +158,9 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc->selectDB($this->config->get('OP_DB'));
         $this->setupTables($dbc);
 
+        $bogoTable = $dbc->tableExists('CoopDealsBogos');
+        $bogoModel = new CoopDealsBogosModel($dbc);
+
         $month = FormLib::get('deal-month', 'not specified');
         $delP = $dbc->prepare('DELETE FROM CoopDealsItems WHERE dealSet=?');
         $dbc->execute($delP, array($month));
@@ -203,6 +206,11 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 if (substr($promoPrice, 0, 4) == 'BOGO') {
                     $mult = -3;
                     $price = $dbc->getValue($priceP, array($upc));
+                    if ($bogoTable) {
+                        $bogoModel->upc($upc);
+                        $bogoModel->mixMatch($promoPrice);
+                        $bogoModel->save();
+                    }
                 }
             }
             $promo = $data[$indexes['promoDiscount']];
