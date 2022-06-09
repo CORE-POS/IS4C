@@ -115,12 +115,12 @@ HTML;
 
         foreach (array(0,1,2,3) as $k => $v) {
             // create SKU barcode
-            $img = Image_Barcode2::draw($myskus[$k], 'code128', 'png', false, 7, 1, false);
+            $img = Image_Barcode2::draw(isset($myskus[$k]) ? $myskus[$k] : '', 'code128', 'png', false, 7, 1, false);
             $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
             imagepng($img, $file);
 
             // create UPC barcode
-            $img2 = Image_Barcode2::draw($upcs[$k], 'code128', 'png', false, 7, 1, false);
+            $img2 = Image_Barcode2::draw(isset($upcs[$k]) ? $upcs[$k] : '', 'code128', 'png', false, 7, 1, false);
             $file2 = tempnam(sys_get_temp_dir(), 'imgo') . '.png';
             imagepng($img2, $file2);
 
