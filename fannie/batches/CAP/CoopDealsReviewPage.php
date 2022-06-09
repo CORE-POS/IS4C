@@ -167,7 +167,7 @@ class CoopDealsReviewPage extends FanniePage
 
             $args = array($row['upc'], $id, sprintf('%.2f', $row['price']));
             if ($row['multiplier'] == -3) {
-                $args[] = sprintf('%.2f', $row['price'];
+                $args[] = sprintf('%.2f', $row['price']);
                 $args[] = 2;
                 $args[] = 2;
             } else {
