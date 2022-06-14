@@ -510,6 +510,7 @@ class HouseCouponEditor extends FanniePage
             'PI'=>'Per-Item Discount',
             'PS'=>'Per-Set Discount',
             'BG'=>'BOGO (Buy one get one)',
+            'BI'=>'BOGO (Mixed Items)',
             'BQ'=>'BOGO (Qty limited)',
             'BH'=>'BOHO (Buy one get one 1/2 off)',
             'BM'=>'BOHO (Buy one get one 1/2 off, mixed items)',
