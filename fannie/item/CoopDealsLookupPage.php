@@ -178,6 +178,7 @@ HTML;
             FROM CoopDealsItems AS c
                 LEFT JOIN products AS p ON c.upc=p.upc
                 LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
+                    AND v.upc=p.upc
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE c.upc = ?
                 AND c.dealSet = ?
