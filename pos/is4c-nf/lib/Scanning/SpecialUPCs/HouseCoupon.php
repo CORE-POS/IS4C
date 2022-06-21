@@ -564,7 +564,41 @@ class HouseCoupon extends SpecialUPC
                     $value = $infoW['discountValue'];
                 }
                 break;
-            case 'BQ': // BOGO Qty Limited
+            case 'BI': // BOGO Mixed Item
+                $qtyQ = 'SELECT SUM(l.quantity) '
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH')";
+                $qtyP = $transDB->prepare($qtyQ);
+                $qtyW = $transDB->getRow($qtyP);
+                $qty = floor($qtyW[0]/2);
+                if ($infoW['discountValue']*2 < $qty) {
+                    $qty = $infoW['discountValue']; 
+                }
+                $valQ = 'SELECT l.total, l.quantity, l.unitPrice'
+                        . $this->baseSQL($transDB, $coupID, 'upc') . "
+                        and h.type in ('BOTH')
+                        ORDER BY unitPrice ASC
+                ";
+                $valP = $transDB->prepare($valQ);
+                $valR = $transDB->execute($valP);
+                $tmpVal = 0;
+                $arr = array();
+                while ($row = $transDB->fetchRow($valR)) {
+                    if ($row['quantity'] > 1) {
+                        for ($i=$row['quantity']; $i>1; $i--) {
+                            $arr[] = $row['unitPrice'];
+                        }
+                    } else {
+                        $arr[] = $row['total'];
+                    }
+                }
+                for ($i=0; $i<$qty; $i++) {
+                    $tmpVal += $arr[$i];
+                }
+                $value = $tmpVal;
+
+                break;
+            case 'BQ': // Quantity-capped BOGO
                 // get total number of coupon items
                 $priceQ = 'SELECT unitPrice, quantity '
                         . $this->baseSQL($transDB, $coupID, 'upc') . "
