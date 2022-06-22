@@ -11,25 +11,25 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - uses: nanasess/setup-php@master
-            with:
+              with:
                 php-version: ${{ matrix.php-version }}
             - name: Start MySQL
-            run: sudo systemctl start mysql.service
+              run: sudo systemctl start mysql.service
             - name: Init fannie config
-            run: sh tests/fannie/gha-init.sh
-            env:
+              run: sh tests/fannie/gha-init.sh
+              env:
                 DB_DRIVER: ${{ matrix.DB_DRIVER }}
             - name: Init POS config
-            run: sh tests/pos/gha-init.sh
-            env:
+              run: sh tests/pos/gha-init.sh
+              env:
                 DB_DRIVER: ${{ matrix.DB_DRIVER }}
             - name: Clear composer.json
-            run: rm composer.json
+              run: rm composer.json
             - name: Clear composer.lock
-            run: rm composer.lock
+              run: rm composer.lock
             - name: Init composer
-            run: composer init --name corepos/ci-emv
+              run: composer init --name corepos/ci-emv
             - name: Composer minimum install
-            run: composer require johnkary/phpunit-speedtrap predis/predis
+              run: composer require johnkary/phpunit-speedtrap predis/predis
             - name: run tests
-            run: phpunit -v --debug -d max_execution_time=0 -c phpunit.xml
+              run: phpunit -v --debug -d max_execution_time=0 -c phpunit.xml
