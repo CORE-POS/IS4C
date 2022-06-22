@@ -20,7 +20,7 @@ cp fannie/config.php.dist fannie/config.php
 echo "\$FANNIE_ROOT = '"`pwd`"/fannie/';" >> fannie/config.php
 echo "\$FANNIE_URL = '/fannie/';" >> fannie/config.php
 # add database options
-echo "\$FANNIE_SERVER = '127.0.0.1';" >> fannie/config.php
+echo "\$FANNIE_SERVER = 'localhost';" >> fannie/config.php
 echo "\$FANNIE_SERVER_USER = 'root';" >> fannie/config.php
 echo "\$FANNIE_SERVER_PW = 'root';" >> fannie/config.php
 echo "\$FANNIE_OP_DB = 'unit_test_op';" >> fannie/config.php
@@ -31,6 +31,6 @@ echo "\$FANNIE_LANES = array();" >> fannie/config.php
 # set database driver based on environment variable
 echo "\$FANNIE_SERVER_DBMS = '$DB_DRIVER';" >> fannie/config.php
 echo "\$FANNIE_STORE_ID = '1';" >> fannie/config.php
-echo "\$FANNIE_LANES = array(array('host'=>'127.0.0.1','type'=>'$DB_DRIVER','user'=>'root','pw'=>'','op'=>'unit_test_laneop','trans'=>'unit_test_lanetrans','offline'=>0));" >> fannie/config.php
+echo "\$FANNIE_LANES = array(array('host'=>'localhost','type'=>'$DB_DRIVER','user'=>'root','pw'=>'','op'=>'unit_test_laneop','trans'=>'unit_test_lanetrans','offline'=>0));" >> fannie/config.php
 
 

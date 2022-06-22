@@ -16,7 +16,7 @@ cp pos/is4c-nf/ini.php.dist pos/is4c-nf/ini.php
 sed -e "s/?>//g" --in-place="" pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('laneno', 99);\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('store_id', 1);\n" >> pos/is4c-nf/ini.php
-echo "\$CORE_LOCAL->set('localhost', '127.0.0.1');\n" >> pos/is4c-nf/ini.php
+echo "\$CORE_LOCAL->set('localhost', 'localhost');\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('localUser', 'root');\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('localPass', 'root');\n" >> pos/is4c-nf/ini.php
 echo "\$CORE_LOCAL->set('pDatabase', 'unit_test_opdata');\n" >> pos/is4c-nf/ini.php
@@ -27,7 +27,7 @@ cat << EOF > pos/is4c-nf/ini.json
 {
     laneno: 99,
     store_id: 1,
-    localhost: "127.0.0.1",
+    localhost: "localhost",
     localUser: "root",
     localPass: "root",
     pDatabase: "unit_test_opdata",
