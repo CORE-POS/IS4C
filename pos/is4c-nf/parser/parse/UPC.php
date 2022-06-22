@@ -37,6 +37,7 @@ use COREPOS\pos\plugins\Plugin;
 use \CoreLocal;
 use \DateTime;
 use \DateInterval;
+use \Exception;
 
 class UPC extends Parser 
 {
@@ -678,6 +679,7 @@ class UPC extends Parser
             $ofAgeOnDay->add(new DateInterval("P21Y"));
         } catch (Exception $ex) {
             $ofAgeOnDay = new DateTime(date('Y-m-d', strtotime('tomorrow')));
+            return 'Invalid entry';
         }
 
         return 'Of age on ' . $ofAgeOnDay->format('m/d/y');
