@@ -27,6 +27,8 @@ jobs:
               run: cat fannie/config.php
             - name: Validate config 2
               run: cat pos/is4c-nf/ini.json
+            - name: Check database creation
+              run: mysql -u root -proot -e 'SHOW DATABASES'
             - name: Clear composer.json
               run: rm composer.json
             - name: Clear composer.lock
