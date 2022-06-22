@@ -31,6 +31,6 @@ echo "\$FANNIE_LANES = array();" >> fannie/config.php
 # set database driver based on environment variable
 echo "\$FANNIE_SERVER_DBMS = '$DB_DRIVER';" >> fannie/config.php
 echo "\$FANNIE_STORE_ID = '1';" >> fannie/config.php
-echo "\$FANNIE_LANES = array(array('host'=>'localhost','type'=>'$DB_DRIVER','user'=>'root','pw'=>'','op'=>'unit_test_laneop','trans'=>'unit_test_lanetrans','offline'=>0));" >> fannie/config.php
+echo "\$FANNIE_LANES = array(array('host'=>'localhost','type'=>'$DB_DRIVER','user'=>'root','pw'=>'root','op'=>'unit_test_laneop','trans'=>'unit_test_lanetrans','offline'=>0));" >> fannie/config.php
 
 

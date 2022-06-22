@@ -23,6 +23,8 @@ jobs:
               run: sh tests/pos/gha-init.sh
               env:
                 DB_DRIVER: ${{ matrix.DB_DRIVER }}
+            - name: Use GHA version of parameters
+              run: cp pos/is4c-nf/install/data/parameters.sql.gha pos/is4c-nf/install/data/parameters.sql
             - name: Validate config 1
               run: cat fannie/config.php
             - name: Validate config 2
