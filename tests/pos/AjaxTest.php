@@ -139,7 +139,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
     public function testScale()
     {
         $ajax = new COREPOS\pos\ajax\AjaxScale(new WrappedStorage(), new ValueContainer());
-        $this->assertEquals('0.00 lb', $ajax->ajax());
+        $this->assertEquals('0.00 lb', $ajax->ajax(), 'Weight var: ' . CoreLocal::get('weight'));
         $ajax = new COREPOS\pos\ajax\AjaxScale(new WrappedStorage(), new ValueContainer());
         $this->assertInternalType('string', $ajax->ajax());
     }
