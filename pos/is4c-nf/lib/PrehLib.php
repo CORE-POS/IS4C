@@ -560,11 +560,20 @@ public static function ageCheck($requiredAge, $ret)
         return array(true, $ret);
     }
 
-    if (CoreLocal::get("memAge")=="") {
+    $badEntry = 1;
+    if (CoreLocal::get("memAge")=="" || CoreLocal::get('memAge') == date('mdY') || CoreLocal::get('memAge') == date('Ymd')) {
+        $badEntry = 0;
         CoreLocal::set("memAge",date('Ymd'));
+        if (CoreLocal::get('AgeMode') == 'mdY') {
+            CoreLocal::set("memAge",date('mdY'));
+        }
     }
     try {
-        $ofAgeOnDay = new DateTime(CoreLocal::get('memAge'));
+        $birthDateYMD = CoreLocal::get('memAge');
+        if (CoreLocal::get('AgeMode') == 'mdY') {
+            $birthDateYMD = substr(CoreLocal::get('memAge'), -4) . substr(CoreLocal::get('memAge'), 0, 4);
+        }
+        $ofAgeOnDay = new DateTime($birthDateYMD);
         $ofAgeOnDay->add(new DateInterval("P{$requiredAge}Y"));
     } catch (Exception $ex) {
         $ofAgeOnDay = new DateTime(date('Y-m-d', strtotime('tomorrow')));
@@ -572,7 +581,7 @@ public static function ageCheck($requiredAge, $ret)
     $today = new DateTime(date('Y-m-d'));
     if ($ofAgeOnDay > $today && CoreLocal::get('memAge') !== '1') {
         $ret['udpmsg'] = 'twoPairs';
-        $ret['main_frame'] = $myUrl.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC';
+        $ret['main_frame'] = $myUrl.'gui-modules/requestInfo.php?class=COREPOS-pos-parser-parse-UPC&badEntry=' . $badEntry;
         return array(true, $ret);
     }
 

@@ -544,6 +544,9 @@ static public function memberReset()
       an age-restricted item.
     */
     CoreLocal::set("memAge",date('Ymd'));
+    if (CoreLocal::get('AgeMode') == 'mdY') {
+        CoreLocal::set("memAge",date('mdY'));
+    }
 }
 
 /**

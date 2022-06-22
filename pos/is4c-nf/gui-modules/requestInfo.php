@@ -44,6 +44,7 @@ class requestInfo extends NoInputCorePage
 
     private $requestHeader = '';
     private $requestMsg = '';
+    private $colorCss = 'colored';
 
     private function validateClass($class)
     {
@@ -118,6 +119,16 @@ class requestInfo extends NoInputCorePage
             return $this->handleInput($this->form->input, $class, $pos_home);
         } catch (Exception $ex) {}
 
+        if ($this->form->tryGet('badEntry')) {
+            $this->colorCss = 'errorColored';
+            $this->requestMsg = $class::requestInfoErrorMsg()
+                . '<br />'
+                . $this->requestMsg;
+        }
+        if (CoreLocal::get('AgeMode') == 'mdY') {
+            $this->requestMsg = str_replace('YYYYMMDD', 'MMDDYYYY', $this->requestMsg);
+        }
+
         return true;
     }
 
@@ -125,7 +136,7 @@ class requestInfo extends NoInputCorePage
     {
         ?>
         <div class="baseHeight">
-        <div class="colored centeredDisplay">
+        <div class="<?php echo $this->colorCss; ?> centeredDisplay">
         <span class="larger">
         <?php echo $this->requestHeader; ?>
         </span>

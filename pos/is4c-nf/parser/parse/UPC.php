@@ -35,6 +35,8 @@ use COREPOS\pos\lib\Scanning\SpecialUPC;
 use COREPOS\pos\parser\Parser;
 use COREPOS\pos\plugins\Plugin;
 use \CoreLocal;
+use \DateTime;
+use \DateInterval;
 
 class UPC extends Parser 
 {
@@ -664,6 +666,21 @@ class UPC extends Parser
             return MiscLib::baseURL() . 'gui-modules/pos2.php?reginput=' . $inp . '&repeat=1';
         }
         return False;
+    }
+    public static function requestInfoErrorMsg()
+    {
+        try {
+            $birthDateYMD = CoreLocal::get('memAge');
+            if (CoreLocal::get('AgeMode') == 'mdY') {
+                $birthDateYMD = substr(CoreLocal::get('memAge'), -4) . substr(CoreLocal::get('memAge'), 0, 4);
+            }
+            $ofAgeOnDay = new DateTime($birthDateYMD);
+            $ofAgeOnDay->add(new DateInterval("P21Y"));
+        } catch (Exception $ex) {
+            $ofAgeOnDay = new DateTime(date('Y-m-d', strtotime('tomorrow')));
+        }
+
+        return 'Of age on ' . $ofAgeOnDay->format('m/d/y');
     }
 
     private function genericSecurity($ret)
