@@ -104,11 +104,6 @@ class MultiMerchEditor extends FannieRESTfulPage
     <tbody>$td</tbody></table>
 HTML;
     }
-
-    public function unitTest($phpunit)
-    {
-        $phpunit->assertInternalType('string', $this->get_view());
-    }
 }
 
 FannieDispatch::conditionalExec();
