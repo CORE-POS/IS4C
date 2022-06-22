@@ -45,6 +45,8 @@ class InstallTest extends PHPUnit_Framework_TestCase
             $this->assertEquals(true, $exists, 'Failed to create ' . $error['struct']
                 . ', ' . print_r($error, true));
         }
+
+        Database::loadglobalvalues();
     }
 
     public function testSampleData()
