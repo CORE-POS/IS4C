@@ -14,13 +14,13 @@ jobs:
               with:
                 php-version: ${{ matrix.php-version }}
             - uses: webiny/action-post-run@2.0.1
-                id: post-run-fannie-log
-                with:
-                    run: cat fannie/logs/*.log
+              id: post-run-fannie-log
+              with:
+                run: cat fannie/logs/*.log
             - uses: webiny/action-post-run@2.0.1
-                id: post-run-pos-log
-                with:
-                    run: cat pos/is4c-nf/log/*.log
+              id: post-run-pos-log
+              with:
+                run: cat pos/is4c-nf/log/*.log
             - name: Start MySQL
               run: sudo systemctl start mysql.service
             - name: Init fannie config
