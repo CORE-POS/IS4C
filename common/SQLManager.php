@@ -1520,9 +1520,6 @@ class SQLManager
         $insertQ = "INSERT INTO $table_name $cols VALUES $vals";
         $insertP = $this->prepare($insertQ, $which_connection);
         $ret = $this->execute($insertP, $args, $which_connection);
-        if ($ret == false) {
-            var_dump($this->error());
-        }
 
         return $ret;
     }
