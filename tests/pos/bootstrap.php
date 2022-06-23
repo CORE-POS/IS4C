@@ -12,6 +12,8 @@ COREPOS\pos\lib\LocalStorage\LaneConfig::refresh();
 COREPOS\pos\lib\LocalStorage\LaneCache::clear();
 AutoLoader::loadMap();
 COREPOS\pos\lib\CoreState::loadParams();
+CoreLocal::set('CashierNo', 0);
+CoreLocal::set('memberID', 0);
 AutoLoader::ignoreClass('CoopCred');
 AutoLoader::ignoreClass('CCredMembershipsModel');
 AutoLoader::ignoreClass('CCredProgramsModel');
