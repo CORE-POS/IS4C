@@ -442,10 +442,10 @@ class ValueLink extends BasicCCModule
     private function sendBalance($domain="w1.mercurypay.com")
     {
 
-        $json = array(
+        $msgJson = array(
             'transaction_type' => 'balance_inquiry',
             'method' => 'valuelink',
-            'scv' => $this->conf->get('ValueLinkSCV'),
+            'scv' => '93111484',
             'valuelink' => array(
                 'cardhodlder_name' => 'Cardholder',
                 'cc_number' => $this->getPAN(),
@@ -541,8 +541,8 @@ class ValueLink extends BasicCCModule
         );
         $dbTrans->query($finishQ);
 
-        // check for communication errors (any cURL error or any HTTP code besides 200)
-        if ($authResult['curlErr'] != CURLE_OK || substr($authResult['curlHTTP'], 0, 2) != '20') {
+        // check for communication errors
+        if ($authResult['curlErr'] != CURLE_OK) {
             if ($authResult['curlHTTP'] == '0') {
                 $this->conf->set("boxMsg","No response from processor<br />The transaction did not go through");
                 return PaycardLib::PAYCARD_ERR_PROC;
@@ -595,7 +595,7 @@ class ValueLink extends BasicCCModule
 
     private function handleResponseVoid($vdResult)
     {
-        $json = json_decode($authResult['response'], true);
+        $json = json_decode($vdResult['response'], true);
 
         // initialize
         $dbTrans = Database::tDataConnect();
@@ -646,7 +646,7 @@ class ValueLink extends BasicCCModule
         );
         $dbTrans->query($finishQ);
 
-        if ($authResult['curlErr'] != CURLE_OK || substr($authResult['curlHTTP'], 0, 2) != '20') {
+        if ($vdResult['curlErr'] != CURLE_OK) {
             if ($vdResult['curlHTTP'] == '0'){
                 $this->conf->set("boxMsg","No response from processor<br />The transaction did not go through");
                 return PaycardLib::PAYCARD_ERR_PROC;
@@ -678,9 +678,9 @@ class ValueLink extends BasicCCModule
 
     private function handleResponseBalance($balResult)
     {
-        $json = json_decode($authResult['response'], true);
+        $json = json_decode($balResult['response'], true);
 
-        if ($authResult['curlErr'] != CURLE_OK || substr($authResult['curlHTTP'], 0, 2) != '20') {
+        if ($balResult['curlErr'] != CURLE_OK) {
             if ($balResult['curlHTTP'] == '0'){
                 $this->conf->set("boxMsg","No response from processor<br />The transaction did not go through");
                 return PaycardLib::PAYCARD_ERR_PROC;
@@ -706,7 +706,7 @@ class ValueLink extends BasicCCModule
         $errorMsg = '';
         if (isset($json['Error'])) {
             foreach ($json['Error']['messages'] as $err) {
-                $errorMsg .= $err['code'] . ' ';
+                $errorMsg .= $err['code'] . ' ' . $err['description'];
             }
         }
         if ($errorMsg == '' && isset($json['bank_message'])) {
