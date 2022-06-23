@@ -54,9 +54,7 @@ class ValueLink extends BasicCCModule
      */
     public function handlesType($type)
     {
-        if ($type == PaycardLib::PAYCARD_TYPE_GIFT) {
-            return true;
-        } elseif ($type == PaycardLib::PAYCARD_TYPE_ENCRYPTED_GIFT) {
+        if ($type == PaycardLib::PAYCARD_TYPE_VALUELINK) {
             return true;
         }
         return false;
@@ -287,7 +285,7 @@ class ValueLink extends BasicCCModule
                     '%s',     '%s',    %d,   '%s',     '%s',
                     %.2f,  '%s', '%s',  '%s',  %d,     '%s')",
                     $today, $cashierNo, $laneNo, $transNo, $transID,
-                    'MercuryGift', $identifier, $live, 'Gift', $loggedMode,
+                    'ValueLink', $identifier, $live, 'Gift', $authMethod,
                     $amount, $cardPAN,
                     'Mercury', 'Cardholder', $manual, $now);
         $insR = $dbTrans->query($insQ);
@@ -544,7 +542,7 @@ class ValueLink extends BasicCCModule
         $dbTrans->query($finishQ);
 
         // check for communication errors (any cURL error or any HTTP code besides 200)
-        if ($authResult['curlErr'] != CURLE_OK || $authResult['curlHTTP'] != 200) {
+        if ($authResult['curlErr'] != CURLE_OK || substr($authResult['curlHTTP'], 0, 2) != '20') {
             if ($authResult['curlHTTP'] == '0') {
                 $this->conf->set("boxMsg","No response from processor<br />The transaction did not go through");
                 return PaycardLib::PAYCARD_ERR_PROC;
@@ -581,13 +579,16 @@ class ValueLink extends BasicCCModule
         }
 
         // comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
-        if ($status == 'Approved' && $apprNumber != '') {
+        if (strtolower($status) == 'approved' && $apprNumber != '') {
             return PaycardLib::PAYCARD_ERR_OK; // authorization approved, no error
         }
 
         // the authorizor gave us some failure code
         // authorization failed, response fields in $_SESSION["paycard_response"]
         $this->conf->set("boxMsg","Processor error: ".$errorMsg);
+        if (strlen(trim($errorMsg)) == 0 && strtolower($status) == 'Declined') {
+            $this->conf-set('boxMsg', 'Transaction declined');
+        }
 
         return PaycardLib::PAYCARD_ERR_PROC; 
     }
@@ -645,7 +646,7 @@ class ValueLink extends BasicCCModule
         );
         $dbTrans->query($finishQ);
 
-        if ($vdResult['curlErr'] != CURLE_OK || $vdResult['curlHTTP'] != 200) {
+        if ($authResult['curlErr'] != CURLE_OK || substr($authResult['curlHTTP'], 0, 2) != '20') {
             if ($vdResult['curlHTTP'] == '0'){
                 $this->conf->set("boxMsg","No response from processor<br />The transaction did not go through");
                 return PaycardLib::PAYCARD_ERR_PROC;
@@ -679,7 +680,7 @@ class ValueLink extends BasicCCModule
     {
         $json = json_decode($authResult['response'], true);
 
-        if ($balResult['curlErr'] != CURLE_OK || $balResult['curlHTTP'] != 200) {
+        if ($authResult['curlErr'] != CURLE_OK || substr($authResult['curlHTTP'], 0, 2) != '20') {
             if ($balResult['curlHTTP'] == '0'){
                 $this->conf->set("boxMsg","No response from processor<br />The transaction did not go through");
                 return PaycardLib::PAYCARD_ERR_PROC;
@@ -718,9 +719,6 @@ class ValueLink extends BasicCCModule
 
     private function getPAN()
     {
-        if ($this->conf->get("training") == 1) {
-            return "6050110000000296951";
-        }
         return $this->conf->get("paycard_PAN");
     }
 
@@ -759,7 +757,7 @@ class ValueLink extends BasicCCModule
         $apiKey = $this->conf->get('ValueLinkApiKey');
         $apiSecret = $this->conf->get('ValueLinkApiSecret');
         $token = $this->conf->get('ValueLinkToken');
-        $data = $apiKey + $nonce + $timestamp + $token + $payload;
+        $data = $apiKey . $nonce . $timestamp . $token . $payload;
         $hashAlgorithm = "sha256";
 
         $hmac = hash_hmac($hashAlgorithm, $data, $apiSecret, false);

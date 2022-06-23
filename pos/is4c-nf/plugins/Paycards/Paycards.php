@@ -48,6 +48,7 @@ class Paycards extends Plugin {
             'First Data' => 'FirstData',
             'Authorize.net' => 'AuthorizeDotNet',
             'Valutec' => 'Valutec',
+            'ValeuLink' => 'ValueLink',
             ),
         ),
         'PaycardsTerminalID' => array(

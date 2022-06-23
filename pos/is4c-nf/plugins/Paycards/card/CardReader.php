@@ -140,7 +140,11 @@ class CardReader
         $accepted = false;
         $ebtAccept = true;
         $test = false;
-        if ($len >= 13 && $len <= 16) {
+        if ($len == 16 && substr($pan, 0, 4) == '7777') {
+            $type = PaycardLib::PAYCARD_TYPE_VALUELINK;
+            $issuer = 'ValueLink';
+            $accepted = true;
+        } elseif ($len >= 13 && $len <= 16) {
             $type = PaycardLib::PAYCARD_TYPE_CREDIT;
             list($accepted, $issuer) = $this->identifyBin($this->binRanges, $iin, $ebtAccept);
         } elseif ($len == 18) {
