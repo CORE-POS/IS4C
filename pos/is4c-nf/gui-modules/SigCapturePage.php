@@ -177,6 +177,7 @@ class SigCapturePage extends BasicCorePage
     public function unitTest($phpunit)
     {
         $this->session->set('CashierNo', 0);
+        $this->session->set('transno', 0);
         $phpunit->assertEquals(true, $this->saveImage('bmp', 'fakeContent'), $this->dberror);
     }
 }
