@@ -72,6 +72,7 @@ class TendersTest extends PHPUnit_Framework_TestCase
     {
         COREPOS\pos\lib\CoreState::memberReset();
         lttLib::clear();
+        CoreLocal::set('CashierNo', 0);
         $t = new TenderModule('CA', 1.00);
         $t->add();
         $record = lttLib::genericRecord();

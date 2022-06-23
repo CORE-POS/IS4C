@@ -252,6 +252,7 @@ class ScanningTest extends PHPUnit_Framework_TestCase
             include (dirname(__FILE__) . '/lttLib.php');
         }
         lttLib::clear();
+        CoreLocal::set('CashierNo', 0);
 
         $pm = new PriceMethod($session);
         $this->assertEquals(true, $pm->addItem(array(), 1, array()));

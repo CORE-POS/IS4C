@@ -257,6 +257,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
 
         lttLib::clear();
         CoreLocal::set('amtdue', 0);
+        CoreLocal::set('LastID', 1);
         $out = $to->parse('TO');
         $this->assertEquals(1, CoreLocal::get('End'));
         $this->assertEquals('full', $out['receipt']);
@@ -536,7 +537,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('percentDiscount', 5);
         $this->assertEquals(true, $sd->check('5SD'));
         $out = $sd->parse('5SD');
-        $this->assertEquals(10, CoreLocal::get('percentDiscount'));
+        $this->assertEquals(10, CoreLocal::get('percentDiscount'), 'Discount % is ' . CoreLocal::get('percentDiscount'));
         CoreLocal::set('percentDiscount', 0);
         // may have subtotal'd
         lttLib::clear();
@@ -579,6 +580,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         lttLib::clear();
         $out = $rk->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
+        CoreLocal::set('CashierNo', 0);
         $upc->parse('666');
         $out = $rk->parse('*');
         $this->assertNotEquals(0, strlen($out['output']));
