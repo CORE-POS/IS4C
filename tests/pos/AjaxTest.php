@@ -34,6 +34,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         $ajax->enablePageDrawing(true);
         CoreLocal::set('strRemembered', 'invalidInput');
         CoreLocal::set('msgrepeat', 1);    
+        CoreLocal::set('CashierNo', '');
         $json = $ajax->ajax();
         $this->assertInternalType('array', $json);
         $this->assertEquals(true, substr($json['main_frame'], -9) == 'login.php', 'returned ' . print_r($json, true));
