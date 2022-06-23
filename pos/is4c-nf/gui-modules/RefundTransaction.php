@@ -98,7 +98,9 @@ class RefundTransaction extends NoInputCorePage
             $table = 'dlog';
         }
         $dbc = Database::mDataConnect();
-        var_dump($dbc);
+        if ($dbc === false) {
+            return array();
+        }
         $prep = $dbc->prepare("SELECT description, quantity, total, trans_id, trans_type, trans_status
             FROM {$table}
             WHERE ((trans_type='I' AND voided=0 AND trans_status <> 'V') OR trans_type <> 'I')
