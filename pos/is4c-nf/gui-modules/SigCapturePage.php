@@ -125,9 +125,6 @@ class SigCapturePage extends BasicCorePage
             $imgContent,
         );
         $capR = $dbc->execute($capP, $args);
-        if (!$capR) {
-            $this->dberror = $dbc->error();
-        }
 
         return $capR ? true : false;
     }
@@ -178,7 +175,7 @@ class SigCapturePage extends BasicCorePage
     {
         $this->session->set('CashierNo', 0);
         $this->session->set('transno', 0);
-        $phpunit->assertEquals(true, $this->saveImage('bmp', 'fakeContent'), $this->dberror);
+        $phpunit->assertEquals(true, $this->saveImage('bmp', 'fakeContent'));
     }
 }
 
