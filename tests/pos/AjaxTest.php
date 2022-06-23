@@ -36,7 +36,7 @@ class AjaxTest extends PHPUnit_Framework_TestCase
         CoreLocal::set('msgrepeat', 1);    
         $json = $ajax->ajax();
         $this->assertInternalType('array', $json);
-        $this->assertEquals(true, substr($json['main_frame'], -9) == 'login.php', 'returned ' . $json['main_frame']);
+        $this->assertEquals(true, substr($json['main_frame'], -9) == 'login.php', 'returned ' . print_r($json, true));
 
         CoreLocal::set('strRemembered', 'invalidInput');
         CoreLocal::set('msgrepeat', 1);    
