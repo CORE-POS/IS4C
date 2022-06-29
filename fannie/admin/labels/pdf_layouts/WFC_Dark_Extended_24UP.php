@@ -113,11 +113,24 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
     $upc = isset($row['upc']) ? $row['upc'] : '';
     $sku = isset($row['sku']) ? $row['sku'] : '';
+    if (strlen($sku) < 1)
+        $sku = '(no sku in POS)';
     $desc = isset($row['description']) ? $row['description'] : '';
     $brand = isset($row['brand']) ? $row['brand'] : '';
     $price = isset($row['normal_price']) ? $row['normal_price'] : '';
     $vendor = isset($row['vendor']) ? $row['vendor'] : '';
     $size = isset($row['size']) ? $row['size'] : '';
+    $storeID = FormLib::get('store');
+    $date = new DateTime();
+    $today = $date->format('Y-m-d');
+
+    $parA = array($storeID, $upc);
+    $parP = $dbc->prepare("SELECT ROUND(auto_par,1) AS auto_par FROM products WHERE store_id = ? AND upc = ?");
+    $parR = $dbc->execute($parP, $parA);
+    $parW = $dbc->fetchRow($parR);
+    $par = isset($parW['auto_par']) ? $parW['auto_par']*7 : 'n/a';
+    if ($par == 0)
+        $par = 'n/a';
 
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
@@ -130,14 +143,28 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     /*
         Add UPC Text
     */
-    $pdf->SetXY($x,$y+4);
-    $pdf->Cell($width, 8, $upc, 0, 1, 'C', true); 
+    $pdf->SetXY($x,$y);
+    $pdf->Cell(15, 8, $upc, 0, 1, 'L', true); 
+
+    /*
+        Add Date Text 
+    */
+    $pdf->SetXY($x+58,$y);
+    $pdf->Cell(10, 4, $today, 0, 1, 'R', true); 
+
+    /*
+        Add PAR Text 
+    */
+    if ($storeID != 0) {
+        $pdf->SetXY($x+58,$y+4);
+        $pdf->Cell(10, 4, 'PAR '.$par, 0, 1, 'R', true); 
+    }
 
     /*
         Add Brand & Description Text
     */
     $pdf->SetXY($x,$y+12);
-    $pdf->Cell($width, 5, $brand, 0, 1, 'C', true); 
+    $pdf->Cell($width, 5, $brand, 1, 1, 'C', true); 
     $pdf->SetXY($x,$y+18);
     $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
 
@@ -145,7 +172,7 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         Add Vendor SKU 
     */
     $pdf->SetXY($x,$y+23);
-    $pdf->Cell($width, 5, "SKU:".$sku, 0, 1, 'L', true); 
+    $pdf->Cell($width, 5, "SKU ".$sku, 0, 1, 'L', true); 
 
     /*
         Add Vendor Text
