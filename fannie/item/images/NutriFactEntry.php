@@ -472,7 +472,7 @@ var ingredientChange = function(upc, value)
 // search upc
 var lookupUpc = null;
 var lastKey = null;
-var numericKeyCodes = [97,98,99,100,101,102,103,104,105,50,51,52,53,54,55,56,57,48];
+var numericKeyCodes = [97,98,99,100,101,102,103,104,105,50,51,52,53,54,55,56,57,48,49,50,51,52,53,54,55,56,57];
 $('#search-upc').keyup(function(e){
     lastKey = e.keyCode;
     console.log(lastKey);
