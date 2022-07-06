@@ -158,7 +158,8 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 ?,
                 ?,
                 ?
-            )");
+            ) ON DUPLICATE KEY UPDATE brand=?, sku=?, size=?, units=?, cost=?, description=?, vendorDept=?, vendorID=?, saleCost=?, modified=?
+            ");
         $srpP = false;
         if (false && $dbc->tableExists('vendorSRPs')) {
             $srpP = $dbc->prepare("INSERT INTO vendorSRPs (vendorID, upc, srp) VALUES (?,?,?)");
@@ -269,7 +270,18 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $VENDOR_ID,
                     $net_unit*$alias['multiplier'],
                     date('Y-m-d H:i:s'),
-                    $srp
+                    $srp,
+                    // on duplicate key
+                    $brand,
+                    $alias['isPrimary'] ? $sku : $alias['upc'],
+                    $size === false ? '' : $size,
+                    $qty,
+                    $reg_unit*$alias['multiplier'],
+                    $description,
+                    $category,
+                    $VENDOR_ID,
+                    $net_unit*$alias['multiplier'],
+                    date('Y-m-d H:i:s')
                 );
                 $dbc->execute($itemP,$args);
 
@@ -320,10 +332,6 @@ class UnfiUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             return false;
         }
 
-        $viP = $dbc->prepare("DELETE FROM vendorItems WHERE vendorID=?");
-        $vsP = $dbc->prepare("DELETE FROM vendorSRPs WHERE vendorID=?");
-        $dbc->execute($viP,array($VENDOR_ID));
-        $dbc->execute($vsP,array($VENDOR_ID));
     }
 
     function preview_content(){
