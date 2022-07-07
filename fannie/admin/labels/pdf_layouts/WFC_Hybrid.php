@@ -316,6 +316,14 @@ foreach($data as $row) {
             $border = $mtLength == 7 ? 'TBR' : 'TBL';
             $pdf->Cell(7, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
             $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
+            $pdf->SetXY($full_x+20, $full_y+9);
+            $pdf->Cell(9, 4, isset($locations[$upc]) ? current($locations[$upc]) : '', 0, 1, 'C');
+            if (isset($locations[$upc])) {
+                $key = key($locations[$upc]);
+                if (isset($locations[$upc][$key+1])) {
+                    next($locations[$upc]);
+                }
+            }
         }
         /*
         if (strlen($upc) <= 11)
