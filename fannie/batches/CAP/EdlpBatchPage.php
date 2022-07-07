@@ -74,7 +74,7 @@ class EdlpBatchPage extends FannieRESTfulPage
         }
 
         $batch = new BatchesModel($dbc);
-        $batch->batchName($type);
+        $batch->batchName($type . ' ' . date('Y-m-d') . ' PC');
         $yesterday = date('Y-m-d', strtotime('yesterday'));
         $batch->startDate($yesterday);
         $batch->endDate($yesterday);
