@@ -167,7 +167,7 @@ class EditLocations extends FannieRESTfulPage
         $curSub = $row['subSection'];
 
         $options = '<option value=\"0\">&nbsp;</option>';
-        $letters = range('a', 'h');
+        $letters = range('a', 'k');
         foreach ($letters as $letter) {
             $sel = ($curSub == $letter) ? ' selected' : '';
             $options .= "<option value=\"$letter\" $sel>$letter</option>";
@@ -420,7 +420,7 @@ HTML;
                 $description,
                 $this->floorSectionSelect($sections, $floorSectionID)
                     ." <span class=\"form-control btn btn-default fas fa-trash btn-remove-section\"></span>",
-                "<select class=\"form-control edit-subsection\" style=\"width: 50px;\">$subSectionOpts</select>"
+                "<select class=\"form-control edit-subsection\" style=\"width: 75px;\">$subSectionOpts</select>"
                     ." <span class=\"form-control btn btn-default btn-add-subsection\">+</span>",
                 $department,
                 $superName,
