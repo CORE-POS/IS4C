@@ -924,7 +924,7 @@ class FannieSignage
             return '4/$' . $ttl;
         } elseif ($price == 1) {
             return '5/$5';
-        } elseif ($price > 0 && substr($price, -3) == '.00' && $price <= 5.00) {
+        } elseif ($price > 0 && substr($price, -3) == '.00' && $price <= 7.00) {
             $mult = 2;
             while (substr(sprintf('%.2f', $mult*$price), -3) != '.00') {
                 $mult++;
