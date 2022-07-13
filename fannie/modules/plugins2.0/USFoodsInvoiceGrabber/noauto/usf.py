@@ -84,10 +84,17 @@ time.sleep(3)
 # I'm using javscript to check the boxes because I cannot
 # figure out what element to click on in the UI that will
 # carry through to the underlying checkbox
+driver.get_screenshot_as_file("one.png")
 js = """
+var limiter=1;
 for (var elem of document.getElementsByTagName('input')) {
-    if (elem.type == 'checkbox') {
-        elem.checked = true;
+    if (elem.type == 'checkbox' && elem.id.indexOf('selectAll') == -1) {
+        console.log('checking ' + elem.id);
+        document.getElementById(elem.id).click();
+        limiter = limiter + 1;
+    }
+    if (limiter > 45) {
+        break;
     }
 }
 """
@@ -98,9 +105,9 @@ time.sleep(1)
 funkySelect.find_element_by_xpath("ul/li[4]").click()
 time.sleep(1)
 driver.find_element_by_id("r1:0:pt1:cb2").click()
-#driver.get_screenshot_as_file("one.png")
-#time.sleep(1)
-#driver.get_screenshot_as_file("two.png")
+driver.get_screenshot_as_file("two.png")
+time.sleep(1)
+driver.get_screenshot_as_file("three.png")
 if VERBOSE: print("Downloading")
 count=0
 while (True):
