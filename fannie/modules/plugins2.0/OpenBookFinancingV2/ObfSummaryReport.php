@@ -869,7 +869,7 @@ class ObfSummaryReport extends ObfWeeklyReportV2
         $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS);
 
         $owners = $this->ownershipThisWeek($dbc, $start_ts, $end_ts, $start_ly, $end_ly, false);
-        $data[] = array($owners[0], $owners[2], '', '', '', $owners[1], '', '', '', '', 
+        $data[] = array($owners[0], $owners[2], 13.5, '', '', $owners[1], '', '', '', '', 
             'meta' => $owners['meta'], 'meta_background' => $owners['meta_background']);
         /*
         $owners = $this->ownershipThisYear($dbc, $end_ts);
