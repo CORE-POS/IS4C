@@ -438,6 +438,9 @@ class OverShortMAS extends FannieRESTfulPage {
         $salesR = $dbc->execute($salesP, $args);
         while($w = $dbc->fetch_row($salesR)){
             $coding = isset($codes[$w['salesCode']]) ? $codes[$w['salesCode']] : $w['salesCode'];
+            if ($coding == 67730 && $dateID >= 20220701) {
+                $coding = 67735;
+            }
             $name = isset($names[$w['salesCode']]) ? $names[$w['salesCode']] : $w['name'];
             $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
             $debit = $w['amount'] > 0 ? $w['amount'] : 0;
