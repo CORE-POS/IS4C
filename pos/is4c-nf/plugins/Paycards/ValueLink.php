@@ -21,14 +21,14 @@
 
 *********************************************************************************/
 
+/* Test cards:
+ *
+7777080383164347
+7777080383174622
+ */
+
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\TransRecord;
-use COREPOS\pos\plugins\Paycards\xml\BetterXmlData;
-
-/*
- * Mercury Gift Card processing module
- *
- */
 
 if (!class_exists("AutoLoader")) include_once(realpath(dirname(__FILE__).'/../../lib/AutoLoader.php'));
 if (!class_exists("PaycardLib")) include_once(realpath(dirname(__FILE__)."/lib/PaycardLib.php"));
@@ -240,6 +240,13 @@ class ValueLink extends BasicCCModule
     
     private function sendAuth()
     {
+        $this->GATEWAY = 'https://api.payeezy.com/v1/transactions';
+        $this->GATEWAY = 'https://api.globalgatewaye4.firstdata.com/transaction/v32';
+        if ($this->conf->get("training") == 1) {
+            $this->GATEWAY = 'https://api-cert.payeezy.com/v1/transactions';
+            $this->GATEWAY = 'https://api.demo.globalgatewaye4.firstdata.com/transaction/v32';
+        }
+
         // initialize
         $dbTrans = Database::tDataConnect();
         if (!$dbTrans) {
@@ -254,7 +261,7 @@ class ValueLink extends BasicCCModule
         $transNo = $this->conf->get("transno");
         $transID = $this->conf->get("paycard_id");
         $amount = $this->conf->get("paycard_amount");
-        $amountText = sprintf('%d', $amount * 100);
+        $amountText = sprintf('%.2f', $amount);
         switch ($this->conf->get("paycard_mode")) {
             case PaycardLib::PAYCARD_MODE_AUTH:
                 $authMethod = $amount < 0 ? 'Reload' : 'Purchase';  
@@ -296,41 +303,40 @@ class ValueLink extends BasicCCModule
 
         $msgJson = array(
             'amount' => $amountText,
-            'transaction_type' => strtolower($authMethod),
-            'method' => 'valuelink',
-            'currency_code' => 'USD',
-            'valuelink' => array(
-                'cardholder_name' => 'Cardholder',
-                'cc_number' => $cardPAN,
-                'credit_card_type' => 'Gift',
-            ), 
+            'transaction_type' => $authMethod == 'Purchase' ? '00' : '88',
+            'cardholder_name' => 'Cardholder',
+            'cc_number' => $cardPAN,
+            'credit_card_type' => 'gift',
+            'gateway_id' => $this->conf->get('ValueLinkGatewayID'),
+            'password' => $this->conf->get('ValueLinkPassword'),
         );
         $msgJson = json_encode($msgJson);
 
-        $nonce = $this->getNonce();
-        $timestamp = floor(microtime(true) * 1000);
-        $hmac = $this->getHMAC($msgJson, $nonce, $timestamp);
+        $gmtime = gmdate('c');
+        $hmac = $this->getHMAC($msgJson, $gmtime);
         $extraHeaders = array(
             CURLOPT_HTTPHEADER => array(
-                'apiKey: ' . $this->conf->get('ValueLinkApiKey'),
-                'token: ' . $this->conf->get('ValueLinkToken'),
-                'Content-type: application/json' ,
-                'Authorization: ' . $hmac,
-                'nonce: ' . $nonce,
-                'timestamp: ' . $timestamp,
+                'Content-type: application/json',
+                'Accept: application/json',
+                'x-gge4-content-sha1: ' . sha1($msgJson),
+                'x-gge4-date: ' . $gmtime,
+                'Authorization: GGE4_API ' . $this->conf->get('ValueLinkHmacID') . ':' . $hmac,
             ),
         );
         
-        $this->GATEWAY = 'https://api.payeezy.com/v1/transactions';
-        if ($this->conf->get("training") == 1) {
-            $this->GATEWAY = 'https://api-cert.payeezy.com/v1/transactions';
-        }
 
         return $this->curlSend($msgJson, 'POST', false, $extraHeaders);
     }
 
     private function sendVoid()
     {
+        $this->GATEWAY = 'https://api.payeezy.com/v1/transactions/' . $authcode;
+        $this->GATEWAY = 'https://api.globalgatewaye4.firstdata.com/transaction/v32';
+        if ($this->conf->get("training") == 1) {
+            $this->GATEWAY = 'https://api-cert.payeezy.com/v1/transactions/'. $authcode;
+            $this->GATEWAY = 'https://api.demo.globalgatewaye4.firstdata.com/transaction/v32';
+        }
+
         // initialize
         $dbTrans = Database::tDataConnect();
         if (!$dbTrans) {
@@ -344,7 +350,7 @@ class ValueLink extends BasicCCModule
         $transNo = $this->conf->get("transno");
         $transID = $this->conf->get("paycard_id");
         $amount = $this->conf->get("paycard_amount");
-        $amountText = sprintf('%d', $amount * 100);
+        $amountText = sprintf('%.2f', $amount);
         $cardPAN = $this->getPAN();
         $identifier = date('mdHis'); // the void itself needs a unique identifier, so just use a timestamp minus the year (10 digits only)
 
@@ -406,72 +412,61 @@ class ValueLink extends BasicCCModule
 
         $json = array(
             'amount' => $amountText,
-            'transaction_type' => 'void',
-            'method' => 'valuelink',
-            'currency_code' => 'USD',
-            'valuelink' => array(
-                'cardholder_name' => 'Cardholder',
-                'cc_number' => $cardPAN,
-                'credit_card_type' => 'Gift',
-            ),
+            'transaction_type' => '13',
+            'cardholder_name' => 'Cardholder',
+            'cc_number' => $cardPAN,
+            'credit_card_type' => 'gift',
+            'authorization_num' => $authcode,
+            'gateway_id' => $this->conf->get('ValueLinkGatewayID'),
+            'password' => $this->conf->get('ValueLinkPassword'),
         );
         $msgJson = json_encode($msgJson);
 
-        $nonce = $this->getNonce();
-        $timestamp = floor(microtime(true) * 1000);
-        $hmac = $this->getHMAC($msgJson, $nonce, $timestamp);
+        $gmtime = gmdate('c');
+        $hmac = $this->getHMAC($msgJson, $gmtime);
         $extraHeaders = array(
             CURLOPT_HTTPHEADER => array(
-                'apiKey: ' . $this->conf->get('ValueLinkApiKey'),
-                'token: ' . $this->conf->get('ValueLinkToken'),
-                'Content-type: application/json' ,
-                'Authorization: ' . $hmac,
-                'nonce: ' . $nonce,
-                'timestamp: ' . $timestamp,
+                'Content-type: application/json',
+                'Accept: application/json',
+                'x-gge4-content-sha1: ' . sha1($msgJson),
+                'x-gge4-date: ' . $gmtime,
+                'Authorization: GGE4_API ' . $this->conf->get('ValueLinkHmacID') . ':' . $hmac,
             ),
         );
-
-        $this->GATEWAY = 'https://api.payeezy.com/v1/transactions/' . $authcode;
-        if ($this->conf->get("training") == 1) {
-            $this->GATEWAY = 'https://api-cert.payeezy.com/v1/transactions/'. $authcode;
-        }
 
         return $this->curlSend($msgJson, 'POST', false, $extraHeaders);
     }
 
     private function sendBalance($domain="w1.mercurypay.com")
     {
+        $this->GATEWAY = 'https://api.globalgatewaye4.firstdata.com/transaction/v32';
+        if ($this->conf->get("training") == 1) {
+            $this->GATEWAY = 'https://api.demo.globalgatewaye4.firstdata.com/transaction/v32';
+        }
 
+        $gwID = $this->conf->get('ValueLinkGatewayID');
         $msgJson = array(
-            'transaction_type' => 'balance_inquiry',
-            'method' => 'valuelink',
-            'scv' => '93111484',
-            'valuelink' => array(
-                'cardhodlder_name' => 'Cardholder',
-                'cc_number' => $this->getPAN(),
-                'credit_card_type' => 'Gift',
-            ),
+            'transaction_type' => '86',
+            'cardholder_name' => 'Cardholder',
+            'cc_number' => $this->getPAN(),
+            'credit_card_type' => 'gift',
+            'gateway_id' => $gwID,
+            'password' => $this->conf->get('ValueLinkPassword'),
         );
         $msgJson = json_encode($msgJson);
 
-        $nonce = $this->getNonce();
-        $timestamp = floor(microtime(true) * 1000);
-        $hmac = $this->getHMAC($msgJson, $nonce, $timestamp);
+        $gmtime = gmdate('c');
+        $hmac = $this->getHMAC($msgJson, $gmtime);
         $extraHeaders = array(
             CURLOPT_HTTPHEADER => array(
-                'apiKey: ' . $this->conf->get('ValueLinkApiKey'),
-                'token: ' . $this->conf->get('ValueLinkToken'),
-                'Content-type: application/json' ,
-                'Authorization: ' . $hmac,
-                'nonce: ' . $nonce,
-                'timestamp: ' . $timestamp,
+                'Content-type: application/json',
+                'Accept: application/json',
+                'x-gge4-content-sha1: ' . sha1($msgJson),
+                'x-gge4-date: ' . $gmtime,
+                'Authorization: GGE4_API ' . $this->conf->get('ValueLinkHmacID') . ':' . $hmac,
             ),
         );
 
-        $this->GATEWAY = 'https://api.payeezy.com/v1/transactions';
-        if ($this->conf->get("training") == 1) {
-            $this->GATEWAY = 'https://api-cert.payeezy.com/v1/transactions';
-        }
 
         return $this->curlSend($msgJson, 'POST', false, $extraHeaders);
     }
@@ -505,13 +500,13 @@ class ValueLink extends BasicCCModule
                 $errorMsg .= $err['code'] . ' ';
             }
         }
-        $balance = isset($json['valuelink']) && isset($json['valuelink']['current_balance']) ? $json['valuelink']['current_balance'] : 0;
+        $balance = isset($json['current_balance']) ? $json['current_balance'] : 0;
         $tranType = $json['transaction_type'];
-        $status = $json['transaction_status'];
+        $status = $json['bank_message'];
         $normalized = $this->getNormalized($status);
         $resultCode = ($normalized >= 3) ? 0 : $normalized;
         $rMsg = $normalized === 3 ? substr($errorMsg, 0, 100) : $status;
-        $apprNumber = $json['transaction_id'];
+        $apprNumber = isset($json['authorization_num']) ? $json['authorization_num'] : '';
 
         $finishQ = sprintf("UPDATE PaycardTransactions SET
                                 responseDatetime='%s',
@@ -568,7 +563,7 @@ class ValueLink extends BasicCCModule
           it correctly.
         */
         if ($normalized == 1) {
-            $realAmt = $json['amount'] / 100;
+            $realAmt = $json['amount'];
             if ($realAmt != $this->conf->get('paycard_amount')) {
                 $correctionQ = sprintf("UPDATE PaycardTransactions SET amount=%f WHERE
                     dateID=%s AND refNum='%s'",
@@ -581,6 +576,13 @@ class ValueLink extends BasicCCModule
         // comm successful, check the Authorized, AuthorizationCode and ErrorMsg fields
         if (strtolower($status) == 'approved' && $apprNumber != '') {
             return PaycardLib::PAYCARD_ERR_OK; // authorization approved, no error
+        }
+
+        if ($errorMsg == '' && isset($json['bank_message'])) {
+            $errorMsg = $json['bank_message'];
+            if (isset($json['current_balance'])) {
+                $errorMsg .= '<br />Current balance: ' . $json['current_balance'];
+            }
         }
 
         // the authorizor gave us some failure code
@@ -670,6 +672,7 @@ class ValueLink extends BasicCCModule
             return PaycardLib::PAYCARD_ERR_OK; // void successful, no error
         }
 
+
         // the authorizor gave us some failure code
         $this->conf->set("boxMsg","PROCESSOR ERROR: " . $errorMsg);
 
@@ -690,15 +693,15 @@ class ValueLink extends BasicCCModule
 
         $this->conf->set("paycard_response",array());
         $resp = array();
-        $balance = isset($json['valuelink']) && isset($json['valuelink']['current_balance']) ? $json['valuelink']['current_balance'] : 0;
+        $balance = isset($json['current_balance']) ? $json['current_balance'] : 0;
         if (strlen($balance) > 0) {
             $resp["Balance"] = $balance;
             $this->conf->set("paycard_response",$resp);
         }
 
         $tranType = $json['transaction_type'];
-        $cmdStatus = $json['transaction_status'];
-        if ($tranType == 'balance_inquiry' && $cmdStatus == 'approved') {
+        $cmdStatus = $json['bank_message'];
+        if ($tranType == '86' && $cmdStatus == 'Approved') {
             return PaycardLib::PAYCARD_ERR_OK; // balance checked, no error
         }
 
@@ -732,9 +735,9 @@ class ValueLink extends BasicCCModule
 
     private function getNormalized($status)
     {
-        if ($status === 'approved') {
+        if ($status === 'Approved') {
             return 1;
-        } elseif ($status === 'declined') {
+        } elseif ($status === 'Declined') {
             return 2;
         } elseif ($status === 'Not Processed') {
             return 3;
@@ -752,15 +755,17 @@ class ValueLink extends BasicCCModule
         return $ret;
     }
 
-    private function getHMAC($payload, $nonce, $timestamp)
+    private function getHMAC($payload, $timestamp)
     {
-        $apiKey = $this->conf->get('ValueLinkApiKey');
-        $apiSecret = $this->conf->get('ValueLinkApiSecret');
-        $token = $this->conf->get('ValueLinkToken');
-        $data = $apiKey . $nonce . $timestamp . $token . $payload;
-        $hashAlgorithm = "sha256";
+        $apiSecret = $this->conf->get('ValueLinkHmacKey');
+        $data = 'POST' . "\n"
+            . 'application/json' . "\n"
+            . sha1($payload) . "\n"
+            . $timestamp . "\n"
+            . '/transaction/v32';
+        $hashAlgorithm = "sha1";
 
-        $hmac = hash_hmac($hashAlgorithm, $data, $apiSecret, false);
+        $hmac = hash_hmac($hashAlgorithm, $data, $apiSecret, true);
         $authorization = base64_encode($hmac);
 
         return $authorization;
