@@ -65,6 +65,9 @@ class AjaxCallback
         register_shutdown_function(array('COREPOS\\pos\\lib\\AjaxCallback', 'ajaxFatal'));
         $callback_class = get_called_class();
         $file = filter_input(INPUT_SERVER, 'SCRIPT_FILENAME');
+        // nb. if FastCGI is in use, the above may return null, in
+        // which case we must provide a fallback
+        if (!$file) $file = $_SERVER['SCRIPT_FILENAME'];
         $nsClass = AutoLoader::fileToFullClass($file);
         self::$logger = new LaneLogger();
         if ($callback_class === $nsClass || basename($file) === $callback_class . '.php') {
