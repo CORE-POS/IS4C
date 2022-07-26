@@ -70,9 +70,9 @@ monthly.nabs.php.';
         while ($nabW = $dbc->fetch_row($nabR)) {
             $balR = $dbc->execute($balP, array($nabW['CardNo']));
             if ($balW = $dbc->fetch_row($balR)) {
+                $today = $dbc->getValue($todayP, array($nabW['CardNo']));
+                $balW[0] += $today;
                 if ($balW[0] > 0) {
-                    $today = $dbc->getValue($todayP, array($nabW['CardNo']));
-                    $balW[0] += $today;
                     $record = DTrans::defaults();
                     $datetime = date('\'Y-m-t 00:00:00\'', mktime(0,0,0,date('n')-1));
                     $record['emp_no'] = 1001;
