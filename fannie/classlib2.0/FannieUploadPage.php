@@ -70,6 +70,7 @@ class FannieUploadPage extends \FanniePage
 
     protected $upload_field_name = 'FannieUploadFile';
     protected $upload_file_name = '';
+    protected $upload_original_name = '';
     protected $allowed_extensions = array('csv','xls','xlsx', 'txt');
 
     protected $error_details = 'n/a';
@@ -159,6 +160,7 @@ class FannieUploadPage extends \FanniePage
             }
         } else if (is_array($col_select)) {
             $this->upload_file_name = \FormLib::get_form_value('upload_file_name','');
+            $this->original_file_name = \FormLib::get_form_value('original_file_name','');
             
             /* column selections submitted */
             for($i=0;$i<count($col_select);$i++) {
@@ -335,6 +337,7 @@ class FannieUploadPage extends \FanniePage
 
         $tmpfile = $_FILES[$this->upload_field_name]['tmp_name'];
         $path_parts = pathinfo($_FILES[$this->upload_field_name]['name']);
+        $this->original_file_name = $path_parts['filename'];
         $extension = isset($path_parts['extension']) ? strtolower($path_parts['extension']) : '';
         $zip = false;
         if ($_FILES[$this->upload_field_name]['error'] != UPLOAD_ERR_OK) {
@@ -638,6 +641,8 @@ class FannieUploadPage extends \FanniePage
         $ret .= $table . '</table>';
         $ret .= sprintf('<input type="hidden" name="upload_file_name" value="%s" />',
                 $this->upload_file_name);
+        $ret .= sprintf('<input type="hidden" name="original_file_name" value="%s" />',
+                $this->original_file_name);
         $ret .= '<p><button type="submit" class="btn btn-default">Continue</button></p>';
         $ret .= '</form>';
 
