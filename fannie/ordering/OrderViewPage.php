@@ -922,7 +922,7 @@ HTML;
                 LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
             WHERE order_id=? AND trans_type='I' 
-            ORDER BY trans_id DESC");
+            ORDER BY trans_id DESC, v.sku DESC");
         $res = $dbc->execute($prep, array($orderID));
         $num_rows = $dbc->num_rows($res);
         $prev_id = 0;
