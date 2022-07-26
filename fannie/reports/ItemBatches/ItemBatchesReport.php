@@ -63,8 +63,7 @@ class ItemBatchesReport extends FannieReportPage
         $lcQuery = 'SELECT likeCode FROM upcLike WHERE upc = ?';
         $lcPrep = $dbc->prepare($lcQuery);
         $lcArgs = array($upc);
-        $lcRes = $dbc->execute($lcPrep, $lcArgs);
-        $lc = $dbc->fetchRow($lcRes);
+        $lc = $dbc->getValue($lcPrep, $lcArgs);
         $dt = $viewPC ? 99 : 0;
 
         $query = '
@@ -85,7 +84,7 @@ class ItemBatchesReport extends FannieReportPage
             ORDER BY b.startDate
         ';
         $prep = $dbc->prepare($query);
-        $args = array($dt,$upc,$lc['likeCode']);
+        $args = array($dt,$upc,$lc);
         $result = $dbc->execute($prep, $args);
         $data = array();
         while ($row = $dbc->fetchRow($result)) {
