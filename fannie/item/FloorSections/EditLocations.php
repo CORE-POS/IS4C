@@ -88,6 +88,7 @@ class EditLocations extends FannieRESTfulPage
     {
         $upc = FormLib::get('upc');
         $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $storeID = 2;
         $floorSectionID = FormLib::get('floorSectionID');
         $newSection = FormLib::get('newSection');
         $json = array();
@@ -186,6 +187,7 @@ class EditLocations extends FannieRESTfulPage
 
         //$STORE_ID = 2;
         $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $storeID = 2;
 
         $upc = FormLib::get('upc', false);
         $upc = BarcodeLib::padUpc($upc);
@@ -355,6 +357,7 @@ HTML;
 
         //$STORE_ID = 2;
         $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $storeID = 2;
 
         $upcs = FormLib::get('upcs', false);
         $upcs = explode("\r\n",$upcs);
@@ -451,6 +454,7 @@ HTML;
 
 <div class="row">
     <div class="col-lg-4">
+        <div class="alert alert-warning">This page hard coded to storeID: 2 (WFC Duluth, Denfeld)</div>
         <form name="upcs">
             <div class="form-group">
                 <label for="upcs">Paste a list of UPCs</label>
