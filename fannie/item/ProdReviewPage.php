@@ -446,7 +446,7 @@ HTML;
             WHERE forced > NOW() - INTERVAL 3 MONTH 
                 OR forced = 0
             GROUP BY l.bid, m.super_name
-            ORDER BY l.bid DESC
+            ORDER BY l.forced DESC, l.bid DESC
         ");
         $res = $dbc->execute($prep,$args);
         $batches = array();
