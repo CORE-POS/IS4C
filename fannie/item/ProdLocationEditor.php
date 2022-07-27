@@ -79,6 +79,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $upc = FormLib::get('upc');
         $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
         $newLocation = FormLib::get('newLocation');
+        $storeID = FormLib::get("storeID", 1);
 
         $args = array($upc, $newLocation);
         $prep = $dbc->prepare('
@@ -94,7 +95,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         } else {
             $ret .= '<div class="alert alert-success">Product Location Saved</div>';
         }
-        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC">Back</a>&nbsp;&nbsp;';
+        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC&storeID='.$storeID.'">Back</a>&nbsp;&nbsp;';
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Home</a><br><br>';
         if (FormLib::get('batchCheck', false)) {
             $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
@@ -174,7 +175,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
 
-        $store_id = FormLib::get('store_id');
+        $storeID = FormLib::get('storeID', 1);
         $start = FormLib::get('start');
         $end = FormLib::get('end');
 
@@ -198,7 +199,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         $cache = new FloorSectionsListTableModel($dbc);
         $cache->refresh();
 
-        $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
+        $ret .= '<br><br><a class="btn btn-default btn-back" href="javascript:history.back()">Back</a><br><br>';
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
 
         return $ret;
@@ -209,7 +210,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $store_id = FormLib::get('store_id');
+        $storeID = FormLib::get('storeID', 1);
         $start = FormLib::get('start');
         $end = FormLib::get('end');
         $ret = '';
@@ -220,12 +221,11 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         foreach ($item as $upc => $section) {
-            $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
             $floorSectionRange = array();
-            if ($store_location == 1) {
+            if ($storeID == 1) {
                 $floorSectionRange[] = 1;
                 $floorSectionRange[] = 19;
-            } elseif ($store_location == 2) {
+            } elseif ($storeID == 2) {
                 $floorSectionRange[] = 30;
                 $floorSectionRange[] = 47;
             }
@@ -241,7 +241,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
         $ret .= '<div class="alert alert-success">Update Successful</div>';
 
-        $ret .= '<br><br><a class="btn btn-default" href="javascript:history.back()">Back</a><br><br>';
+        $ret .= '<br><br><a class="btn btn-default btn-back" href="javascript:history.back()">Back</a><br><br>';
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
 
         return $ret;
@@ -265,13 +265,13 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         $start = FormLib::get('start');
         $end = FormLib::get('end');
-        $store_id = FormLib::get('store_id');
-        $args = array($start, $end, $store_id);
+        $storeID = FormLib::get('storeID');
+        $args = array($start, $end, $storeID);
         $where = 'b.batchID BETWEEN ? AND ?';
         if ($start == 'CURRENT' && $end == 'CURRENT') {
             $batches = $this->getCurrentBatches($dbc);
             list($inStr, $args) = $dbc->safeInClause($batches);
-            $args[] = $store_id;
+            $args[] = $storeID;
             $where = "b.batchID IN ({$inStr})";
         }
 
@@ -306,7 +306,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     AND f.storeID=?
                 ORDER BY m.floorSectionID DESC');
             while($row = $dbc->fetchRow($result)) {
-                $curFS = $dbc->getValue($fsChk, array($row['upc'], $store_id));
+                $curFS = $dbc->getValue($fsChk, array($row['upc'], $storeID));
                 if ($curFS) continue;
                 $item[$row['upc']]['upc'] = $row['upc'];
                 $item[$row['upc']]['dept'] = $row['department'];
@@ -319,7 +319,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                 $item[$upc]['sugDept'] = $this->getLocation($item[$upc]['dept'],$dbc);
             }
 
-            $args = array($store_id);
+            $args = array($storeID);
             $query = $dbc->prepare('SELECT
                     floorSectionID,
                     name
@@ -347,11 +347,11 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <input type="hidden" name="batch" value="1">
                     <input type="hidden" name="start" value="' . $start . '">
                     <input type="hidden" name="end" value="' . $end . '">
-                    <input type="hidden" name="store_id" value="' . $store_id . '">
+                    <input type="hidden" name="storeID" value="' . $storeID . '">
                 ';
             foreach ($item as $key => $row) {
                 $ret .= '
-                    <tr><td><a href="ProdLocationEditor.php?store_id=&upc=' .
+                    <tr><td><a href="ProdLocationEditor.php?storeID='.$storeID.'&upc=' .
                         $key . '&searchupc=Update+Locations+by+UPC" target="_blank">' . $key . '</a></td>
                     <td>' . $row['brand'] . '</td>
                     <td>' . $row['desc'] . '</td>
@@ -392,15 +392,24 @@ class ProdLocationEditor extends FannieRESTfulPage
 
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $storeID = FormLib::get('storeID', false);
+        $storePicker = FormLib::storePicker('storeID');
+        $upcs = FormLib::get('upcs', '');
+        $selStoreOpts = '';
 
         $ret = "";
         $ret .= '
-            <form method="get" class="form-inline">
-                <textarea class="form-control" style="width:170px" name="upcs"></textarea>
+        <div class="row"><form method="get" action="ProdLocationEditor.php">
+            <div class="col-lg-2">
+                <textarea class="form-control" name="upcs" rows=6>'.$upcs.'</textarea>
+            </div>
+            <div class="col-lg-2">
                 <input type="hidden" name="list" value="1">
-                <button type="submit" class="btn btn-default btn-xs">Submit</button>
-            </form>
+                <div class="form-group"> '.$storePicker['html'].' </div>
+                <button type="submit" class="btn btn-default form-control">Submit</button>
+            </div>
+            <div class="col-lg-8"></div>
+            </form></div>
         ';
 
         $plus = array();
@@ -412,7 +421,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         list($inClause,$args) = $dbc->safeInClause($plus);
-        $args[] = $store_location;
+        $args[] = $storeID;
         $qString = 'select
                 p.upc,
                 p.description as pdesc,
@@ -446,7 +455,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             }
         }
         list($inClauseB,$bArgs) = $dbc->safeInClause($upcsMissingLoc);
-        $bArgs[] = $store_location;
+        $bArgs[] = $storeID;
         $bString = '
          select
             p.upc,
@@ -490,7 +499,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             }
         }
 
-        $sectionContent = "<strong>Show Locations: </strong>";
+        $sectionContent = "<div style=\"padding:10px;\"></div><strong>Show Locations: </strong>";
         foreach ($sections as $section) {
             if ($section != null) {
                 $sectionContent .= "<span style=\"padding: 10px;\">
@@ -505,7 +514,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             $item[$upc]['sugDept'] = $this->getLocation($item[$upc]['dept'],$dbc);
         }
 
-        $args = array($store_location);
+        $args = array($storeID);
         $query = $dbc->prepare('SELECT
                 floorSectionID,
                 name
@@ -550,7 +559,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             ';
         foreach ($item as $key => $row) {
             $ret .= '
-                <tr data-selected=""><td><a href="ProdLocationEditor.php?store_id=&upc=' .
+                <tr data-selected=""><td><a href="ProdLocationEditor.php?storeID='.$storeID.'&upc=' .
                     $key . '&searchupc=Update+Locations+by+UPC" target="">' . $key . '</a></td>
                 <td>' . $row['brand'] . '</td>
                 <td>' . $row['desc'] . '</td>
@@ -584,7 +593,7 @@ class ProdLocationEditor extends FannieRESTfulPage
 
     function get_batch_view()
     {
-        $stores = FormLib::storePicker('store_id', false);
+        $stores = FormLib::storePicker('storeID', 1);
         $ret = '
             <form method="get"class="form-inline">
 
@@ -617,11 +626,15 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $store_location = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $storeID = FormLib::get('storeID', 1);
         $upc = FormLib::get('upc');
         $batchCheck = FormLib::get('batchCheck', false);
+        $onChange = <<<HTML
+document.forms['myform'].submit();
+HTML;
+        $storePicker = FormLib::storePicker('storeID', true, $onChange);
 
-        $args = array($store_location);
+        $args = array($storeID);
         $query = $dbc->prepare('SELECT
                     floorSectionID,
                     name
@@ -639,9 +652,10 @@ class ProdLocationEditor extends FannieRESTfulPage
         $ret .= '<div class=""><div class="row"><div class="col-md-5">';
         $ret .= '
 
-            <form method="get" class="form-inline">
-                <input type="hidden" name="store_id" class="form-control">
+            <form method="get" action="ProdLocationEditor.php" name="myform">
+                <input type="hidden" name="storeID" class="form-control">
                 <br><br>
+                <div class="form-group">'.$storePicker['html'].'</div>
                 <div class="input-group">
                     <span class="input-group-addon">UPC</span>
                     <input type="text" class="form-control" id="upc" name="upc" value="'.$upc.'" autofocus required>
@@ -650,15 +664,15 @@ class ProdLocationEditor extends FannieRESTfulPage
                     <button type="submit" class="btn btn-default" value="Go" style="width: 50">
                         <span class="glyphicon glyphicon-chevron-right"></span>
                     </button>
-                    <input type="hidden" class="btn btn-default" name="searchupc" value="Update Locations by UPC">
+                    <input type="hidden" class="btn btn-default" name="searchupc" value=1>
                     <div class="spacer"></div>
             </form><br>
         ';
 
         if ($upc = FormLib::get('upc')) {
             $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
-            $store_id = FormLib::get('store_id');
-            $args = array($upc,$store_location);
+            $storeID = FormLib::get('storeID');
+            $args = array($upc,$storeID);
             $prep = $dbc->prepare('
                 SELECT
                     p.upc,
@@ -682,7 +696,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             if ($numRows < 1) {
                 $model = new ProductsModel($dbc);
                 $model->upc($upc);
-                $model->store_id($store_location);
+                $model->storeID($storeID);
                 $model->load();
                 $brand = $model->brand();
                 $description = $model->description();
@@ -829,6 +843,7 @@ HTML;
    public function javascript_content()
    {
        return <<<JAVASCRIPT
+$('a').not('.btn-back').attr('target','_blank');
 $(document).ready(function(){
     $('tr').each(function(){
         let upc = $(this).find('td:eq(0)').text();
@@ -917,9 +932,9 @@ JAVASCRIPT;
 
     public function getLocation($dept,$dbc)
     {
-        $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $storeID = FormLib::get('storeID', 1);
 
-        $args = array($dept,$store);
+        $args = array($dept,$storeID);
         $prep = $dbc->prepare("
             SELECT f.floorSectionID
             FROM FloorSectionProductMap AS f
