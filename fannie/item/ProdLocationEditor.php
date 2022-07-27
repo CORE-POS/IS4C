@@ -95,7 +95,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         } else {
             $ret .= '<div class="alert alert-success">Product Location Saved</div>';
         }
-        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC&storeID='.$storeID.'">Back</a>&nbsp;&nbsp;';
+        $ret .= '<a class="btn btn-default btn-back" href="ProdLocationEditor.php?searchupc=1&UPC&storeID='.$storeID.'">Back</a>&nbsp;&nbsp;';
         $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Home</a><br><br>';
         if (FormLib::get('batchCheck', false)) {
             $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
@@ -156,12 +156,12 @@ class ProdLocationEditor extends FannieRESTfulPage
         } else {
             $ret .= '<div class="alert alert-success">Product Location Saved</div>';
         }
-        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php?searchupc=Update+Locations+by+UPC">Back</a>&nbsp;&nbsp;';
+        $ret .= '<a class="btn btn-default btn-back" href="ProdLocationEditor.php?searchupc=1">Back</a>&nbsp;&nbsp;';
         if (FormLib::get('batchCheck', false)) {
             $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
                 Back to Batch Check</a><br><br>';
         } else {
-            $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
+            $ret .= '<br><a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br>';
         }
 
 
@@ -352,7 +352,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             foreach ($item as $key => $row) {
                 $ret .= '
                     <tr><td><a href="ProdLocationEditor.php?storeID='.$storeID.'&upc=' .
-                        $key . '&searchupc=Update+Locations+by+UPC" target="_blank">' . $key . '</a></td>
+                        $key . '&searchupc=1" target="_blank">' . $key . '</a></td>
                     <td>' . $row['brand'] . '</td>
                     <td>' . $row['desc'] . '</td>
                     <td>' . $row['dept'] . '</td>
@@ -380,7 +380,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
                 Back to Batch Check</a><br><br>';
         } else {
-            $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
+            $ret .= '<br><a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br>';
         }
 
 
@@ -560,7 +560,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         foreach ($item as $key => $row) {
             $ret .= '
                 <tr data-selected=""><td><a href="ProdLocationEditor.php?storeID='.$storeID.'&upc=' .
-                    $key . '&searchupc=Update+Locations+by+UPC" target="">' . $key . '</a></td>
+                    $key . '&searchupc=1 target="">' . $key . '</a></td>
                 <td>' . $row['brand'] . '</td>
                 <td>' . $row['desc'] . '</td>
                 <td>' . $row['dept'] . '</td>
@@ -582,7 +582,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
-            <td><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br></td></table>
+            <td><a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';
         // tablesorter scripts not included?
         //$this->addOnloadCommand("$('.mySortableTable').tablesorter();");
@@ -616,7 +616,7 @@ class ProdLocationEditor extends FannieRESTfulPage
                     onclick="$(\'input.inline\').val(\'CURRENT\');">Current Batches</button>
 
             </form><br>
-            <a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>
+            <a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br>
         ';
 
         return $ret;
@@ -653,17 +653,18 @@ HTML;
         $ret .= '
 
             <form method="get" action="ProdLocationEditor.php" name="myform">
-                <input type="hidden" name="storeID" class="form-control">
                 <br><br>
                 <div class="form-group">'.$storePicker['html'].'</div>
                 <div class="input-group">
                     <span class="input-group-addon">UPC</span>
-                    <input type="text" class="form-control" id="upc" name="upc" value="'.$upc.'" autofocus required>
+                    <input type="text" class="form-control" id="upc" name="upc" value="'.$upc.'" style="height: 50px;" autofocus required>
+                    <span class="input-group-addon">
+                        <button type="submit" class="btn btn-sm" value="Go">
+                            <span class="glyphicon glyphicon-chevron-right"></span>
+                        </button>
+                    </span>
                     <input type="hidden" name="batchCheck" value="'.$batchCheck.'">
                 </div>
-                    <button type="submit" class="btn btn-default" value="Go" style="width: 50">
-                        <span class="glyphicon glyphicon-chevron-right"></span>
-                    </button>
                     <input type="hidden" class="btn btn-default" name="searchupc" value=1>
                     <div class="spacer"></div>
             </form><br>
@@ -715,7 +716,7 @@ HTML;
             }
 
             $ret .= '<div class="panel panel-default" style="max-width: 435px;">';
-                $ret .= '<div class="table-responsive"><table class="table table-striped ">';
+                $ret .= '<div class="table-responsive"><table class="table table-striped">';
                 $ret .= '<tr><td>' . $upc . '</td></tr>';
                 $ret .= '<tr><td>' . $brand . ' - ' . $description . '</td></tr>';
                 $ret .= '<tr><td>' . $department . ' - ' . $dept_name . '</td></tr>';
@@ -791,7 +792,7 @@ HTML;
             $ret .= '<br><a class="btn btn-default" href="../../../scancoord/ScannieV2/content/Scanning/BatchCheck/SCS.php">
                 Back to Batch Check</a><br><br>';
         } else {
-            $ret .= '<br><a class="btn btn-default" href="ProdLocationEditor.php">Back</a><br><br>';
+            $ret .= '<br><a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br>';
         }
 
         return $ret;
