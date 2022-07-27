@@ -94,7 +94,7 @@ class BogoPM extends PriceMethod {
             $mixMatch = 0;
             $queryt = "select trans_id, unitPrice, regPrice from "
                 ."localtemptrans where trans_status<>'R' AND "
-                ."upc = '".$row['upc']."' order by unitPrice";
+                ."upc = '".$row['upc']."' order by unitPrice, trans_id DESC";
         }
         $dbc = Database::tDataConnect();
         $queryR = $dbc->query($queryt);
