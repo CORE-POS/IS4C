@@ -89,7 +89,7 @@ class BogoPM extends PriceMethod {
         $queryt = "select trans_id, unitPrice, regPrice
                 from localtemptrans 
                 where trans_status <> 'R' AND 
-                mixMatch = '".$mixMatch."' order by unitPrice";
+                mixMatch = '".$mixMatch."' order by unitPrice, trans_id DESC";
         if (!$mixMatch || $mixMatch == '0') {
             $mixMatch = 0;
             $queryt = "select trans_id, unitPrice, regPrice from "
