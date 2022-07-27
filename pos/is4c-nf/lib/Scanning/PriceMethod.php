@@ -51,6 +51,7 @@ class PriceMethod
         4   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\ABGroupPM',
         5   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\BigGroupPM',
         6   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\MoreThanQttyPM',
+        7   => 'COREPOS\\pos\\lib\\Scanning\\PriceMethods\\BogoPM',
     );
 
     protected $savedRow;
