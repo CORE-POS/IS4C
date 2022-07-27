@@ -139,11 +139,13 @@ class QttyEnforcedGroupPM extends PriceMethod {
                 mixMatch from localtemptrans 
                 where trans_status <> 'R' AND 
                 mixMatch = '".$mixMatch."' group by mixMatch";
+            $mixedSet = true;
             if (!$mixMatch || $mixMatch == '0') {
                 $mixMatch = 0;
                 $queryt = "select sum(ItemQtty - matched) as mmqtty from "
                     ."localtemptrans where trans_status<>'R' AND "
                     ."upc = '".$row['upc']."' group by upc";
+                $mixedSet = false;
             }
             $dbt = Database::tDataConnect();
             $resultt = $dbt->query($queryt);
@@ -162,6 +164,27 @@ class QttyEnforcedGroupPM extends PriceMethod {
                 /* adjusted price for the "last" item in a set */
                 $priceAdjust = $groupPrice - (($groupQty-1) * $pricing['unitPrice']);
                 $discount = $pricing['unitPrice'] - $priceAdjust;
+
+                /**
+                 * Is a BOGO deal covering multiple items
+                 * Lookup the price of the last un-matched item which will
+                 * form this BOGO pairing. If the previous item is
+                 * cheaper, use it's price for the discount value to
+                 * make it functionally the free item
+                 */
+                if ($mixedSet && $groupQty == 2 && abs($pricing['unitPrice'] - $discount) <= 0.005) {
+                    $queryPrice = "select unitPrice
+                        from localtemptrans 
+                        where trans_status <> 'R' AND 
+                        mixMatch = '".$mixMatch."' 
+                        ORDER BY matched, datetime DESC";
+                    $priceR = $dbt->query($queryPrice);
+                    $priceW = $dbt->fetchRow($priceR);
+                    if ($priceW && $priceW['unitPrice'] < $pricing['unitPrice']) {
+                        $discount = $priceW['unitPrice'];
+                    }
+                }
+
                 $memDiscount = 0;
                 if ($priceObj->isMemberSale() || $priceObj->isStaffSale()){
                     $memDiscount = $discount;
