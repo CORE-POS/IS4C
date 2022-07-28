@@ -674,6 +674,32 @@ static public function additemdiscount($intdepartment, $dbltotal, $tax=0, $fs=0)
 }
 
 /**
+  Add a BOGO discount
+  @param $intdepartment POS department
+  @param $dbltotal discount amount (should be <b>positive</b>)
+  @param $tax amount is taxable (default 0)
+  @param $fs amount is foodstampable (default 0)
+*/
+static public function addBogoDiscount($intdepartment, $dbltotal, $tax=0, $fs=0, $mixmatch='') 
+{
+    $dbltotal *= -1;
+    self::addRecord(array(
+        'upc' => 'ITEMDISCOUNT',
+        'description' => ' * BOGO Discount',
+        'trans_type' => 'I',
+        'department' => $intdepartment,
+        'quantity' => 1,
+        'unitPrice' => $dbltotal,
+        'total' => $dbltotal,
+        'regPrice' => $dbltotal,
+        'ItemQtty' => 1,
+        'tax' => $tax,
+        'foodstamp' => $fs,
+        'mixMatch' => $mixmatch,
+    ));
+}
+
+/**
   Add a tare record
   @param $dbltare the tare weight. The weight
   gets divided by 100, so an argument of 5 gives tare 0.05
