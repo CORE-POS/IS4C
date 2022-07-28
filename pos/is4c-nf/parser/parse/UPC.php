@@ -890,7 +890,8 @@ class UPC extends Parser
                     AND (
                         upc='{$row['upc']}'
                         OR (mixMatch='{$row['mixmatchcode']}' AND mixMatch<>''
-                            AND mixMatch<>'0' AND mixMatch IS NOT NULL)
+                            AND mixMatch<>'0' AND mixMatch IS NOT NULL
+                            AND upc <> 'ITEMDISCOUNT')
                     )";
             $appliedR = $dbc->query($appliedQ);
             if ($appliedR && $dbc->num_rows($appliedR)) {
