@@ -545,6 +545,9 @@ class EditBatchPage extends FannieRESTfulPage
         }
 
         $pmethod = ($this->qty >= 2)?2:0;
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth' && $this->qty == 2) {
+            $pmethod = 7;
+        }
 
         $model = new BatchListModel($dbc);
         $model->upc($this->upc);
