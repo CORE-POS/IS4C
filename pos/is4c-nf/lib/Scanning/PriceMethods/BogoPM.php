@@ -82,35 +82,74 @@ class BogoPM extends PriceMethod {
         /**
          * Find all items in the set ordered by price
          * Divide by two to get pairs (because every record is one item)
-         * Change first ${number of pairs} to $0.00
-         * Change remainder to regular price
+         * Calculate total discount for cheapest paired items
+         * Also gather dept/tax/fs info for discount
          */
         $mixMatch  = $row["mixmatchcode"];
-        $queryt = "select trans_id, unitPrice, regPrice
+        $queryt = "select trans_id, unitPrice, regPrice, department, tax, foodstamp
                 from localtemptrans 
-                where trans_status <> 'R' AND 
+                where trans_status <> 'R' AND upc <> 'ITEMDISCOUNT' AND
                 mixMatch = '".$mixMatch."' order by unitPrice, trans_id DESC";
         if (!$mixMatch || $mixMatch == '0') {
             $mixMatch = 0;
-            $queryt = "select trans_id, unitPrice, regPrice from "
-                ."localtemptrans where trans_status<>'R' AND "
+            $queryt = "select trans_id, unitPrice, regPrice, department, tax, foodstamp
+                from "
+                ."localtemptrans where trans_status<>'R' AND upc <> 'ITEMDISCOUNT' AND "
                 ."upc = '".$row['upc']."' order by unitPrice, trans_id DESC";
         }
         $dbc = Database::tDataConnect();
         $queryR = $dbc->query($queryt);
         $pairs = floor($dbc->numRows($queryR) / 2);
         $count = 0;
-        $prep = $dbc->prepare("UPDATE localtemptrans SET total=?, discount=? WHERE trans_id=?");
-        while ($row = $dbc->fetchRow($queryR)) {
+        $totalDiscount = 0;
+        $dept = 0;
+        $tax = 0;
+        $fs = 0;
+        while ($pairW = $dbc->fetchRow($queryR)) {
             if ($count < $pairs) {
-                $dbc->execute($prep, array(0, $row['unitPrice'], $row['trans_id']));
+                $totalDiscount += $pairW['unitPrice'];
+                $dept = $pairW['department'];
+                $tax = $pairW['tax'];
+                $fs = $pairW['foodstamp'];
             } else {
-                $dbc->execute($prep, array($row['unitPrice'], 0, $row['trans_id']));
+                break;
             }
             $count++;
         }
 
-        return True;
+        /**
+         * Examine BOGO discounts already applied, if any
+         * Add additional discount as needed
+         * While this will typically be used with a mixMatch value,
+         * if it isn't the item UPC will be put in the mixMatch
+         * field so corresponding discount records can be located
+         * on subsequent rings of the same item
+         */
+        $discountQ = "select SUM(-total) AS ttl
+                from localtemptrans 
+                where upc='ITEMDISCOUNT'
+                AND mixMatch = '".$mixMatch."'";
+        if ($mixMatch === 0) {
+            $discountQ = "select SUM(-total) AS ttl "
+                ."from localtemptrans where upc='ITEMDISCOUNT' AND "
+                ."mixMatch = '".$row['upc']."' order by unitPrice, trans_id DESC";
+        }
+        $discountR = $dbc->query($discountQ);
+        $discountW = $dbc->fetchRow($discountR);
+        if ($discountW) {
+            $totalDiscount -= $discountW['ttl'];
+        }
+        if (abs($totalDiscount > 0.005)) {
+            TransRecord::addBogoDiscount(
+                $dept,
+                $totalDiscount,
+                $tax,
+                $fs,
+                ($mixMatch === 0 ? $row['upc'] : $mixMatch)
+            );
+        }
+
+        return true;
     }
 }
 
