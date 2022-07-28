@@ -42,6 +42,7 @@ HTML;
     {
         $this->__routes[] = "get<vendorList>";
         $this->__routes[] = "get<brandList>";
+        $this->__routes[] = "get<list>";
         $this->__routes[] = "get<upc>";
 
         return parent::preprocess();
@@ -123,9 +124,21 @@ HTML;
     private function getTableData($dbc, $searchType, $searchValue)
     {
         $items = array();
-        $where = ($searchType == 'VENDOR') ? ' default_vendor_id ' : ' p.brand ';
+        $where = ($searchType == 'VENDOR') ? ' default_vendor_id = ? ' : ' p.brand = ? ';
+        if ($searchType == 'UPCS') {
+            $tmp = '';
+            foreach ($searchValue as $k => $upc) {
+                $tmp .= "$upc";
+                if (array_key_exists($k+1, $searchValue)) {
+                    $tmp .= ", ";
+                }
+            }
+            $args = array();
+            $where = " p.upc IN ($tmp) ";
+        } else {
+            $args = array($searchValue);
+        }
 
-        $args = array($searchValue);
         $query = "SELECT p.upc, p.brand, p.description, priceRuleID,
             t.priceRuleTypeID, maxPrice, details, t.description AS tdesc,
             v.srp
@@ -133,7 +146,7 @@ HTML;
                 LEFT JOIN PriceRules AS r ON r.priceRuleID=p.price_rule_id
                 LEFT JOIN PriceRuleTypes AS t ON t.priceRuleTypeID=r.priceRuleTypeID
                 LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
-            WHERE $where = ?
+            WHERE $where
             GROUP BY p.upc";
         $prep = $dbc->prepare($query);
         $res = $dbc->execute($prep, $args);
@@ -167,6 +180,11 @@ HTML;
         return $this->get_brandList_view();
     }
 
+    public function get_list_view()
+    {
+        return $this->get_brandList_view();
+    }
+
     public function get_brandList_view()
     {
 
@@ -174,8 +192,14 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $brand = FormLib::get('brandList', false);
         $vendorID = FormLib::get('vendorList', false);
-        $SEARCH_TYPE = ($vendorID == false) ? 'BRAND' : 'VENDOR';
-        $SEARCH_REF = ($vendorID == false) ? $brand : $vendorID;
+        $list = Formlib::get('list', array());
+        if (empty($list)) {
+            $SEARCH_TYPE = ($vendorID == false) ? 'BRAND' : 'VENDOR';
+            $SEARCH_REF = ($vendorID == false) ? $brand : $vendorID;
+        } else {
+            $SEARCH_TYPE = 'UPCS'; 
+            $SEARCH_REF = explode("\n", $list);
+        }
 
         $prTypes = $this->getPriceRuleTypes($dbc);
 
@@ -247,6 +271,8 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $vendOpts = "<option value=0></option>";
         $brandOpts = "";
+        $list = FormLib::get('list', array());
+        $list = explode("\n", $list);
 
         $vendListP = $dbc->prepare("SELECT vendorName, vendorID
             FROM vendors");
@@ -269,8 +295,8 @@ HTML;
     <div class="col-lg-2"></div>
     <div class="col-lg-8">
         <div class="row">
-            <div class="col-lg-2"></div>
-            <div class="col-lg-4">
+            <div class="col-lg-1"></div>
+            <div class="col-lg-3">
                 <form>
                     <label>Select Set By Vendor</label>
                     <div class="form-group">
@@ -281,11 +307,22 @@ HTML;
                     </div>
                 </form>
             </div>
-            <div class="col-lg-4">
+            <div class="col-lg-3">
                 <form>
                     <label>Select Set By Brand</label>
                     <div class="form-group">
                         <select name="brandList" class="form-control">$brandOpts</select>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-default form-control" />
+                    </div>
+                </form>
+            </div>
+            <div class="col-lg-3">
+                <form>
+                    <label>Paste A Set Of UPCs</label>
+                    <div class="form-group">
+                        <textarea name="list" class="form-control" rows=10>$list</textarea>
                     </div>
                     <div class="form-group">
                         <input type="submit" class="btn btn-default form-control" />
