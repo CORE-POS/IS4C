@@ -65,6 +65,12 @@ class WfcSmartSigns2UpP extends \COREPOS\Fannie\API\item\signage\Signage2UpP
             $pdf->Image($this->getTopImage($item), ($left-1), ($top-42) + ($row*$height), $width);
             $pdf->Image($this->getBottomImage($item), ($left-1), $top + ($height*$row) + ($height-$top-6), $width, 2);
 
+            // if sale is new NCG BOGO
+            if (strstr($item['batchName'], 'Co-op Deals') && $item['signMultiplier'] == -3) {
+                $bogoImg = __DIR__ . '/noauto/images/bogo-circle.png';
+                $pdf->Image($bogoImg,  ($left-1)+160, ($top-22) + ($row*$height), 26, 26);
+            }
+
             $count++;
             $sign++;
         }

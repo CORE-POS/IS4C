@@ -352,7 +352,8 @@ class FannieSignage
                     p.unitofmeasure,
                     b.batchName,
                     b.discountType,
-                    b.batchType
+                    b.batchType,
+                    b.transLimit
                  FROM batchList AS l
                     ' . DTrans::joinProducts('l', 'p', 'LEFT') . '
                     INNER JOIN batches AS b ON b.batchID=l.batchID

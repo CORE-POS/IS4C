@@ -30,6 +30,8 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $SMALL_FONT = 24;
     protected $SMALLER_FONT = 18;
     protected $SMALLEST_FONT = 12;
+    protected $BOGO_FONT = 28;
+    protected $BOGO_FONT_B = 96;
 
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
@@ -69,7 +71,32 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->Cell($this->width, 10, $item['size'], 0, 1, 'C');
         $pdf->SetX($this->left);
         $pdf->SetFont($this->font, '', $this->BIG_FONT);
-        $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
+        if (strpos($price, 'FREE') != false) {
+            // BOGO text
+            $pdf->SetTextColor(244, 116, 30);
+            $pdf->SetFont($this->font, 'B', $this->BOGO_FONT);
+            $pdf->Cell($this->width, 20, 'Buy One, Get One', 0, 1, 'C');
+            $pdf->SetX($this->left);
+            $pdf->SetFont($this->font, 'B', $this->BOGO_FONT_B);
+            $pdf->Cell($this->width, 20, 'FREE', 0, 1, 'C');
+
+            $pdf->SetTextColor(0, 0, 0);
+
+            // BOBO regular price text
+            $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+            $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
+
+            // BOGO limit
+            if ($item['transLimit'] > 0) {
+                $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+                $pdf->Cell($width, 20, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
+            }
+
+        } else {
+            $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
+        }
 
         if ($item['startDate'] != '' && $item['endDate'] != '') {
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
