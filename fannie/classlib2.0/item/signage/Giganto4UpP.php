@@ -98,6 +98,20 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 6, 'FREE', 0, 1, 'C');
 
             $pdf->SetTextColor(0, 0, 0);
+
+            // BOGO limit
+            if ($item['transLimit'] > 0) {
+                $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 13));
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+                //$pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 13));
+                $pdf->Cell($effective_width, 6, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
+            }
+
+            // BOGO regular price
+            $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+            $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
         }
 
         if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
