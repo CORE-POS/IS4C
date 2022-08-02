@@ -65,11 +65,27 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 12, $price, 0, 1, 'C');
         } else {
             $pdf->SetXY(-5 + $this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - 41));
-            $pdf->SetFont($this->font, '', $this->MED_FONT);
-            $pdf->MultiCell($effective_width/2, 6, "BUY ONE\nGET ONE", 0, 'R');
-            $pdf->SetXY(-5 + $this->left + ($this->width*$column) + ($effective_width/2), $this->top + ($this->height*$row) + ($this->height - 40.5));
-            $pdf->SetFont($this->font, '', $this->BIG_FONT);
-            $pdf->Cell($effective_width/2, 12, 'FREE', 0, 1, 'L');
+            if (strpos($price, 'FREE') != false) {
+                $pdf->SetTextColor(244, 116, 30);
+
+                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 45));
+                $pdf->SetFont($this->font, 'B', 12);
+                $pdf->Cell($this->width, 12, 'Buy One, Get One', 0, 1, 'C');
+
+                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 36));
+                $pdf->SetFont($this->font, 'B', $this->BIG_FONT);
+                $pdf->Cell($this->width, 12, 'FREE', 0, 1, 'C');
+
+                $pdf->SetTextColor(0, 0, 0);
+
+                // BOGO limit
+                if ($item['transLimit'] > 0) {
+                    $pdf->SetFont($this->font, '', $this->SMALLEST_FONT);
+                    $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 29));
+                    $pdf->Cell($this->width, 12, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
+                }
+
+            }
         }
 
         if ($item['originShortName'] != '') {

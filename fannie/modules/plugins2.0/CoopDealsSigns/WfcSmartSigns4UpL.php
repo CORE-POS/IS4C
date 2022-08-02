@@ -105,9 +105,9 @@ class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP
     private function getTopImage($item)
     {
         if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
-            return __DIR__ . '/noauto/images/codeals_top_12.png';
+            return __DIR__ . '/noauto/images/codeals_top_2.png';
         } elseif (!empty($item['batchName'])) {
-            return __DIR__ . '/noauto/images/chaching_top_12.png';
+            return __DIR__ . '/noauto/images/chaching_top_2.png';
         } elseif ($item['basic']) {
             return __DIR__ . '/noauto/images/basics_top_12.png';
         } elseif ($item['organicLocal']) {
