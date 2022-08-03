@@ -132,7 +132,7 @@ class SaFullPage extends FannieRESTfulPage
         $prep = $dbc->prepare("
             SELECT p.upc, p.description,
                 s.quantity, s.datetime,
-                u.likeCode, v.units
+                u.likeCode, v.units, p.scale
             FROM products AS p
                 LEFT JOIN " . FannieDB::fqn('sa_inventory', 'plugin:ShelfAuditDB') . " AS s
                     ON p.upc=s.upc AND s.clear=0 AND s.section=? AND s.storeID=?
@@ -170,6 +170,7 @@ class SaFullPage extends FannieRESTfulPage
         if (!$row['quantity']) {
             $row['quantity'] = 0;
         }
+        $countUnit = $row['scale'] ? 'lb' : 'ea';
         $buttons = '';
         if ($row['units'] > 1) {
             $buttons = sprintf('<div class="buttons">
@@ -193,7 +194,7 @@ class SaFullPage extends FannieRESTfulPage
     </div>
     <div class="col-sm-3">
         <div class="input-group">
-            <span class="input-group-addon">Quantity</span>
+            <span class="input-group-addon">Quantity ($countUnit)</span>
             <input type="text" name="qty" id="newQty" class="form-control" 
                 onkeyup="full.keybind(event);" onkeydown="full.tab(event);" />
         </div> 
