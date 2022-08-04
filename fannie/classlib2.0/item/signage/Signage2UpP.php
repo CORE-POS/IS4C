@@ -94,6 +94,10 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
                 $pdf->Cell($width, 20, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
             }
 
+        } elseif (strpos($price, "lb") != false) {
+            $pdf->SetFont($this->font, '', $this->BIG_FONT-44);
+            $price = str_replace(' /lb.', '/lb', $price);
+            $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
         } else {
             $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
         }
