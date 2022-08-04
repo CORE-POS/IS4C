@@ -219,9 +219,11 @@ HTML;
 
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
-        $yx = FormLib::get('year', false);
+        $formYear = FormLib::get('year', false);
+        $formCycle = FormLib::get('cycle', false);
+        $formStore = FormLib::get('storeID', false);
 
-        $set = FormLib::get('deal-set');
+        $set = FormLib::get('dealSet');
         $optsR = $dbc->query('
             SELECT dealSet
             FROM CoopDealsItems
@@ -240,37 +242,34 @@ HTML;
 
         $cycles = array('A','B');
         $cycle_opts = '';
+        $sel = '';
         foreach ($cycles as $cycle) {
-            $sel = ($cycle == FormLib::get('cycle')) ? " selected " : "";
+            $sel = ($cycle == $formCycle) ? " selected " : "";
             $cycle_opts .= "<option value='$cycle' $sel>$cycle</option>";
         }
 
         $y = new DateTime();
         $curYear = $y->format('Y');
-        $years = "";
-        $curMonth = date('m');
-        for ($i=$curYear-1; $i<=$curYear+1; $i++) {
-            $sel = ($i == $curYear) ? " selected " : "";
-            $sel = ($yx != false) ? " selected " : "";
-            $years .= "<option value='$i' $sel>$i</option>";
+        $years = array();
+        $yearsHTML = '';
+        $years[] = $curYear;
+        $curMonth = $y->format('m');
+        if ($curMonth == 12)
+            $years[] = $curYear + 1;
+        if ($curMonth == 1)
+            $years[] = $curYear - 1;
+        foreach ($years as $year) {
+            $sel = ($formYear == $year) ? ' selected ' : '';
+            $yearsHTML .= "<option value=\"$year\" $sel>$year</option>";
         }
 
-        $stores = new StoresModel($this->connection);
-        $stores->hasOwnItems(1);
-        $store_opts = "";
-        $store_opts .= '<select class="form-control" name="store">
-                <option value="0">Any Store</option>';
-        foreach ($stores->find() as $s) {
-            $store_selected = (FormLib::get('store') == $s->storeID()) ? ' SELECTED ' : '';
-            $store_opts .= sprintf('<option value="%d" %s>%s</option>',
-                $s->storeID(), $store_selected, $s->description());
-        }
-        $store_opts .= '</select>';
+        $storePicker = FormLib::storePicker();
+        $store_opts = $storePicker['html'];
 
         $form = sprintf('
-            <form method="get" class="form-inline">
+            <form method="get" action="CoopDealsSignsPage.php">
                 <div class="form-group"><div class="input-group">
-                    <div class="input-group-addon">Year</div>
+                    <div class="input-group-addon">&nbsp;Year: </div>
                     <select name="year" class="form-control">%s</select>
                 </div></div>
                 <div class="form-group"><div class="input-group">
@@ -283,16 +282,20 @@ HTML;
                         %s
                     </select>
                 </div></div>
-                <div class="form-group"><div class="input-group">
+                <div class="form-group">
                     %s
-                </div></div>
+                </div>
                 <div class="form-group"><div class="input-group">
                     <button type="submit" class="btn btn-default">Load</button>
                 </div></div>
             </form>
-        ', $years, $deal_opts, $cycle_opts, $store_opts);
+        ', $yearsHTML, $deal_opts, $cycle_opts, $store_opts);
         return <<<HTML
-{$form}
+<div class="row">
+    <div class="col-lg-4">$form</div>
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4"></div>
+</div>
 HTML;
     }
 
@@ -319,6 +322,9 @@ HTML;
         return <<<HTML
 .btn-success, .btn-warning {
     width: 150px;
+}
+.input-group-addon {
+    width: 50x;
 }
 HTML;
     }
