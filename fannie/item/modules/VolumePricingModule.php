@@ -82,6 +82,9 @@ class VolumePricingModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $method = FormLib::get_form_value('vp_method',0);
         $qty = FormLib::get_form_value('vp_qty',0);
+        if ($qty === '') {      // not a valid integer
+            $qty = null;
+        }
         $price = FormLib::get_form_value('vp_price',0);
         $mixmatch = FormLib::get_form_value('vp_mm',0);
 
