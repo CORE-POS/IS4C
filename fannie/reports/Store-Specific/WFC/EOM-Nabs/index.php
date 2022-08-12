@@ -105,13 +105,16 @@ if (true || !$output){
     $accountStr = rtrim($accountStr,",").")";
 
     echo "<b>Total by account</b>";
-    $totalQ = $dbc->prepare("select l.card_no,sum(l.total),
-        (sum(l.total)-(sum(l.total*m.margin))) as cost
+    $totalQ = $dbc->prepare("select l.card_no,
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END),
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END) -
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END * m.margin) AS cost
         FROM $dlog as l left join departments as m on l.department = m.dept_no
         WHERE card_no IN $accountStr
-        and (l.department < 600 or l.department = 902)
+        and (l.department < 600 or l.department IN (902, 990))
         and l.department <> 0 and l.trans_type <> 'T'
         and tdate BETWEEN ? AND ?
+        AND register_no <> 20
         AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY card_no
         ORDER BY card_no");
@@ -134,12 +137,16 @@ if (true || !$output){
         2,array(1,2));
 
     echo "<br /><b>Total by pCode</b>";
-    $totalQ = $dbc->prepare("select d.salesCode,sum(l.total),
-        (sum(l.total)-(sum(l.total)*d.margin)) as cost, l.store_id
+    $totalQ = $dbc->prepare("select d.salesCode,
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END),
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END) -
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END * d.margin) AS cost,
+        l.store_id
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no IN $accountStr
-        and (l.department < 600 or l.department = 902)
+        and (l.department < 600 or l.department in (902, 990))
         and l.department <> 0 and l.trans_type <> 'T'
+        AND register_no <> 20
         and tdate BETWEEN ? AND ?
         AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY d.salesCode,d.margin,l.store_id
@@ -160,12 +167,16 @@ if (true || !$output){
         array($ALIGN_LEFT,$ALIGN_RIGHT|$TYPE_MONEY,$ALIGN_RIGHT|$TYPE_MONEY),
         2,array(1,2));
 
-    $totalQ = $dbc->prepare("select d.salesCode,sum(l.total),
-        (sum(l.total)-(sum(l.total)*d.margin)) as cost, l.store_id
+    $totalQ = $dbc->prepare("select d.salesCode,
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END),
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END) -
+        sum(CASE WHEN department = 990 then -l.total ELSE l.total END * d.margin) AS cost,
+        l.store_id
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no = ?
-        and (l.department < 600 or l.department = 902)
+        and (l.department < 600 or l.department IN (902,990))
         and l.department <> 0 and l.trans_type <> 'T'
+        AND register_no <> 20
         and tdate BETWEEN ? AND ?
         AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY d.salesCode,d.margin, l.store_id
