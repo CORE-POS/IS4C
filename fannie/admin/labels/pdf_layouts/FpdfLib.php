@@ -164,4 +164,33 @@ ORDER BY SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), sub.SubSectio
         return $newtext;
     }
 
+    /**
+     *  static method parseVendorName
+     *  abbreviate string to desired length retaining
+     *  as much of the first word as possible
+     *  param $str str to parse
+     *  param $len max length of string returned
+     **/
+    function parseVendorName($str, $len)
+    {
+        $str = preg_replace("#[[:punct:]]#", "", $str);
+        if (strlen($str) <= $len) {
+            // string is fine as-is
+            return $str;
+        } else {
+            // string needs abbreviating
+            $arr = explode(" ", $str);
+            $newStr = $arr[0];
+            $fwLen = strlen($newStr);
+            if ($fwLen + count($arr) * 2 - 1 > $len) {
+            $newStr = substr($newStr, 0, $len - ($fwLen + count($arr) * 2 - 1));
+        }
+        while ($tmp = next($arr)) {
+            $newStr .= ' '. substr($tmp,0,1);
+        }
+            return $newStr;
+        }
+    }
+
+
 }
