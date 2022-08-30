@@ -54,6 +54,7 @@ class RpForecast extends FannieRESTfulPage
         $dailySales = 0;
         $seen = array();
         $ret = '';
+        $optStr = '<option value="">Move to...</option>';
         while ($row = $this->connection->fetchRow($res)) {
             if (isset($seen[$row['upc']])) {
                 continue;
@@ -65,7 +66,9 @@ class RpForecast extends FannieRESTfulPage
                 }
                 $ret .= '<h3>' . $row['vendorName'] . '</h3>';
                 $vendorID = $row['vendorID'];
-                $ret .= '<table class="table">';
+                $ret .= '<table class="table" id="table' . $vendorID . '">';
+                $optStr .= sprintf('<option value="%d">%s</option>',
+                    $row['vendorID'], $row['vendorName']);
 
             }
             $lc = str_replace('LC', '', $row['upc']);
@@ -75,7 +78,8 @@ class RpForecast extends FannieRESTfulPage
                 $par = 0.1 * $row['caseSize'];
             }
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
-            $ret .= sprintf('<tr><td class="par-cell">%.2f</td><td>%s</td></tr>',
+            $ret .= sprintf('<tr><td class="par-cell">%.2f</td><td>%s
+                <span class="v-select collapse"><select></select></span></td></tr>',
                 $par / $row['caseSize'], $row['vendorItem']);
 
             $dailySales += ($par * $price);
@@ -93,13 +97,16 @@ class RpForecast extends FannieRESTfulPage
 
         $segP = $this->connection->prepare("SELECT SUM(sales)
             FROM RpSegments
-            WHERE storeID=?
+            WHERE 1=1
+                " . ($this->id > 0 ? ' AND storeID=? ' : '') . "
                 AND startDate BETWEEN ? AND ?");
-        $segSales = $this->connection->getValue($segP, array(
-            $this->id,
-            $dt1->format('Y-m-d'),
-            $dt2->format('Y-m-d'),
-        ));
+        $segArgs = array();
+        if ($this->id > 0) {
+            $segArgs[] = $this->id;
+        }
+        $segArgs[] = $dt1->format('Y-m-d');
+        $segArgs[] = $dt2->format('Y-m-d');
+        $segSales = $this->connection->getValue($segP, $segArgs);
         $ret .= '<p>Projected Sales: ' . $segSales . '</p>';
 
         if ($segSales) {
@@ -112,6 +119,7 @@ class RpForecast extends FannieRESTfulPage
             $this->addOnloadCommand("scalePars({$adj});");
         }
         $this->addOnloadCommand('roundAll();');
+        $this->addOnloadCommand("setupMenus('{$optStr}');");
 
         return $ret;
     }
@@ -154,6 +162,27 @@ function roundAll() {
         cur = Math.round(cur);
         $(this).html(cur);
     });
+}
+function setupMenus(optStr) {
+    $('span.v-select select').html(optStr);
+    $('tr').contextmenu(showMenu);
+    $('span.v-select select').change(moveRow);
+}
+function showMenu(event) {
+    event.preventDefault();
+    $(event.target).find('span.v-select').toggle();
+}
+function moveRow(event) {
+    var targetID = $(event.target).val(); 
+    $(event.target).parent().hide();
+    var curTable = $(event.target).closest('table');
+    if ('table' + targetID == curTable.attr('id')) {
+        return;
+    }
+    var row = $(event.target).closest('tr').remove().clone();
+    row.contextmenu(showMenu);
+    row.find('select').change(moveRow);
+    $('#table' + targetID).append(row);
 }
 SCRIPT;
     }
