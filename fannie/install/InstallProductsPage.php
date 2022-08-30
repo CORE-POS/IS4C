@@ -253,6 +253,15 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         echo installSelectField('FANNIE_REPORT_DEPT_MODE', $FANNIE_REPORT_DEPT_MODE, $report_opts, 'range');
         ?>
         <hr />
+        <label>BOGO Price Method</label>
+        <?php
+        $bogo_opts = array(
+            '2' => 'Item w/ Volume Discount',
+            '7' => 'Separate BOGO Discount line',
+        ); 
+        echo installSelectField('FANNIE_BOGO_MODE', $FANNIE_BOGO_MODE, $bogo_opts, '2');
+        ?>
+        <hr />
         <label>Special Order Interface</label>
         <?php
         $so_opts = array(
