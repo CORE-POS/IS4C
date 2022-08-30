@@ -162,12 +162,15 @@ class USFTask extends FannieTask
             }
             $this->connection->execute($this->vupP, array($price, date('Y-m-d H:i:s'), $vendor, $sku));
         } elseif ($exists === false) {
+            /**
+             * Don't add if doesn't exist; zeroed UPC makes a mess
             if (!$this->vinsP) {
                 $this->vinsP = $this->connection->prepare("INSERT INTO vendorItems
                     (upc, sku, brand, description, size, units, cost, saleCost, vendorDept, vendorID, srp, modified)
                     VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, ?, 0, ?)");
             }
             $this->connection->execute($this->vinsP, array($upc, $sku, $brand, $item, $size, $units, $price, $vendor, date('Y-m-d H:i:s')));
+             */
         }
 
         return $upc;
