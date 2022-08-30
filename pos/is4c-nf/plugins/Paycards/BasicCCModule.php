@@ -321,6 +321,10 @@ class BasicCCModule
 
         curl_close($curlObj);
 
+        $log = new \COREPOS\pos\lib\LaneLogger();
+        $log->debug('Sent: ' . $data);
+        $log->debug('Received: ' . print_r($funcReturn, true));
+
         if ($autoHandle) {
             return $this->handleResponse($funcReturn);
         }

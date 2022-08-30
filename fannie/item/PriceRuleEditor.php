@@ -83,7 +83,7 @@ HTML;
             $model->maxPrice($maxPrice);
             $model->reviewDate(Date('Y-m-d h:m:s'));
             $prid = $model->save();
-            if ($saved != false) {
+            if ($saved !== false) {
                 $res = $dbc->execute($prep, array($prid, $upc));
             }
         }
@@ -112,7 +112,7 @@ HTML;
 
     private function getPriceRuleOpts($prTypes, $cur='')
     {
-        $opts = '<option value=\"\"></option>';
+        $opts = '<option value="0"></option>';
         foreach ($prTypes as $prtID => $desc) {
             $sel = ($cur == $desc) ? ' selected ' : '';
             $opts .= "<option value=\"$prtID\" $sel>$desc</option>";
@@ -214,7 +214,7 @@ HTML;
         foreach ($items as $upc => $row) {
             $td .= "<tr><td>$upc</td>";
             foreach ($row as $k => $v) {
-                if ($k == tdesc) {
+                if ($k == 'tdesc') {
                     $td .= "<td><select name=\"\" data-upc=\"$upc\" class=\"form-control price-rule-select\">{$this->getPriceRuleOpts($prTypes, $v)}</select></td>";
                 } elseif ($k == 'details') {
                     $td .= "<td contentEditable=\"true\" data-upc=\"$upc\" class=\"editable-details\"> $v</td>";

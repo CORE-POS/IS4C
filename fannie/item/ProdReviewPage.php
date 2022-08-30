@@ -1043,12 +1043,9 @@ function printAll()
 function checkAll()
 {
     if ( $('#checkAll').prop("checked", true) ) {
-        $c = confirm('Mark all as Reviewed?');
-        if ($c == true) {
-            $('.chk').each( function() {
-                this.checked = true;
-            });
-        }
+        $('.chk').each( function() {
+            this.checked = true;
+        });
     } else {
         $('.chk').each( function() {
             this.checked = false;

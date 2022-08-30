@@ -111,6 +111,10 @@ class FormLib extends \COREPOS\common\FormLib
         $nmLY = mktime(0,0,0, date('n',$ly)+1, date('j',$ly), date('Y',$ly));
         $nextMonthLY = array(date('Y-m-01', $nmLY), date('Y-m-t', $nmLY));
 
+        $ly = date("Y-m-d", strtotime("last week last year"));
+        //$thisWeekLY = array(date('Y-m-d', $mondayLY), date('Y-m-d', mktime(0,0,0,date('n',$mondayLY),date('j',$mondayLY)+6,date('Y',$mondayLY))));
+        $lastWeekLY = array(date('Y-m-d', strtotime('next monday', strtotime($ly))),date('Y-m-d', strtotime('next sunday', strtotime($ly))),date('Y',$mondayLY));
+
         $extra_opts = sprintf('
             <div class="panel panel-default">
                 <div class="panel-heading">Other dates</div>
@@ -192,6 +196,14 @@ class FormLib extends \COREPOS\common\FormLib
                     Next month last year
                 </label>
                 </td></tr>
+                <tr><td>
+                <label>
+                    <input class="radio-inline" id="od43" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    Last week last year
+                </label>
+                </td></tr>
+
                 </table>
             </div>
             </div>',
@@ -206,7 +218,8 @@ class FormLib extends \COREPOS\common\FormLib
             $one,$thisMonthLY[0],$two,$thisMonthLY[1],
             $one,$tomorrowLY[0],$two,$tomorrowLY[1],
             $one,$nextWeekLY[0],$two,$nextWeekLY[1],
-            $one,$nextMonthLY[0],$two,$nextMonthLY[1]
+            $one,$nextMonthLY[0],$two,$nextMonthLY[1],
+            $one,$lastWeekLY[0],$two,$lastWeekLY[1]
         );
 
         return $extra_opts;

@@ -7,7 +7,7 @@ if (!class_exists('FannieAPI')) {
 
 class LbmxReformat extends COREPOS\Fannie\API\FannieUploadPage
 {
-    protected $header = 'LBMX Data Reformat';
+    protected $header = 'LBMX Data Reformat (Input: TXT)';
     protected $title = 'LBMX Data Reformat';
 
     protected $preview_opts = array(

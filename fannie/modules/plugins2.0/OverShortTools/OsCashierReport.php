@@ -9,26 +9,31 @@ class OsCashierReport extends FannieReportPage
 {
     protected $header = 'Employee Variances Report';
     protected $title = 'Employee Variances Report';
-    protected $required_fields = array('date1', 'date2', 'store', 'emp');
+    protected $required_fields = array('date1', 'date2', 'store');
     protected $new_tablesorter = true;
-    protected $report_headers = array('Date', 'Variance');
+    protected $report_headers = array('Cashier #', 'Cashier', 'Date', 'Variance');
 
     public function fetch_report_data()
     {
+        $emp = FormLib::get('emp', false);
         $dlog = DTransactionsModel::selectDlog($this->form->date1, $this->form->date2);
-        $cashP = $this->connection->prepare("SELECT YEAR(tdate), MONTH(tdate), DAY(tdate), -1 * SUM(total) AS ttl
+        $cashP = $this->connection->prepare("SELECT d.emp_no, e.FirstName, YEAR(tdate), MONTH(tdate), DAY(tdate), -1 * SUM(total) AS ttl
                 FROM {$dlog} AS d
+                    LEFT JOIN employees AS e on d.emp_no=e.emp_no
                 WHERE tdate BETWEEN ? AND ? AND trans_type='T' AND store_id=?
                     AND (trans_subtype='CA' OR (trans_subtype='CK' AND description='Check'))
-                    AND emp_no=?
-                GROUP BY YEAR(tdate), MONTH(tdate), DAY(tdate)
-                ORDER BY YEAR(tdate), MONTH(tdate), DAY(tdate)");
-        $cashR = $this->connection->execute($cashP, array(
+                    " . ($emp ? ' AND d.emp_no=? ' : '') . "
+                GROUP BY d.emp_no, e.FirstName, YEAR(tdate), MONTH(tdate), DAY(tdate)
+                ORDER BY d.emp_no, YEAR(tdate), MONTH(tdate), DAY(tdate)");
+        $args = array(
             $this->form->date1,
             $this->form->date2 . ' 23:59:59',
             $this->form->store,
-            $this->form->emp,
-        ));
+        );
+        if ($emp) {
+            $args[] = $emp;
+        }
+        $cashR = $this->connection->execute($cashP, $args);
 
         $countP = $this->connection->prepare("SELECT amt
             FROM " . FannieDB::fqn('dailyDeposit', 'trans') . "
@@ -36,11 +41,13 @@ class OsCashierReport extends FannieReportPage
                 AND rowName LIKE ?");
         $data = array();
         while ($row = $this->connection->fetchRow($cashR)) {
-            $dateID = date('Ymd', mktime(0, 0, 0, $row[1], $row[2], $row[0]));
-            $tdate = date('Y-m-d', mktime(0, 0, 0, $row[1], $row[2], $row[0]));
-            $args = array($this->form->store, 'drop' . $dateID . '-' . $this->form->emp);
+            $dateID = date('Ymd', mktime(0, 0, 0, $row[3], $row[4], $row[2]));
+            $tdate = date('Y-m-d', mktime(0, 0, 0, $row[3], $row[4], $row[2]));
+            $args = array($this->form->store, 'drop' . $dateID . '-' . $row['emp_no']);
             $counted = $this->connection->getValue($countP, $args);
             $data[] = array(
+                $row['emp_no'],
+                $row['FirstName'],
                 $tdate,
                 sprintf('%.2f', $counted - $row['ttl']),
             );
@@ -53,13 +60,13 @@ class OsCashierReport extends FannieReportPage
     {
         $ttl = 0;
         foreach ($data as $row) {
-            $ttl += $row[1];
+            $ttl += $row[3];
         }
         $divisor = count($data) > 0 ? count($data) : 1;
 
         return array(
-            array('Total', sprintf('%.2f', $ttl)),
-            array('Average', sprintf('%.2f', $ttl / $divisor)),
+            array('Total', '', '', sprintf('%.2f', $ttl)),
+            array('Average', '', '', sprintf('%.2f', $ttl / $divisor)),
         );
     }
 

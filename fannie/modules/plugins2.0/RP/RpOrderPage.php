@@ -526,6 +526,9 @@ class RpOrderPage extends FannieRESTfulPage
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
             if ($row['caseSize'] != 0 && ($par / $row['caseSize']) < 0.1) {
                 $par = 0.1 * $row['caseSize'];
+                if ($store == 2) {
+                    $par = 0.05 * $row['caseSize'];
+                }
             }
             if ($lc == 216 || substr($lc, 0, 4) == '216-') {
                 $par = $par / $bananaCount;
