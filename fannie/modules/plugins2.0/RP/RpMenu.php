@@ -57,6 +57,7 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="RpMarginEst.php">Estimate Margin</a> - drop in pricing from RP and preview applied margin</li>
         <li><a href="RpPreBookPage.php">Enter Pre-Books</a> - input pre-books so they appear in the order guide.</a></li>
         <li><a href="RpManualEntries.php">View Added Items</a> - report of items manually added to the order guide</a></li>
+        <li><a href="RpForecast.php">Project Order Quantities</a> - view anticipated order quantities based on segmentation and pars</a></li>
     </ul>
 </ul>
 <hr />
