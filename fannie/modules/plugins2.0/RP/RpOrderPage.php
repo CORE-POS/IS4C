@@ -13,6 +13,9 @@ if (!class_exists('RpOrderItemsModel')) {
 if (!class_exists('RpSessionsModel')) {
     include(__DIR__ . '/models/RpSessionsModel.php');
 }
+if (!class_exists('RpSnapshotsModel')) {
+    include(__DIR__ . '/models/RpSnapshotsModel.php');
+}
 
 class RpOrderPage extends FannieRESTfulPage
 {
@@ -34,6 +37,15 @@ class RpOrderPage extends FannieRESTfulPage
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
         $model->dataType('RP');
+        $model->load();
+
+        $snap = new RpSnapshotsModel($this->connection);
+        $snap->userID($model->userID());
+        $snap->tdate(date('Y-m-d H:i:s'));
+        $snap->data($model->data());
+        $snap->dataType($model->dataType());
+        $snap->save();
+
         $model->delete();
 
         return 'RpOrderPage.php';
