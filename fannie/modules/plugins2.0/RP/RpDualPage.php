@@ -509,7 +509,7 @@ class RpDualPage extends FannieRESTfulPage
                 $category = $row['categoryID'];
                 $tables .= '<table class="table table-bordered table-striped small">
                     <tr><th>LC</th><th>Primary</th><th>Secondary</th><th>Item</th><th>Case Size</th>
-                    <th>On Hand</th><th>Par</th><th>Order</th></tr>';
+                    <th>Back</th><th>Floor</th><th>Par</th><th>Order</th></tr>';
             }
             $lc = str_replace('LC', '', $row['upc']);
             $mapped = isset($mappings[$lc]) ? $mappings[$lc] : false;
