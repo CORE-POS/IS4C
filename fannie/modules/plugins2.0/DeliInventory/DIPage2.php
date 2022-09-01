@@ -440,7 +440,7 @@ HTML;
                 $sum += $total;
 
                 if (!isset($summary[$catW['salesCode']])) {
-                    $summary[$catW['salesCode']] = '';
+                    $summary[$catW['salesCode']] = 0;
                 }
                 $summary[$catW['salesCode']] += $total;
             }
