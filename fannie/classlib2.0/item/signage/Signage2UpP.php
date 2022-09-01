@@ -91,7 +91,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             // BOGO limit
             if ($item['transLimit'] > 0) {
                 $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
-                $pdf->Cell($width, 20, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
+                $pdf->Cell($this->width, 20, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
             }
 
         } elseif (strpos($price, "lb") != false) {
