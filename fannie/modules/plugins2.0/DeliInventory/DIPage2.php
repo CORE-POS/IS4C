@@ -439,6 +439,9 @@ HTML;
                 );
                 $sum += $total;
 
+                if (!isset($summary[$catW['salesCode']])) {
+                    $summary[$catW['salesCode']] = '';
+                }
                 $summary[$catW['salesCode']] += $total;
             }
             $ret .= sprintf('<tr><th colspan="6">Grand Total</th><th>$%.2f</th><th class="trash" colspan="3"></tr>', $sum);
