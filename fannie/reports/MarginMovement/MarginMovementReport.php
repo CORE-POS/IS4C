@@ -150,7 +150,10 @@ class MarginMovementReport extends FannieReportPage
         // go through and add a contribution to margin value
         for ($i=0; $i<count($data); $i++) {
             // (item_total - item_cost) / total sales
-            $contrib = ($data[$i][5] - $data[$i][4]) / $sum_total * 100;
+            $contrib = 0;
+            if (is_numeric($data[$i][5]) && is_numeric($data[$i][4])) {
+                $contrib = ($data[$i][5] - $data[$i][4]) / $sum_total * 100;
+            }
             $data[$i][] = sprintf('%.2f', $contrib);
         }
 
