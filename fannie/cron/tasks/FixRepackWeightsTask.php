@@ -27,7 +27,8 @@ class FixRepackWeightsTask extends FannieTask
             SET quantity=?,
                 ItemQtty=?,
                 unitPrice=?,
-                regPrice=?
+                regPrice=?,
+                cost=?
             WHERE tdate BETWEEN ? AND ?
                 AND upc=?
                 AND store_id=?
@@ -39,7 +40,8 @@ class FixRepackWeightsTask extends FannieTask
             SET quantity=?,
                 ItemQtty=?,
                 unitPrice=?,
-                regPrice=?
+                regPrice=?,
+                cost=?
             WHERE datetime BETWEEN ? AND ?
                 AND upc=?
                 AND store_id=?
@@ -51,7 +53,8 @@ class FixRepackWeightsTask extends FannieTask
             SET quantity=?,
                 ItemQtty=?,
                 unitPrice=?,
-                regPrice=?
+                regPrice=?,
+                cost=?
             WHERE datetime BETWEEN ? AND ?
                 AND upc=?
                 AND store_id=?
@@ -59,7 +62,7 @@ class FixRepackWeightsTask extends FannieTask
                 AND trans_id=?");
 
         $prep = $dbc->prepare("SELECT
-                d.upc, d.total, d.store_row_id, d.store_id, d.trans_id, p.normal_price, d.trans_status
+                d.upc, d.total, d.store_row_id, d.store_id, d.trans_id, p.normal_price, d.trans_status, d.cost
             FROM {$dlog} AS d
                 " . DTrans::joinProducts('d', 'p', 'INNER') . "
             WHERE d.upc LIKE '002%'
@@ -105,6 +108,7 @@ class FixRepackWeightsTask extends FannieTask
                 $itemQtty,
                 $row['normal_price'],
                 $row['normal_price'],
+                $row['cost'] * $rounded,
                 $date, $date . ' 23:59:59',
                 $row['upc'],
                 $row['store_id'],
