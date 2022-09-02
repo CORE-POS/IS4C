@@ -555,7 +555,7 @@ class ProdLocationEditor extends FannieRESTfulPage
             ';
         foreach ($item as $key => $row) {
             $ret .= '
-                <tr data-selected=""><td><a href="ItemEditorPage.php?searchupc='.$upc.'&ntype=UPC&superFilter=" target="_black">' . $key . '</a></td>
+                <tr data-selected=""><td><a href="ItemEditorPage.php?searchupc='.$key.'&ntype=UPC&superFilter=" target="_black">' . $key . '</a></td>
                 <td>' . $row['brand'] . '</td>
                 <td>' . $row['desc'] . '</td>
                 <td>' . $row['dept'] . '</td>
