@@ -17,6 +17,8 @@ class RpCleanupTask extends FannieTask
     public function run()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $dbc->query("INSERT INTO RpSnapshots (userID, tdate, data, dataType)
+            SELECT userID, " . $dbc->now() . ", data, dataType FROM RpSessions");
         $dbc->query("DELETE FROM RpSessions");
         $dbc->query("UPDATE PurchaseOrder SET placed=1, placedDate=" . $dbc->now() . "
                 WHERE userID=-99 AND placed=0");
