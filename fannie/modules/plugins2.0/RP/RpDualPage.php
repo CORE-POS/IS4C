@@ -602,13 +602,12 @@ class RpDualPage extends FannieRESTfulPage
                 <td class="caseSize">%s</td>
                 <td><input %s class="form-control input-sm onHand1" value="" 
                     style="width: 5em;" id="onHand1%s" data-incoming="0"
-                    onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
+                    onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand1(this);"
                     onfocus="this.select();" onkeyup="rpOrder.onHand1Key(event);" />
                     <span class="incoming-notice"></span></td>
-                <input type="hidden" class="price" value="%.2f" />
                 <td><input %s class="form-control input-sm onHand2" value="" 
                     style="width: 5em;" id="onHand2%s" data-incoming="0"
-                    onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand(this);"
+                    onchange="rpOrder.reCalcRow($(this).closest(\'tr\')); rpOrder.updateOnHand2(this);"
                     onfocus="this.select();" onkeyup="rpOrder.onHand2Key(event);" />
                     <span class="incoming-notice"></span></td>
                 <input type="hidden" class="price" value="%.2f" />

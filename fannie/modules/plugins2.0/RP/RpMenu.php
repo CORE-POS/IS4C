@@ -22,6 +22,11 @@ class RpMenu extends FannieRESTfulPage
         <li><a href="RpDailyPage.php">Daily Sheet Info</a> - sales info & item lists</li>
         <li><a href="RpPrintOrders.php">Reprint Order</a> - reprint an archived order</li>
     </ul>
+    <li>Beta Tools
+    <ul>
+        <li><a href="RpDualPage.php">Dual Inventory Ordering</a> - Regular Ordering with separate inputs for inventoring sales
+floor & backstock. Currently available for testing & feedback.</li>
+    </ul>
 </ul>
 <hr />
 <ul>

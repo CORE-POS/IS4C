@@ -283,8 +283,8 @@ var rpOrder = (function ($) {
     mod.reCalcRow = function(elem) {
         var caseSize = $(elem).find('td.caseSize').html();
         var adj = $(elem).find('td.parCell').html();
-        var onHand = $(elem).find('input.onHand1').val();
-        var onHand += $(elem).find('input.onHand2').val();
+        var onHand = 1 * $(elem).find('input.onHand1').val();
+        onHand += (1 * $(elem).find('input.onHand2').val());
         if (onHand <= 0) {
             return;
         }
@@ -307,7 +307,7 @@ var rpOrder = (function ($) {
             start -= caseSize;
         }
         orderField = $(elem).find('input.orderAmt');
-        if (orderField.val() <= 0 && orderField.is(':visible')) {
+        if (orderField.is(':visible')) {
             orderField.val(cases);
         }
     };
@@ -399,7 +399,7 @@ var rpOrder = (function ($) {
             }
         } else if (ev.which == 39) {
             ev.preventDefault();
-            $(ev.target).closest('tr').find('input.orderAmt').focus();
+            $(ev.target).closest('tr').find('input.onHand2').focus();
         }
     };
 
@@ -416,6 +416,9 @@ var rpOrder = (function ($) {
             if (prev) {
                 $(prev).find('input.onHand2').focus();
             }
+        } else if (ev.which == 37) {
+            ev.preventDefault();
+            $(ev.target).closest('tr').find('input.onHand1').focus();
         } else if (ev.which == 39) {
             ev.preventDefault();
             $(ev.target).closest('tr').find('input.orderAmt').focus();
@@ -437,7 +440,7 @@ var rpOrder = (function ($) {
             }
         } else if (ev.which == 37) {
             ev.preventDefault();
-            $(ev.target).closest('tr').find('input.onHand1').focus();
+            $(ev.target).closest('tr').find('input.onHand2').focus();
         }
     };
 
