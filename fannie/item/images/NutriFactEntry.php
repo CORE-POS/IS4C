@@ -157,8 +157,8 @@ class NutriFactEntry extends FannieRESTfulPage
         $json = array();
 
         $args = array($upc);
-        $prep = $dbc->prepare("SELECT * FROM NutriFactOptItems WHERE upc = ?");
-        $res = $dbc->execute($prep, $args);
+        $optP = $dbc->prepare("SELECT * FROM NutriFactOptItems WHERE upc = ?");
+        $res = $dbc->execute($optP, $args);
         $numRows = $dbc->numRows($res);
         while ($row = $dbc->fetchRow($res)) {
             $json[$row['name']]['amount'] = $row['amount'];
@@ -176,8 +176,7 @@ class NutriFactEntry extends FannieRESTfulPage
             $dbc->execute($prep, $args);
 
             $args = array($upc);
-            $prep = $dbc->prepare("SELECT * FROM NutriFactOptItems WHERE upc = ?");
-            $res = $dbc->execute($prep, $args);
+            $res = $dbc->execute($optP, $args);
             $numRows = $dbc->numRows($res);
             while ($row = $dbc->fetchRow($res)) {
                 $json[$row['name']]['amount'] = $row['amount'];
