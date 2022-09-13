@@ -93,7 +93,9 @@ $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
-$narrowP = $dbc->prepare('SELECT upc FROM productUser WHERE upc=? AND narrow=1');
+$s_def = $dbc->tableDefinition('SignProperties');
+$narrowTable = (isset($s_def['narrow'])) ? 'SignProperties' : 'productUser';
+$narrowP = $dbc->prepare("SELECT upc FROM $narrowTable WHERE upc=? AND narrow=1");
 $upcs = array();
 $locations = array();
 $locNames = array();
