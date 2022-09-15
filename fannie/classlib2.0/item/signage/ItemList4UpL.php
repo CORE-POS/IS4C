@@ -96,6 +96,8 @@ class ItemList4UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $column = $effective_sign % 2;
             $item['description'] = str_replace("\r", '', $item['description']);
             $item['description'] = str_replace("\n", ' ', trim($item['description']));
+            $item['description'] = preg_replace("/[^\x01-\x7F]/"," ", $item['description']);
+            $item['description'] = str_replace("  ", " ", $item['description']);
 
             $price = $this->printablePrice($item);
             $item['size'] = $this->formatSize($item['size'], $item);

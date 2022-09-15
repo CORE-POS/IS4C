@@ -55,6 +55,8 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
     protected function drawItem($pdf, $item, $row, $column)
     {
+        $item['description'] = preg_replace("/[^\x01-\x7F]/"," ", $item['description']);
+        $item['description'] = str_replace("  ", " ", $item['description']);
         $effective_width = $this->width - (2*$this->left);
         $price = $this->printablePrice($item);
 
@@ -64,6 +66,8 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetX($this->left + ($this->width*$column));
         $pdf->SetFont($this->font, '', $this->MED_FONT);
         $item['description'] = str_replace("\r", '', $item['description']);
+        $item['description'] = preg_replace("/[^\x01-\x7F]/"," ", $item['description']);
+        $item['description'] = str_replace("  ", " ", $item['description']);
         $pdf->Cell($effective_width, 6, str_replace("\n", '', $item['description']), 0, 1, 'C');
 
         $pdf->SetX($this->left + ($this->width*$column));

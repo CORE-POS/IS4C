@@ -52,6 +52,8 @@ class Giganto1UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $row = 0;
         $effective_width = $this->width - (2*$this->left);
         foreach ($data as $item) {
+            $item['description'] = preg_replace("/[^\x01-\x7F]/"," ", $item['description']);
+            $item['description'] = str_replace("  ", " ", $item['description']);
             $pdf->AddPage();
 
             $price = $this->printablePrice($item);

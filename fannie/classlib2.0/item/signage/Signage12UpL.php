@@ -41,6 +41,8 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
 
     protected function drawItem($pdf, $item, $row, $column)
     {
+        $item['description'] = preg_replace("/[^\x01-\x7F]/"," ", $item['description']);
+        $item['description'] = str_replace("  ", " ", $item['description']);
         $effective_width = $this->width - $this->left;
 
         $price = $this->printablePrice($item);

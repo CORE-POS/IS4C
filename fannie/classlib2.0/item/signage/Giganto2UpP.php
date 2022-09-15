@@ -53,6 +53,8 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $sign = 0;
         $effective_width = $this->width - (2*$this->left);
         foreach ($data as $item) {
+            $item['description'] = preg_replace("/[^\x01-\x7F]/"," ", $item['description']);
+            $item['description'] = str_replace("  ", " ", $item['description']);
             if ($count % 2 == 0) {
                 $pdf->AddPage();
                 $sign = 0;
