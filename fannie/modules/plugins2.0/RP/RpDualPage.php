@@ -36,7 +36,7 @@ class RpDualPage extends FannieRESTfulPage
         unset($_SESSION['rpState']);
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
-        $model->dataType('RP');
+        $model->dataType('RP-Dual');
 
         $snap = new RpSnapshotsModel($this->connection);
         $snap->userID($model->userID());
@@ -144,7 +144,7 @@ class RpDualPage extends FannieRESTfulPage
         $_SESSION['rpState'] = json_decode($this->json, true);
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
-        $model->dataType('RP');
+        $model->dataType('RP-Dual');
         $model->data($this->json);
         $model->save();
         var_dump($_SESSION['rpState']);
@@ -386,7 +386,7 @@ class RpDualPage extends FannieRESTfulPage
         $jsState = isset($_SESSION['rpState']) ? json_encode($_SESSION['rpState']) : "false";
         if ($jsState === "false") {
             $sModel = new RpSessionsModel($this->connection);
-            $sModel->dataType('RP');
+            $sModel->dataType('RP-Dual');
             $sModel->userID($this->userID);
             if ($sModel->load()) {
                 $jsState = $sModel->data();
