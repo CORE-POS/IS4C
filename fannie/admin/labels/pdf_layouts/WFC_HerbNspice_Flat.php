@@ -88,6 +88,9 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     $price = $row['normal_price'];
     $vendor = $row['vendor'];
     $vendor = FpdfLib::parseVendorName($vendor, 10);
+    $vendor = strtoupper($vendor);
+    $vendor = str_replace(" ", ". ", $vendor);
+    $vendor = "$vendor.";
 
     $descFontSize = 26;
     $descFontSizeBig = 24;
@@ -161,9 +164,27 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     // PLU Barcode
     $pdf->EAN13($x+42, $y+$step*2,substr($upc, -3),4,.25);  //generate barcode and place on label
     // SKU Barcode
-    $pdf->EAN13($x+2, $y+$step*2,$sku,4,.25);  //generate barcode and place on label
+    if (is_numeric($sku)) {
+        $pdf->EAN13($x+2, $y+$step*2,$sku,4,.25);  //generate barcode and place on label
+    }
     $pdf->SetFillColor(255,255,255);
     $pdf->SetFont('Gill','B', 16.5);
+
+    /*
+        Add Vendor Info
+    */
+    $pdf->SetFont('Gill','', 8.5);
+    $pdf->SetXY($x+1, $y-1+$step*3);
+    $pdf->Cell(18, 2, $vendor, 0, 1, 'L', true);
+    /*
+        Add SKU if numeric
+    */
+    if (is_numeric($sku)) {
+        $pdf->SetXY($x+18, $y-1+$step*3);
+        $pdf->Cell(30, 2, $sku, 0, 1, 'L', true);
+    }
+    $pdf->SetFont('Gill','B', 16.5);
+
 
     // cover up numerical part of barcodes with white rectanglges
     $pdf->SetFillColor(255,255,255);
