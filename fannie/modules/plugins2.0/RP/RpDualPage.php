@@ -33,7 +33,7 @@ class RpDualPage extends FannieRESTfulPage
 
     protected function get_clear_handler()
     {
-        unset($_SESSION['rpState']);
+        unset($_SESSION['rpDualState']);
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
         $model->dataType('RP-Dual');
@@ -141,13 +141,13 @@ class RpDualPage extends FannieRESTfulPage
 
     protected function get_json_handler()
     {
-        $_SESSION['rpState'] = json_decode($this->json, true);
+        $_SESSION['rpDualState'] = json_decode($this->json, true);
         $model = new RpSessionsModel($this->connection);
         $model->userID($this->userID);
         $model->dataType('RP-Dual');
         $model->data($this->json);
         $model->save();
-        var_dump($_SESSION['rpState']);
+        var_dump($_SESSION['rpDualState']);
         echo 'OK';
 
         return false;
@@ -383,14 +383,14 @@ class RpDualPage extends FannieRESTfulPage
         }
         $sSelect = FormLib::storePicker();
         $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpOrderPage.php?store=\' + this.value;"', $sSelect['html']);
-        $jsState = isset($_SESSION['rpState']) ? json_encode($_SESSION['rpState']) : "false";
+        $jsState = isset($_SESSION['rpDualState']) ? json_encode($_SESSION['rpDualState']) : "false";
         if ($jsState === "false") {
             $sModel = new RpSessionsModel($this->connection);
             $sModel->dataType('RP-Dual');
             $sModel->userID($this->userID);
             if ($sModel->load()) {
                 $jsState = $sModel->data();
-                $_SESSION['rpState'] = json_decode($sModel->data(), true);
+                $_SESSION['rpDualState'] = json_decode($sModel->data(), true);
             }
         }
         $this->addOnloadCommand("rpOrder.initState({$jsState});");
