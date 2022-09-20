@@ -460,7 +460,6 @@ HTML;
 
 <div class="row">
     <div class="col-lg-4">
-        <div class="alert alert-warning">This page is under construction.<br>Floor sections do not update for Hillside.</div>
         <form name="upcs">
             <div class="form-group">
                 <label for="upcs">Paste a list of UPCs</label>
