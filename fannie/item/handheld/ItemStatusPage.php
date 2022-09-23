@@ -109,9 +109,12 @@ class ItemStatusPage extends FannieRESTfulPage
     public function get_narrowTag_upc_handler()
     {
         $dbc = $this->connection;
+        $storeID = Store::getIdByIp();
         $dbc->selectDB($this->config->get('OP_DB'));
+        $s_def = $dbc->tableDefinition('SignProperties');
         $upc = BarcodeLib::padUPC($this->upc);
         $pu = new ProductUserModel($dbc);
+        $signModel = (isset($s_def['signCount'])) ? new SignPropertiesModel($dbc) : $pu;
         $pu->upc($upc);
         if (!$pu->load()) {
             $p = new ProductsModel($dbc);
@@ -125,13 +128,15 @@ class ItemStatusPage extends FannieRESTfulPage
         $pu->reset();
         $pu->upc($upc);
 
+        $signModel->upc($upc);
+        $signModel->storeID($storeID);
         $action = FormLib::get('narrowTag');
         if ($action == 'remove') {
-            $pu->narrow(0);
-            $pu->save();
+            $signModel->narrow(0);
+            $signModel->save();
         } elseif ($action == 'add') {
-            $pu->narrow(1);
-            $pu->save();
+            $signModel->narrow(1);
+            $signModel->save();
         }
 
         header('Location: ' . $_SERVER['PHP_SELF'] . '?id=' . $this->upc);
@@ -151,9 +156,18 @@ class ItemStatusPage extends FannieRESTfulPage
             <div class="panel-body">';
 
         $dbc = FannieDB::getReadOnly($FANNIE_OP_DB);
+        $storeID = Store::getIdByIp();
         $product = new ProductsModel($dbc);
-        $narrowTag = $dbc->prepare('SELECT narrow FROM productUser WHERE upc=?');
-        $isNarrow = $dbc->getValue($narrowTag, array($upc));
+        $s_def = $dbc->tableDefinition('SignProperties');
+        $table = (isset($s_def['signCount'])) ? ' SignProperties ' : ' productUser ';
+        $args = array($upc);
+        $query = "SELECT narrow FROM $table WHERE upc=?";
+        if (isset($s_def['signCount'])) {
+            $query .= " AND storeID = ? ";
+            $args[] = $storeID;
+        }
+        $narrowTag = $dbc->prepare($query);
+        $isNarrow = $dbc->getValue($narrowTag, $args);
         $vendor = new VendorsModel($dbc);
         $product->upc($upc);
         if ($this->config->get('STORE_MODE') == 'HQ') {
