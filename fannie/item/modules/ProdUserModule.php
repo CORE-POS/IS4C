@@ -43,6 +43,10 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
 
         $dbc = $this->db();
         $model = new ProductUserModel($dbc);
+        $s_def = $dbc->tableDefinition('SignProperties');
+        if (isset($s_def['signCount'])) {
+            $signPropertiesModel = new SignPropertiesModel($dbc);
+        };
         $model->upc($upc);
         $model->load();
 
@@ -70,6 +74,48 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $originP = $dbc->prepare('SELECT current_origin_id FROM products WHERE upc=?');
         $originID = $dbc->getValue($originP, array($upc));
 
+        /**
+         * Migrating to SignProperties if available
+         * Create a table of per-store sign properties using the values
+         * from productUser if the newer SignProperties table is not
+         * populated yet.
+         *
+         * Check for <td> at the end to ensure a table was built and
+         * if not fall back to the old behavior
+         */
+        $haveProperties = $dbc->tableExists('SignProperties');
+        if ($haveProperties) {
+            $propP = $dbc->prepare("SELECT storeID, narrow, signCount FROM SignProperties WHERE upc=?");
+            $propR = $dbc->execute($propP, array($upc));
+            $props = array();
+            while ($row = $dbc->fetchRow($propR)) {
+                $props[$row['storeID']] = $row;
+            }
+            $propsTable = '<table class="table">';
+            $propsTable .= '<tr><th>Store</th><th>Sign Count</th><th>Narrow Tag</th></tr>';
+            $storeR = $dbc->execute("SELECT storeID, description FROM Stores WHERE hasOwnItems=1");
+            while ($row = $dbc->fetchRow($storeR)) {
+                $propSet = array('signCount' => $model->signCount(), 'narrow' => $model->narrow());
+                if (isset($props[$row['storeID']])) {
+                    $propSet = $props[$row['storeID']];
+                }
+                $propsTable .= sprintf('<tr>
+                    <td>%s<input type="hidden" name="lf_store[]" value="%d" /></td>
+                    <td><input type="text" class="form-control" name="sign-count[]" value="%d" /></td>
+                    <td><input type="checkbox" name="narrowTag[]" value="%d" %s /></td>
+                    </tr>',
+                    $row['description'],
+                    $row['storeID'],
+                    $propSet['signCount'],
+                    $row['storeID'],
+                    $propSet['narrow'] ? 'checked' : '');
+            }
+            $propsTable .= '</table>';
+            if (strpos($propsTable, '<td>') === false) {
+                $haveProperties = false;
+            }
+        }
+
         $ret .= '<div class="col-sm-6">';
         $ret .= '<div class="row form-group">'
                 . '<label class="col-sm-1">Brand</label> '
@@ -91,16 +137,20 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
                 . '</div>'
                 . '</div>';
 
-        $ret .= '<div class="row form-group">'
-                . '<label class="small col-sm-1">Sign Ct.</label> '
-                . '<div class="col-sm-4">'
-                . '<input type="number" class="form-control price-field"
-                    name="sign-count" value="' . $model->signCount() . '" />'
-                . '</div>'
-                . '<div class="col-sm-3">'
-                . '<label>Narrow Tag <input type="checkbox" value="1" name="narrowTag" ' . ($model->narrow() ? 'checked' : '') . ' /></label>'
-                . '</div>'
-                . '</div>';
+        if ($haveProperties) {
+            $ret .= $propsTable;
+        } else {
+            $ret .= '<div class="row form-group">'
+                    . '<label class="small col-sm-1">Sign Ct.</label> '
+                    . '<div class="col-sm-4">'
+                    . '<input type="number" class="form-control price-field"
+                        name="sign-count" value="' . $model->signCount() . '" />'
+                    . '</div>'
+                    . '<div class="col-sm-3">'
+                    . '<label>Narrow Tag <input type="checkbox" value="1" name="narrowTag" ' . ($model->narrow() ? 'checked' : '') . ' /></label>'
+                    . '</div>'
+                    . '</div>';
+        }
 
         // ensure there's always an extra <select> for new entries
         $marked[] = -1;
@@ -271,18 +321,44 @@ class ProdUserModule extends \COREPOS\Fannie\API\item\ItemModule
         $floorIDs = FormLib::get('floorID', array());
         $floorSubs = FormLib::get('floorSub', array());
         $oldfloorIDs = FormLib::get('currentFloor', array());
-        $narrow = FormLib::get('narrowTag', 0) ? 1 : 0;
+        $narrowTag = FormLib::get('narrowTag');
         $text = FormLib::get('lf_text');
         $text = str_replace("\r", '', $text);
         $text = str_replace("\n", '<br />', $text);
         // strip non-ASCII (word copy/paste artifacts)
         $text = preg_replace("/[^\x01-\x7F]/","", $text); 
-        $signs = FormLib::get('sign-count', 1);
+        $signCount = FormLib::get('sign-count');
+
+        $dbc = $this->db();
+
+        /*
+         * Means SignProperties data was sent
+         * Save those records & also populate variables
+         * so that productUser will get values to store.
+         * By convention, productUser will track values
+         * for store #1.
+         */
+        if (is_array($signCount)) {
+            $narrowTag = FormLib::get('narrowTag', array()); // ensure array if none checked
+            $narrow = in_array(1, $narrowTag) ? 1 : 0; // for use in productUser
+            $signs = $signCount[0]; // for use in productUser
+            $props = new SignPropertiesModel($dbc);
+            $stores = FormLib::get('lf_store');
+            for ($i = 0; $i< count($stores); $i++) {
+                $props->storeID($stores[$i]);
+                $props->upc($upc);
+                $props->signCount($signCount[$i] > 0 ? $signCount[$i] : 1);
+                $props->narrow(in_array($stores[$i], $narrowTag) ? 1 : 0);
+                $props->save();
+            }
+        } else {
+            $signs = $signCount;
+            $narrow = $narrowTag ? 1 : 0;
+        }
+
         if ($signs < 1) {
             $signs = 1;
         }
-
-        $dbc = $this->db();
 
         $this->saveLocation($dbc, $upc, $floorIDs, $oldfloorIDs, $floorSubs);
 
