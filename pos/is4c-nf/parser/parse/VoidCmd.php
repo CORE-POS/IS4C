@@ -173,6 +173,7 @@ class VoidCmd extends Parser implements AdminLoginInterface
             || strlen($row["upc"]) < 1 
             || $row['trans_type'] === 'D'
             || $row['charflag'] === 'SO'
+            || $row['charflag'] === 'TF'
         );
     }
 

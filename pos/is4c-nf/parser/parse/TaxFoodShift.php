@@ -65,7 +65,7 @@ class TaxFoodShift extends Parser {
         }
 
         $query = "UPDATE localtemptrans 
-            set tax=$nextTax,foodstamp=$nextFs 
+            set tax=$nextTax,foodstamp=$nextFs,charflag='TF'
             WHERE trans_id=$curID";
         $dbc->query($query);    
         
