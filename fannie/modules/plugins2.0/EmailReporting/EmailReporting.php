@@ -45,7 +45,8 @@ class EmailReporting extends \COREPOS\Fannie\API\FanniePlugin {
 
     public function settingChange()
     {
-        $db_name = $FANNIE_PLUGIN_SETTINGS['EmailReportingDB'];
+         $db_name = isset($FANNIE_PLUGIN_SETTINGS['EmailReportingDB']) ?
+            $FANNIE_PLUGIN_SETTINGS['EmailReportingDB'] : '';
         if (empty($db_name)) return;
 
         $dbc = FannieDB::get($db_name);
