@@ -393,6 +393,8 @@ class ProdLocationEditor extends FannieRESTfulPage
         $upcs = FormLib::get('upcs', '');
         $selStoreOpts = '';
 
+        $suggestions = $this->getSuggestions();
+
         $ret = "";
         $ret .= '
         <div class="row"><form method="get" action="ProdLocationEditor.php">
@@ -507,7 +509,7 @@ class ProdLocationEditor extends FannieRESTfulPage
         }
 
         foreach ($item as $upc => $row) {
-            $item[$upc]['sugDept'] = $this->getLocation($item[$upc]['dept'],$dbc);
+            $item[$upc]['sugDept'] = $suggestions[$row['dept']];
         }
 
         $args = array($storeID);
@@ -747,36 +749,34 @@ JAVASCRIPT;
             ';
     }
 
-    public function getLocation($dept,$dbc)
+    public function getSuggestions()
     {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
         $storeID = FormLib::get('storeID', 1);
+        $depts = array();
 
-        $args = array($dept,$storeID);
-        $prep = $dbc->prepare("
-            SELECT f.floorSectionID
+        $args = array($storeID);
+        $prep = $dbc->prepare("SELECT 
+            f.floorSectionID, 
+            count(f.floorSectionID) AS coung,
+            dept_no
             FROM FloorSectionProductMap AS f
-            LEFT JOIN products AS p ON f.upc=p.upc
-            LEFT JOIN departments AS d ON p.department=d.dept_no
+                LEFT JOIN products AS p ON f.upc=p.upc
+                LEFT JOIN departments AS d ON p.department=d.dept_no
             RIGHT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
-            WHERE p.department = ?
-                AND s.storeID = ?;
-        ");
-        $res = $dbc->execute($prep,$args);
-        $data = array();
+                WHERE s.storeID = ?
+            GROUP BY dept_no, f.floorSectionID
+            ORDER BY dept_no, count(f.floorSectionID) ASC;
+            ");
+        $res = $dbc->execute($prep, $args);;
         while ($row = $dbc->fetchRow($res)) {
-            if (!array_key_exists($row['floorSectionID'],$data)) {
-                $data[$row['floorSectionID']] = 0;
-            } else {
-                $data[$row['floorSectionID']]++;
-            }
-        }
-        if (empty($data)) {
-            return 'none';
-        } else {
-            $maxs = array_keys($data, max($data));
-            return $maxs[0];
+            $dept = $row['dept_no'];
+            $fsID = $row['floorSectionID'];
+            $depts[$dept] = $fsID;    
         }
 
+        return $depts;
     }
 
     public function unitTest($phpunit)
