@@ -1131,6 +1131,7 @@ class ParsersTest extends PHPUnit_Framework_TestCase
         $tfs->parse('TFS');
         $record['tax'] = 0;
         $record['foodstamp'] = 1;
+        $record['charflag'] = 'TF';
         lttLib::verifyRecord(1, $record, $this);
 
         lttLib::clear();
