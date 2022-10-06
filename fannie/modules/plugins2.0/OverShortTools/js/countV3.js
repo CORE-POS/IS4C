@@ -23,11 +23,12 @@ function save(){
 	var changeOrder = saveChangeOrder();
 	var openSafeCount = saveOpenSafeCount();
 	var buyAmount = saveRow('buyAmount');
-	var atmAmount = saveAtmAmount();
+	var atmAmount = saveAtmAmount('atmCount');
+	var atmAmount2 = saveAtmAmount('atmCount2');
     var tillCount = saveTillCounts();
     var notes = saveNotes();
 
-	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&buyAmount='+buyAmount+'&atmAmount='+atmAmount+'&tillCount='+tillCount+'&notes='+notes+'&store='+store+'&type='+type;
+	var args = 'action=save&date1='+date1+'&date2='+date2+'&changeOrder='+changeOrder+'&openSafeCount='+openSafeCount+'&buyAmount='+buyAmount+'&atmAmount='+atmAmount+'&tillCount='+tillCount+'&notes='+notes+'&store='+store+'&type='+type+'&atmAmount2='+atmAmount2;
 
 	$.ajax({
 		url: 'OverShortSafecountV3.php',
@@ -73,10 +74,10 @@ function saveNotes() {
     return ret;
 }
 
-function saveAtmAmount(){
+function saveAtmAmount(idstr){
 	var ret = '';
-	if ($('#atmCount').length !== 0) {
-		ret += 'count:'+$('#atmCount').val();
+	if ($('#' + idstr).length !== 0) {
+		ret += 'count:'+$('#' + idstr).val();
 	} else {
 		ret += 'count:0';
     }
@@ -196,6 +197,7 @@ function updateBuyAmount(d){
             if (denom === '20.00') {
                 val -= Number(document.getElementById('changeOrder20.00').value);
                 val -= Number(document.getElementById('atmCount').value);
+                val -= Number(document.getElementById('atmCount2').value);
             } else {
                 val -= Number(document.getElementById('cashInTills'+denom).innerHTML);
             }

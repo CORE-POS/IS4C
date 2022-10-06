@@ -63,6 +63,7 @@ class OverShortSafecountV3 extends FanniePage {
                 FormLib::get_form_value('openSafeCount'),
                 FormLib::get_form_value('buyAmount'),
                 FormLib::get_form_value('atmAmount'),
+                FormLib::get_form_value('atmAmount2'),
                 FormLib::get_form_value('tillCount'),
                 FormLib::get_form_value('notes')
                 );
@@ -70,11 +71,12 @@ class OverShortSafecountV3 extends FanniePage {
         }
     }
 
-    function save($dateStr,$store,$type,$changeOrder,$openSafeCount,$buyAmount,$atmAmount,$tillCount,$notes){
+    function save($dateStr,$store,$type,$changeOrder,$openSafeCount,$buyAmount,$atmAmount,$atmAmount2,$tillCount,$notes){
         $this->saveInputs($dateStr,$store,$type,'changeOrder',$changeOrder);
         $this->saveInputs($dateStr,$store,$type,'openSafeCount',$openSafeCount);
         $this->saveInputs($dateStr,$store,$type,'buyAmount',$buyAmount);
         $this->saveInputs($dateStr,$store,$type,'atm',$atmAmount);
+        $this->saveInputs($dateStr,$store,$type,'atm2',$atmAmount2);
         $this->saveTillCounts($dateStr, $store, $type, $tillCount);
         $this->saveNotes($dateStr, $store, $type, $notes);
     
@@ -169,7 +171,8 @@ class OverShortSafecountV3 extends FanniePage {
         $holding = array('changeOrder'=>array(),
                 'openSafeCount'=>array(),
                 'buyAmount' => array(),
-                'atm'=>array('count'=>0)
+                'atm'=>array('count'=>0),
+                'atm2'=>array('count'=>0),
                 );
 
         $denoms = array('0.01','0.05','0.10','0.25','Junk','1.00','5.00','10.00','20.00','50.00','100.00','Checks');
@@ -260,7 +263,10 @@ class OverShortSafecountV3 extends FanniePage {
         $ret .= "<td>Count:</td>";
         $ret .= "<td><input size=4 type=text id=atmCount value=\"".$holding['atm']['count']."\"
                 onchange=\"updateAtmAmounts();\" /></td>";
-        $ret .= "<td colspan=\"4\">&nbsp;</td>";
+        $ret .= "<td>Secondary:</td>";
+        $ret .= "<td><input size=4 type=text id=atmCount2 value=\"".$holding['atm2']['count']."\"
+                onchange=\"updateAtmAmounts();\" /></td>";
+        $ret .= "<td colspan=\"2\">&nbsp;</td>";
         $ret .= "</tr>";
 
         if ($store == 1) {
@@ -494,7 +500,7 @@ class OverShortSafecountV3 extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/countV3.js?date=20220531');
+        $this->addScript('js/countV3.js?date=20220927');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');
