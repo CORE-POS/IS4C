@@ -117,7 +117,7 @@ class RenameVendorPage extends FannieRESTfulPage
         $phpunit->assertEquals(true, $this->post_id_handler());
         $form->name = 'Not a real vendor';
         $this->setForm($form);
-        $phpunit->assertNotEquals(true, $this->post_id_handler());
+        $phpunit->assertInternalType('string', $this->post_id_handler());
     }
 
     public function helpContent()
