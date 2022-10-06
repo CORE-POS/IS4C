@@ -238,6 +238,14 @@ class OwnerJoinLeaveReport extends FannieReportPage
 
         if ($this->config->COOP_ID == 'WFC_Duluth') {
             array_unshift($data, array(
+                'Monthly New Owner Goal',
+                null,
+                '58',
+                '',
+                null,
+                null,
+            ));
+            array_unshift($data, array(
                 'Annual New Owner Goal',
                 null,
                 '700',
