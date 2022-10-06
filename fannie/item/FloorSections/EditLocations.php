@@ -384,8 +384,6 @@ HTML;
                 RIGHT JOIN FloorSections as fs ON map.floorSectionID=fs.floorSectionID
             WHERE upc IN ($inStr)
                 AND fs.storeID = ?
-                /* excluding floor sections from wellness, bulk, bread & deli */
-                AND map.floorSectionID NOT IN (36,37,38,39,40,49,50,51,52,53,69)
         ");
         $res = $dbc->execute($prep, $args);
 
