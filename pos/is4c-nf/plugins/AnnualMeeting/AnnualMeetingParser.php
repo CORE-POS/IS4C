@@ -50,14 +50,14 @@ class AnnualMeetingParser extends Parser {
     function parse($str)
     {
         $ret = $this->default_json();
+        if (strlen($str) == 4 && $str == '1042') {
+            $str = '1042T';
+        }
         if (strlen($str)==4){
             CoreLocal::set('qmInput',$str);
             $desc = $this->descriptions[$str];
             $opts = array(
-                $desc.' (Squash)' => 'S',
-                $desc.' (Squash G/F)' => 'T',
-                $desc.' (Chicken)' => 'C',
-                $desc.' (Chicken G/F)' => 'D',
+                $desc.' (Taco Bar)' => 'T',
             );
             if ($str == 1041){
                 $opts[$desc.' (Kids)'] = 'K';
@@ -69,7 +69,7 @@ class AnnualMeetingParser extends Parser {
         } else {
             $flag = strtoupper($str[4]);
             $plu = substr($str,0,4);
-            $price = ($flag == 'K') ? 5.00 : 20.00;
+            $price = ($flag == 'K') ? 5.00 : 25.00;
             TransRecord::addRecord(array(
                 'upc' => str_pad($plu,13,'0',STR_PAD_LEFT),
                 'description' => $this->descriptions[$plu].' ('.$flag.')',
