@@ -166,6 +166,15 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $dbc->execute($delP, array($month));
         list($upcP, $skuP, $insP, $priceP) = $this->prepStatements($dbc);
 
+        $prefix = 0;
+        $prefixP = $dbc->prepare("SELECT mixMatch FROM CoopDealsBogos ORDER BY mixMatch DESC");
+        $last = $dbc->getValue($prefixP, array());
+        if ($last) {
+            list($last,) = explode('-', $last);
+            $prefix = ((int)$last) + 1;
+        }
+        $prefix = str_pad($prefix, 5, '0', STR_PAD_LEFT);
+
         $rm_checks = (FormLib::get_form_value('rm_cds') != '') ? True : False;
         $col_max = max($indexes);
         $dbc->startTransaction();
@@ -208,7 +217,7 @@ class CoopDealsUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $price = $dbc->getValue($priceP, array($upc));
                     if ($bogoTable) {
                         $bogoModel->upc($upc);
-                        $bogoModel->mixMatch($promoPrice);
+                        $bogoModel->mixMatch($prefix . '-' . $promoPrice);
                         $bogoModel->save();
                     }
                 }
