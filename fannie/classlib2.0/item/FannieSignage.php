@@ -135,8 +135,11 @@ class FannieSignage
             }
 
             $u_def = $dbc->tableDefinition('productUser');
-            if (isset($u_def['signCount'])) {
+            $s_def = $dbc->tableDefinition('SignProperties');
+            if (isset($u_def['signCount']) && !isset($s_def['signCount'])) {
                 $sql['query'] = str_replace('p.upc,', 'p.upc, u.signCount,', $sql['query']);
+            } elseif (isset($s_def['signCount'])) {
+                $sql['query'] = str_replace('p.upc,', 'p.upc, sp.signCount,', $sql['query']);
             } else {
                 $sql['query'] = str_replace('p.upc,', 'p.upc, 1 AS signCount,', $sql['query']);
             }
@@ -302,6 +305,10 @@ class FannieSignage
         }
         $ids = '';
         $args = array();
+        $s_def = $dbc->tableDefinition('SignProperties');
+        if (isset($s_def['signCount'])) {
+            $args[] = Store::getIdByIp();
+        }
         foreach ($this->source_id as $id) {
             $args[] = $id;
             $ids .= '?,';
@@ -341,8 +348,10 @@ class FannieSignage
         } else {
             $query .= '1 AS signMultiplier,';
         }
-        if (isset($u_def['signCount'])) {
+        if (isset($u_def['signCount']) && !isset($s_def['signCount'])) {
             $query .= 'u.signCount,';
+        } elseif (isset($s_def['signCount'])) {
+            $query .= 'sp.signCount,';
         } else {
             $query .= '1 AS signCount,';
         }
@@ -361,8 +370,11 @@ class FannieSignage
                     LEFT JOIN productUser AS u ON p.upc=u.upc
                     LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                 WHERE l.batchID IN (' . $ids . ') ';
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID ';
+         if (isset($s_def['signCount'])) {
+             $query .= ' LEFT JOIN SignProperties AS sp ON sp.upc=l.upc AND sp.storeID = ? ';
+         }
+         $query .= ' WHERE l.batchID IN (' . $ids . ') ';
         $query .= ' ORDER BY l.batchID, brand, description';
 
         return array('query' => $query, 'args' => $args);
@@ -404,6 +416,10 @@ class FannieSignage
     {
         $ids = '';
         $args = array();
+        $s_def = $dbc->tableDefinition('SignProperties');
+        if (isset($s_def['signCount'])) {
+            $args[] = Store::getIdByIp();
+        }
         foreach ($this->items as $id) {
             $args[] = $id;
             $ids .= '?,';
@@ -432,8 +448,13 @@ class FannieSignage
                     LEFT JOIN productUser AS u ON p.upc=u.upc
                     LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
-                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID
-                 WHERE p.upc IN (' . $ids . ') ';
+                    LEFT JOIN origins AS o ON p.current_origin_id=o.originID ';
+
+        if (isset($s_def['signCount'])) {
+            $query .= ' LEFT JOIN SignProperties AS sp ON sp.upc=p.upc AND sp.storeID = ? ';
+        }
+
+        $query .= ' WHERE p.upc IN (' . $ids . ') ';
         if (FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
             $args[] = FannieConfig::config('STORE_ID');
@@ -447,6 +468,10 @@ class FannieSignage
     {
         $ids = '';
         $args = array();
+        $s_def = $dbc->tableDefinition('SignProperties');
+        if (isset($s_def['signCount'])) {
+            $args[] = Store::getIdByIp();
+        }
         foreach ($this->items as $id) {
             $args[] = $id;
             $ids .= '?,';
@@ -477,8 +502,13 @@ class FannieSignage
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                     LEFT JOIN batchList AS l ON p.upc=l.upc
-                    LEFT JOIN batches AS b ON l.batchID=b.batchID
-                 WHERE p.upc IN (' . $ids . ')
+                    LEFT JOIN batches AS b ON l.batchID=b.batchID';
+
+        if (isset($s_def['signCount'])) {
+            $query .= ' LEFT JOIN SignProperties AS sp ON sp.upc=p.upc AND sp.storeID = ? ';
+        }
+
+        $query .= ' WHERE p.upc IN (' . $ids . ')
                     AND b.discounttype = 0
                     AND b.startDate >= ' . $dbc->curdate() . ' ';
         if (FannieConfig::config('STORE_MODE') == 'HQ') {
@@ -494,6 +524,10 @@ class FannieSignage
     {
         $ids = '';
         $args = array();
+        $s_def = $dbc->tableDefinition('SignProperties');
+        if (isset($s_def['signCount'])) {
+            $args[] = Store::getIdByIp();
+        }
         foreach ($this->items as $id) {
             $args[] = $id;
             $ids .= '?,';
@@ -536,8 +570,13 @@ class FannieSignage
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                     LEFT JOIN batchList AS l ON p.batchID=l.batchID AND p.upc=l.upc
                     LEFT JOIN batches AS b ON l.batchID=b.batchID
-                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
-                 WHERE p.upc IN (' . $ids . ') ';
+                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID';
+
+        if (isset($s_def['signCount'])) {
+            $query .= ' LEFT JOIN SignProperties AS sp ON sp.upc=p.upc AND sp.storeID = ? ';
+        }
+
+        $query .= ' WHERE p.upc IN (' . $ids . ') ';
         if (FannieConfig::config('STORE_MODE') == 'HQ') {
             $query .= ' AND p.store_id=? ';
             $args[] = Store::getIdByIp();
@@ -551,6 +590,10 @@ class FannieSignage
     {
         $ids = '';
         $args = array();
+        $s_def = $dbc->tableDefinition('SignProperties');
+        if (isset($s_def['signCount'])) {
+            $args[] = Store::getIdByIp();
+        }
         foreach ($this->items as $id) {
             $args[] = $id;
             $ids .= '?,';
@@ -591,8 +634,13 @@ class FannieSignage
                     LEFT JOIN origins AS o ON p.current_origin_id=o.originID
                     LEFT JOIN batchList AS l ON p.upc=l.upc
                     LEFT JOIN batches AS b ON l.batchID=b.batchID
-                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
-                 WHERE p.upc IN (' . $ids . ')
+                    LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID';
+
+        if (isset($s_def['signCount'])) {
+            $query .= ' LEFT JOIN SignProperties AS sp ON sp.upc=p.upc AND sp.storeID = ? ';
+        }
+
+        $query .= ' WHERE p.upc IN (' . $ids . ')
                     AND b.discounttype <> 0
                     AND b.startDate > ' . $dbc->now() . ' ';
         if (FannieConfig::config('STORE_MODE') == 'HQ') {
