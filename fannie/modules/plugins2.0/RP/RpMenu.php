@@ -26,6 +26,7 @@ class RpMenu extends FannieRESTfulPage
     <ul>
         <li><a href="RpDualPage.php">Dual Inventory Ordering</a> - Regular Ordering with separate inputs for inventoring sales
 floor & backstock. Currently available for testing & feedback.</li>
+        <li><a href="RpLocalSummary.php">Direct Orders Summary</a> - displays the percentage of product orders from different farms over time.
     </ul>
 </ul>
 <hr />
