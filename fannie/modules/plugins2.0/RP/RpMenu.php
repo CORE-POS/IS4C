@@ -16,7 +16,7 @@ class RpMenu extends FannieRESTfulPage
 <ul>
     <li>Daily Tools
     <ul>
-        <li><a href="RpOrderPage.php">Regular Ordering</a> - Alberts, CPW, RDW, and year-round direct</li>
+        <li><a href="RpDualPage.php">Regular Ordering</a> - Alberts, CPW, RDW, and year-round direct</li>
         <li><a href="RpDirectPage.php">Direct Ordering</a> - local & seasonal</li>
         <li><a href="RpArchivePage.php">Direct Orders Archive</a> - local & seasonal</li>
         <li><a href="RpDailyPage.php">Daily Sheet Info</a> - sales info & item lists</li>
@@ -24,8 +24,6 @@ class RpMenu extends FannieRESTfulPage
     </ul>
     <li>Beta Tools
     <ul>
-        <li><a href="RpDualPage.php">Dual Inventory Ordering</a> - Regular Ordering with separate inputs for inventoring sales
-floor & backstock. Currently available for testing & feedback.</li>
         <li><a href="RpLocalSummary.php">Direct Orders Summary</a> - displays the percentage of product orders from different farms over time.
     </ul>
 </ul>
