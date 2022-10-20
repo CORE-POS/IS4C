@@ -424,11 +424,11 @@ HTML;
         $bids = "0";
         $pAllBtn = "<button class='btn btn-default btn-xs'
             onClick='printAll(); return false;'><span class='fas fa-print'></span></button>";
-        $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr>
+        $tableA = "<div class='table-responsive'><table class='table table-condensed table-striped small'><thead><tr class=\"thead\">
             <th>{$pAllBtn}</th>
             <th>BatchID</th><th>Batch Name</th><th>Super Depts +</th><th>VID</th><th>Vendor</th><th>Uploaded</th>
             <th>Comments</th><th></th><th></th><tr></thead><tbody>";
-        $tableB = "<div class='table-responsive'><table class='table table-condensed table-striped small' id='forcedBatchesTable'><thead><tr>
+        $tableB = "<div class='table-responsive'><table class='table table-condensed table-striped small' id='forcedBatchesTable'><thead><tr class=\"thead\">
             <th>BatchID</th><th>Batch Name</th><th>Super Depts +</th><th>VID</th><th>Vendor</th><th>Forced On</th>
             <th>user</th><tr></thead><tbody>";
         $args = array();
@@ -481,7 +481,7 @@ HTML;
                 $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
                 $batchName = $row['batchName'];
                 $tableA .= "<td>{$batchName}</td>";
-                $tableA .= "<td>$superDepts</td>";
+                $tableA .= "<td class=\"super-depts\">$superDepts</td>";
                 if ($row['vid'] == 0) {
                     $vid = "n/a";
                 } else {
@@ -528,8 +528,12 @@ HTML;
                     <div id="alert"><div id="resp"></div></div>
                 </form>
             </div>
-            <div class="col-lg-1"></div>
-            <div class="col-lg-7">
+            <div class="col-lg-4"></div>
+            <div class="col-lg-4">
+                <label for="hide-deli-check">Hide Deli &nbsp;</label>
+                <input type="checkbox" id="hide-deli-check" /> | 
+                <label for="show-deli-check">Show Only Deli &nbsp;</label>
+                <input type="checkbox" id="show-deli-check" />
             </div>
         </div>
         <h4 align="center">Batches Staged for Price Changes</h4>
@@ -958,20 +962,24 @@ HTML;
 
    public function javascript_content()
    {
-       ob_start();
-       ?>
+    return <<<JAVASCRIPT
 var lastChecked = null;
 var i = 0;
 var indexCheckboxes = function(){
+    // 1. unset all data-index
     $('.upcCheckBox').each(function(){
-        $(this).attr('data-index', i);
-        i++;
+        $(this).attr('data-index', null);
+    });
+
+    // 2. set data-index if checkbox is visible
+    $('.upcCheckBox').each(function(){
+        if ($(this).is(":visible")) {
+            $(this).attr('data-index', i);
+            i++;
+        }
     });
 };
 indexCheckboxes();
-$('table').click(function(){
-    indexCheckboxes();
-});
 $('.upcCheckBox').on("click", function(e){
     if(lastChecked && e.shiftKey) {
         var i = parseInt(lastChecked.attr('data-index'));
@@ -1132,8 +1140,51 @@ function fadeAlerts()
         $(this).fadeOut(1500);
     });
 }
-       <?php
-       return ob_get_clean();
+
+$('#hide-deli-check').change(function(){
+    let c = $(this).is(":checked");
+    if (c == true) {
+        $('tr').each(function(){
+            let depts = $(this).find('td.super-depts').text();
+            //if (depts.includes('DELI')) {
+            if (depts.indexOf('DELI') != -1) {
+                $(this).hide();
+            }
+        });
+    } else {
+        $('tr').each(function(){
+            let depts = $(this).find('td.super-depts').text();
+            console.log(depts);
+            if (depts.includes('DELI')) {
+                $(this).show();
+            }
+        });
+
+    }
+    indexCheckboxes();
+});
+
+$('#show-deli-check').change(function(){
+    let c = $(this).is(":checked");
+    if (c == true) {
+        $('tr').each(function(){
+            let depts = $(this).find('td.super-depts').text();
+            if (!depts.includes('DELI') && !$(this).hasClass("thead")) {
+                $(this).hide();
+            }
+        });
+    } else {
+        $('tr').each(function(){
+            let depts = $(this).find('td.super-depts').text();
+            if (!depts.includes('DELI')) {
+                $(this).show();
+            }
+        });
+
+    }
+    indexCheckboxes();
+});
+JAVASCRIPT;
 
     }
 
