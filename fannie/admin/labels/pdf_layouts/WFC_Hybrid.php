@@ -95,7 +95,14 @@ $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
 $s_def = $dbc->tableDefinition('SignProperties');
 $narrowTable = (isset($s_def['narrow'])) ? 'SignProperties' : 'productUser';
-$narrowP = $dbc->prepare("SELECT upc FROM $narrowTable WHERE upc=? AND narrow=1");
+
+$narrowQ = "SELECT upc FROM $narrowTable WHERE upc=? AND narrow=1 ";
+if ($narrowTable == 'SignProperties') {
+    $narrowQ .= " AND storeID = ? ";
+}
+
+$narrowP = $dbc->prepare($narrowQ);
+
 $upcs = array();
 $locations = array();
 $locNames = array();
@@ -156,7 +163,7 @@ $updateMT = $dbc->prepare('
 $full = array();
 $half = array();
 foreach ($data as $k => $row) {
-    if ($dbc->getValue($narrowP, array($row['upc']))) {
+    if ($dbc->getValue($narrowP, array($row['upc'], $store))) {
         $row['full'] = false;
         $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
         $half[] = $row;
@@ -329,6 +336,7 @@ foreach($data as $row) {
                     next($locations[$upc]);
                 }
             }
+
         }
         /*
         if (strlen($upc) <= 11)
@@ -337,8 +345,14 @@ foreach($data as $row) {
             $pdf->EAN13($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
          */
 
+
         $pdf->SetFont('Arial','B',18); //change font for price
         $pdf->TEXT($priceX,$priceY,$price);  //add price
+
+        // print narrow tag cut guide line
+        $pdf->SetDrawColor(200,200,200);
+        $pdf->Line($priceX+29, $priceY-14, $priceX+29, $priceY+16);
+        $pdf->SetDrawColor(0,0,0);
 
         $words = preg_split('/[\s,-]+/',$desc);
         $limit = 13;
