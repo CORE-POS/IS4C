@@ -356,7 +356,7 @@ HTML;
             $table .= sprintf('<tr>
                 <td><a href="ViewPickups.php?id=%d" class="btn btn-default">View</td>
                 <td>%s</td><td>%s</td><td>%s</td><td>%s</td>
-                <td><input type="checkbox" name="print" class="print-checkbox value="%d" /></tr>',
+                <td><input type="checkbox" name="print" value="%d" /></tr>',
                 $row['pickupOrderID'],
                 $row['orderNumber'], $row['name'], $dateTime, $row['status'],
                 $row['pickupOrderID']);
@@ -399,7 +399,7 @@ function printAll() {
 var lastChecked = null;
 var i = 0;
 var indexCheckboxes = function() {
-    var upcCheckBoxes = document.getElementsByClassName("print-checkbox"); 
+    var upcCheckBoxes = document.getElementsByName("print"); 
     for (var i = 0; i < upcCheckBoxes.length; i++) {
         upcCheckBoxes.item(i).setAttribute("data-index", i);
     }
@@ -408,7 +408,6 @@ document.addEventListener("click", function (event) {
     indexCheckboxes();
 });
 document.addEventListener("click", function (event) {
-    if (event.target.classList.contains("print-checkbox")) {
         if (lastChecked && event.shiftKey) {
             var i = parseInt(lastChecked.getAttribute("data-index"));
             var j = parseInt(event.target.getAttribute("data-index"));
@@ -431,7 +430,6 @@ document.addEventListener("click", function (event) {
             }
         }
         lastChecked = event.target; 
-    }
 });
 </script>
 HTML;
