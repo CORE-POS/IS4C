@@ -8,7 +8,7 @@
     "react-dnd": "^5.0.0",
     "react-dnd-html5-backend": "^5.0.1",
     "react-dom": "^16.4.2",
-    "react-scripts": "1.1.4",
+    "react-scripts": "5.0.1",
     "uuid": "^3.3.2"
   },
   "scripts": {
