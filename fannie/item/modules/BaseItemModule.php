@@ -562,7 +562,8 @@ HTML;
                             LEFT JOIN StoreBatchMap AS m ON b.batchID=m.batchID
                         WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
                             AND (l.upc=? OR l.upc=?)
-                            AND m.storeID=?"
+                            AND m.storeID=?
+                            AND b.discountType > 0"
                     );
                     $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode,$store_id));
                 } else {
@@ -573,6 +574,7 @@ HTML;
                             LEFT JOIN batchList as l on b.batchID=l.batchID 
                         WHERE '" . date('Y-m-d') . "' BETWEEN b.startDate AND b.endDate 
                             AND (l.upc=? OR l.upc=?)
+                            AND b.discountType > 0
                     ");
                     $batchR = $dbc->execute($batchP,array($upc,'LC'.$likeCode));
                 }
