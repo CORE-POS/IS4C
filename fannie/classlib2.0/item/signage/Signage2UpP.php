@@ -100,6 +100,9 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetFont($this->font, '', $this->BIG_FONT-44);
             $price = str_replace(' /lb.', '/lb', $price);
             $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
+        } elseif (strstr($price, 'SAVE')) {
+            $pdf->SetFont($this->font, '', $this->BIG_FONT-58);
+            $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
         } else {
             $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
         }
