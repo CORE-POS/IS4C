@@ -1,4 +1,5 @@
 <?php
+use COREPOS\Fannie\API\FanniePlugin;
 if (!class_exists('FpdfWithBarcode')) {
     include(dirname(__FILE__) . '/../FpdfWithBarcode.php');
 }
@@ -247,9 +248,15 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
 
     $pdf->SetFillColor(0,0,0);
     // PLU Barcode
-    $pdf->EAN13($width-40.5, $y+51,substr($upc, -3),4,.25);  //generate barcode and place on label
+    $pdf->EAN13($width-40.5, $y+49,substr($upc, -3),4,.25);  //generate barcode and place on label
     // SKU Barcode
-    $pdf->EAN13($x+5, $y+51,$sku,4,.25);  //generate barcode and place on label
+    //$pdf->EAN13($x+5, $y+51,$sku,4,.25);  //generate barcode and place on label
+    $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
+    $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+    imagepng($img, $file);
+    $pdf->Image($file, $x-2, $y+47);
+    unlink($file);
+
     $pdf->SetFillColor(255,255,255);
     $pdf->SetFont('Gill','B', 16.5);
 
@@ -328,8 +335,10 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
 
     $pdf->SetFillColor(255,255,255);
     // cover up numerical part of barcodes
-    $pdf->Rect($x+5, $y+50.9, 25, 2.1, 'F');
-    $pdf->Rect($width-40.5, $y+50.9, 25, 2.1, 'F');
+    $pdf->Rect($x+1.5, $y+46, 34, 6.1, 'F');
+    $pdf->Rect($x+1.5, $y+52, 34, 2, 'F');
+
+    $pdf->Rect($width-40.5, $y+48.9, 25, 2.1, 'F');
 
     return $pdf;
 }
