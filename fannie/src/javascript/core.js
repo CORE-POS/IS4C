@@ -284,11 +284,12 @@ function chainSubDepartments(ws_url, params)
 
 function appendTokens(token) {
     var forms = document.forms;
-    var field = document.createElement('input');
-    field.type = 'hidden';
-    field.name = '_token_';
-    field.value = token;
+    var field;
     for (var i=0; i<forms.length; i++) {
+        field = document.createElement('input');
+        field.type = 'hidden';
+        field.name = '_token_';
+        field.value = token;
         forms[i].appendChild(field);
     }
 }
