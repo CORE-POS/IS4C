@@ -85,8 +85,12 @@ class BatchListPage extends FannieRESTfulPage
         }
 
         $b = new BatchesModel($dbc);
-        $b->startDate($this->newStart);
-        $b->endDate($this->newEnd);
+        if ($this->newStart) {
+            $b->startDate($this->newStart);
+        }
+        if ($this->newEnd) {
+            $b->endDate($this->newEnd);
+        }
         $b->batchName($this->newName);
         $b->batchType($this->newType);
         $b->discountType($discounttype);
