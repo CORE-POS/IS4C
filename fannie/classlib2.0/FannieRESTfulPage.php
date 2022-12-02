@@ -132,7 +132,12 @@ class FannieRESTfulPage extends FanniePage
         } catch (Exception $ex) {
             $this->__method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
             if ($this->__method === null) {
-                $this->__method = 'get';
+                // fallback in case FastCGI is in use
+                $this->__method = $_SERVER['REQUEST_METHOD'];
+                if ($this->__method === null) {
+                    // generic fallback
+                    $this->__method = 'get';
+                }
             }
         }
         $this->__method = strtolower($this->__method);
