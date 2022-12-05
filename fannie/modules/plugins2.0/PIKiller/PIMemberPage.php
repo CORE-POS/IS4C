@@ -270,6 +270,7 @@ class PIMemberPage extends PIKillerPage {
         global $FANNIE_OP_DB, $FANNIE_URL;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $limitedEdit = $this->auth_mode == 'Full' ? False : True;
+        $this->card_no = ltrim($this->card_no, "0");
         ob_start();
         echo '<form action="PIMemberPage.php" ';
         if (FormLib::get_form_value('edit', False) === False)

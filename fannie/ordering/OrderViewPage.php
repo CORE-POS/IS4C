@@ -519,7 +519,7 @@ class OrderViewPage extends FannieRESTfulPage
         $ret .= sprintf('<input type="hidden" id="orderID" value="%d" />',$orderID);
         $ret .= '<div class="row form-inline"><div class="col-sm-4 text-left">';
         $ret .= sprintf('<b>Owner Number</b>: <input type="text" size="6"
-                id="memNum" value="%s" class="form-control price-field input-sm" 
+                id="memNum" value="%d" class="form-control price-field input-sm" 
                 />',($memNum==0?'':$memNum));
         $ret .= '<br />';
         $ret .= '<b>Owner</b>: '.($status_row['Type']=='PC'?'Yes':'No');
