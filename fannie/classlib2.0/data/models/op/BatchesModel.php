@@ -530,6 +530,21 @@ those same items revert to normal pricing.
             }
         }
 
+        /**
+         * This is somewhat redundant, but it lets item
+         * callbacks to be triggered in the background
+         * rather than blocking execution
+         */
+        $queue = new COREPOS\Fannie\API\jobs\QueueManager();
+        foreach ($upcs as $upc => $data) {
+            $queue->add(array(
+                'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
+                'data' => array(
+                    'upc' => $upc,
+                ),
+            ));
+        }
+
         if (FannieConfig::config('STORE_MODE') === 'HQ' && class_exists('\\Datto\\JsonRpc\\Http\\Client')) {
             $prep = $this->connection->prepare('
                 SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
