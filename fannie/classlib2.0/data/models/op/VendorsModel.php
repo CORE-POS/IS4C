@@ -78,6 +78,12 @@ class VendorsModel extends BasicModel
         $contact->notes($this->notes());
         $contact->save();
 
+        $callbacks = FannieConfig::config('VENDOR_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($this->vendorID());
+        }
+
         return $result;
     }
 
