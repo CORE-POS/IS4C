@@ -50,7 +50,65 @@ class ProdLocationEditor extends FannieRESTfulPage
         $this->__routes[] = 'post<newLocation>';
         $this->__routes[] = 'get<list>';
         $this->__routes[] = 'post<delete_location>';
+        $this->__routes[] = 'get<remove>';
+        $this->__routes[] = 'post<remove_list>';
         return parent::preprocess();
+    }
+
+    function post_remove_list_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+        $storeA = FormLib::get('storeA', 999);
+        $storeB = FormLib::get('storeB', 999);
+        $removeList = FormLib::get('remove_list', array());
+        $upcs = explode("\r\n", $removeList);
+        $fspmIDs = array();
+
+        list($inStr, $args) = $dbc->safeInClause($upcs);
+        $args[] = $storeA;
+        $args[] = $storeB;
+        $prep = $dbc->prepare("SELECT floorSectionProductMapID FROM FloorSectionProductMap AS m INNER JOIN FloorSections AS s 
+            ON s.floorSectionID=m.floorSectionID WHERE upc IN ($inStr) AND s.storeID IN (?, ?)");
+        $res = $dbc->execute($prep, $args); 
+        while ($row = $dbc->fetchRow($res)) {
+            $fspmIDs[] = $row['floorSectionProductMapID'];
+        }
+
+        list($removeInStr, $removeA) = $dbc->safeInClause($fspmIDs);
+        $removeP = $dbc->prepare("DELETE FROM FloorSectionProductMap WHERE floorSectionProductMapID IN ($removeInStr)");
+        $removeR = $dbc->execute($removeP, $removeA);
+
+        return 'ProdLocationEditor.php';
+    }
+    
+    function get_remove_view()
+    {
+        return <<<HTML
+<div class="row">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <h5>Remove Floor Locations</h5>
+        <form action="ProdLocationEditor.php" method="post">
+            <div class="form-group">
+                <textarea class="form-control" name="remove_list" rows=10></textarea>
+            </div>
+        <label for="storeA">Store A</label>
+            <div class="form-group">
+                <input type="checkbox" class="form-control" name="storeA" value="1"/>
+            </div>
+        <label for="storeA">Store B</label>
+            <div class="form-group">
+                <input type="checkbox" class="form-control" name="storeB" value="2"/>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-default" />
+            </div>
+        </form>
+    </div>
+    <div class="col-lg-4"></div>
+</div>
+HTML;
     }
 
     function post_delete_location_handler()
@@ -635,6 +693,9 @@ class ProdLocationEditor extends FannieRESTfulPage
             </div>
             <div class="form-group">
                 <a class="btn btn-default" style="width: 300px" href="FloorSections/EditLocations.php">Edit Floor <strong>sub-locations</strong></a>
+            </div>
+            <div class="form-group">
+                <button  class="btn btn-default" style="width: 300px" name="remove"><strong>Remove</strong> Floor Sections</button>
             </div>
         </form>
     </div>
