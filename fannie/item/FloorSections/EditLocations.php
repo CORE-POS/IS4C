@@ -167,7 +167,7 @@ class EditLocations extends FannieRESTfulPage
         $curSub = $row['subSection'];
 
         $options = '<option value=\"0\">&nbsp;</option>';
-        $letters = range('a', 'k');
+        $letters = range('a', 'l');
         foreach ($letters as $letter) {
             $sel = ($curSub == $letter) ? ' selected' : '';
             $options .= "<option value=\"$letter\" $sel>$letter</option>";
@@ -434,7 +434,7 @@ HTML;
         echo $dbc->error();
 
         $options = '<option value=\"0\">Select a Sub-Section</option>';
-        $letters = range('a', 'k');
+        $letters = range('a', 'l');
         foreach ($letters as $letter) {
             $options .= "<option value=\"$letter\" >$letter</option>";
         }
