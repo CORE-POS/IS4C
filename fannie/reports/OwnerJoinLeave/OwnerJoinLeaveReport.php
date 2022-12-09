@@ -208,7 +208,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
                 LEFT JOIN memDates AS d ON n.cardno=d.card_no
                     LEFT JOIN custdata AS c ON n.cardno=c.CardNo AND c.personNum=1
-            WHERE note LIKE \'%FUNDS REQ%\'
+            WHERE (note LIKE \'%FUNDS REQ%\' OR note like \'%0 requested%\')
                 AND d.start_date BETWEEN ? AND ?
                 AND c.Type <> \'TERM\'
                 AND c.Type <> \'INACT2\'
@@ -352,7 +352,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     LEFT JOIN ' . $FANNIE_TRANS_DB . $dbc->sep() . 'equity_live_balance AS e ON n.cardno=e.memnum
                     LEFT JOIN memDates AS d ON n.cardno=d.card_no
                     LEFT JOIN custdata AS c ON n.cardno=c.CardNo AND c.personNum=1
-                WHERE note LIKE \'%FUNDS REQ%\'
+                WHERE (note LIKE \'%FUNDS REQ%\' OR note LIKE \'%0 requested%\')
                     AND n.stamp >= ?
                     AND d.start_date < ?
                     AND e.payments <= 100
@@ -374,7 +374,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
                     AND c.personNum=1
                 ORDER BY n.stamp DESC');
             $franR = $dbc->execute($franP, $args);
-            $minDateP = $dbc->prepare("SELECT MIN(stamp) FROM memberNotes WHERE note LIKE '%FUNDS REQ%' AND cardno=?");
+            $minDateP = $dbc->prepare("SELECT MIN(stamp) FROM memberNotes WHERE (note LIKE '%FUNDS REQ%' OR note LIKE '%0 requested%') AND cardno=?");
             $startDT = new DateTime($this->form->date1);
             $endDT = new DateTime($this->form->date2);
             $franCount = 0;
