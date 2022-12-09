@@ -78,6 +78,10 @@ class MailPipe extends AttachmentEmailPipe
         $comment = trim($comment[1]);
         $comment = $this->deQuote($comment);
 
+        if (substr(strtolower(trim($email)), -3) == '.ru') {
+            return;
+        }
+
         $nameParts = explode(' ', $name);
         $nameParts = array_map('trim', $nameParts);
         $first = $nameParts[0];
