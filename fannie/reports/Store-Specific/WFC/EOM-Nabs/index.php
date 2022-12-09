@@ -111,13 +111,13 @@ if (true || !$output){
         sum(CASE WHEN department = 990 then -l.total ELSE l.total END * m.margin) AS cost
         FROM $dlog as l left join departments as m on l.department = m.dept_no
         WHERE card_no IN $accountStr
-        and (l.department < 600 or l.department IN (902, 990))
         and l.department <> 0 and l.trans_type <> 'T'
         and tdate BETWEEN ? AND ?
         AND register_no <> 20
         AND " . DTrans::isStoreID($store, 'l') . "
         GROUP BY card_no
         ORDER BY card_no");
+//        and (l.department < 600 or l.department IN (902, 990))
     $args[] = $span[0];
     $args[] = $span[1];
     $args[] = $store;
@@ -144,7 +144,6 @@ if (true || !$output){
         l.store_id
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no IN $accountStr
-        and (l.department < 600 or l.department in (902, 990))
         and l.department <> 0 and l.trans_type <> 'T'
         AND register_no <> 20
         and tdate BETWEEN ? AND ?
@@ -174,7 +173,6 @@ if (true || !$output){
         l.store_id
         FROM $dlog as l left join departments as d on l.department = d.dept_no
         WHERE card_no = ?
-        and (l.department < 600 or l.department IN (902,990))
         and l.department <> 0 and l.trans_type <> 'T'
         AND register_no <> 20
         and tdate BETWEEN ? AND ?
