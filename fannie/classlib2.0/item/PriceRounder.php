@@ -54,9 +54,7 @@ class PriceRounder
         $specialRound = array(
             0 => 0,
             1 => 0.16,
-            2 => 0.16,
-            3 => 0.30,
-            4 => 0.29
+            2 => 0.30
         );
 
         $end = substr($price, -2);
