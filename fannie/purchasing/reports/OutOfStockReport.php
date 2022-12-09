@@ -94,7 +94,7 @@ class OutOfStockReport extends FannieReportPage
                 '<a href="../ViewPurchaseOrders.php?id=' . $w['orderID'] . '">' . $w['vendorInvoiceID'] . '</a>',
                 $w['sku'],
                 $w['internalUPC'],
-                $w['brand'],
+                $w['brand'] ? $w['brand'] : '',
                 $w['description'],
                 $w['quantity'],
                 1,
