@@ -393,6 +393,18 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         </p>
 
         <hr />
+        <label>Enabled Item Callbacks</label>
+        <?php
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\ItemCallback');
+        echo installMultiSelectField('FANNIE_ITEM_CALLBACKS', $FANNIE_ITEM_CALLBACKS, $mods);
+        ?>
+        <label>Enabled Vendor Callbacks</label>
+        <?php
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\VendorCallback');
+        echo installMultiSelectField('FANNIE_VENDOR_CALLBACKS', $FANNIE_ITEM_CALLBACKS, $mods);
+        ?>
+
+        <hr />
         <p>
             <button type="submit" class="btn btn-default">Save Configuration</button>
         </p>
