@@ -109,6 +109,8 @@ class ItemSync
 
     public static function sync($upc)
     {
+        $log = new \FannieLogger();
+        $log->debug('Syncing item(s): ' . print_r($upc, true));
         if (!is_array($upc)) {
             $upc = array($upc);
         }
@@ -116,6 +118,13 @@ class ItemSync
             self::syncItem($u);
         }
         self::notifyStores($upc);
+        $callbacks = \FannieConfig::config('ITEM_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            foreach ($upc as $u) {
+                $obj->run($u);
+            }
+        }
     }
 
     public static function remove($upc)
