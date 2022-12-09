@@ -61,10 +61,12 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
             $filter_status = $this->form->f1;
             $filter_buyer = $this->form->f2;
             $filter_supplier = $this->form->f3;
+            $filter_name = $this->form->f4;
         } catch (Exception $ex) {
             $filter_status='';
             $filter_buyer='';
             $filter_supplier='';
+            $filter_name = '';
         }
 
         $ret = '';
@@ -110,6 +112,11 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
             $filterstring .= ' AND statusFlag=?';
             $filterargs[] = $filter_status;
         }
+        if ($filter_name !== '') {
+            $filterstring .= ' AND (o.lastName LIKE ? OR c.LastName LIKE ?) ';
+            $filterargs[] = '%' . $filter_name . '%';
+            $filterargs[] = '%' . $filter_name . '%';
+        }
 
         $ret .= '<a href="index.php">Main Menu</a>';
         $ret .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -149,6 +156,10 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
                 ($v===$filter_supplier?'selected':''),$v);
         }
         $ret .= '</select>';
+
+        $ret .= '&nbsp;';
+
+        $ret .= '<b>Last Name</b>: <input type="test" id="f_4" class="form-control input-sm" onchange="refilter();" />';
         $ret .= '</div>';
         $ret .= '<hr />';
 
@@ -303,8 +314,9 @@ function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
     var f3 = $('#f_3').val();
+    var f4 = $('#f_4').val();
 
-    var loc = '<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>?f1='+f1+'&f2='+f2+'&f3='+f3;
+    var loc = '<?php echo filter_input(INPUT_SERVER, 'PHP_SELF'); ?>?f1='+f1+'&f2='+f2+'&f3='+f3+'&f4='+f4;
     if ($('#cardno').length!=0)
         loc += '&card_no='+$('#cardno').val();
     if ($('#orderSetting').length!=0)
