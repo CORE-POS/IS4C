@@ -626,7 +626,9 @@ class FannieSignage
                     b.batchName,
                     o.originID,
                     o.name AS originName,
-                    o.shortName AS originShortName
+                    o.shortName AS originShortName,
+                    b.transLimit, 
+                    CASE WHEN l.signMultiplier IS NULL THEN 1 ELSE l.signMultiplier END AS signMultiplier
                  FROM products AS p
                     LEFT JOIN productUser AS u ON p.upc=u.upc
                     LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
