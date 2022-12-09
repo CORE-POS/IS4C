@@ -169,7 +169,7 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
             $this->updateItem($dbc, $upcW['upc'], $likecode, $values);
             $upcs[] = $upcW['upc'];
         }
-        if (count($upcs) <= 10) {
+        if (count($upcs) > 0 && count($upcs) <= 10) {
             COREPOS\Fannie\API\data\ItemSync::sync($upcs);
         } else {
             $queue = new COREPOS\Fannie\API\jobs\QueueManager();
