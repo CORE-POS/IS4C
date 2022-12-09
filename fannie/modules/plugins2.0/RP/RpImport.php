@@ -353,14 +353,19 @@ class RpImport extends FannieRESTfulPage
     {
         switch (strtolower($vendor)) {
             case 'alberts':
+            case 'al':
                 return 292;
             case 'cpw':
+            case 'cp':
                 return 293;
             case 'rdw':
+            case 'rd':
                 return 136;
             case 'unfi':
+            case 'un':
                 return 1;
             case 'direct':
+            case 'di':
                 return -2;
             default:
                 return 0;
@@ -462,8 +467,6 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                             $otherData[$lc] = array();
                         }
                         $otherData[$lc]['active'] = $data[10];
-                        $otherData[$lc]['primary'] = $data[34];
-                        $otherData[$lc]['secondary'] = $data[35];
                         $otherData[$lc]['alberts'] = $data[12];
                         $otherData[$lc]['cpw'] = $data[13];
                         $otherData[$lc]['rdw'] = $data[14];
@@ -473,6 +476,14 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
                         $otherData[$lc]['sort'] = $data[11];
                         $otherData[$lc]['units'] = $data[42];
                         $otherData[$lc]['cost'] = $data[40];
+                        $vendors = explode('_', $data[52], 2);
+                        if (count($vendors) == 2) {
+                            $otherData[$lc]['primary'] = $vendors[0];
+                            $otherData[$lc]['secondary'] = $vendors[1];
+                        } else {
+                            $otherData[$lc]['primary'] = $vendors[0];
+                            $otherData[$lc]['secondary'] = '';
+                        }
                     }
 
                 }

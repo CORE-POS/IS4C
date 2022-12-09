@@ -479,13 +479,6 @@ class RpDualPage extends FannieRESTfulPage
                 AND b.endDate BETWEEN '{$ago}' AND '{$ahead}'
                 AND b.discountType > 0");
 
-        $bananaP = $this->connection->prepare("
-            SELECT upc FROM RpOrderItems
-            WHERE storeID=?
-                AND (upc='LC216' OR upc like 'LC216%')");
-        $bananaR = $this->connection->execute($bananaP, array($store));
-        $bananaCount = $this->connection->numRows($bananaR);
-
         $prep = $this->connection->prepare("
             SELECT r.upc,
                 r.categoryID,
@@ -540,9 +533,6 @@ class RpDualPage extends FannieRESTfulPage
                 if ($store == 2) {
                     $par = 0.05 * $row['caseSize'];
                 }
-            }
-            if ($lc == 216 || substr($lc, 0, 4) == '216-') {
-                $par = $par / $bananaCount;
             }
             $price = $this->connection->getValue($priceP, array(substr($row['upc'], 2)));
             $cost = array('cost' => $row['cost'], 'units' => $row['caseSize']);
