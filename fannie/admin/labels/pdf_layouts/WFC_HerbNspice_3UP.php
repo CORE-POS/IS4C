@@ -110,7 +110,7 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
 
     $scaleA = array($row['upc']);
     $scaleP = $dbc->prepare("
-        SELECT linkedPLU, sku 
+        SELECT linkedPLU, sku
         FROM scaleItems AS s 
             LEFT JOIN products AS p ON p.upc=s.linkedPLU
             LEFT JOIN vendorItems AS v ON v.upc=p.upc AND v.vendorID=p.default_vendor_id
@@ -118,6 +118,10 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
     $scaleR = $dbc->execute($scaleP, $scaleA);
     $scaleW = $dbc->fetchRow($scaleR);
     $sku = ($scaleW['sku'] > 1) ? $scaleW['sku'] : $sku;
+
+    $pScaleA = array($row['upc']);
+    $pScaleP = $dbc->prepare("SELECT scale FROM products WHERE upc = ? LIMIT 1");
+    $pScale = $dbc->getValue($pScaleP, $pScaleA);
 
     $basicP = $dbc->prepare("SELECT
         CASE WHEN pr.priceRuleTypeID = 6 OR pr.priceRuleTypeID = 12 THEN 1 ELSE 0 END
@@ -251,11 +255,14 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
     $pdf->EAN13($width-40.5, $y+49,substr($upc, -3),4,.25);  //generate barcode and place on label
     // SKU Barcode
     //$pdf->EAN13($x+5, $y+51,$sku,4,.25);  //generate barcode and place on label
-    $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
-    $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
-    imagepng($img, $file);
-    $pdf->Image($file, $x-2, $y+47);
-    unlink($file);
+    if (strlen($sku) < 9) {
+        // if len of str too long, don't print as it will not fit
+        $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
+        $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+        imagepng($img, $file);
+        $pdf->Image($file, $x-2, $y+47);
+        unlink($file);
+    }
 
     $pdf->SetFillColor(255,255,255);
     $pdf->SetFont('Gill','B', 16.5);
@@ -263,7 +270,8 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
     /*
         Add Price
     */
-    $priceText = '$'.$price.'/LB';
+    $vrbg = ($pScale == 0) ? '/EA' : '/LB';
+    $priceText = '$'.$price.$vrbg;
     $pdf->SetXY($x+12, $y+41.5);
     $pdf->Cell(10, 5, $priceText, 0, 1, 'C', true);
 
@@ -335,8 +343,11 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
 
     $pdf->SetFillColor(255,255,255);
     // cover up numerical part of barcodes
-    $pdf->Rect($x+1.5, $y+46, 34, 6.1, 'F');
-    $pdf->Rect($x+1.5, $y+52, 34, 2, 'F');
+    //$pdf->SetFillColor(255,0,0); 
+    $pdf->Rect($x+1.5, $y+46, 44, 6.1, 'F');
+    $pdf->Rect($x+1.5, $y+52, 44, 2, 'F');
+
+    //$pdf->SetFillColor(255,255,255);
 
     $pdf->Rect($width-40.5, $y+48.9, 25, 2.1, 'F');
 
