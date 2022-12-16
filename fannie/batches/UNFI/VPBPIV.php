@@ -50,6 +50,25 @@ class VPBPIV extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    private function getBatchedItems()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->OP_DB);
+        $upcs = array();
+        $args = array($upc);
+        $prep = $dbc->prepare('SELECT b.*, l.upc, s.batchName
+            FROM batchReviewLog AS b
+            INNER JOIN batchList AS l ON l.batchID=b.bid 
+            INNER JOIN batches AS s ON s.batchID=l.batchID
+            WHERE forced = "0000-00-00 00:00:00";');
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $upcs[$row['upc']] = $row['batchName'];
+        }
+
+        return $upcs;
+    }
+
     public function post_cleanup_handler()
     {
         $dbc = $this->connection;
@@ -355,14 +374,21 @@ HTML;
                 <span id="cur-pricerule"></span></span>
             </div>
         </div>
-        <div class="col-lg-3"></div>
-        <div class="col-lg-4"></div>
-    </div>
-    <div style="padding-top: 24px;">
-        <a href="#" onclick="postActionBatchCleanup();">Cleanup & View Batches</a>
+        <div class="col-lg-4">
+            <div class="item-info-container">
+                </div>
+                <span id="cur-inbatch" style="font-weight: bold; color: darkgreen;"></span></span>
+            </div>
+        </div>
+        </div>
+        <div class="col-lg-5">
     </div>
 </div>
 <div class="container">
+    <div style="padding-top: 24px; padding-bottom: 5px; padding-left: 1px;">
+        <a href="#" onclick="postActionBatchCleanup();" style="background-color: #FFF4D6;
+            border: 1px solid black; padding: 5px; color: purple;">Cleanup & View Batches</a>
+    </div>
     <div class="table-responsive" style="overflow-x: hidden;">
         <table class="uniq-table table table-condensed small" id="uniq-table">$td</table>
     </div>
@@ -451,6 +477,7 @@ var btnChangeSelected = function(direction)
     document.getElementById('cur-srp').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.srp;
     document.getElementById('cur-srp-visual').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.srpvisual;
     document.getElementById('cur-pricerule').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.pricerule;
+    document.getElementById('cur-inbatch').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.inbatch;
     document.getElementById('cur-normalprice').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.normalprice;
 
 }
@@ -576,6 +603,8 @@ JAVASCRIPT;
         $queueID = FormLib::get('queueID');
         $vendorID = $this->id;
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
+
+        $batched = $this->getBatchedItems();
 
         /* lookup vendor and superdept names to build a batch name */
         $sname = "All";
@@ -876,6 +905,8 @@ JAVASCRIPT;
 
             $srpClassA = ($row['srp'] > $row['normal_price']) ? 'red' : 'yellow';
             $direction = ($row['srp'] > $row['normal_price']) ? '&#x2191;' : '&#x2193;';
+
+            $row['inbatch'] = $batched[$row['upc']];
             $td .= sprintf("<tr id=row%s class='%s %s item'>
                 <td class=\"sub\" 
                     data-upc=\"%s\"
@@ -893,6 +924,7 @@ JAVASCRIPT;
                     data-srp=\"%s\"
                     data-srpvisual=\"<span class='$srpClassA'>%s</span>\"
                     data-pricerule=\"<span class='white'>%s</span>\"
+                    data-inbatch=\"<span class='white'>%s</span>\"
                     data-normalprice=\"%s\"
                     id=\"id%s\"
                     ><a href=\"%sitem/ItemEditorPage.php?searchupc=%s\" target=\"_blank\">%s</a></td>
@@ -913,7 +945,7 @@ JAVASCRIPT;
                     $symb, $row['difference'], $cleanDate,
                     $row['description'], $brand, $row['reviewed'], $row['cost'],
                     $rounder->round($row['rawSRP']),
-                    round($row['rawSRP'],3), $row['srp'], $direction, $row['prtDesc'], $row['normal_price'], $row['upc'],
+                    round($row['rawSRP'],3), $row['srp'], $direction, $row['prtDesc'], $row['inbatch'], $row['normal_price'], $row['upc'],
                     /*
                         My work area end's here
                     */
