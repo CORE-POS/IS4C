@@ -113,6 +113,9 @@ class SaItemList extends SaHandheldPage
         $uid = FannieAuth::getUID($this->current_user);
         if ($this->id !== '') {
             $upc = BarcodeLib::padUPC($this->id);
+            if (substr($upc, 0, 3) == '002') {
+                $upc = substr($upc, 0, 7) . '000000';
+            }
             $prep = $dbc->prepare('
                 SELECT p.description,
                     p.brand,
