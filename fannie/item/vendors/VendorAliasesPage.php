@@ -201,7 +201,8 @@ class VendorAliasesPage extends FannieRESTfulPage
             FROM VendorAliases AS v
                 " . DTrans::joinProducts('v') . "
             WHERE v.vendorID=?
-            ORDER BY v.sku,
+            ORDER BY p.brand,
+                v.sku,
                 v.isPrimary DESC,
                 v.upc");
         $ret .= '<table class="table table-bordered">
