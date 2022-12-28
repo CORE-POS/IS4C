@@ -34,7 +34,7 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
     protected $font = 'Arial';
     protected $alt_font = 'Arial';
 
-    protected $width = 53.975;
+    protected $width = 53;
     protected $height = 69.35;
     protected $top = 15;
     protected $left = 5.175;
