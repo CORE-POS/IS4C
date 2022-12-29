@@ -197,6 +197,10 @@ class FannieAPI
             'COREPOS\\Fannie\\API\\' => dirname(__FILE__) . '/',
             'COREPOS\\Fannie\\Plugin\\' => dirname(__FILE__) . '/../modules/plugins2.0/',
         );
+        $poser = FannieConfig::config('POSER');
+        if ($poser) {
+            $namespaces['Poser\\'] = $poser;
+        }
         $class = ltrim($class, '\\');
         foreach ($namespaces as $namespace => $path) {
             if (substr($class, 0, strlen($namespace)) == $namespace) {
@@ -277,6 +281,11 @@ class FannieAPI
     static private function searchDirectories($base_class)
     {
         $directories = array();
+        // prefer directories from Poser if present
+        $poser = FannieConfig::config('POSER');
+        if ($poser) {
+            $directories[] = "$poser/office_plugins/";
+        }
         $directories[] = dirname(__FILE__).'/../modules/plugins2.0/';
         // leading backslash is ignored
         if ($base_class[0] == '\\') {

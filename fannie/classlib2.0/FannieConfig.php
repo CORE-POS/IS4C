@@ -42,6 +42,9 @@ class FannieConfig
                 }
             }
         }
+        if (isset($this->vars['FANNIE_POSER'])) {
+            $this->vars['FANNIE_POSER'] = rtrim($this->vars['FANNIE_POSER'], '/');
+        }
         if (file_exists(__DIR__ . '/../DEV_MODE')) {
             $this->vars['FANNIE_DEV_MODE'] = true;
         }

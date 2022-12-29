@@ -67,6 +67,10 @@ class AutoLoader
                 $ourPath = __DIR__ . $sep . '..' . $sep . strtr(substr($name, 12), '\\', $sep) . '.php';
                 $map[$name] = $ourPath;
                 CoreLocal::set('ClassLookup', $map);
+            } elseif (strpos($name, 'Poser\\') === 0) {
+                $ourPath = CoreLocal::get('poserPath') . strtr(substr($name, 6), '\\', $sep) . '.php';
+                $map[$name] = $ourPath;
+                CoreLocal::set('ClassLookup', $map);
             }
         } elseif (!isset($map[$name])) {
             // class is unknown
@@ -198,6 +202,13 @@ class AutoLoader
         $map = array_filter(CoreLocal::get('ClassLookup'), function ($i) {
             return strpos($i, 'plugins') > 0;
         });
+        $poser = CoreLocal::get('poserPath');
+        if ($poser) {
+            $path = $poser . '/lane_plugins/';
+            if (is_dir($path)) {
+                $map = Plugin::pluginMap($path, $map);
+            }
+        }
         if (isset(self::$classPaths[$baseClass])) {
             $path = realpath(dirname(__FILE__) . self::$classPaths[$baseClass]);
             $map = Plugin::pluginMap($path,$map);
@@ -266,11 +277,17 @@ class AutoLoader
         }
 
         $path = realpath(dirname(__FILE__) . '/../') . DIRECTORY_SEPARATOR;
+        $prefix = 'COREPOS\\pos';
+        $poser = CoreLocal::get('poserPath');
+        if ($poser && strpos($path, $poser) === 0) {
+            $path = $poser;
+            $prefix = 'Poser';
+        }
         $file = str_replace($path, '', $file);
         $nss = array_reduce(explode(DIRECTORY_SEPARATOR, $file),
             function ($carry, $item) { return $carry . '\\' . $item; });
 
-        return 'COREPOS\\pos' . $nss;
+        return $prefix . $nss;
     }
 
     /**

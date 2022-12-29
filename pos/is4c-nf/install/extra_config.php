@@ -516,6 +516,19 @@ while($row = $db->fetch_row($res)){
     <td><b><?php echo _('Redis Host'); ?></b>:</td>
     <td><?php echo $form->textField('redistHost', CoreLocal::get('mServer')); ?></td>
 </tr>
+<tr><td colspan=2 class="tblHeader"><h3><?php echo _('Poser'); ?></h3></td></tr>
+<tr>
+    <td><b><?php echo _('Path to Poser'); ?></b>:</td>
+    <td><?php echo $form->textField('poserPath', ''); ?></td>
+</tr>
+<?php
+if (CoreLocal::get('poserPath')) {
+    $poser = CoreLocal::get('poserPath');
+    if (!is_dir($poser)) {
+        echo '<tr><td colspan="2"><em>Warning: poser path is invalid</td></tr>';
+    }
+}
+?>
 <!--
 <tr><td colspan=2 class="tblHeader">
 <h3>Various</h3>
