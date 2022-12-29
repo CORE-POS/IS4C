@@ -463,7 +463,7 @@ var btnChangeSelected = function(direction)
     changeSelectedRow(currentRow);
     document.getElementById('cur-upc').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.upc;
     document.getElementById('cur-sku').innerHTML = uniqTable.rows[currentRow].cells[1].innerHTML;
-    document.getElementById('cur-cost').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.cost;
+    document.getElementById('cur-cost').innerHTML = Math.round(uniqTable.rows[currentRow].cells[0].dataset.cost * 100) / 100;
     document.getElementById('cur-margin').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.margin;
     document.getElementById('cur-target-margin').innerHTML = Number(uniqTable.rows[currentRow].cells[0].dataset.target).toFixed(1);
     document.getElementById('cur-diff').innerHTML = uniqTable.rows[currentRow].cells[0].dataset.diff;
