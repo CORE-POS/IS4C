@@ -13,6 +13,13 @@ class MemberSync
         $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 
         self::syncLocal($dbc, $cardNo);
+
+        $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($cardNo);
+        }
+
         self::syncRemote($dbc, $cardNo);
     }
 
