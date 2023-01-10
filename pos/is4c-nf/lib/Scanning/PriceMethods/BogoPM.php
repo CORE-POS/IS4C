@@ -26,6 +26,7 @@ use COREPOS\pos\lib\Scanning\PriceMethod;
 use COREPOS\pos\lib\Database;
 use COREPOS\pos\lib\MiscLib;
 use COREPOS\pos\lib\TransRecord;
+use COREPOS\pos\lib\LaneLogger;
 
 /** 
    @class BogoPM
@@ -46,6 +47,31 @@ class BogoPM extends PriceMethod {
         $dsi = $this->session->get('DiscountableSaleItems');
         if ($dsi == 0 && $dsi !== '' && $priceObj->isSale()) {
             $row['discount'] = 0;
+        }
+
+        $limited = false;
+        $maxPairs = false;
+        $alreadyRung = 0;
+        $log = new LaneLogger();
+        if ($row['special_limit'] > 0) {
+            $limited = true;
+            $dbc = Database::tDataConnect();
+            $appliedQ = "
+                SELECT SUM(quantity) AS saleQty
+                FROM " . $this->session->get('tDatabase') . $dbc->sep() . "localtemptrans
+                WHERE discounttype <> 0
+                    AND (
+                        upc='{$row['upc']}'
+                        OR (mixMatch='{$row['mixmatchcode']}' AND mixMatch<>''
+                            AND mixMatch<>'0' AND mixMatch IS NOT NULL
+                            AND upc <> 'ITEMDISCOUNT')
+                    )";
+            $appliedR = $dbc->query($appliedQ);
+            if ($appliedR && $dbc->num_rows($appliedR)) {
+                $appliedW = $dbc->fetch_row($appliedR);
+                $alreadyRung = $appliedW['saleQty'];
+                $maxPairs = floor($row['special_limit'] / 2);
+            }
         }
 
         /**
@@ -77,6 +103,16 @@ class BogoPM extends PriceMethod {
                 'numflag' => (isset($row['numflag'])?$row['numflag']:0),
                 'charflag' => (isset($row['charflag'])?$row['charflag']:'')
             ));
+            if ($limited) {
+                $alreadyRung++;
+                if ($alreadyRung >= $row['special_limit']) {
+                    $row['discounttype'] = 0;
+                    $row['special_price'] = 0;
+                    $row['specialpricemethod'] = 0;
+                    $row['specialquantity'] = 0;
+                    $row['specialgroupprice'] = 0;
+                }
+            }
         }
 
         /**
@@ -105,6 +141,9 @@ class BogoPM extends PriceMethod {
         $dept = 0;
         $tax = 0;
         $fs = 0;
+        if ($maxPairs !== false && $maxPairs < $pairs) {
+            $pairs = $maxPairs;
+        }
         while ($pairW = $dbc->fetchRow($queryR)) {
             if ($count < $pairs) {
                 $totalDiscount += $pairW['unitPrice'];
