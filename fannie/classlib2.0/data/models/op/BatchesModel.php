@@ -536,14 +536,12 @@ those same items revert to normal pricing.
          * rather than blocking execution
          */
         $queue = new COREPOS\Fannie\API\jobs\QueueManager();
-        foreach ($upcs as $upc => $data) {
-            $queue->add(array(
-                'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
-                'data' => array(
-                    'upc' => $upc,
-                ),
-            ));
-        }
+        $queue->add(array(
+            'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
+            'data' => array(
+                'upc' => array_keys($upcs),
+            ),
+        ));
 
         if (FannieConfig::config('STORE_MODE') === 'HQ' && class_exists('\\Datto\\JsonRpc\\Http\\Client')) {
             $prep = $this->connection->prepare('
