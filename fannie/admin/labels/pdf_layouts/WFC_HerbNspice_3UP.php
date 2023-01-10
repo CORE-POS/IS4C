@@ -257,11 +257,13 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
     //$pdf->EAN13($x+5, $y+51,$sku,4,.25);  //generate barcode and place on label
     if (strlen($sku) < 9) {
         // if len of str too long, don't print as it will not fit
-        $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
-        $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
-        imagepng($img, $file);
-        $pdf->Image($file, $x-2, $y+47);
-        unlink($file);
+        if (class_exists('Image_Barcode2')) {
+            $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
+            $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+            imagepng($img, $file);
+            $pdf->Image($file, $x-2, $y+47);
+            unlink($file);
+        }
     }
 
     $pdf->SetFillColor(255,255,255);
