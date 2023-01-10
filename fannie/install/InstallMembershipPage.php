@@ -182,6 +182,11 @@ Maximum:
 <?php echo installTextField('FANNIE_CARDNO_MAX', $FANNIE_CARDNO_MAX, '1000000000'); ?>
 </div>
 <hr />
+<label>Enabled Member Callbacks</label>
+<?php
+$mods = FannieAPI::listModules('\COREPOS\Fannie\API\member\MemberCallback');
+echo installMultiSelectField('FANNIE_MEMBER_CALLBACKS', $FANNIE_MEMBER_CALLBACKS, $mods);
+?>
 <p>
     <button type="submit" class="btn btn-default">Save Configuration</button>
 </p>

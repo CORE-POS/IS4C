@@ -401,7 +401,12 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         <label>Enabled Vendor Callbacks</label>
         <?php
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\VendorCallback');
-        echo installMultiSelectField('FANNIE_VENDOR_CALLBACKS', $FANNIE_ITEM_CALLBACKS, $mods);
+        echo installMultiSelectField('FANNIE_VENDOR_CALLBACKS', $FANNIE_VENDOR_CALLBACKS, $mods);
+        ?>
+        <label>Enabled Likecode Callbacks</label>
+        <?php
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\LikecodeCallback');
+        echo installMultiSelectField('FANNIE_LC_CALLBACKS', $FANNIE_LC_CALLBACKS, $mods);
         ?>
 
         <hr />
