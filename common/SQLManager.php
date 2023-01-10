@@ -458,7 +458,7 @@ class SQLManager
         if (is_array($params)) {
             $logMsg .= 'Parameters: ' . implode("\n", $params);
         }
-        $logMsg .= $errorMsg . "\n";
+        $logMsg .= 'Error: ' . $errorMsg . "\n";
 
         return $logMsg;
     }
