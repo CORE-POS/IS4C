@@ -308,10 +308,12 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     /*
         Add UPC Barcode
     */
-    $img = Image_Barcode2::draw($upc."0", 'code128', 'png', false, 3.5, 1, false);
-    $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
-    imagepng($img, $file);
-    $pdf->Image($file, $x, $y+25);
+    if (class_exists('Image_Barcode2')) {
+        $img = Image_Barcode2::draw($upc."0", 'code128', 'png', false, 3.5, 1, false);
+        $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+        imagepng($img, $file);
+        $pdf->Image($file, $x, $y+25);
+    }
 
     /*
         Smaller Barcode Does Not Work Against Black 
