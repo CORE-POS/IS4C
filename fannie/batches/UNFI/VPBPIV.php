@@ -60,11 +60,11 @@ class VPBPIV extends FannieRESTfulPage
          * avoid using zero date
          * some mysql versions dislike it
          */
-        $prep = $dbc->prepare('SELECT b.*, l.upc, s.batchName
+        $prep = $dbc->prepare("SELECT b.*, l.upc, s.batchName
             FROM batchReviewLog AS b
             INNER JOIN batchList AS l ON l.batchID=b.bid 
             INNER JOIN batches AS s ON s.batchID=l.batchID
-            WHERE forced < "1900-01-01 00:00:00";');
+            WHERE forced < '1900-01-01 00:00:00';");
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetchRow($res)) {
             $upcs[$row['upc']] = $row['batchName'];
