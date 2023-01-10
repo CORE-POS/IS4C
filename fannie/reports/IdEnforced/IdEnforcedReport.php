@@ -93,7 +93,7 @@ class IdEnforcedReport extends FannieReportPage
                   GROUP BY
                     d.upc,
                     p.brand,
-                    d.description,
+                    p.description,
                     d.department,
                     e.dept_name,
                     p.idEnforced";
