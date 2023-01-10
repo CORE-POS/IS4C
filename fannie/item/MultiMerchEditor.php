@@ -54,13 +54,17 @@ class MultiMerchEditor extends FannieRESTfulPage
         $edit = FannieUI::editIcon();
         $tcount = 0;
 
+        $sDef = $dbc->tableDefinition('SignProperties');
+        $sTable = (isset($sDef['signCount'])) ? 'SignProperties' : 'productUser';
+        $sAddOn = (isset($sDef['signCount'])) ? ' AND u.storeID = p.store_id' : '';
+
         $args = array($storeID);
         $prep = $dbc->prepare("SELECT p.upc, p.brand, p.description, v.sections, u.signCount, v.storeID,
             DATE(p.last_sold) AS lastSold 
             FROM products AS p
                 LEFT JOIN FloorSectionProductMap AS m ON m.upc=p.upc
                 INNER JOIN FloorSections AS s ON s.floorSectionID=m.floorSectionID
-                LEFT JOIN productUser AS u ON u.upc=p.upc
+                LEFT JOIN $sTable AS u ON u.upc=p.upc $sAddOn
                 LEFT JOIN FloorSectionsListView AS v ON v.upc=p.upc AND v.storeID=p.store_id
             WHERE sections like '%,%'
                 AND v.storeID = ?
