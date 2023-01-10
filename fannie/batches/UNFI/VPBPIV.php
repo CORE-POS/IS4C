@@ -55,7 +55,7 @@ class VPBPIV extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
         $upcs = array();
-        $args = array($upc);
+        $args = array();
         /*
          * avoid using zero date
          * some mysql versions dislike it
