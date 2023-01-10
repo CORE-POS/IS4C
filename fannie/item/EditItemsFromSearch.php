@@ -91,6 +91,7 @@ class EditItemsFromSearch extends FannieRESTfulPage
 
             if ($this->config->get('STORE_MODE') == 'HQ') {
                 foreach ($stores as $store) {
+                    $model = $this->setBinaryFlag($model, $upc . ':' . $store->storeID(), 'inUse', 'inUse');
                     $model->store_id($store->storeID());
                     $try = $model->save();
                 }
@@ -367,7 +368,7 @@ HTML;
         $query = 'SELECT p.upc, p.description, p.department, d.dept_name,
                     p.tax, p.foodstamp, p.discount, p.scale, p.local,
                     p.brand, v.vendorName AS distributor, p.line_item_discountable,
-                    p.inUse
+                    p.inUse, p.store_id
                   FROM products AS p
                   LEFT JOIN departments AS d ON p.department=d.dept_no
                   LEFT JOIN vendors AS v ON v.vendorID=p.default_vendor_id
@@ -406,7 +407,8 @@ HTML;
                             $row['upc'], ($row['scale'] == 1 ? 'checked' : ''),
                             $this->discountOpts($row['discount'], $row['line_item_discountable']),
                             $localOpts,
-                            $row['upc'], ($row['inUse'] == 1 ? 'checked' : '')
+                            $row['upc'] . ($this->config->get('STORE_MODE') == 'HQ' ? ':' . $row['store_id'] : ''),
+                            ($row['inUse'] == 1 ? 'checked' : '')
             );
         }
         $ret .= '</table>';
