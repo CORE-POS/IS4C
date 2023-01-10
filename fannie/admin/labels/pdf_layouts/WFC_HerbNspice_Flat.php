@@ -169,11 +169,13 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     //}
     if (strlen($sku) < 9 && is_numeric($sku)) {
         // if len of str too long, don't print as it will not fit
-        $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
-        $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
-        imagepng($img, $file);
-        $pdf->Image($file, $x-1, $y+$step*2);
-        unlink($file);
+        if (class_exists('Image_Barcode2')) {
+            $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
+            $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+            imagepng($img, $file);
+            $pdf->Image($file, $x-1, $y+$step*2);
+            unlink($file);
+        }
     }
     $pdf->SetFillColor(255,255,255);
     $pdf->SetFont('Gill','B', 16.5);
