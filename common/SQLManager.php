@@ -454,7 +454,7 @@ class SQLManager
 
         $errorMsg = $this->error($which_connection);
         $logMsg = 'Failed Query on ' . filter_input(INPUT_SERVER, 'PHP_SELF') . "\n"
-                . $query_text . "\n";
+                . $query_text . ' (' . $which_connection . ')' . "\n";
         if (is_array($params)) {
             $logMsg .= 'Parameters: ' . implode("\n", $params);
         }
