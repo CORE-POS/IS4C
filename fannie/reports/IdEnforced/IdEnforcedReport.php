@@ -92,9 +92,11 @@ class IdEnforcedReport extends FannieReportPage
                     AND p.idEnforced > 0 
                   GROUP BY
                     d.upc,
+                    p.brand,
                     d.description,
                     d.department,
-                    e.dept_name";
+                    e.dept_name,
+                    p.idEnforced";
         
         $data = array();
         $prep = $dbc->prepare($query);
