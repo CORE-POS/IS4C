@@ -455,6 +455,7 @@ var dvChange = function(col, value, upc, name)
 }
 var ingredientChange = function(upc, value)
 {
+    value = encodeURI(value)
     $.ajax({
         type: 'post', 
         data: 'upc='+upc+'&ingredients='+value,
