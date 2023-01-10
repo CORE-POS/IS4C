@@ -101,7 +101,7 @@ class TenderByDay extends FannieReportPage
     {
         $dates = FormLib::standardDateFields();
         $store = FormLib::storePicker();
-        $opts = array();
+        $opts = '';
         $res = $this->connection->query('SELECT TenderCode, TenderName FROM tenders ORDER BY TenderName');
         while ($row = $this->connection->fetchRow($res)) {
             $opts .= sprintf('<option value="%s">%s</option>', $row['TenderCode'], $row['TenderName']);
