@@ -149,6 +149,7 @@ function generateMirrorMeatTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
     $pdf->SetXY($x,$y+3);
     $pdf->Cell($width, 8, $upc, 0, 1, 'L', true);
 
+
     /*
         Add Brand & Description Text
     */
@@ -225,6 +226,7 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     $brand = strToUpper($row['brand']);
     $price = $row['normal_price'];
     $descFontSize = 20;
+    define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
     
     $updateUpcs = FormLib::get('update_upc');
     $manualDescs = FormLib::get('update_desc');
@@ -254,6 +256,10 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
     $scale = ($row['plu'] > 0) ? 1 : 2;
+
+    // get local info
+    $localP = $dbc->prepare("SELECT 'true' FROM products WHERE local > 0 AND upc = ?");
+    $item['local'] = $dbc->getValue($localP, $upc);
 
     // prep tag canvas
     $pdf->SetXY($x,$y);
@@ -298,6 +304,54 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     $pdf->SetXY($x+$pxMod,$y+22);
     if ($showPrice == 1 )
         $pdf->Cell(10, 5, $priceText, 0, 1, 'C', true);
+
+    /*
+        Add UPC Barcode
+    */
+    $img = Image_Barcode2::draw($upc."0", 'code128', 'png', false, 3.5, 1, false);
+    $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+    imagepng($img, $file);
+    $pdf->Image($file, $x, $y+25);
+
+    /*
+        Smaller Barcode Does Not Work Against Black 
+    $pdf->SetFont('Gill','B', 16);
+    $pdf->SetXY($x,$y+25);
+
+    // Setup White Canvas For Barcode 
+    $pdf->SetFillColor(255,255,255);
+    $pdf->Rect($x, $y+25, 45, 2.2, 'F');
+
+    // Draw The Barcode
+    $pdf->SetFillColor(0,0,0);
+    $pdf->SetDrawColor(255,255,255);
+    $pdf->EAN13($x+11, $y+23,$upc,4,.25);  //generate barcode and place on label
+    $pdf->SetFont('Gill','B', 16.5);
+
+    // Cover up numerical part of barcodes
+    $pdf->SetFillColor(0,0,0);
+    $pdf->Rect($x+2, $y+21.5, 29, 3.5, 'F');
+    */
+
+    // Print Local Logo (if local)
+    if ($item['local']) {
+        /* 
+            First Try - too big?
+        $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+114, $y+1, 20, 13);
+        $pdf->SetDrawColor(243, 115, 34);
+        $pdf->Rect($x+114, $y+2, 20, 12, 'D');
+        $pdf->Rect($x+113.8, $y+1.8, 20.4, 12.4, 'D');
+        $pdf->SetDrawColor(0, 0, 0);
+        */
+
+        // Second Try - smaller
+        $localX = 121;
+        $localY = 1;
+        $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY, 15, 9);
+        $pdf->SetDrawColor(243, 115, 34);
+        //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
+        $pdf->SetDrawColor(0, 0, 0);
+    }
 
 
     /*

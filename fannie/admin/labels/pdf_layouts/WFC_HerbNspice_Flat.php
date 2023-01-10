@@ -164,33 +164,50 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     // PLU Barcode
     $pdf->EAN13($x+42, $y+$step*2,substr($upc, -3),4,.25);  //generate barcode and place on label
     // SKU Barcode
-    if (is_numeric($sku)) {
-        $pdf->EAN13($x+2, $y+$step*2,$sku,4,.25);  //generate barcode and place on label
+    //if (is_numeric($sku)) {
+    //    $pdf->EAN13($x+2, $y+$step*2,$sku,4,.25);  //generate barcode and place on label
+    //}
+    if (strlen($sku) < 9 && is_numeric($sku)) {
+        // if len of str too long, don't print as it will not fit
+        $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
+        $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
+        imagepng($img, $file);
+        $pdf->Image($file, $x-1, $y+$step*2);
+        unlink($file);
     }
     $pdf->SetFillColor(255,255,255);
     $pdf->SetFont('Gill','B', 16.5);
+
+
+    // cover up 1
+    //$pdf->SetFillColor(255,0,0);
+    $pdf->Rect($x+2, $y-1+$step*2, $width, 7, 'F');
+    //$pdf->SetFillColor(255,255,255);
+
+    /* UPC / PLU Barcode */
+    $pdf->SetFillColor(0,0,0);
+    $pdf->EAN13($x+42, $y+$step*2,substr($upc, -3),4,.25);  //generate barcode and place on label
+    $pdf->SetFillColor(255,255,255);
+
+    // cover up 2
+    $pdf->SetFillColor(255,255,255);
+    $pdf->Rect($x+42, $y-1+$step*2, 25, 3, 'F');
+
 
     /*
         Add Vendor Info
     */
     $pdf->SetFont('Gill','', 8.5);
-    $pdf->SetXY($x+1, $y-1+$step*3);
+    $pdf->SetXY($x+1, $y-4+$step*3);
     $pdf->Cell(18, 2, $vendor, 0, 1, 'L', true);
     /*
         Add SKU if numeric
     */
     if (is_numeric($sku)) {
-        $pdf->SetXY($x+18, $y-1+$step*3);
-        $pdf->Cell(30, 2, $sku, 0, 1, 'L', true);
+        $pdf->SetXY($x+18, $y-4+$step*3);
+        $pdf->Cell(18, 2, $sku, 0, 1, 'L', true);
     }
     $pdf->SetFont('Gill','B', 16.5);
-
-
-    // cover up numerical part of barcodes with white rectanglges
-    $pdf->SetFillColor(255,255,255);
-    $pdf->Rect($x+42, $y-1+$step*2, 25, 3, 'F');
-    $pdf->Rect($x+2, $y-1+$step*2, 25, 3, 'F');
-    $pdf->SetFillColor(255,255,255);
 
     /*
         Add Price
