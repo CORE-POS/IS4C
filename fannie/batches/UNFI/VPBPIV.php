@@ -56,6 +56,10 @@ class VPBPIV extends FannieRESTfulPage
         $dbc->selectDB($this->config->OP_DB);
         $upcs = array();
         $args = array($upc);
+        /*
+         * avoid using zero date
+         * some mysql versions dislike it
+         */
         $prep = $dbc->prepare('SELECT b.*, l.upc, s.batchName
             FROM batchReviewLog AS b
             INNER JOIN batchList AS l ON l.batchID=b.bid 
