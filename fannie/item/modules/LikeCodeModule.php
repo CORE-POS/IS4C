@@ -397,6 +397,12 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
                     $insR = $dbc->execute($insP, array($newLC, $newName));
                     $json['likeCode'] = $newLC;
                     $json['likeCodeDesc'] = $newName;
+
+                    $cbs = FannieConfig::config('LC_CALLBACKS');
+                    foreach ($cbs as $cb) {
+                        $obj = new $cb();
+                        $obj->run($newLC);
+                    }
                 }
             }
         /** lookup items associated w/ like code **/
