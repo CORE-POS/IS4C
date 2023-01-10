@@ -315,6 +315,20 @@ class UPC extends Parser
         /* quantity required for this item. Send to
            entry page if one wasn't provided */
         if (($qttyEnforced == 1) && ($this->session->get("multiple") == 0) && ($this->session->get("msgrepeat" == 0) || $this->session->get('qttyvalid') == 0)) {
+            $multP = $dbc->prepare("SELECT description, multiple FROM Multiples WHERE upc=?");
+            $multR = $dbc->execute($multP, array($row['upc']));
+            if ($multR && class_exists('QuickMenus')) {
+                $opts = array(
+                    'Single - ' . $row['description'] => '1*' . $row['upc'],
+                );
+                while ($multW = $dbc->fetchRow($multR)) {
+                    $opts[$multW['description'] . ' - ' . $row['description']] = $multW['multiple'] . '*' . $row['upc'];
+                }
+                CoreLocal::set('qmNumber', $opts);
+                $plugin_info = new \QuickMenus();
+                $ret['main_frame'] = $plugin_info->pluginUrl().'/QMDisplay.php';
+                return $ret;
+            }
             $ret['main_frame'] = 
                     $myUrl . 'gui-modules/QuantityEntryPage.php'
                     . '?entered-item=' . $this->session->get('strEntered')
@@ -879,6 +893,9 @@ class UPC extends Parser
 
     private function enforceSaleLimit($dbc, $row, $quantity)
     {
+        if ($row['specialpricemethod'] == 7) {
+            return $row;
+        }
         /**
           Enforce per-transaction sale limits
         */
