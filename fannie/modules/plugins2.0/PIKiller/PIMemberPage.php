@@ -249,6 +249,11 @@ class PIMemberPage extends PIKillerPage {
         $cards->load();
         $cards->pushToLanes();
 
+        $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($this->card_no);
+        }
 
         $prep = $dbc->prepare('
             SELECT webServiceUrl FROM Stores WHERE hasOwnItems=1 AND storeID<>?
