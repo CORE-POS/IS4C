@@ -60,7 +60,7 @@ class VPBPIV extends FannieRESTfulPage
             FROM batchReviewLog AS b
             INNER JOIN batchList AS l ON l.batchID=b.bid 
             INNER JOIN batches AS s ON s.batchID=l.batchID
-            WHERE forced = "0000-00-00 00:00:00";');
+            WHERE forced < "1900-01-01 00:00:00";');
         $res = $dbc->execute($prep, $args);
         while ($row = $dbc->fetchRow($res)) {
             $upcs[$row['upc']] = $row['batchName'];
