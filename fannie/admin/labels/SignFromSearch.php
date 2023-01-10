@@ -90,6 +90,11 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         while ($row = $dbc->fetchRow($res)) {
             $locations[$row['upc']] = $row['name'];
         }
+        foreach ($this->upcs as $i => $upc) {
+            if (!array_key_exists($upc, $locations)) {
+                $locations[$upc] = 'z';
+            }
+        }
         usort($this->upcs, function ($a, $b) use ($locations) {
             if (!isset($locations[$a]) || !isset($locations[$b])) return 0;
             if ($locations[$a] == $locations[$b]) return 0;
