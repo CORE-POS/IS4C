@@ -87,7 +87,7 @@ a[type="submit"] {
 <hr />
 {$wfcTools[0]}
 <a class="btn btn-default btn-lg" type="submit"
-    href="../../../../../Scannie/content/Scanning/BatchCheck/newMenu.php" />Batch Check</a>
+    href="../../../../../Scannie/content/Scanning/BatchCheck/newpage.php" />Batch Check</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../item/CoopDealsLookupPage.php" />C+D Check Sale</a>
