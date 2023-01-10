@@ -237,6 +237,11 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         );
         $ret = '';
 
+        if (class_exists('BrandAbbrFixModel')) {
+            $brandFix = new BrandAbbrFixModel($dbc);
+            $brandFixP = $dbc->prepare("SELECT goodName FROM BrandAbbrFix WHERE badName = ?");
+        }
+
         /**
           Check for entries in the vendorItems table to prepopulate
           fields for the new item
@@ -282,10 +287,23 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $rowItem['caseSize'] = $vrow['units'];
             $rowItem['sku'] = $vrow['sku'];
 
+            if (class_exists('BrandAbbrFixModel')) {
+                $brandFixR = $dbc->execute($brandFixP, array($rowItem['manufacturer']));
+                $brandFixW = $dbc->fetchRow($brandFixR);
+                if ($brandFixW) {
+                    $fixedBrand = $brandFixW['goodName'];
+                    if (strlen($fixedBrand) > 0) {
+                        $rowItem['manufacturer'] = $fixedBrand;
+                    }
+                }
+            }
+
             while ($vrow = $dbc->fetchRow($vendorR)) {
                 $ret .= sprintf('This product is also in <a href="?searchupc=%s&vid=%d">%s</a><br />',
                     $upc,$vrow['vendorID'],$vrow['distributor']);
             }
+
+
         }
 
         $rowItem['department'] = $this->guessDepartment($upc);
