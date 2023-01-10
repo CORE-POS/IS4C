@@ -69,6 +69,12 @@ class LikeCodeEditor extends FanniePage {
                     $msg .= "LC #$lc ($name) created";
                     $msg_type = 'success';
                 }
+
+                $cbs = FannieConfig::config('LC_CALLBACKS');
+                foreach ($cbs as $cb) {
+                    $obj = new $cb();
+                    $obj->run($lc);
+                }
             }
         } elseif (FormLib::get_form_value('submit2') !== '') {
             $lc = $_REQUEST['lcselect'];
