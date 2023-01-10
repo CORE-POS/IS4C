@@ -86,7 +86,9 @@ class ProdLocationEditor extends FannieRESTfulPage
     {
         return <<<HTML
 <div class="row">
-    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+        <button onClick="location.href = 'ProdLocationEditor.php'" class="btn btn-default">Back</button>
+    </div>
     <div class="col-lg-4">
         <h5>Remove Floor Locations</h5>
         <form action="ProdLocationEditor.php" method="post">
