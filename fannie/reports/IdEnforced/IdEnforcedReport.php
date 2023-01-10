@@ -81,7 +81,7 @@ class IdEnforcedReport extends FannieReportPage
                     " . DTrans::sumQuantity('d') . " AS qty,
                     SUM(d.total) AS total,
                     p.idEnforced AS 'Age Req',
-                    CASE WHEN INSTR(p.description, 'THC') != 0 THEN 'Yes' ELSE 'No' END AS THC
+                    CASE WHEN INSTR(MAX(p.description), 'THC') != 0 THEN 'Yes' ELSE 'No' END AS THC
                   FROM {$dlog} AS d
                     LEFT JOIN departments AS e ON d.department=e.dept_no
                     LEFT JOIN {$superTable} AS m ON d.department=m.dept_ID
