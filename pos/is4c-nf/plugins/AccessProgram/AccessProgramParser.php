@@ -70,6 +70,7 @@ class AccessProgramParser extends Parser {
             }
         }
 
+        /*
         if ($str !== 'ACCESS6' && CoreLocal::get('AccessSelection') === '') {
             CoreLocal::set('AccessSelection', $str);
             $ret['main_frame'] = MiscLib::baseURL() . 'gui-modules/adminlogin.php?class=AccessProgramParser';
@@ -78,6 +79,7 @@ class AccessProgramParser extends Parser {
         } else {
             CoreLocal::set('AccessSelection', '');
         }
+         */
 
         $selection = substr($str, 6);
         TransRecord::addRecord(array(
