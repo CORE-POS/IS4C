@@ -91,6 +91,8 @@ class VendorPricingBatchPage extends FannieRESTfulPage
         $this->addScript('pricing-batch.js');
         $dbc = $this->connection;
         $dbc->selectDB($this->config->OP_DB);
+        $list = FormLib::get('list', array());
+        $list = (!empty($list)) ? explode("\r\n", $list) : $list;
 
         $superID = FormLib::get('super', -1);
         $queueID = FormLib::get('queueID');
@@ -500,6 +502,10 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <p>
             <button type=submit class="btn btn-default">Continue</button>
             </p>
+
+            <label for="list">(Optional) Enter a List of UPCs to Review</label>
+            This method is under construction (Corey)
+            <textarea class="form-control" name="list"></textarea>
             </form>
         </div>
         <?php
