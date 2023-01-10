@@ -21,11 +21,15 @@
   the field specified by the selctor and then either the callback is
   triggered, if present, or the closest form is submitted
 */
-function lineaBarcode(upc, selector, callback) {
+function lineaBarcode(upc, type, selector, callback) {
     if (typeof upc === 'undefined') {
         return;
     }
-    upc = upc.substring(0,upc.length-1);
+    if (type == 'Code 128') {
+        // do not remove last digit
+    } else {
+        upc = upc.substring(0,upc.length-1);
+    }
     if ($(selector).length > 0){
         $(selector).val(upc);
         if (typeof callback === 'function') {
@@ -44,7 +48,7 @@ function lineaBarcode(upc, selector, callback) {
 */
 var IPC_PARAMS = { selector: false, callback: false };
 function ipcWrapper(upc, typeID, typeStr) {
-    lineaBarcode(upc, IPC_PARAMS.selector, IPC_PARAMS.callback);
+    lineaBarcode(upc, typeStr, IPC_PARAMS.selector, IPC_PARAMS.callback);
 }
 
 /**
@@ -86,13 +90,14 @@ function enableLinea(selector, callback) {
     if (typeof WebBarcode != 'undefined') {
         WebBarcode.onBarcodeScan(function(ev) {
             var data = ev.value;
-            lineaBarcode(data, selector, callback);
+            var type = ev.type;
+            lineaBarcode(data, type, selector, callback);
         });
     }
 
     document.addEventListener("BarcodeScanned", function (ev) {
         var data = ev.value;
-        lineaBarcode(data, selector, callback);
+        lineaBarcode(data, 'upc-a', selector, callback);
     }, false);
 
     // for webhub
@@ -120,7 +125,7 @@ function enableLinea(selector, callback) {
     Object.defineProperty(socketm, "value", {
         get: function() { return this._value; },
         set: function(v) {
-            lineaBarcode(v, selector, callback);
+            lineaBarcode(v, 'upc-a', selector, callback);
         }
     });
     document.body.appendChild(socketm);
@@ -148,4 +153,8 @@ function lineaVibrate() {
     }
 }
 
-
+function showAnythingOnScren(object)
+{
+    //object = JSON.stringify(object);
+    $('body').prepend('IGNORE ME: ' + object); 
+}
