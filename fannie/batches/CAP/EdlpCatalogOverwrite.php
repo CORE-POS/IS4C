@@ -101,7 +101,8 @@ class EdlpCatalogOverwrite extends \COREPOS\Fannie\API\FannieUploadPage
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
-        $idR = $dbc->query("SELECT vendorID FROM vendors WHERE vendorName='UNFI' OR vendorName LIKE 'UNFI %' ORDER BY vendorID");
+        $idR = $dbc->query("SELECT vendorID FROM vendors WHERE (vendorName='UNFI' OR vendorName LIKE 'UNFI %')
+            AND vendorName != 'UNFI Conventional' ORDER BY vendorID");
         $VENDOR_IDS = array();
         while ($idW = $dbc->fetchRow($idR)) {
             $VENDOR_IDS[] = $idW['vendorID'];

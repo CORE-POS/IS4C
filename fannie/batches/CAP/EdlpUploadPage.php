@@ -73,7 +73,9 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 INNER JOIN vendors AS v ON s.vendorID=v.vendorID
                 ' . DTrans::joinProducts('s', 'p', 'INNER') . '
             WHERE s.sku=?
-                AND v.vendorName LIKE \'%UNFI%\'');
+                AND s.isPrimary=1
+                AND v.vendorName LIKE \'%UNFI%\'
+                AND v.vendorName != \'UNFI Conventional\'');
         $insP = $dbc->prepare('
             INSERT INTO PriceRules 
                 (priceRuleTypeID, maxPrice, reviewDate, details)
