@@ -145,6 +145,27 @@ class IdEnforcedReport extends FannieReportPage
 HTML;
     }
 
+    public function calculate_footers($data)
+    {
+        $sumQty = 0;
+        $sumUSD = 0.0;
+        $thc = 0;
+        $noThc = 0;
+        foreach ($data as $row) {
+            $sumQty += $row[5];
+            $sumUSD += $row[6];
+            if ($row[8] == 'Yes') {
+                $thc++;
+            } else {
+                $noThc++;
+            }
+        }
+        $contains = "$thc Yes | $noThc No";
+        $sumUSD = number_format($sumUSD, 2, ".", ",");
+
+        return array(null,null,null,null,null, $sumQty, "$".$sumUSD, 7,$contains);
+    }
+
     public function helpContent()
     {
         return '<p>
