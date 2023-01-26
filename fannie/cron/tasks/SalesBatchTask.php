@@ -103,6 +103,7 @@ class SalesBatchTask extends FannieTask
         // lookup current batches
         $prep = $dbc->prepare($this->getSaleItems($dbc));
         $result = $dbc->execute($prep, array($now, $now));
+        $changedUPCs = array();
         while ($row = $dbc->fetchRow($result)) {
             // ignore partials. they have a separate task
             if ($dbc->getValue($isPartial, $row['batchID'])) {
@@ -237,6 +238,7 @@ class SalesBatchTask extends FannieTask
                 if ($changed) {
                     $product->save();
                     $this->cronMsg("\tUpdated item", FannieLogger::INFO);
+                    $changedUPCs[] = $upc;
                 }
 
                 if ($this->test_mode) {
@@ -276,11 +278,20 @@ class SalesBatchTask extends FannieTask
             $product->end_date('1900-01-01');
             $product->batchID(0);
             $product->save();
+            $changedUPCs[] = $lookupW['upc'];
 
             if ($this->test_mode) {
                 break;
             }
         }
+
+        $queue = new COREPOS\Fannie\API\jobs\QueueManager();
+        $queue->add(array(
+            'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
+            'data' => array(
+                'upc' => $changedUPCs,
+            ),
+        ));
 
         $this->discoItems($dbc, $disco_items);
     }
