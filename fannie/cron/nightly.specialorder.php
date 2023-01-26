@@ -285,38 +285,40 @@ if (strlen($empty) > 2){
     $delR = $sql->query($delQ);
 }
 
-$yesterday = date('Y-m-d', strtotime('yesterday'));
-$superID = 3;
+$superIDs = array(3, 6);
+foreach ($superIDs as $superID) {
+    $yesterday = date('Y-m-d', strtotime('yesterday'));
 
-$prep = $sql->prepare("SELECT order_id FROM PendingSpecialOrder WHERE trans_id=0
-    AND datetime BETWEEN ? AND ?");
-$oIDs = $sql->getAllValues($prep, array($yesterday, $yesterday . ' 23:59:59'));
+    $prep = $sql->prepare("SELECT order_id FROM PendingSpecialOrder WHERE trans_id=0
+        AND datetime BETWEEN ? AND ?");
+    $oIDs = $sql->getAllValues($prep, array($yesterday, $yesterday . ' 23:59:59'));
 
-list($inStr, $args) = $sql->safeInClause($oIDs, array($superID));
-$prep = $sql->prepare("SELECT specialOrderID FROM SpecialOrders
-    WHERE noteSuperID=? AND specialOrderID IN ({$inStr})");
-$matches = $sql->getAllValues($prep, $args);
+    list($inStr, $args) = $sql->safeInClause($oIDs, array($superID));
+    $prep = $sql->prepare("SELECT specialOrderID FROM SpecialOrders
+        WHERE noteSuperID=? AND specialOrderID IN ({$inStr})");
+    $matches = $sql->getAllValues($prep, $args);
 
-list($inStr, $args) = $sql->safeInClause($oIDs, array($superID));
-$prep = $sql->prepare("SELECT order_id FROM PendingSpecialOrder AS p
-    INNER JOIN " . FannieDB::fqn('MasterSuperDepts', 'op') . " AS m ON p.department=m.dept_ID
-    WHERE m.superID = ? AND p.order_id IN ({$inStr})");
-$matches2 = $sql->getAllValues($prep, $args);
+    list($inStr, $args) = $sql->safeInClause($oIDs, array($superID));
+    $prep = $sql->prepare("SELECT order_id FROM PendingSpecialOrder AS p
+        INNER JOIN " . FannieDB::fqn('MasterSuperDepts', 'op') . " AS m ON p.department=m.dept_ID
+        WHERE m.superID = ? AND p.order_id IN ({$inStr})");
+    $matches2 = $sql->getAllValues($prep, $args);
 
-$all = array_merge($matches, $matches2);
+    $all = array_merge($matches, $matches2);
 
-list($inStr, $args) = $sql->safeInClause($all);
-$prep = $sql->prepare("SELECT specialOrderID, storeID FROM SpecialOrders
-    WHERE specialOrderID IN ({$inStr})
-    GROUP BY specialOrderID, storeID");
-$orders = $sql->getAllRows($prep, $args);
-foreach ($orders as $row) {
-    $addrP = $sql->prepare("SELECT emailAddress FROM " . FannieDB::fqn('superDeptEmails', 'op') . " WHERE superID=?");
-    $addr = $sql->getValue($addrP, array($superID));
-    $msg_body = 'New Deli Special Order' . "\n\n";
-    $msg_body .= "http://" . FannieConfig::config('HTTP_HOST') . FannieConfig::config('URL')
-        . "ordering/OrderViewPage.php?orderID=".$row['specialOrderID']."\n\n";
-    $subject = "New Special Order";
-    mail($addr,$subject,$msg_body);
+    list($inStr, $args) = $sql->safeInClause($all);
+    $prep = $sql->prepare("SELECT specialOrderID, storeID FROM SpecialOrders
+        WHERE specialOrderID IN ({$inStr})
+        GROUP BY specialOrderID, storeID");
+    $orders = $sql->getAllRows($prep, $args);
+    foreach ($orders as $row) {
+        $addrP = $sql->prepare("SELECT emailAddress FROM " . FannieDB::fqn('superDeptEmails', 'op') . " WHERE superID=?");
+        $addr = $sql->getValue($addrP, array($superID));
+        $msg_body = 'New Special Order' . "\n\n";
+        $msg_body .= "http://" . FannieConfig::config('HTTP_HOST') . FannieConfig::config('URL')
+            . "ordering/OrderViewPage.php?orderID=".$row['specialOrderID']."\n\n";
+        $subject = "New Special Order";
+        mail($addr,$subject,$msg_body);
+    }
 }
 
