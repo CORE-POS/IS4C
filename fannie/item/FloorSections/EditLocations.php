@@ -339,7 +339,7 @@ class EditLocations extends FannieRESTfulPage
                 <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Mobile Menu</a>
             </div>
             <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php?list=1">Edit Locations: by List</a>
+                <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php">Edit Locations: by List</a>
             </div>
             <div class="form-group" align="center">
                 <a class="btn btn-default menu-btn" href="../../item/FloorSections/EditLocations.php">Edit Sub-Locations: by List</a>
@@ -488,7 +488,7 @@ HTML;
     <div class="col-lg-4">
         <ul>
             <li><a href="SubLocationViewer.php">Sub-Location Mapper</a></li>
-            <li><a href="../ProdLocationEditor.php?list=1">Edit Locations: by List</a></li>
+            <li><a href="../ProdLocationEditor.php">Edit Locations: by List</a></li>
         </ul>
     </div>
 </div>
