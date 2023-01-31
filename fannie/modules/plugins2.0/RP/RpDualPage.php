@@ -444,6 +444,27 @@ class RpDualPage extends FannieRESTfulPage
             $lcInfo[$lcW['likeCode']] = $lcW;
         }
 
+        $topP = $this->connection->prepare("SELECT l.likeCode, l.likeCodeDesc, 
+                    MAX(s.movement) * (CASE WHEN MAX(p.special_price > 0) THEN MAX(p.special_price) ELSE MAX(p.normal_price) END) AS retail
+                FROM products AS p
+                    INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+                    INNER JOIN upcLike AS u ON p.upc=u.upc
+                    INNER JOIN likeCodes AS l ON u.likeCode=l.likeCode
+                    LEFT JOIN core_warehouse.Smoothed as s ON s.upc=" . 
+                        $this->connection->concat("'LC'", 'l.likeCode', $this->config->get('OP_DB')) . " AND s.storeID=p.store_id
+                WHERE m.superID=6
+                    AND p.store_id=?
+                GROUP BY l.likeCode, l.likeCodeDesc
+                ORDER BY retail DESC");
+        $topR = $this->connection->execute($topP, array($store));
+        $topItems = array();
+        while ($topW = $this->connection->fetchRow($topR)) {
+            $topItems[$topW['likeCode']] = true;
+            if (count($topItems) >= 15) {
+                break;
+            }
+        }
+
         $dow = date('N');
         $saleDate = date('Y-m-d');
         if ($dow >= 6 || $dow <= 2) {
@@ -577,7 +598,9 @@ class RpDualPage extends FannieRESTfulPage
             $row['backupVendor'] = str_replace(' (Produce)', '', $row['backupVendor']);
             $highlight = '';
             $tooltip = '';
-            if ($onSale) {
+            if (isset($topItems[$lc])) {
+                $highlight = 'rp-top15';
+            } elseif ($onSale) {
                 $highlight = 'rp-success';
                 $tooltip = "On sale through {$onSale}";
             } elseif (!$organic) {
@@ -906,8 +929,14 @@ HTML;
 .rp-success {
     background-color: #f772d2;
 }
+.rp-top15 {
+    background-color: #f9fc00;
+}
 .table-striped>tbody>tr:nth-child(odd)>td.rp-success {
     background-color: #f772d2;
+}
+.table-striped>tbody>tr:nth-child(odd)>td.rp-top15 {
+    background-color: #f9fc00;
 }
 .incoming-notice {
     font-weight: bold;
