@@ -25,7 +25,7 @@ function lineaBarcode(upc, type, selector, callback) {
     if (typeof upc === 'undefined') {
         return;
     }
-    if (type == 'Code 128') {
+    if (type == 'Code 128' && upc.length < 11) {
         // do not remove last digit
     } else {
         upc = upc.substring(0,upc.length-1);
@@ -153,8 +153,7 @@ function lineaVibrate() {
     }
 }
 
-function showAnythingOnScren(object)
+function showAnythingOnScreen(object)
 {
-    //object = JSON.stringify(object);
-    $('body').prepend('IGNORE ME: ' + object); 
+    $('body').prepend(object);
 }
