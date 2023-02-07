@@ -250,12 +250,17 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
 
     // get scale info
     $prep = $dbc->prepare("
-        SELECT plu
+        SELECT plu, weight
         FROM scaleItems
         WHERE plu = ?");
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
-    $scale = ($row['plu'] > 0) ? 1 : 2;
+    $scale = null;
+    $weight = null;
+    if (is_array($row)) {
+        $scale = ($row['plu'] > 0) ? 1 : 2;
+        $weight = $row['weight'];
+    }
 
     // get local info
     $localP = $dbc->prepare("SELECT 'true' FROM products WHERE local > 0 AND upc = ?");
@@ -296,7 +301,7 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     */
     $priceText = '$'.$price;
     $pxMod = 118;
-    if ($scale == 1) {
+    if ($weight === "0") {
         $priceText .= "/LB";
         $pxMod -= 3;
     }
