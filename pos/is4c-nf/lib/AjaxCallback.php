@@ -67,7 +67,9 @@ class AjaxCallback
         $file = filter_input(INPUT_SERVER, 'SCRIPT_FILENAME');
         // nb. if FastCGI is in use, the above may return null, in
         // which case we must provide a fallback
-        if (!$file) $file = $_SERVER['SCRIPT_FILENAME'];
+        if (!$file) {
+            $file = $_SERVER['SCRIPT_FILENAME'];
+        }
         $nsClass = AutoLoader::fileToFullClass($file);
         self::$logger = new LaneLogger();
         if ($callback_class === $nsClass || basename($file) === $callback_class . '.php') {
@@ -79,6 +81,9 @@ class AjaxCallback
             self::perfStart();
             self::executeCallback($callback_class);
             self::perfEnd($callback_class);
+        } else {
+            self::$logger->error("$callback_class is not correct for the file $file");
+            echo "Error: $callback_class is not correct for the file $file";
         }
     }
 
