@@ -255,7 +255,7 @@ $cleanupQ = sprintf("
     SELECT p.order_id 
     FROM PendingSpecialOrder AS p 
         LEFT JOIN SpecialOrders AS o ON p.order_id=o.specialOrderID
-    WHERE 
+    WHERE p.deleted=0 AND (
         (
             o.specialOrderID IS NULL
             OR %s(o.notes)=0
@@ -265,6 +265,7 @@ $cleanupQ = sprintf("
             WHERE trans_id=0
             GROUP BY order_id
         )
+    )
     GROUP BY p.order_id
     HAVING MAX(trans_id)=0",
 ($FANNIE_SERVER_DBMS=="MSSQL" ? 'datalength' : 'length'));
@@ -307,17 +308,19 @@ foreach ($superIDs as $superID) {
     $all = array_merge($matches, $matches2);
 
     list($inStr, $args) = $sql->safeInClause($all);
-    $prep = $sql->prepare("SELECT specialOrderID, storeID FROM SpecialOrders
+    $prep = $sql->prepare("SELECT specialOrderID, o.storeID, s.description FROM SpecialOrders AS o
+        LEFT JOIN " . FannieDB::fqn('Stores', 'op') . " AS s ON s.storeID = o.storeID
         WHERE specialOrderID IN ({$inStr})
-        GROUP BY specialOrderID, storeID");
+        GROUP BY specialOrderID, o.storeID");
     $orders = $sql->getAllRows($prep, $args);
     foreach ($orders as $row) {
+        $storeName = $row['description'];
         $addrP = $sql->prepare("SELECT emailAddress FROM " . FannieDB::fqn('superDeptEmails', 'op') . " WHERE superID=?");
         $addr = $sql->getValue($addrP, array($superID));
         $msg_body = 'New Special Order' . "\n\n";
         $msg_body .= "http://" . FannieConfig::config('HTTP_HOST') . FannieConfig::config('URL')
             . "ordering/OrderViewPage.php?orderID=".$row['specialOrderID']."\n\n";
-        $subject = "New Special Order";
+        $subject = "New Special Order $storeName";
         mail($addr,$subject,$msg_body);
     }
 }

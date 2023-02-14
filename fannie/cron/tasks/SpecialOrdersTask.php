@@ -136,7 +136,7 @@ class SpecialOrdersTask extends FannieTask
             SELECT p.order_id 
             FROM PendingSpecialOrder AS p 
                 LEFT JOIN SpecialOrders AS o ON p.order_id=o.specialOrderID
-            WHERE 
+            WHERE p.deleted=0 AND (
                 (
                     o.specialOrderID IS NULL
                     OR %s(o.notes)=0
@@ -146,6 +146,7 @@ class SpecialOrdersTask extends FannieTask
                     WHERE trans_id=0
                     GROUP BY order_id
                 )
+            )
             GROUP BY p.order_id
             HAVING MAX(trans_id)=0",
         ($sql->dbmsName()==="mssql" ? 'datalength' : 'length'));
