@@ -147,6 +147,7 @@ class EditFieldFromSearch extends FannieRESTfulPage
 <div class="row">
     <div class="col-lg-4">
         <h3>Product Data</h3>
+        <p>NOT Store Specific</p>
         <form method="post" action="EditFieldFromSearch.php">
             <div class="form-group">
                 <label>Field</label>
@@ -164,6 +165,7 @@ class EditFieldFromSearch extends FannieRESTfulPage
     </div>
     <div class="col-lg-4">
         <h3>Sign Data</h3>
+        <p>Store Specific</p>
         <form method="post" action="EditFieldFromSearch.php">
             <div class="form-group">
                 <label>Field</label>
