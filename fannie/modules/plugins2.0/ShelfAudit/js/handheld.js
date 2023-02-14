@@ -34,9 +34,11 @@ var handheld = (function($) {
     mod.updateQty = function(amt){
         var cur = Number($('#cur_qty').val());
         cur = cur+amt;
+        cur = Math.round(cur * 100) / 100;
         $('#cur_qty').val(cur);
 
         cur += Number($('#old-qty').html());
+        cur = Math.round(cur * 100) / 100;
         $('#live-qty').html(cur);
 
         // save new quantity, return cursor to upc input

@@ -391,7 +391,7 @@ HTML;
             $this->addOnloadCommand("\$('#upc_in').focus();\n");
         }
         $this->upcForm($store);
-        $this->addScript('js/handheld.js?date=20210817');
+        $this->addScript('js/handheld.js?date=20230201');
 
         return ob_get_clean();
     }
