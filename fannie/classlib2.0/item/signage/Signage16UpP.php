@@ -101,6 +101,29 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             }
         }
 
+        // If BOGO, clear previous formatting with white rectangle, then print new NCG BOGO format
+        if (isset($item['signMultiplier'])) {
+            if ($item['signMultiplier'] == -3) {
+
+                $pdf->SetFillColor(0xff, 0xff, 0xff);
+                $pdf->Rect($this->left + ($this->width*$column), ($y-2), 
+                           $this->left + ($this->width*$column) + $effective_width, 
+                           $pdf->GetY(), 'F');
+
+                $pdf->SetTextColor(244, 116, 30);
+
+                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 43));
+                $pdf->SetFont($this->font, 'B', 12);
+                $pdf->Cell($this->width, 12, 'Buy One, Get One', 0, 1, 'C');
+
+                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 34));
+                $pdf->SetFont($this->font, 'B', $this->BIG_FONT);
+                $pdf->Cell($this->width, 12, 'FREE', 0, 1, 'C');
+
+                $pdf->SetTextColor(0, 0, 0);
+            }
+        }
+
         if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
             // intl would be nice
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
