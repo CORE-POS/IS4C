@@ -52,7 +52,7 @@ class PriceRounder
         $endingCaps = array(6.99, 14.99, 9999.00);
         // special round defines when to round down by $endingCaps
         $specialRound = array(
-            0 => 0,
+            0 => 0.10,
             1 => 0.16,
             2 => 0.30
         );
