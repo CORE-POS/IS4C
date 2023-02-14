@@ -40,7 +40,7 @@ class HalfTags4x8P extends \COREPOS\Fannie\API\item\FannieSignage
     public function drawPDF()
     {
         $pdf = new \FPDF('P', 'mm', 'Letter');
-        $pdf = $this->loadPluginFonts($pdf);
+        //$pdf = $this->loadPluginFonts($pdf);
 
         $pdf->SetMargins($this->left, $this->top, $this->left);
         $pdf->SetAutoPageBreak(false); // manage page breaks yourself
