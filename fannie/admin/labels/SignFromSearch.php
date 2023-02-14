@@ -90,11 +90,6 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         while ($row = $dbc->fetchRow($res)) {
             $locations[$row['upc']] = $row['name'];
         }
-        foreach ($this->upcs as $i => $upc) {
-            if (!array_key_exists($upc, $locations)) {
-                $locations[$upc] = 'z';
-            }
-        }
         usort($this->upcs, function ($a, $b) use ($locations) {
             if (!isset($locations[$a]) || !isset($locations[$b])) return 0;
             if ($locations[$a] == $locations[$b]) return 0;
@@ -375,16 +370,15 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $ret .= '<button type="submit" name="pdf" value="Print"
                     class="btn btn-default">Print</button>';
         $ret .= '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="offset" value="1" /> Offset</label>';
+        if (FormLib::get('batch', false) != false) {
+            $ret .= '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="altViewCheckbox" id="altViewCheckbox" value="1" /> Show Extended Info </label>';
+        }
 
         $darkExtendOnly = '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="showPrice" value="1" checked />Show Price</label>';
         $signmod = FormLib::get('signmod');
         if (FormLib::get('signmod') == 'Legacy:WFC Dark Extended 24UP') 
             $ret .= $darkExtendOnly;
         if (FormLib::get('signmod') == 'Legacy:WFC MEAT 14UP') 
-            $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:WFC Dark ServiceCase 12UP') 
-            $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:WFC Bulk Repack 14UP')
             $ret .= $darkExtendOnly;
         $ret .= '</div>';
         $ret .= '<hr />';
@@ -446,6 +440,15 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         return $ret;
     }
 
+    public function css_content()
+    {
+        return <<<HTML
+.altView {
+    display: none;
+}
+HTML;
+    }
+
     public function javascriptContent()
     {
         return <<<JAVASCRIPT
@@ -454,10 +457,6 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         if (text == text.toUpperCase()) {
             $(this).addClass('alert-danger');
         }
-    });
-    $('textarea').each(function(){
-        $(this).attr('rows', 2)
-            .css('width', '200px');
     });
     $('textarea').on('change', function(){
         $(this).removeClass('alert-danger');
@@ -517,6 +516,19 @@ $(':checkbox').on("click", function(e){
     }
     lastChecked = $(this);
 });
+
+$('#altViewCheckbox').click(function(e){
+    let checked = $(this).is(":checked");
+    if (checked) {
+        $('.altView').each(function(){
+            $(this).show();
+        });
+    } else {
+        $('.altView').each(function(){
+            $(this).hide();
+        });
+    }
+});
 JAVASCRIPT;
     }
 
@@ -528,6 +540,7 @@ JAVASCRIPT;
             prices to use: current or upcoming, retail or sale/promo.
             Text for each item can be overriden in the
             list of items below.
+            </p>
             </p>
             <label>Layouts</label> <ul>
                 <li>Themed Price/Sale Sign Templates</li>
@@ -542,7 +555,7 @@ JAVASCRIPT;
                         print entire list of items onto one 2Up or 4Up paper. <a data-toggle="collapse" data-target="#ListImg" href="#">View Sign</a></li>
                         <img class="collapse" id="ListImg" src="pdf_layouts/noauto/ItemList4Up.png" style="border: 1px solid lightgrey;"/>
                     <li><b>WfcSmartSigns12UpP - 4UpP</b>
-                        sale & general signs, printed on white paper, this layout includes thematic formatting. <a data-toggle="collapse" data-target="#SmartImg" href="#">View Sign</a></li> 
+                        sale & general signs, printed on white paper, this layout includes thematic formatting. <a data-toggle="collapse" data-target="#SmartImg" href="#">View Sign</a></li>
                         <img class="collapse" id="SmartImg" src="pdf_layouts/noauto/SmartSigns.png" style="border: 1px solid lightgrey;"/>
                     <li><b>Giganto4UpSingle</b>
                         full size paper 4up, for printing a 4Up on a fourth of a sheet of paper. <a data-toggle="collapse" data-target="#GigantoSingleImg" href="#">View Sign</a></li>
@@ -553,6 +566,27 @@ JAVASCRIPT;
                 </ul>
                 <li>Shelf Tags, White With Black Text</li>
                 <ul>
+                    <li><b>Legacy: WFC Hybrid</b>
+                        standard white shelf tags. Automatically prints tags in either the full or compact (narrow) format based on how they are set up in POS, automatically calculated and includes movement in upper right hand corner. <a data-toggle="collapse" data-target="#HybridImg" href="#">View Sign</a></li>
+                        <img class="collapse" id="HybridImg" src="pdf_layouts/noauto/Legacy WFC Hybrid.png" style="border: 1px solid lightgrey;"/>
+                    <li><b>TagsDoubleBarcode</b>
+                        shelf tags that have 2 barcodes on them. <a data-toggle="collapse" data-target="#DoubleImg" href="#">View Sign</a></li>
+                        <img class="collapse" id="DoubleImg" src="pdf_layouts/noauto/TagsDoubleBarcode.png" style="border: 1px solid lightgrey;"/>
+                    <li><b>TagsNoPrice</b>
+                        shelf tags with upc & sku barcodes. <a data-toggle="collapse" data-target="#NoPriceImg" href="#">View Sign</a></li>
+                        <img class="collapse" id="NoPriceImg" src="pdf_layouts/noauto/TagsNoPrice.png" style="border: 1px solid lightgrey;"/>
+                </ul>
+                <li>Shelf Tags, Black With White Text</li>
+                <ul>
+                    <li><b> Legacy: WFC Dark Extended 24UP</b>
+                        Black rail shelf-tags for deli vendors items. Includes brand, description and price (price optional). Tags are double sided. Back side of tags includes upc, brand, pos description, vendor, size. <a data-toggle="collapse" data-target="#ExtImg" href="#">View Sign</a></li>
+                        <img class="collapse" id="ExtImg" src="pdf_layouts/noauto/Legacy WFC Dark Extended 24Up.png" style="border: 1px solid lightgrey;"/>
+                    <li><b>Legacy: WFC Dark ServiceCase 12UP</b>
+                        black square signs for deli service case. Front includes name of product and price, back includes PLU, pos description & allergens. <a data-toggle="collapse" data-target="#ServiceCaseImg" href="#">View Sign</a></li>
+<img class="collapse" id="ServiceCaseImg" src="pdf_layouts/noauto/Legacy WFC Dark ServiceCase 12Up.png" style="border: 1px solid lightgrey;"/>
+
+                    <li><b>Legacy: WFC Dark Simple 24UP</b>
+                        black rail shelf-tags, same as Extended 24UP except the only text on the front of the tag is the description; brand & price are omitted. <a data-toggle="collapse" data-target="#DarkSimpleImg" href="#">View Sign</a></li>
                     <li><b>Legacy: WFC Hybrid</b>
                         standard white shelf tags. Automatically prints tags in either the full or compact (narrow) format based on how they are set up in POS, automatically calculated and includes movement in upper right hand corner. <a data-toggle="collapse" data-target="#HybridImg" href="#">View Sign</a></li>
                         <img class="collapse" id="HybridImg" src="pdf_layouts/noauto/Legacy WFC Hybrid.png" style="border: 1px solid lightgrey;"/>
@@ -589,11 +623,11 @@ JAVASCRIPT;
                         <img class="collapse" id="SoupSignImg" src="pdf_layouts/noauto/Legacy Soup Signs 4Up.png" style="border: 1px solid lightgrey;"/></li>
                 </ul>
             </ul>
+            </p>
+            
             ';
-    }
 
-//<img class="collapse" id="Img" src="pdf_layouts/noauto/Legacy Soup Signs 4Up.png" style="border: 1px solid lightgrey;"/>
-//<a data-toggle="collapse" data-target="#Img" href="#">View Sign</a>
+    }
 
     public function unitTest($phpunit)
     {
