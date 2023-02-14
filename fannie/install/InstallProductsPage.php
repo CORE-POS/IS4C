@@ -408,6 +408,11 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\LikecodeCallback');
         echo installMultiSelectField('FANNIE_LC_CALLBACKS', $FANNIE_LC_CALLBACKS, $mods);
         ?>
+        <label>Enabled Special Order Callbacks</label>
+        <?php
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\SpecialOrderCallback');
+        echo installMultiSelectField('FANNIE_SPO_CALLBACKS', $FANNIE_SPO_CALLBACKS, $mods);
+        ?>
 
         <hr />
         <p>
