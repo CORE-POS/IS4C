@@ -67,6 +67,7 @@ class PendingSpecialOrderModel extends BasicModel
     'charflag'    => array('type'=>'VARCHAR(2)','default'=>"''"),
     'card_no'    => array('type'=>'INT','index'=>True),
     'trans_id'    => array('type'=>'INT'),
+    'deleted' => array('type'=>'TINYINT', 'default'=>0),
     );
 
     public function doc()
