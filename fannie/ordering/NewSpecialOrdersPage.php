@@ -106,7 +106,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
         $prep = $dbc->prepare("
             SELECT mixMatch 
             FROM {$TRANS}{$table}
-            WHERE trans_type='I'
+            WHERE trans_type='I' AND deleted=0
             GROUP BY mixMatch 
             ORDER BY mixMatch");
         $res = $dbc->execute($prep);
@@ -135,6 +135,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
             LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
             WHERE 1=1 $filter
+                AND p.deleted=0
             GROUP BY p.order_id
             ORDER BY p.order_id DESC";
         $bothP = $dbc->prepare($bothQ);
@@ -181,7 +182,8 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 mixMatch 
             FROM {$TRANS}{$table} 
             WHERE order_id IN ($oids)
-                AND trans_id > 0");
+                AND trans_id > 0
+                AND deleted=0");
         $itemsR = $dbc->execute($itemsQ, $oargs);
 
         $items = array();
@@ -375,6 +377,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
                 LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
                 LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
             WHERE 1=1 $filterstring
+                AND p.deleted=0
             GROUP BY p.order_id,statusFlag,subStatus
             HAVING 
                 count(*) > 1 OR

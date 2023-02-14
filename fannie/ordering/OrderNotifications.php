@@ -182,7 +182,8 @@ class OrderNotifications
                 staff
             FROM PendingSpecialOrder
             WHERE order_id=?
-                AND trans_id > 0';
+                AND trans_id > 0
+                AND deleted=0';
         $args = array($orderID);
         if ($transID) {
             $query .= ' AND trans_id=?';

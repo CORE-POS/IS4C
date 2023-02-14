@@ -193,6 +193,7 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
                 LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
                 LEFT JOIN {$TRANS}SpecialOrders AS o ON p.order_id=o.specialOrderID
             WHERE $filterstring
+                AND p.deleted=0
             GROUP BY p.order_id,statusFlag,subStatus
             HAVING 
                 (count(*) > 1 OR SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0)";

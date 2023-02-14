@@ -491,7 +491,7 @@ function splitOrder($orderID,$transID)
     $dbc->execute($cleanP,array($newID,$transID));
 
     // remove the item from original order
-    $cleanP2 = $dbc->prepare("DELETE FROM {$TRANS}PendingSpecialOrder WHERE
+    $cleanP2 = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET deleted=1 WHERE
             order_id=? AND trans_id=?");
     $dbc->execute($cleanP2,array($orderID,$transID));
 
@@ -520,8 +520,8 @@ function duplicateOrder($old_id,$from='CompleteSpecialOrder')
         memDiscount,discountable,discounttype,
         voided,percentDiscount,ItemQtty,volDiscType,
         volume,VolSpecial,mixMatch,matched,memtype,
-        staff,0,'',card_no,trans_id
-        FROM {$TRANS}$from WHERE order_id=? AND trans_id=?");
+        staff,0,'',card_no,trans_id, deleted
+        FROM {$TRANS}$from WHERE order_id=? AND trans_id=? AND deleted=0");
     $dbc->execute($copyP, array($new_id,$old_id,0));
 
     /**

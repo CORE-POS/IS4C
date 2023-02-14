@@ -125,6 +125,8 @@ class OrderViewPage extends FannieRESTfulPage
             $upR = $dbc->execute($upP, array($this->orderID, $this->transID));
         }
 
+        $this->runCallbacks($this->orderID, $this->transID);
+
         return $this->get_orderID_items_handler();
     }
 
@@ -144,6 +146,8 @@ class OrderViewPage extends FannieRESTfulPage
             (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
         $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Item Quantity',
             "Item #{$this->transID}, Qty {$this->qty}"));
+
+        $this->runCallbacks($this->orderID, $this->transID);
 
         return $this->get_orderID_items_handler();
     }
@@ -195,6 +199,8 @@ class OrderViewPage extends FannieRESTfulPage
             FROM {$transDB}PendingSpecialOrder WHERE trans_id=? AND order_id=?");
         $info['discount'] = $dbc->getValue($fetchP, array($this->transID, $this->orderID));
         echo json_encode($info);
+
+        $this->runCallbacks($this->orderID, $this->transID);
 
         return false;
     }
@@ -261,7 +267,8 @@ class OrderViewPage extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $delP = $dbc->prepare('
-            DELETE FROM PendingSpecialOrder
+            UPDATE PendingSpecialOrder
+            SET deleted=1
             WHERE order_id=?
                 AND trans_id=?');
         $delR = $dbc->execute($delP, array($this->orderID, $this->transID));
@@ -921,7 +928,7 @@ HTML;
             FROM {$TRANS}PendingSpecialOrder as o
                 LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
-            WHERE order_id=? AND trans_type='I' 
+            WHERE order_id=? AND trans_type='I' AND o.deleted=0
             ORDER BY trans_id DESC, v.sku DESC");
         $res = $dbc->execute($prep, array($orderID));
         $num_rows = $dbc->num_rows($res);
@@ -1075,7 +1082,7 @@ HTML;
             FROM {$TRANS}PendingSpecialOrder as o
                 LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
-            WHERE order_id=? AND trans_type='I' 
+            WHERE order_id=? AND trans_type='I' AND o.deleted=0
             ORDER BY trans_id DESC");
         $res = $dbc->execute($prep, array($orderID));
         $num_rows = $dbc->num_rows($res);
@@ -1253,13 +1260,13 @@ HTML;
     {
         $this->debugInfo = 'running get_orderID_handler';
         $TRANS = $this->config->get('TRANS_DB') . $this->connection->sep();
-        $open = $this->connection->prepare("SELECT upc FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0");
+        $open = $this->connection->prepare("SELECT upc FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0 AND deleted=0");
         $open = $this->connection->getValue($open, array($this->orderID));
         if ($open !== false) {
             return true;
         }
         $this->debugInfo = 'No pending records';
-        $closed = $this->connection->prepare("SELECT upc FROM {$TRANS}CompleteSpecialOrder WHERE order_id=? AND trans_id > 0");
+        $closed = $this->connection->prepare("SELECT upc FROM {$TRANS}CompleteSpecialOrder WHERE order_id=? AND trans_id > 0 AND deleted=0");
         $closed = $this->connection->getValue($closed, array($this->orderID));
         if ($closed !== false) {
             return 'OrderReviewPage.php?orderID=' . $this->orderID;
@@ -1400,7 +1407,7 @@ HTML;
         $itemsP = $this->connection->prepare("
             SELECT description, ItemQtty, quantity, total FROM "
             . FannieDB::fqn('PendingSpecialOrder', 'trans') . "
-            WHERE order_id = ? AND trans_id > 0");
+            WHERE order_id = ? AND trans_id > 0 AND deleted=0");
         $items = $this->connection->getAllRows($itemsP, array($orderID));
         $opts = '';
         foreach ($items as $item) {
@@ -1412,6 +1419,15 @@ HTML;
         }
 
         return $opts;
+    }
+
+    private function runCallbacks($orderID, $transID)
+    {
+        $callbacks = $this->config->get('SPO_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($orderID, $transID);
+        }
     }
 
     public function unitTest($phpunit)
