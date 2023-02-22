@@ -482,6 +482,14 @@ class ADODB_pdo extends ADOConnection {
 			}
 		} 
 		
+         if (!isset($ok)) {
+            /**
+             * Probably means something went sideways
+             * with connection to SQL Server, want to
+             * exit & trigger core-queue restart
+             */
+            exit();
+        }
 		
 		$this->_errormsg = false;
 		$this->_errorno = false;
