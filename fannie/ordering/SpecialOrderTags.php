@@ -457,7 +457,7 @@ HTML;
             LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id 
             WHERE p.order_id=?");
         $itemP = $dbc->prepare("SELECT description,department,quantity,ItemQtty,total,trans_id
-            FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0 AND deleted=1");
+            FROM {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id > 0 AND deleted <> 1");
         foreach ($oids as $oid) {
             $row = $dbc->getRow($infoP, array($oid));
             if ($row) {
