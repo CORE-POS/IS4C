@@ -73,6 +73,37 @@ function WFC_HerbNspice_Flat($data,$offset=0,$showPrice=0)
         $tagNo++;
     }
 
+    /*
+        Print additional mirror images for back side of tags
+    */
+    $i = 0;
+    $x = $left+$guide; $y = $top+$guide;
+    if (count($data) % 4 != 0) {
+        for ($j=count($data) % 4; $j<4; $j++) {
+            $data[] = '';
+        }
+    }
+    $data = arrayMirrorRowsHerbsFlat($data, 4);
+    $pdf->AddPage('L');
+    foreach($data as $k => $row){
+        if ($i % 40 == 0 && $i != 0) {
+            $pdf->AddPage('L');
+            $x = $left;
+            $y = $top;
+            $i = 0;
+        }
+        if ($i == 0) {
+            $pdf = generateHerbFlatMirror($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        } else if ($i % 4 == 0 && $i != 0) {
+            $x = $left+$guide;
+            $y += $height+$guide;
+        } else {
+            $x += $width+$guide;
+        }
+        $pdf = generateHerbFlatMirror($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
+        $i++;
+    }
+
     $pdf = $pdf->Output();
 }
 
@@ -224,4 +255,78 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
 
 
     return $pdf;
+}
+
+
+function arrayMirrorRowsHerbsFlat($array, $cols)
+{
+    $newArray = array();
+    $chunks = array_chunk($array, $cols);
+    foreach ($chunks as $chunk) {
+        $chunk = array_reverse($chunk);
+        foreach ($chunk as $v) {
+            $newArray[] = $v;
+        }
+    }
+
+    return $newArray;
+}
+
+function generateHerbFlatMirror($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
+{
+    $y +=2;
+    $upc = isset($row['upc']) ? $row['upc'] : '';
+    $desc = isset($row['description']) ? $row['description'] : '';
+    $brand = isset($row['brand']) ? $row['brand'] : '';
+
+    $pdf->SetFillColor(255, 255, 255);
+    $pdf->SetTextColor(100, 100, 100);
+    $pdf->SetFont('Gill','', 9);
+
+    // prep tag canvas
+    $pdf->SetXY($x,$y);
+    $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
+
+    /*
+        Add UPC Text
+    */
+    $pdf->SetXY($x,$y);
+    $pdf->Cell(15, 8, $upc, 0, 1, 'L', true); 
+
+    /*
+        Add Brand & Description Text
+    */
+    $pdf->SetXY($x,$y+6);
+    $pdf->Cell($width, 5, $brand, 0, 1, 'L', true); 
+    $pdf->SetXY($x,$y+10);
+    $pdf->Cell($width, 5, $desc, 0, 1, 'L', true); 
+
+    /*
+        Add Vendor Text
+    */
+    $pdf->SetXY($x,$y+27);
+    $pdf->Cell($width, 5, $vendor, 0, 1, 'L', true); 
+
+    /*
+        Create Guide-Lines
+    */ 
+    $pdf->SetFillColor(155, 155, 155);
+    // vertical 
+    $pdf->SetXY($width+$x, $y);
+    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
+
+    $pdf->SetXY($x-$guide, $y-$guide); 
+    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
+
+    // horizontal
+    $pdf->SetXY($x, $y-$guide); 
+    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    $pdf->SetXY($x, $y+$height); 
+    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    $pdf->SetFillColor(100, 100, 100);
+
+    return $pdf;
+
 }
