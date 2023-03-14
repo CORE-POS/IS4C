@@ -84,7 +84,12 @@ class Giganto4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             } elseif (strstr($price, 'OFF/LB')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-45);
             } elseif (strstr($price, 'OFF')) {
-                $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
+                if (strstr($price, '.')) {
+                    // price has decimal point in it
+                    $pdf->SetFont($this->font, '', $this->BIG_FONT-42);
+                } elseif (2) {
+                    $pdf->SetFont($this->font, '', $this->BIG_FONT-27);
+                }
             } 
             if (strstr($price, 'SAVE')) {
                 $pdf->SetFont($this->font, '', $this->BIG_FONT-55);
