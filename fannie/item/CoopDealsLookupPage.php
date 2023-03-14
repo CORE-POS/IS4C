@@ -203,6 +203,7 @@ HTML;
         $ret .=  "<div class='table-responsive'>
             <table class='table table-bordered'  align='center' width='100%'>";
         $check = '';
+        $srp = '';
         while ($row = $dbc->fetch_row($res)) {
             $upc = $row['upc'];
             $description = $row['description'];
