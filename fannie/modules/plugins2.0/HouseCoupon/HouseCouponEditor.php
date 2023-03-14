@@ -505,6 +505,7 @@ class HouseCouponEditor extends FanniePage
             'FD'=>'Scaling Discount (Department)',
             'MD'=>'Capped Discount (Department)',
             'F'=>'Flat Discount',
+            'FP'=>'Flat Discount (Per Dept. Min)',
             'FB'=>'Flat Discount (Dept Scaling)',
             'FC' => 'Flat Discount (Capped at amount due)',
             'PI'=>'Per-Item Discount',
