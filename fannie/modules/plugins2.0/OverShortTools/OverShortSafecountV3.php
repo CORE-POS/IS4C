@@ -228,8 +228,8 @@ class OverShortSafecountV3 extends FanniePage {
         }
         $ret .= "<td id=safeCount1Total>$sum</td></tr>";
 
-        $dateClause = ' date = ?';
-        $dateArgs = array($dateStr);
+        $dateClause = ' date BETWEEN ? AND ? AND storeID = ?';
+        $dateArgs = array($dateStr, $dateStr, $store);
         if (strstr($dateStr," ")){
             $dates = explode(" ",$dateStr);
             $dateClause = ' date BETWEEN ? AND ? AND storeID = ? ';
@@ -414,7 +414,7 @@ class OverShortSafecountV3 extends FanniePage {
                 $ret .= '<tr class="' . $class . '">';
                 $ret .= '<td>' . $date . ' ' . $row['FirstName'] . '</td>';
                 $drop = $dbc->getRow($dropP, array($dateID, $store, $row['emp_no']));
-                $ret .= '<td>' . $drop['dropAmount'] . '</td>';
+                $ret .= '<td>' . (isset($drop['dropAmount']) ? $drop['dropAmount'] : '') . '</td>';
                 $cur = 0;
                 $key = $dateID . '-' . $row['emp_no'];
                 if (isset($holding['drop' . $key]) && isset($holding['drop' . $key]['ttl'])) {
