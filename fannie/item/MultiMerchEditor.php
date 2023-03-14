@@ -49,6 +49,8 @@ class MultiMerchEditor extends FannieRESTfulPage
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        if ($storeID == false) 
+            $storeID = 2;
         $storeName = ($storeID == 1) ? 'Hillside' : 'Denfeld';
         $td = "";
         $edit = FannieUI::editIcon();
