@@ -363,12 +363,14 @@ HTML;
             $vid  = "n/a";
         }
         $user = FannieAuth::getUID($this->current_user);
-        $setA = array($bid,$vid,$user);
-        $setP = $dbc->prepare("
-            INSERT INTO batchReviewLog (bid, vid, printed, user, created, forced)
-            VALUES (?, ?, 0, ?, NOW(), 0);
-        ");
-        $dbc->execute($setP,$setA);
+        $model = new BatchReviewLogModle($dbc);
+        $model->bid($bid);
+        $model->vid($vid);
+        $model->printed(0);
+        $model->user($user);
+        $model->created(date('Y-m-d H:i:s'));
+        $model->forced(0);
+        $model->save();
 
         return header('location: '.$_SERVER['PHP_SELF'].'?batchLog=1');
     }
