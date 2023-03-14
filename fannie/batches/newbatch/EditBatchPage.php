@@ -104,6 +104,8 @@ class EditBatchPage extends FannieRESTfulPage
         $model->save();
         echo 'Saved';
 
+        $this->runCallbacks($id);
+
         return false;
     }
 
@@ -117,6 +119,8 @@ class EditBatchPage extends FannieRESTfulPage
         $model->batchName($name);
         $model->save();
         echo 'Saved';
+
+        $this->runCallbacks($id);
 
         return false;
     }
@@ -179,6 +183,8 @@ class EditBatchPage extends FannieRESTfulPage
         $dbc->execute($delP,$uid);
 
         $this->addOnloadCommand("showBootstrapAlert('#inputarea', 'success', 'Pasted $count items');\n");
+
+        $this->runCallbacks($this->id);
 
         return true;
     }
@@ -399,6 +405,8 @@ class EditBatchPage extends FannieRESTfulPage
             }
             $json['added'] = 1;
             $json['display'] = $this->showBatchDisplay($this->id);
+
+            $this->runCallbacks($this->id);
         }
 
         echo $this->debugJSON($json);
@@ -588,6 +596,8 @@ class EditBatchPage extends FannieRESTfulPage
                 \COREPOS\Fannie\API\lib\AuditLib::BATCH_EDIT,
                 (substr($this->upc,0,2)=='LC' ? true : false));
         }
+
+        $this->runCallbacks($this->id);
 
         echo $this->debugJSON($json);
 
@@ -787,6 +797,8 @@ class EditBatchPage extends FannieRESTfulPage
                 (substr($upc,0,2)=='LC' ? true : false));
         }
 
+        $this->runCallbacks($this->id);
+
         echo $this->debugJSON($json);
 
         return false;
@@ -899,6 +911,8 @@ class EditBatchPage extends FannieRESTfulPage
         $ret['display'] = $this->showBatchDisplay($this->id);
         echo $this->debugJSON($ret);
 
+        $this->runCallbacks($this->id);
+
         return false;
     }
 
@@ -924,7 +938,20 @@ class EditBatchPage extends FannieRESTfulPage
         }
         echo $this->debugJSON($ret);
 
+        $this->runCallbacks($this->id);
+
         return false;
+    }
+
+    private function runCallbacks($batchID)
+    {
+        $cbs = $this->config->get('BATCH_CALLBACKS');
+        $this->logger->debug("Attempting batch callbacks");
+        foreach ($cbs as $cb) {
+            $obj = new $cb();
+            $obj->run($batchID);
+            $this->logger->debug("Running $cb for batch $batchID");
+        }
     }
 
     private function addItemUPCInput($newtags=false)

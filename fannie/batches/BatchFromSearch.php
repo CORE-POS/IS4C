@@ -120,6 +120,12 @@ class BatchFromSearch extends FannieRESTfulPage
             $this->itemsToTags($tagset, $dbc, $upcs, $prices);
         }
 
+        $cbs = $this->config->get('BATCH_CALLBACKS');
+        foreach ($cbs as $cb) {
+            $obj = new $cb();
+            $obj->run($batchID);
+        }
+
         return 'newbatch/EditBatchPage.php?id=' . $batchID;
     }
 

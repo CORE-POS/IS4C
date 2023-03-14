@@ -230,6 +230,12 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         </p>';
         $this->results = $ret;
 
+        $cbs = $this->config->get('BATCH_CALLBACKS');
+        foreach ($cbs as $cb) {
+            $obj = new $cb();
+            $obj->run($batchID);
+        }
+
         return true;
     }
 

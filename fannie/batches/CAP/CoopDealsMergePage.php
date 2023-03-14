@@ -78,6 +78,11 @@ class CoopDealsMergePage extends FannieRESTfulPage
             }
         }
 
+        foreach ($cbs as $cb) {
+            $obj = new $cb();
+            $obj->run($this->batchID);
+        }
+
         header('Location: ?added=' . $added);
 
         return false;

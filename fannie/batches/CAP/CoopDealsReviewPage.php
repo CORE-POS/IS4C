@@ -192,6 +192,12 @@ class CoopDealsReviewPage extends FanniePage
         $ret = "<p>New sales batches have been created!</p>";
         $ret .= "<p><a href=\"../newbatch/\">View batches</a></p>";
 
+        $cbs = $this->config->get('BATCH_CALLBACKS');
+        foreach ($cbs as $cb) {
+            $obj = new $cb();
+            $obj->run(array_values($batchIDs));
+        }
+
         return $ret;
     }
 
