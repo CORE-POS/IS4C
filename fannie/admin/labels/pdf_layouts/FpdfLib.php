@@ -171,7 +171,7 @@ ORDER BY SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), sub.SubSectio
      *  param $str str to parse
      *  param $len max length of string returned
      **/
-    function parseVendorName($str, $len)
+    static function parseVendorName($str, $len)
     {
         $str = preg_replace("#[[:punct:]]#", "", $str);
         if (strlen($str) <= $len) {
