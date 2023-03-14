@@ -226,7 +226,9 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     $brand = strToUpper($row['brand']);
     $price = $row['normal_price'];
     $descFontSize = 20;
-    define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    if (!defined(FPDF_FONTPATH)) {
+        define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    }
     
     $updateUpcs = FormLib::get('update_upc');
     $manualDescs = FormLib::get('update_desc');
