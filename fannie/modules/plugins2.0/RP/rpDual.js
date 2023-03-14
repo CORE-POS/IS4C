@@ -8,7 +8,8 @@ var rpOrder = (function ($) {
         'onHand2': {},
         'orderAmt': {},
         'floralAmt': {},
-        'directAmt': {}
+        'directAmt': {},
+        'pars': {}
     };
     var searchVendor = 0;
     var retainElem = false;
@@ -223,6 +224,12 @@ var rpOrder = (function ($) {
         }
     };
 
+    mod.updatePar = function(lc, adjPar) {
+        var pars = state['pars'];
+        pars[lc] = adjPar;
+        state['pars'] = pars;
+    };
+
     mod.updateDays = function() {
         clearIncoming();
         var week = $('#modProj').html();
@@ -270,6 +277,9 @@ var rpOrder = (function ($) {
             adj = adj / caseSize;
             var adj = Math.round(adj * 100) / 100;
             $(this).next('td.parCell').html(adj);
+
+            var lc = $(this).closest('tr').find('td.upc a').html();
+            mod.updatePar(lc, adj);
 
             mod.reCalcRow($(this).closest('tr'));
         });
