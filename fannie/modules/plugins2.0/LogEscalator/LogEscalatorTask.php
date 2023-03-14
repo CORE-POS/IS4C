@@ -42,7 +42,7 @@ class LogEscalatorTask extends FannieTask
 
         $chk_cmd = 'tail -n ' . escapeshellarg($lines - $offset)
             . ' ' . escapeshellarg($logfile)
-            . ' | grep -E "fannie.(WARNING|ERROR|ALERT|CRITICAL|EMERGENCY)"';
+            . ' | grep -a -E "fannie.(WARNING|ERROR|ALERT|CRITICAL|EMERGENCY)"';
         exec($chk_cmd, $output);
         if (count($output) > 0) {
             $saved_offset = file_put_contents($offsetPath, $lines);
