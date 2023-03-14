@@ -101,7 +101,9 @@ class EdlpBatchPage extends FannieRESTfulPage
         }
 
         return sprintf('<div class="alert alert-success">Created Batch. 
-            <a href="../newbatch/EditBatchPage.php?id=%d">View it</a>.</div>',
+            <a href="../newbatch/EditBatchPage.php?id=%d">View it</a>.</div>
+            <div class="alert alert-warning">Make sure to double check default 
+            vendorID of items in batch.</div>',
             $batchID) . $this->get_view();
     }
 
