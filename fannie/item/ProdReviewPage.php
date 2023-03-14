@@ -413,6 +413,29 @@ HTML;
         return header('location: '.$_SERVER['PHP_SELF'].'?batchLog=1');
     }
 
+    private function getBatchItemDiscrep($dbc)
+    {
+        $found = array();
+        $tmp = array();
+        $prep = $dbc->prepare("SELECT * from batchReviewLog AS l
+            INNER JOIN batchList AS b ON b.batchID=l.bid WHERE forced = 0;");
+        $res = $dbc->execute($prep);
+        while ($row = $dbc->fetchRow($res)) {
+            $upc = $row['upc'];
+            $batchID = $row['batchID'];
+            $tmp[$upc][] = $batchID;
+        }
+        foreach ($tmp as $upc => $array) {
+            if (count($array) > 1) {
+                foreach ($array as $batchID) {
+                    $found[$batchID][] = $upc;
+                }
+            }
+        }
+
+        return $found;
+    }
+
     public function get_batchLog_view()
     {
         global $FANNIE_OP_DB;
@@ -459,6 +482,8 @@ HTML;
             }
         };
 
+        $discr = $this->getBatchItemDiscrep($dbc);
+        
         $res = $dbc->execute($prep,$args);
         $curBid = -999;
         while ($row = $dbc->fetchRow($res)) {
@@ -473,12 +498,22 @@ HTML;
             }
             if ($scale == '' && $row['plu'] != NULL)
                 $superDepts .= "<span class=\"\" style=\"border: 1px solid black; border-radius: 50%; padding-left: 3px; padding-right: 3px; cursor: default;\" title=\"Scale Items in batch\">S</span>";
+            $curDiscr = '';
+            if (array_key_exists($curBid, $discr)) {
+                $title = '';
+                foreach ($discr[$curBid] as $upc) {
+                    $title .= <<<HTML
+$upc
+HTML;
+                }
+                $curDiscr = ' <a href="#" class="btn btn-xs btn-danger showDiscrFound" title="'.$title.'"><span class="fas fa-exclamation-circle"></span></a>';
+            }
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
             if ($row['forced'] == '0000-00-00 00:00:00') {
                 $bids .= ",".$curBid;
                 $tableA .= "<tr>";
                 $tableA .= "<td><input type='checkbox' id='check$curBid' class='upcCheckBox'></td>";
-                $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a></td>";
+                $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a>$curDiscr</td>";
                 $batchName = $row['batchName'];
                 $tableA .= "<td>{$batchName}</td>";
                 $tableA .= "<td class=\"super-depts\">$superDepts</td>";
@@ -538,6 +573,7 @@ HTML;
         </div>
         <h4 align="center">Batches Staged for Price Changes</h4>
         <div class="batchTable">
+            <div id="discrFound" style="padding: 15px;"></div>
             {$tableA}
         </div>
         <h4 align="center">History of Price Change Batches</h4>
@@ -1181,6 +1217,12 @@ $('#show-deli-check').change(function(){
 
     }
     indexCheckboxes();
+});
+var showDiscrFound = $('.showDiscrFound').click(function(){
+    $('#discrFound').text('');
+    let text = $(this).attr('title');
+    $('#discrFound').append("<div>Item(s) found in multiple batches:</div>");
+    $('#discrFound').append(text);
 });
 JAVASCRIPT;
 
