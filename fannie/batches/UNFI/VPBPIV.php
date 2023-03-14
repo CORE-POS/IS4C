@@ -772,8 +772,12 @@ JAVASCRIPT;
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE v.cost > 0
+            # AND v.srp > p.normal_price
         ";
         // AND pr.priceRuleTypeID NOT IN (5, 6, 7, 8, 12)
+
+        //# TEMPORARILY DISABLING PRICE REDUCTIONS
+        //AND v.srp > p.normal_price
 
         if ($vidsStart != false && $vidsEnd != false) {
             $ret .= "<h3 align=\"center\">Multiple Vendor View</h3>";
@@ -910,7 +914,7 @@ JAVASCRIPT;
             $srpClassA = ($row['srp'] > $row['normal_price']) ? 'red' : 'yellow';
             $direction = ($row['srp'] > $row['normal_price']) ? '&#x2191;' : '&#x2193;';
 
-            $row['inbatch'] = $batched[$row['upc']];
+            $row['inbatch'] = isset($batched[$row['upc']]) ? $batched[$row['upc']] : '';
             $td .= sprintf("<tr id=row%s class='%s %s item'>
                 <td class=\"sub\" 
                     data-upc=\"%s\"
