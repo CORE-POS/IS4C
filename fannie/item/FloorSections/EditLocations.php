@@ -230,10 +230,10 @@ class EditLocations extends FannieRESTfulPage
         $i = 0;
         $rProdInfo = $dbc->execute($pProdInfo, array($upc));
         $wProdInfo = $dbc->fetchRow($rProdInfo);
-        $brand = $wProdInfo['brand'];
-        $description = $wProdInfo['description'];
-        $department = $wProdInfo['dept_name'];
-        $superName = $wProdInfo['super_name'];
+        $brand = is_array($wProdInfo) ? $wProdInfo['brand'] : '';
+        $description = is_array($wProdInfo) ? $wProdInfo['description'] : '';
+        $department = is_array($wProdInfo) ? $wProdInfo['dept_name'] : '';
+        $superName = is_array($wProdInfo) ? $wProdInfo['super_name'] : '';
         $td .= sprintf("
                 <tr><td>%s</td></tr>
                 <tr><td>%s</td></tr>
