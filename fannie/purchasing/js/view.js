@@ -122,7 +122,7 @@ function isSO(oid, sku, isSO) {
 function itemAdjust(orderID, sku, adjust, elem) {
     $.ajax({
         type: 'post',
-        data: 'id='+orderID+'&sku='+sku+'&adjust='+adjust,
+        data: 'id='+orderID+'&sku='+encodeURIComponent(sku)+'&adjust='+adjust,
         dataType: 'json'
     }).done(function (resp) {
         if (resp.qty !== null) {

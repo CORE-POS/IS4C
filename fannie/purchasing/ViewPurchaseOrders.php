@@ -948,7 +948,7 @@ HTML;
             $ret .= '<p><a href="noauto/invoices/' . $this->id . '.xls">Download Original</a></p>';
         }
 
-        $this->addScript('js/view.js?date=20180220');
+        $this->addScript('js/view.js?date=20230306');
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
