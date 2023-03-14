@@ -398,6 +398,11 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\ItemCallback');
         echo installMultiSelectField('FANNIE_ITEM_CALLBACKS', $FANNIE_ITEM_CALLBACKS, $mods);
         ?>
+        <label>Enabled Batch Callbacks</label>
+        <?php
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\BatchCallback');
+        echo installMultiSelectField('FANNIE_BATCH_CALLBACKS', $FANNIE_BATCH_CALLBACKS, $mods);
+        ?>
         <label>Enabled Vendor Callbacks</label>
         <?php
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\VendorCallback');
