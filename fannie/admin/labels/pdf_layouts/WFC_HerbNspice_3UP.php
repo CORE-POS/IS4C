@@ -77,7 +77,9 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
 {
     $x += 5;
     $pdf->SetFont('Gill','', 16);
-    define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    if (!defined('FPDF_FONTPATH')) {
+        define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
+    }
     $signage = new COREPOS\Fannie\API\item\FannieSignage(array());
     $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
     $upc = $row['upc'];
@@ -117,7 +119,7 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
         WHERE plu = ?");
     $scaleR = $dbc->execute($scaleP, $scaleA);
     $scaleW = $dbc->fetchRow($scaleR);
-    $sku = ($scaleW['sku'] > 1) ? $scaleW['sku'] : $sku;
+    $sku = (is_array($scaleW) && $scaleW['sku'] > 1) ? $scaleW['sku'] : $sku;
 
     $pScaleA = array($row['upc']);
     $pScaleP = $dbc->prepare("SELECT scale FROM products WHERE upc = ? LIMIT 1");
@@ -166,7 +168,7 @@ function generateHerbNspiceLabel($x, $y, $guide, $width, $height, $pdf, $row, $d
         WHERE plu = ?");
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
-    $scale = ($row['plu'] > 0) ? 1 : 2;
+    $scale = (is_array($row) && $row['plu'] > 0) ? 1 : 2;
 
     // prep tag canvas
     $pdf->SetDrawColor(200,200,200);
