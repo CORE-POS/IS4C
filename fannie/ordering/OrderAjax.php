@@ -232,6 +232,8 @@ class OrderAjax extends FannieRESTfulPage
             (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
         $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Status', 'Status #' . $this->status));
 
+        $this->runCallbacks($this->id);
+
         echo json_encode($json);
 
         return false;
@@ -262,6 +264,20 @@ class OrderAjax extends FannieRESTfulPage
         echo 'Done';
 
         return false;
+    }
+
+    private function runCallbacks($orderID)
+    {
+        $callbacks = $this->config->get('SPO_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $dbc = $this->tdb();
+            $prep = $dbc->prepare("SELECT trans_id FROM " . FannieDB::fqn('PendingSpecialOrder', 'trans') . " WHERE order_id=? AND trans_id > 0 AND deleted=0");
+            $res = $dbc->execute($prep, array($orderID));
+            while ($row = $dbc->fetchRow($res)) {
+                $obj->run($orderID, $row['trans_id']);
+            }
+        }
     }
 
     public function unitTest($phpunit)

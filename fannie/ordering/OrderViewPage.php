@@ -1093,7 +1093,7 @@ HTML;
             //<th>Qty</th><th>Est. Savings</th><th>&nbsp;</th></tr>';
         $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,
             department,regPrice,ItemQtty,discounttype,trans_id FROM {$TRANS}$table as o
-            WHERE order_id=? AND trans_type='I'");
+            WHERE order_id=? AND trans_type='I' AND deleted=0");
         $res = $dbc->execute($prep, array($orderID));
         while($w = $dbc->fetch_row($res)) {
             $pricing = "Regular";
