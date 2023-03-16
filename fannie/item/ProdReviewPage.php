@@ -363,7 +363,7 @@ HTML;
             $vid  = "n/a";
         }
         $user = FannieAuth::getUID($this->current_user);
-        $model = new BatchReviewLogModle($dbc);
+        $model = new BatchReviewLogModel($dbc);
         $model->bid($bid);
         $model->vid($vid);
         $model->printed(0);
