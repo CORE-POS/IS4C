@@ -143,13 +143,13 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $ruleR = $dbc->execute($ruleP, array($rule_id));
             if ($rule_id > 1 && $dbc->numRows($ruleR)) {
                 // update existing rule with latest price
-                $args = array($ruleType, $price, $review, 'NCG MAX ' . $price, $rule_id);
+                $args = array($ruleType, $price, $review, 'MIN/MAX' . $price, $rule_id);
                 $dbc->execute($upP, $args);
                 $dbc->execute($extraP, array($upc));
             } else {
                 // create a new pricing rule
                 // attach it to the item
-                $args = array($ruleType, $price, $review, 'NCG MAX ' . $price);
+                $args = array($ruleType, $price, $review, 'MIN/MAX' . $price);
                 $dbc->execute($insP, $args);
                 $rule_id = $dbc->insertID();
                 $dbc->execute($extraP, array($upc));
