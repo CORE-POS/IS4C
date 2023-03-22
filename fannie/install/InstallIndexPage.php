@@ -172,7 +172,7 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 if (preg_match('/^corepos\/office-plugin-/', $package)) {
                     error_log("TODO: cannot confirm installation of CORE Office plugin: $package");
                 } else {
-                    if (!is_dir(dirname(__FILE__) . '/../../vendor/' . $package)) {
+                    if (!$this->isInstalled($package)) {
                         $missing = true;
                         echo "<div class=\"alert alert-danger\"><b>Warning</b>: package " . $package . " is not installed.</div>";
                     }
@@ -187,6 +187,21 @@ class InstallIndexPage extends \COREPOS\Fannie\API\InstallPage {
                 echo '</pre></div>';
             }
         }
+    }
+
+    private function isInstalled($package) {
+
+        // just do a basic existence check on the presumed package dir
+
+        // components live in one place..
+        if (substr($package, 0, 11) == 'components/') {
+            $path = dirname(__FILE__) . '/../src/javascript/composer-components/' . explode('/', $package)[1];
+
+        } else { // normal packages live elsewhere
+            $path = dirname(__FILE__) . '/../../vendor/' . $package;
+        }
+
+        return is_dir($path);
     }
 
     private function dbErrors($arr)
