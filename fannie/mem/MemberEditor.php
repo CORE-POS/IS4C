@@ -119,6 +119,12 @@ class MemberEditor extends FanniePage {
                     }
                 }
 
+                $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+                foreach ($callbacks as $cb) {
+                    $obj = new $cb();
+                    $obj->run($this->memNum);
+                }
+
                 if (!empty($this->msgs)){
                     // implies: errors occurred
                     // stay on this page

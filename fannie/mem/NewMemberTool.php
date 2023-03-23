@@ -241,6 +241,7 @@ class NewMemberTool extends FanniePage
         $mdP = $dbc->prepare("INSERT INTO memDates VALUES (?,NULL,NULL)");
         $mcP = $dbc->prepare("INSERT INTO memContact (card_no,pref) VALUES (?,1)");
         $dbc->startTransaction();
+        $accounts = array();
         for($i=$start; $i<=$end; $i++) {
             // skip if record already exists
             $chkR = $dbc->execute($chkP,array($i));
@@ -256,8 +257,15 @@ class NewMemberTool extends FanniePage
 
             $dbc->execute($mdP, array($i));
             $dbc->execute($mcP, array($i));
+            $accounts[] = $i;
         }
         $dbc->commitTransaction();
+
+        $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($accounts);
+        }
 
         return $ret;
     }
