@@ -89,6 +89,14 @@ class EditFieldFromSearch extends FannieRESTfulPage
             $update->logManyUpdates($this->upc, 'EDIT');
         }
 
+        $queue = new COREPOS\Fannie\API\jobs\QueueManager();
+        $queue->add(array(
+            'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
+            'data' => array(
+                'upc' => $this->upc,
+            ),
+        ));
+
         return true;
     }
 
