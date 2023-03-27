@@ -561,8 +561,10 @@ class RpDirectPage extends FannieRESTfulPage
             $lcName = $row['vendorItem'];
             if (is_numeric(str_replace('LC', '', $row['upc']))) {
                 $lcRow = $this->connection->getRow($lcP, array(str_replace('LC', '', $row['upc'])));
-                $lcName = $lcRow['likeCodeDesc'];
-                $organic = $lcRow['organic'] ? true : false;
+                if (is_array($lcRow)) {
+                    $lcName = $lcRow['likeCodeDesc'];
+                    $organic = $lcRow['organic'] ? true : false;
+                }
             }
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
             if (($par / $row['caseSize']) < 0.1) {
