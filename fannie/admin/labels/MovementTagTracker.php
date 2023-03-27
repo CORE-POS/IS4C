@@ -399,6 +399,30 @@ HTML;
         $this->addScript('../../src/javascript/tablesorter-2.22.1/js/jquery.tablesorter.widgets.js');
         $this->addOnloadCommand("$('#my-table-1').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
         $this->addOnloadCommand("$('#my-table-2').tablesorter({theme:'bootstrap', headerTemplate: '{content} {icon}', widgets: ['uitheme','zebra']});");
+        $js = <<<JAVASCRIPT
+let input = "<input type='checkbox' id='zeroLast' /> <label for='zeroLast'> Show Only New Items</label>";
+$('#extraContent').append(input);
+$('#zeroLast').click(function(){
+    let checked = $(this).is(':checked');
+    if (checked) {
+        $('.myTables tr.item').each(function(){
+            $(this).hide();
+        });
+        $('.myTables tr').each(function(){
+            let lastPar = $(this).find('td:eq(4)').text();
+            console.log(lastPar);
+            if (lastPar == '0.000') {
+                $(this).show();
+            }
+        });
+    } else {
+        $('.myTables tr').each(function(){
+            $(this).show();
+        });
+    }
+});
+JAVASCRIPT;
+        $this->addOnloadCommand($js);
 
         return "<div align=\"center\">$alert</div>" . $li . $ret . <<<HTML
 HTML;
@@ -664,14 +688,15 @@ HTML;
 
         $table = "";
         $thead = '';
-        $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff', 'name', 'created');
+        $colNames = array('upc', 'brand', 'description', 'department', 'lastPar', 'auto_par', 'diff', 'name', 'created', 'last_sold');
         foreach ($colNames as $colName)
             $thead .= "<th>$colName</th>";
         $table .= "<h2 id='$storeName'>$storeName Tags</h2>
-            <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables' id='my-table-$storeID'><thead >$thead</thead><tbody>";
+            <div id=\"extraContent\"></div>
+            <table class='table table-bordered table-condensed table-striped tablesorter tablesorter-bootstrap myTables my-table' id='my-table-$storeID'><thead >$thead</thead><tbody>";
         if (isset($this->item) && is_array($this->item)) {
             foreach ($this->item as $row => $array) {
-                $table .= "<tr>";
+                $table .= "<tr class=\"item\">";
                 foreach ($colNames as $colName) {
                     if ($colName == 'upc') {
                         $table .= "<td><a href='../../item/ItemEditorPage.php?searchupc={$array[$colName]}'
