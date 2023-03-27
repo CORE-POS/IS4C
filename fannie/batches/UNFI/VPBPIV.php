@@ -772,7 +772,7 @@ JAVASCRIPT;
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE v.cost > 0
-            # AND v.srp > p.normal_price
+            AND v.srp > p.normal_price # comment me out to SHOW reduction suggestions
         ";
         // AND pr.priceRuleTypeID NOT IN (5, 6, 7, 8, 12)
 
