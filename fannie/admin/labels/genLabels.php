@@ -88,7 +88,7 @@ class genLabels extends FannieRESTfulPage
                 p.scale,
                 p.numflag
             FROM shelftags AS s
-                " . DTrans::joinProducts('s', 'p', 'INNER') . "
+                " . DTrans::joinProducts('s', 'p', 'LEFT') . "
             WHERE s.id IN ($inStr) ";
         switch (strtolower(FormLib::get('sort'))) {
             case 'order entered':
