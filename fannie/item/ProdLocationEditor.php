@@ -457,17 +457,32 @@ HTML;
 
         $ret = "";
         $ret .= '
-        <div class="row"><form method="get" action="ProdLocationEditor.php">
-            <div class="col-lg-2">
-                <textarea class="form-control" name="upcs" rows=6>'.$upcs.'</textarea>
+        <div class="row">
+            <form method="get" action="ProdLocationEditor.php">
+                <div class="col-lg-2" style="background: rgba(0,0,0,0.1); padding: 5px"">
+                    <textarea class="form-control" name="upcs" rows=6>'.$upcs.'</textarea>
+                </div>
+                <div class="col-lg-2" style="background: rgba(0,0,0,0.1); padding: 5px">
+                    <div>
+                    <input type="hidden" name="list" value="1">
+                    <div class="form-group"> '.$storePicker['html'].' </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-default form-control">Submit List</button>
+                    </div>
             </div>
-            <div class="col-lg-2">
-                <input type="hidden" name="list" value="1">
-                <div class="form-group"> '.$storePicker['html'].' </div>
-                <button type="submit" class="btn btn-default form-control">Submit</button>
+                <div class="col-lg-8"></div>
             </div>
+            </form>
+        </div>
+        <div class="row">
+            <div class="col-lg-2"></div>
             <div class="col-lg-8"></div>
-            </form></div>
+            <div class="col-lg-2">
+                <div class="form-group">
+                    <span href="#" class="btn btn-primary form-control" id="alt-update-form-btn">Update Locations</span>
+                </div>
+            </div>
+        </div>
         ';
 
         $plus = array();
@@ -612,7 +627,7 @@ HTML;
                     </select></div>
                 </th>
             </thead>
-            <form method="post">
+            <form method="post" name="update" id="update">
                 <input type="hidden" name="save" value="1">
             ';
         foreach ($item as $key => $row) {
@@ -638,7 +653,7 @@ HTML;
                 $ret .= '</select></tr>';
         }
 
-        $ret .= '<tr><td><input type="submit" class="btn btn-default" value="Update Locations"></td>
+        $ret .= '<tr><td><input type="submit" class="class=btn btn-primary form-control" value="Update Locations"></td>
             <td><a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';
         // tablesorter scripts not included?
@@ -790,6 +805,10 @@ $('.checkboxx').on('change', function(){
             }
         });
     }
+});
+
+$("#alt-update-form-btn").click(function(){
+    document.forms['update'].submit();
 });
 JAVASCRIPT;
    }

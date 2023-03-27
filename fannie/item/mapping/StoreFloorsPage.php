@@ -69,6 +69,17 @@ class StoreFloorsPage extends FannieRESTfulPage
 HTML;
     }
 
+    public function javascript_content()
+    {
+        return <<<JAVASCRIPT
+$(document).mousedown(function(e){
+    x = e.offsetX;
+    y = e.offsetY;
+    console.log(x+', '+y);
+});
+JAVASCRIPT;
+    }
+
     protected function get_upload_view()
     {
         $stores = FormLib::storePicker('store', false);

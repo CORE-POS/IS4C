@@ -164,7 +164,7 @@ class EditLocations extends FannieRESTfulPage
             WHERE upc = ? AND floorSectionID = ?");
         $res = $dbc->execute($prep, array($upc, $floorSectionID));
         $row = $dbc->fetchRow($res);
-        $curSub = $row['subSection'];
+        $curSub = (isset($row['subSection'])) ? $curSub = $row['subSection'] : '';
 
         $options = '<option value=\"0\">&nbsp;</option>';
         $letters = range('a', 'l');
@@ -344,6 +344,9 @@ class EditLocations extends FannieRESTfulPage
             <div class="form-group" align="center">
                 <a class="btn btn-default menu-btn" href="../../item/FloorSections/EditLocations.php">Edit Sub-Locations: by List</a>
             </div>
+            <div class="form-group" align="center">
+                <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/SMS/scan/ScannerTest.php">SMS Scanner Test</a>
+            </div>
         </div>
         <div class="col-lg-4"></div>
     </div>
@@ -362,6 +365,12 @@ HTML;
 
         $upcsStr = FormLib::get('upcs', false);
         $upcs = explode("\r\n",$upcsStr);
+        $tmp = array();
+        foreach ($upcs as $upc) {
+            $upc = BarcodeLib::padUPC($upc);
+            $tmp[] = $upc;
+        }
+        $upcs = $tmp;
 
         $sections = array();
         $prep = $dbc->prepare("SELECT * FROM FloorSections WHERE storeID = ? ORDER BY name");
@@ -404,32 +413,46 @@ HTML;
         $th = '<th>UPC</th><th>Brand</th><th>Description</th><th>Floor Section ID</th><th>Sub-Section ID</th><th>Department.</th><th>Super Dept.</th>';
         $floorSectionsForm = '';
         while ($row = $dbc->fetchRow($res)) {
+            $brand = '';
+            $description = '';
+            $department = '';
+            $superName = '';
             $upc = $row['upc'];
-            $rProdInfo = $dbc->execute($pProdInfo, array($upc));
-            $wProdInfo = $dbc->fetchRow($rProdInfo);
-            $brand = $wProdInfo['brand'];
-            $description = $wProdInfo['description'];
-            $department = $wProdInfo['dept_name'];
-            $superName = $wProdInfo['super_name'];
-            $floorSectionID = $row['floorSectionID'];
-            list($subSection, $subSectionOpts) = $this->subSectionSelect($upc, $subSections[$floorSectionID], $floorSectionID, $dbc);
-            $floorSectionsForm .= "\n".$floorSectionID;
+            if ($upc != 0) {
+                $rProdInfo = $dbc->execute($pProdInfo, array($upc));
+                $wProdInfo = $dbc->fetchRow($rProdInfo);
+                if (isset($wProdInfo['brand']))
+                    $brand = $wProdInfo['brand'];
+                if (isset($wProdInfo['description']))
+                    $description = $wProdInfo['description'];
+                if (isset($wProdInfo['dept_name']))
+                    $department = $wProdInfo['dept_name'];
+                if (isset($wProdInfo['super_name']))
+                    $superName = $wProdInfo['super_name'];
 
-            $td .= sprintf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
-                    <td class=\"row-data\" style=\"display: none\" 
-                    data-upc=\"%s\" data-floorSectionID=\"%s\" data-subSection=\"%s\" data-storeID=\"%s\">
-                    </td></tr>", 
-                $upc,
-                $brand, 
-                $description,
-                $this->floorSectionSelect($sections, $floorSectionID)
-                    ." <span class=\"form-control btn btn-default fas fa-trash btn-remove-section\"></span>",
-                "<select class=\"form-control edit-subsection\" style=\"width: 75px;\">$subSectionOpts</select>"
-                    ." <span class=\"form-control btn btn-default btn-add-subsection\">+</span>",
-                $department,
-                $superName,
-                $upc, $floorSectionID, $subSection, $storeID
-            );
+                $floorSectionID = (isset($row['floorSectionID'])) ? $row['floorSectionID'] : 0;
+                if (!isset($subSections[$floorSectionID]))
+                    $subSections[$floorSectionID] = 'unknown';
+
+                list($subSection, $subSectionOpts) = $this->subSectionSelect($upc, $subSections[$floorSectionID], $floorSectionID, $dbc);
+                $floorSectionsForm .= "\n".$floorSectionID;
+
+                $td .= sprintf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
+                        <td class=\"row-data\" style=\"display: none\" 
+                        data-upc=\"%s\" data-floorSectionID=\"%s\" data-subSection=\"%s\" data-storeID=\"%s\">
+                        </td></tr>", 
+                    $upc,
+                    $brand, 
+                    $description,
+                    $this->floorSectionSelect($sections, $floorSectionID)
+                        ." <span class=\"form-control btn btn-default fas fa-trash btn-remove-section\"></span>",
+                    "<select class=\"form-control edit-subsection\" style=\"width: 75px;\">$subSectionOpts</select>"
+                        ." <span class=\"form-control btn btn-default btn-add-subsection\">+</span>",
+                    $department,
+                    $superName,
+                    $upc, $floorSectionID, $subSection, $storeID
+                );
+            }
         }
         echo $dbc->error();
 
