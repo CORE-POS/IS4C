@@ -1074,7 +1074,7 @@ class BasicModel
             if (in_array($col_name, array_keys($current))) {
                 $type = $this->getMeta($this->columns[$col_name]['type'], $this->connection->dbmsName());
                 $rebuild = false;
-                if (strtoupper($type) != $current[$col_name]['type']) {
+                if ($this->typesDiffer($current[$col_name]['type'], $type, $dbms)) {
                     printf("%s column %s from %s to %s\n", 
                             ($mode==BasicModel::NORMALIZE_MODE_CHECK)?"Need to change":"Changing", 
                             $col_name, $current[$col_name]['type'], $type);
@@ -1115,6 +1115,48 @@ class BasicModel
         }
 
         return $recase_columns;
+    }
+
+    private function typesDiffer($oldtype, $newtype, $dbms)
+    {
+        // primarily, compare upper-cased type names as-is
+        $newtype = strtoupper($newtype);
+        if ($newtype == $oldtype) {
+            return false;
+        }
+
+        // types are technically different, but also check for some
+        // common variations which can be effectively considered to
+        // match..
+
+        // TINYINT
+        if ($oldtype == 'TINYINT' && substr($newtype, 0, 8) == 'TINYINT(') {
+            return false;
+        }
+
+        // SMALLINT
+        if ($oldtype == 'SMALLINT' && substr($newtype, 0, 9) == 'SMALLINT(') {
+            return false;
+        }
+
+        // MEDIUMINT
+        if ($oldtype == 'MEDIUMINT' && substr($newtype, 0, 10) == 'MEDIUMINT(') {
+            return false;
+        }
+
+        // INT
+        if ($oldtype == 'INT' && substr($newtype, 0, 4) == 'INT(') {
+            return false;
+        }
+
+        // BOOL
+        // TODO: for now making this mysql-only, but is it safe more broadly?
+        if ($dbms == 'mysqli' && $oldtype == 'TINYINT' && $newtype == 'BOOL') {
+            return false;
+        }
+
+        // the types are just different
+        return true;
     }
 
     private function normalizeRename($db_name, $mode=BasicModel::NORMALIZE_MODE_CHECK)
