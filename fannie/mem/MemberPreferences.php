@@ -67,6 +67,12 @@ class MemberPreferences extends FannieRESTfulPage
                     }
                 }
                 $this->add_onload_command("showBootstrapAlert('#alert-area', 'success', 'Saved Settings');\n");
+
+                $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+                foreach ($callbacks as $cb) {
+                    $obj = new $cb();
+                    $obj->run($cardno);
+                }
             }
         }
 
