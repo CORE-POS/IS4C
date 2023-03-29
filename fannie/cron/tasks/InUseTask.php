@@ -226,6 +226,12 @@ class InUseTask extends FannieTask
         $prodUpdate = new ProdUpdateModel($dbc);
         $prodUpdate->logManyUpdates($updateUpcs);
 
+        $callbacks = \FannieConfig::config('ITEM_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($updateUpcs);
+        }
+
         $headers = array(
             'MIME-Version: 1.0',
             'Content-type: text/html; charset=iso-8859-1',
