@@ -20,14 +20,17 @@ class FindItem extends FannieRESTfulPage
                 INNER JOIN productUser AS u ON p.upc=u.upc
             WHERE p.upc=?');
         $info = $this->connection->getRow($infoP, array($upc));
-        $itemName = $info['brand'] . ' ' . $info['description'];
         $aka = '';
-        if ($info['uDesc']) {
-            $aka = $info['uBrand'] . ' ' . $info['uDesc'];
-        }
         $img = '';
-        if ($info['photo']) {
-            $img = sprintf('<img width="500" src="../images/done/%s" />', $info['photo']);
+        $itemName = 'Unknown item?';
+        if (is_array($info)) {
+            $itemName = $info['brand'] . ' ' . $info['description'];
+            if ($info['uDesc']) {
+                $aka = $info['uBrand'] . ' ' . $info['uDesc'];
+            }
+            if ($info['photo']) {
+                $img = sprintf('<img width="500" src="../images/done/%s" />', $info['photo']);
+            }
         }
         $stores = new StoresModel($this->connection);
         $stores->hasOwnItems(1);
