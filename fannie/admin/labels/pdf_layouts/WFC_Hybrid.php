@@ -262,7 +262,7 @@ foreach($data as $row) {
 
         // add a blue dot to items in REFRIGERATED department
         $pdf->SetXY($full_x+48.5, $full_y+3);
-        if ($dots[$upc] == 'REFRIGERATED' && $store == 2 && isset($locNames[$upc])) {
+        if (isset($dots[$upc]) && $dots[$upc] == 'REFRIGERATED' && $store == 2 && isset($locNames[$upc])) {
             foreach ($locNames[$upc] as $name) {
                 if (strpos(strtoupper($name), 'BEV') !== false) {
                     $pdf->SetFillColor(0, 100, 255);
