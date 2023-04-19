@@ -90,7 +90,7 @@ class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP
             $pdf->Image($this->getBottomImage($item), ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-8), 133);
 
             // if sale is new NCG BOGO
-            if (strstr($item['batchName'], 'Co-op Deals') && $item['signMultiplier'] == -3) {
+            if (isset($item['batchName']) && strstr($item['batchName'], 'Co-op Deals') && $item['signMultiplier'] == -3) {
                 $bogoImg = __DIR__ . '/noauto/images/bogo-circle.png';
                 $pdf->Image($bogoImg,  ($left-1) + ($width*$column) + 106, ($top-19) + ($row*$height) +14, 20, 20);
             }
@@ -104,7 +104,7 @@ class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP
 
     private function getTopImage($item)
     {
-        if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
+        if (isset($item['batchName']) && strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/noauto/images/codeals_top_2.png';
         } elseif (!empty($item['batchName'])) {
             return __DIR__ . '/noauto/images/chaching_top_2.png';
@@ -123,7 +123,7 @@ class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP
 
     private function getBottomImage($item)
     {
-        if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
+        if (isset($item['batchName']) && strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/cd_line_16.png';
         } elseif (!empty($item['batchName'])) {
             return __DIR__ . '/noauto/images/chaching_bottom_12.png';
