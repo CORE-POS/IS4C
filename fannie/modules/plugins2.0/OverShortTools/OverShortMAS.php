@@ -51,6 +51,8 @@ class OverShortMAS extends FannieRESTfulPage {
         $names = array(
         'CA' => 'Deposit',
         'EF' => 'EBT Food/Cash',
+        'GD' => 'WorldPay Gift',
+        'SG' => 'SMS Gift',
         '41201' => 'DELI PREPARED FOODS',
         '41205' => 'DELI CHEESE',
         '41300' => 'PRODUCE',
@@ -82,6 +84,7 @@ class OverShortMAS extends FannieRESTfulPage {
         $codes = array(
         'CP' => 10740,
         'GD' => 21205,
+        'SG' => 21206,
         'SC' => 21200,
         'MI' => 10710,
         'IC' => 66600,
@@ -120,6 +123,7 @@ class OverShortMAS extends FannieRESTfulPage {
                 WHEN trans_subtype IN ('EF','EC') THEN 'EF'
                 WHEN trans_subtype = 'IC' AND upc='0049999900001' THEN 'OB'
                 WHEN trans_subtype = 'IC' AND upc='0049999900002' THEN 'AD'
+                WHEN trans_subtype = 'GD' AND numflag=32766 THEN 'SG'
                 ELSE trans_subtype END as type,
                 MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') OR description='REBATE CHECK' 
                     THEN d.description ELSE TenderName END) as name
@@ -416,6 +420,25 @@ class OverShortMAS extends FannieRESTfulPage {
             $records[] = array($dateID, $dateStr, '211800000', 0, $taxes, 'Sales Tax Collected');
         }
 
+        $newGiftQ = "SELECT sum(total) as amount, salesCode,
+            MIN(dept_name) as name
+            FROM $dlog AS d 
+            INNER JOIN departments as t
+            ON d.department = t.dept_no
+            INNER JOIN MasterSuperDepts AS m
+            ON d.department=m.dept_ID
+            WHERE d.trans_type IN ('I','D')
+            AND " . DTrans::isStoreID($store, 'd') . "
+            AND tdate BETWEEN ? AND ?
+            AND m.superID = 0
+            AND d.department = 902
+            AND d.numflag=32766
+            AND register_no <> 20
+            " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
+            " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
+            GROUP BY salesCode HAVING sum(total) <> 0 
+            ORDER BY salesCode";
+        $newGiftP = $dbc->prepare($newGiftQ);
         $salesQ = "SELECT sum(total) as amount, salesCode,
             MIN(dept_name) as name
             FROM $dlog AS d 
@@ -442,12 +465,30 @@ class OverShortMAS extends FannieRESTfulPage {
                 $coding = 67735;
             }
             $name = isset($names[$w['salesCode']]) ? $names[$w['salesCode']] : $w['name'];
-            $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
-            $debit = $w['amount'] > 0 ? $w['amount'] : 0;
-            $row = array($dateID, $dateStr,
-                str_pad($coding,9,'0',STR_PAD_RIGHT),
-                $credit, $debit, $name);    
-            $records[] = $row;
+            if ($coding == '21205') {
+                $newGift = $dbc->getRow($newGiftP, $args);
+                $w['amount'] -= (is_array($newGift) ? $newGift['amount'] : 0);
+                $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
+                $debit = $w['amount'] > 0 ? $w['amount'] : 0;
+                $row = array($dateID, $dateStr,
+                    str_pad($coding,9,'0',STR_PAD_RIGHT),
+                    $credit, $debit, 'WorldPay Gift');    
+                $records[] = $row;
+
+                $credit = (is_array($newGift) && $newGift['amount']) < 0 ? -1*$newGift['amount'] : 0;
+                $debit = (is_array($newGift) && $newGift['amount'] > 0) ? $newGift['amount'] : 0;
+                $row = array($dateID, $dateStr,
+                    str_pad(21206,9,'0',STR_PAD_RIGHT),
+                    $credit, $debit, 'SMS Gift');    
+                $records[] = $row;
+            } else {
+                $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
+                $debit = $w['amount'] > 0 ? $w['amount'] : 0;
+                $row = array($dateID, $dateStr,
+                    str_pad($coding,9,'0',STR_PAD_RIGHT),
+                    $credit, $debit, $name);    
+                $records[] = $row;
+            }
         }
 
         $explorersQ = '
