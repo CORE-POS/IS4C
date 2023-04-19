@@ -182,6 +182,7 @@ class PriceBatchTask extends FannieTask
                 AND ' . $sql->datediff($sql->now(), 'b.startDate') . ' = 0';
         $batchR = $sql->query($batchQ);
         $prodUpdate = new ProdUpdateModel($sql);
+        $queue = new COREPOS\Fannie\API\jobs\QueueManager();
         while ($batchW = $sql->fetch_row($batchR)) {
             $upcs = array();
             $upc = $batchW['upc'];
@@ -203,6 +204,13 @@ class PriceBatchTask extends FannieTask
                     $success = false;
                 }
             }
+
+            $queue->add(array(
+                'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
+                'data' => array(
+                    'upc' => $upcs,
+                ),
+            ));
         }
 
         if ($success) {
