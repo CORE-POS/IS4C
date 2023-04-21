@@ -68,6 +68,7 @@ class ScaleDiscrepancyCheck extends FannieRESTfulPage
             if (array_key_exists($k+1, $upcs))
                 $inStr .= ',';
         }
+        // deptno = the scale to look at
         $query = "SELECT  * FROM ePLUM.PLUMaster WHERE upc IN ($inStr) AND deptno=3 order by upc, deptno";
         $res = $dbc->query($query);
         $td = '';
