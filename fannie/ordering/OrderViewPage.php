@@ -443,8 +443,8 @@ class OrderViewPage extends FannieRESTfulPage
             }
         }
 
+        $custdata = new CustdataModel($dbc);
         if ($memNum != 0) {
-            $custdata = new CustdataModel($dbc);
             $custdata->CardNo($memNum);
             foreach ($custdata->find('personNum') as $c) {
                 $names[$c->personNum()] = array($c->FirstName(), $c->LastName());
