@@ -1149,6 +1149,11 @@ class BasicModel
             return false;
         }
 
+        // BIGINT
+        if ($oldtype == 'BIGINT UNSIGNED UNSIGNED' && $newtype == 'BIGINT UNSIGNED') {
+            return false;
+        }
+
         // BOOL
         // TODO: for now making this mysql-only, but is it safe more broadly?
         if ($dbms == 'mysqli' && $oldtype == 'TINYINT' && $newtype == 'BOOL') {
