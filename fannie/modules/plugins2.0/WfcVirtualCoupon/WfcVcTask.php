@@ -81,8 +81,7 @@ class WfcVcTask extends FannieTask
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
         $accessQ = 'SELECT card_no, MAX(tdate) AS tdate
                     FROM ' . $dlog_ly . '
-                    WHERE trans_type=\'I\'
-                        AND upc=\'ACCESS\'
+                    WHERE upc=\'ACCESS\'
                         AND tdate >= ?
                         AND card_no NOT IN (9, 11)
                     GROUP BY card_no
