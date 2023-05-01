@@ -83,9 +83,6 @@ class AjaxCallback
             self::perfEnd($callback_class);
         } else {
             self::$logger->error("$callback_class is not correct for the file $file");
-            if (php_sapi_name() != 'cli') {
-                echo "Error: $callback_class is not correct for the file $file";
-            }
         }
     }
 
