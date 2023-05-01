@@ -459,6 +459,9 @@ class SQLManager
             $logMsg .= 'Parameters: ' . implode("\n", $params);
         }
         $logMsg .= 'Error: ' . $errorMsg . "\n";
+        if (substr($query_text, 0, 3) == 'upc') { // temp to find where this query is coming from
+            $logMsg .= print_r(debug_backtrace(), true);
+        }
 
         return $logMsg;
     }
