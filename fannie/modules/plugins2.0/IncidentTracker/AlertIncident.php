@@ -1,6 +1,5 @@
 <?php
 
-use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Slack;
 use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Email;
 use COREPOS\Fannie\Plugin\IncidentTracker\notifiers\Basecamp;
 
@@ -226,10 +225,6 @@ class AlertIncident extends FannieRESTfulPage
             while ($row = $this->connection->fetchRow($res)) {
                 try {
                     switch (strtolower($row['method'])) {
-                        case 'slack':
-                            $slack = new Slack();
-                            $slack->send($incident, $row['address']);
-                            break;
                         case 'basecamp':
                             $bc = new Basecamp();
                             // disabled for now; needs to convert $incident array into a formatted string
@@ -347,10 +342,6 @@ class AlertIncident extends FannieRESTfulPage
                 $this->logger->debug(print_r($row, true));
                 try {
                     switch (strtolower($row['method'])) {
-                        case 'slack':
-                            $slack = new Slack();
-                            $slack->send($incident, $row['address']);
-                            break;
                         case 'basecamp':
                             $bc = new Basecamp();
                             // disabled for now
