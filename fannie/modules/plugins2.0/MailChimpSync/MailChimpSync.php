@@ -39,6 +39,8 @@ class MailChimpSync extends \COREPOS\Fannie\API\FanniePlugin
     'MailChimpApiKey' => array('default'=>'','label'=>'API Key',
             'description'=>'API key for access to MailChimp. Found
             under account settings.'),
+    'MailChimpPrefix' => array('default'=>'','label'=>'Server prefix',
+            'description'=>'Server prefix. Found by logging in & checking subdomain'),
     'MailChimpListID' => array('default'=>'','label'=>'List ID',
             'description'=>'List ID for the MailChimp list to sync
             with. Found under List Settings Name & Defaults.'),
