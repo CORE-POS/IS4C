@@ -720,6 +720,34 @@ class EditBatchPage extends FannieRESTfulPage
         $id = $this->id;
         $upc = $this->upc;
 
+        $bu = new BatchUpdateModel($dbc);
+        $bu->upc($upc);
+        $bu->batchID($id);
+        $bu->logUpdate($bu::UPDATE_REMOVED);
+
+        $delQ = $dbc->prepare("delete from batchList where batchID=? and upc=?");
+        $delR = $dbc->execute($delQ,array($id,$upc));
+        if ($delR === false) {
+            if ($json['error']) {
+                $json['msg'] .= '<br />Error deleting item ' . $upc . ' from batch';
+            } else {
+                $json['error'] = 1;
+                $json['msg'] = 'Error deleting item ' . $upc . ' from batch';
+             }
+        }
+
+        $delQ = $dbc->prepare("delete from batchBarcodes where upc=? and batchID=?");
+        $delR = $dbc->execute($delQ,array($upc,$id));
+
+        if (FormLib::get_form_value('audited') == '1') {
+            \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
+                $id,
+                $upc,
+                \COREPOS\Fannie\API\lib\AuditLib::BATCH_DELETE,
+                (substr($upc,0,2)=='LC' ? true : false));
+        }
+
+
         $json = array('error'=>0, 'msg'=>'Item ' . $upc . ' removed from batch');
         $currentP = $dbc->prepare('SELECT batchID FROM batches WHERE ? BETWEEN startDate AND endDate AND batchID=?');
         $current = $dbc->getValue($currentP, array(date('Y-m-d 00:00:00'), $this->id));
@@ -768,33 +796,6 @@ class EditBatchPage extends FannieRESTfulPage
                 $json = $this->repriceItem($upc, $curSale, $json);
             }
              */
-        }
-
-        $bu = new BatchUpdateModel($dbc);
-        $bu->upc($upc);
-        $bu->batchID($id);
-        $bu->logUpdate($bu::UPDATE_REMOVED);
-
-        $delQ = $dbc->prepare("delete from batchList where batchID=? and upc=?");
-        $delR = $dbc->execute($delQ,array($id,$upc));
-        if ($delR === false) {
-            if ($json['error']) {
-                $json['msg'] .= '<br />Error deleting item ' . $upc . ' from batch';
-            } else {
-                $json['error'] = 1;
-                $json['msg'] = 'Error deleting item ' . $upc . ' from batch';
-             }
-        }
-
-        $delQ = $dbc->prepare("delete from batchBarcodes where upc=? and batchID=?");
-        $delR = $dbc->execute($delQ,array($upc,$id));
-
-        if (FormLib::get_form_value('audited') == '1') {
-            \COREPOS\Fannie\API\lib\AuditLib::batchNotification(
-                $id,
-                $upc,
-                \COREPOS\Fannie\API\lib\AuditLib::BATCH_DELETE,
-                (substr($upc,0,2)=='LC' ? true : false));
         }
 
         $this->runCallbacks($this->id);
