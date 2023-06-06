@@ -93,8 +93,8 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 $msg = "Item Added to Batch #$batchID";
                 $b = new BatchesModel($dbc);
                 if ($this->forceBatchOkay($batchID,$b)) {
-                    $b->forceStartBatch($batchID);
-                    $msg .= " & Batch #{$batchID} forced.";
+                    $b->forceStartBatch($batchID, $upc);
+                    $msg .= " & Pricing From Batch #{$batchID} For $upc Has Been Forced.";
                 }
             }
         }
