@@ -59,7 +59,7 @@ class EOMTaxReport extends FannieReportPage
         }
 
         $today = date("m/j/y");
-        $uoutput .= '<br>Report run ' . $today; 
+        $uoutput = '<br>Report run ' . $today; 
 
         $year = date('Y');
         $month = date('n');
@@ -97,6 +97,7 @@ class EOMTaxReport extends FannieReportPage
                     WHERE datetime BETWEEN ? AND ?
                         AND ' . DTrans::isStoreID($store, 't') . '
                         AND upc=\'TAXLINEITEM\'
+                        AND trans_status <> \'X\'
                         AND ' . DTrans::isNotTesting() . '
                     GROUP BY taxID';
         $prep = $sql->prepare($newTaxQ);
@@ -111,7 +112,7 @@ class EOMTaxReport extends FannieReportPage
         $county = 0.005;
         $startDT = new DateTime($start);
         $noCounty = new DateTime('2017-10-01');
-        if ($startDT >= $noCount) {
+        if ($startDT >= $noCounty) {
             //$county = 0;
         }
         $data = array();

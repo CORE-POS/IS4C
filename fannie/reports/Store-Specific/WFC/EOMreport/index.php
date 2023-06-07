@@ -570,6 +570,7 @@ echo $output;
                 WHERE datetime BETWEEN ? AND ?
                     AND ' . DTrans::isStoreID($store, 't') . '
                     AND upc=\'TAXLINEITEM\'
+                    AND trans_status <> \'X\'
                     AND ' . DTrans::isNotTesting() . '
                 GROUP BY taxID';
     $prep = $sql->prepare($newTaxQ);
@@ -584,7 +585,7 @@ echo $output;
     $county = 0.005;
     $startDT = new DateTime($start);
     $noCounty = new DateTime('2017-10-01');
-    if ($startDT >= $noCount) {
+    if ($startDT >= $noCounty) {
         //$county = 0;
     }
     echo '<table border="1" cellspacing="0" cellpadding="4">';
