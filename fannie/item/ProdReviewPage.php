@@ -505,7 +505,7 @@ HTML;
                 $title = '';
                 foreach ($discr[$curBid] as $upc) {
                     $title .= <<<HTML
-$upc
+<div>$upc</div>
 HTML;
                 }
                 $curDiscr = ' <a href="#" class="btn btn-xs btn-danger showDiscrFound" title="'.$title.'"><span class="fas fa-exclamation-circle"></span></a>';
