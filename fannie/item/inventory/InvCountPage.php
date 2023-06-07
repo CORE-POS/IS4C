@@ -256,8 +256,8 @@ class InvCountPage extends FannieRESTfulPage
         } catch (Exception $ex) {
             return '<div class="alert alert-danger">No store selected</div>';
         }
-        $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
-        $this->addOnloadCommand("\$('.table-float').floatThead();\n");
+        //$this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
+        //$this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         $vname = $this->connection->prepare("SELECT vendorName FROM vendors WHERE vendorID=?");
         $vname = $this->connection->getValue($vname, array($this->vendor));
@@ -298,7 +298,7 @@ class InvCountPage extends FannieRESTfulPage
             </p>
             <input type="hidden" name="vendor" value="' . $this->vendor . '" />
             <input type="hidden" name="store" value="' . $store . '" />
-            <table class="table table-bordered table-striped small table-float">
+            <table class="table table-bordered table-striped small table-float" id="countTable">
             <thead style="background: #fff;">
             <tr>
                 <th class="thead">UPC</th>
@@ -377,6 +377,9 @@ class InvCountPage extends FannieRESTfulPage
                     class="btn btn-default">Recalculate Totals</a>
             </p>
             </form>';
+
+        $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
+        $this->addOnloadCommand("$('#countTable').tablesorter();");
 
         return $ret;
     }
