@@ -14,27 +14,35 @@ class MailChimpTask30 extends FannieTask
         $res = $dbc->query("SELECT email_1 FROM meminfo AS m INNER JOIN custdata AS c
             ON m.card_no=c.CardNo AND c.personNum=1
             WHERE email_1 LIKE '%@%'");
-        $accounts = array();
-        while ($row = $dbc->fetchRow($res)) {
-            $accounts[] = array(
-                'email_address' => $row['email_1'],
-                'status' => 'subscribed',
-            );
-            if (count($accounts) >= 450) {
+        try {
+            $sent = array();
+            $accounts = array();
+            while ($row = $dbc->fetchRow($res)) {
+                if (!isset($sent[$row['email_1']])) {
+                    $accounts[] = array(
+                        'email_address' => $row['email_1'],
+                        'status' => 'subscribed',
+                    );
+                }
+                $sent[$row['email_1']] = true;
+                if (count($accounts) >= 450) {
+                    $resp = $client->lists->batchListMembers($settings['MailChimpListID'], array(
+                        'members' => $accounts,
+                        'sync_tags' => false,
+                        'update_existing' => false,
+                    ));
+                    $accounts = array();
+                }
+            }
+            if (count($accounts) > 0) {
                 $resp = $client->lists->batchListMembers($settings['MailChimpListID'], array(
                     'members' => $accounts,
                     'sync_tags' => false,
                     'update_existing' => false,
                 ));
-                $accounts = array();
             }
-        }
-        if (count($accounts) > 0) {
-            $resp = $client->lists->batchListMembers($settings['MailChimpListID'], array(
-                'members' => $accounts,
-                'sync_tags' => false,
-                'update_existing' => false,
-            ));
+        } catch (Exception $ex) {
+            echo $ex->getResponse()->getBody()->getContents();
         }
     }
 }
