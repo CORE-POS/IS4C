@@ -47,77 +47,90 @@ driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionI
 params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': '/tmp/usf'}}
 command_result = driver.execute("send_command", params)
 
+exit_code = 0
+try:
+
 # Load the login page
-if VERBOSE: print("Init")
-driver.get("https://www3.usfoods.com/order/")
-time.sleep(3)
+    if VERBOSE: print("Init")
+    driver.get("https://www3.usfoods.com/order/")
+    time.sleep(3)
 
 # Post credentials
-if VERBOSE: print("Login")
-driver.find_element_by_name("it9").send_keys(USER)
-driver.find_element_by_name("it1").send_keys(PASS)
-driver.find_element_by_id('cb1').click();
-time.sleep(3)
+    if VERBOSE: print("Login")
+    driver.find_element_by_name("it9").send_keys(USER)
+    driver.find_element_by_name("it1").send_keys(PASS)
+    driver.find_element_by_id('cb1').click();
+    time.sleep(3)
 
 # Navigate to the invoices page
 # The hover stuff is required to generate the
 # menu clickable elements
-if VERBOSE: print("Nav")
-mainMenu = driver.find_element_by_id("dgfSPT:pt_i7:2:pt_s46:pt_gl1")
-hover = ActionChains(driver).move_to_element(mainMenu)
-hover.perform()
-time.sleep(1)
-subMenu = driver.find_element_by_id("dgfSPT:pt_i7:2:pt_s46:pt_i5:1:pt_cl6111")
-hover = ActionChains(driver).move_to_element(subMenu)
-hover.perform()
-time.sleep(1)
-subMenu.click()
-time.sleep(3)
+    if VERBOSE: print("Nav")
+    driver.find_element_by_id("cil3").click();
+    time.sleep(3)
+
+    driver.get_screenshot_as_file("loggedin.png")
+    mainMenu = driver.find_element_by_id("dgfSPT:pt_i7:2:pt_pgl21")
+    hover = ActionChains(driver).move_to_element(mainMenu)
+    hover.perform()
+    time.sleep(1)
+    subMenu = driver.find_element_by_id("dgfSPT:pt_i7:2:pt_s46:pt_i5:1:pt_cl6111")
+    hover = ActionChains(driver).move_to_element(subMenu)
+    hover.perform()
+    time.sleep(1)
+    subMenu.click()
+    time.sleep(3)
 
 # Click one more link to download invoices
-if VERBOSE: print("More Nav")
-driver.find_element_by_id("pt1:lv1:0:cil2::icon").click()
-time.sleep(3)
+    if VERBOSE: print("More Nav")
+    driver.find_element_by_id("pt1:lv1:0:cil2::icon").click()
+    time.sleep(3)
 
 # Download the invoices
 #
 # I'm using javscript to check the boxes because I cannot
 # figure out what element to click on in the UI that will
 # carry through to the underlying checkbox
-driver.get_screenshot_as_file("one.png")
-js = """
-var limiter=1;
-for (var elem of document.getElementsByTagName('input')) {
-    if (elem.type == 'checkbox' && elem.id.indexOf('selectAll') == -1) {
-        console.log('checking ' + elem.id);
-        document.getElementById(elem.id).click();
-        limiter = limiter + 1;
+    driver.get_screenshot_as_file("one.png")
+    js = """
+    var limiter=1;
+    for (var elem of document.getElementsByTagName('input')) {
+        if (elem.type == 'checkbox' && elem.id.indexOf('selectAll') == -1) {
+            console.log('checking ' + elem.id);
+            document.getElementById(elem.id).click();
+            limiter = limiter + 1;
+        }
+        if (limiter > 45) {
+            break;
+        }
     }
-    if (limiter > 45) {
-        break;
-    }
-}
-"""
-driver.execute_script(js)
-funkySelect = driver.find_element_by_class_name("jqTransformSelectWrapper")
-funkySelect.find_element_by_xpath("div/a").click()
-time.sleep(1)
-funkySelect.find_element_by_xpath("ul/li[4]").click()
-time.sleep(1)
-driver.find_element_by_id("r1:0:pt1:cb2").click()
-driver.get_screenshot_as_file("two.png")
-time.sleep(1)
-driver.get_screenshot_as_file("three.png")
-if VERBOSE: print("Downloading")
-count=0
-while (True):
+    """
+    driver.execute_script(js)
+    funkySelect = driver.find_element_by_class_name("jqTransformSelectWrapper")
+    funkySelect.find_element_by_xpath("div/a").click()
     time.sleep(1)
-    if os.path.exists("/tmp/usf/invoiceDetails.ZIP"):
-        break
-    count += 1
-    if count > 99:
-        break
+    funkySelect.find_element_by_xpath("ul/li[4]").click()
+    time.sleep(1)
+    driver.find_element_by_id("r1:0:pt1:cb2").click()
+    driver.get_screenshot_as_file("two.png")
+    time.sleep(1)
+    driver.get_screenshot_as_file("three.png")
+    if VERBOSE: print("Downloading")
+    count=0
+    while (True):
+        time.sleep(1)
+        if os.path.exists("/tmp/usf/invoiceDetails.ZIP"):
+            break
+        count += 1
+        if count > 99:
+            break
+
+except Exception as e:
+    print(e)
+    traceback.print_exc()
+    exit_code = 1
+    driver.get_screenshot_as_file("error.png")
 
 driver.quit()
-sys.exit(0)
+sys.exit(exit_code)
 
