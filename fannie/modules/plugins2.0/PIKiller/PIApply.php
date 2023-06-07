@@ -84,6 +84,12 @@ class PIApply extends FannieRESTfulPage
             $this->connection->execute($planP, array($json['card_no']));
         }
 
+        $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($json['card_no']);
+        }
+
         $custdata = new CustdataModel(FannieDB::get(FannieConfig::config('OP_DB')));
         $custdata->CardNo($json['card_no']);
         foreach ($custdata->find() as $c) {

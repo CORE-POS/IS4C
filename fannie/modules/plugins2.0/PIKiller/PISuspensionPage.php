@@ -378,6 +378,12 @@ class PISuspensionPage extends PIKillerPage {
                 }
             }
         }
+        
+        $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($this->id);
+        }
 
         header('Location: PIMemberPage.php?id='.$this->id);
         return False;
