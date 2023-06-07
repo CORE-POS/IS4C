@@ -103,11 +103,13 @@ HTML;
 
         $myskus = array();
         foreach ($myitems as $upc) {
-            $res = $dbc->execute($prep, $upc);
-            $row = $dbc->fetchRow($res);
-            // don't print barcodes that are too wide for slotted space
-            $row['sku'] = (strlen($row['sku']) > 8) ? 1 : $row['sku'];
-            $myskus[] = $row['sku'];
+            if ($upc < 9999) {
+                $res = $dbc->execute($prep, $upc);
+                $row = $dbc->fetchRow($res);
+                // don't print barcodes that are too wide for slotted space
+                $row['sku'] = (strlen($row['sku']) > 8) ? 1 : $row['sku'];
+                $myskus[] = $row['sku'];
+            }
         }
 
         $posX = 60;

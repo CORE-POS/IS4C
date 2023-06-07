@@ -51,6 +51,8 @@ Contains: " . ucwords($allergens);
         $ing = rtrim($ing, ";");
         $ing = rtrim($ing, ",");
 
+        $ing = str_replace("usa", "USA", $ing);
+
 
 
 
@@ -74,7 +76,10 @@ Contains: " . ucwords($allergens);
                     <textarea name="allergens" class="form-control" rows=4>$allergens</textarea>
                 </div>
                 <div class="form-group">
-                    <input type="submit">
+                    <input type="submit" class="btn btn-default">
+                </div>
+                <div class="form-group">
+                    <a href="IngredientSOPFormatter.php">Reset</a>
                 </div>
             </form>
             <table class="table table-bordered">
