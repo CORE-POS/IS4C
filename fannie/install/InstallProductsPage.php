@@ -418,6 +418,11 @@ class InstallProductsPage extends \COREPOS\Fannie\API\InstallPage {
         $mods = FannieAPI::listModules('\COREPOS\Fannie\API\item\SpecialOrderCallback');
         echo installMultiSelectField('FANNIE_SPO_CALLBACKS', $FANNIE_SPO_CALLBACKS, $mods);
         ?>
+        <label>Enabled Employee Callbacks</label>
+        <?php
+        $mods = FannieAPI::listModules('\COREPOS\Fannie\API\lib\EmployeeCallback');
+        echo installMultiSelectField('FANNIE_EMP_CALLBACKS', $FANNIE_EMP_CALLBACKS, $mods);
+        ?>
 
         <hr />
         <p>
