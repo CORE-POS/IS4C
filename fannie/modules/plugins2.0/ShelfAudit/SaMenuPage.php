@@ -104,6 +104,9 @@ a[type="submit"] {
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../item/FloorSections/EditLocations.php?upc=0" />Physical Product Locations</a>
 <hr />
+<a class="btn btn-default btn-lg" type="submit"
+    href="../../../modules/plugins2.0/SMS/scan/ScannerSMS.php" />Test Scanner Just For Corey</a>
+<hr />
 {$wfcTools[1]}
 </p>
 </body>
