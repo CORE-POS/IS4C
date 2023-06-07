@@ -85,13 +85,21 @@ $clearQ = "select c.CardNo from
         AND c.personNum=1";
 $clearR = $sql->query($clearQ);
 $cns = "(";
+$ids = array();
 while($clearW = $sql->fetch_row($clearR)){
     $cns .= $clearW[0].",";
+    $ids[] = $clearW[0];
 }
 $cns = rtrim($cns,",").")";
 
 if ($cns != "()"){
     $delQ = "DELETE FROM suspensions WHERE cardno IN $cns";
     $delR = $sql->query($delQ);
+}
+
+$callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+foreach ($callbacks as $cb) {
+    $obj = new $cb();
+    $obj->run($ids);
 }
 
