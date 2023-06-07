@@ -76,19 +76,19 @@ CSS;
 
         $pdf->SetXY(5, 85);
         $pdf->Cell(120, 7, 'On Shift Today / Samples', 1, 1, 'C');
-        for ($i=0; $i<4; $i++) {
+        for ($i=0; $i<8; $i++) {
             $pdf->SetX(5);
             $pdf->Cell(120, 7, '', 1, 1, 'C');
         }
         $pdf->SetX(5);
         $pdf->SetFont('Arial', 'B', 9);
-        $pdf->Cell(120, 7, 'Tops Sweep:', 1, 0, 'L');
+        $pdf->Cell(120, 7, 'Front and Face:', 1, 0, 'L');
         $pdf->SetFont('Arial', '', 9);
         $pdf->SetX(30);
-        $pdf->Cell(12, 7, '1', 0, 0);
-        $pdf->Cell(12, 7, '3', 0, 0);
-        $pdf->Cell(12, 7, '5', 0, 0);
-        $pdf->Cell(12, 7, '7', 0, 0);
+        $pdf->Cell(12, 7, '6am', 0, 0);
+        $pdf->Cell(12, 7, '10am', 0, 0);
+        $pdf->Cell(12, 7, '2pm', 0, 0);
+        $pdf->Cell(12, 7, '6pm', 0, 0);
         $pdf->Ln();
         $pdf->SetX(5);
         $pdf->SetFont('Arial', 'B', 9);
@@ -99,7 +99,7 @@ CSS;
         $pdf->Ln();
 
         $preps = DataConvert::htmlToArray($preps);
-        $pdf->SetXY(5, 150);
+        $pdf->SetXY(5, 164);
         foreach ($preps as $row) {
             $pdf->SetX(5);
             if (!empty($row[0])) {
@@ -109,7 +109,7 @@ CSS;
         }
 
         $greens = DataConvert::htmlToArray($greens);
-        $pdf->SetXY(83, 150);
+        $pdf->SetXY(83, 164);
         foreach ($greens as $row) {
             $pdf->SetX(83);
             if (!empty($row[0])) {
@@ -228,19 +228,19 @@ CSS;
                 <tr><td>&nbsp;</td></tr>
                 <tr><td>&nbsp;</td></tr>
                 <tr><td>&nbsp;</td></tr>
-                <tr><td><b>Tops Sweep</b>:
+                <tr><td><b>Front and Face</b>:
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    1
+                    6am
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    3
+                    10am
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    5
+                    2pm
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    7
+                    6pm
                 </td></tr>
                 <tr><td><b>Daily Critical Temp Food spot check</b>: ____________</td></tr>
             </table>

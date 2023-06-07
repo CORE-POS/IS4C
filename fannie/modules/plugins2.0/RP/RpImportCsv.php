@@ -146,7 +146,7 @@ class RpImportCsv extends FannieRESTfulPage
             }
             $vendorID = $this->vendorToID($info['primary']);
             if (!$vendorID) {
-                $vendorID = $this->guessVendor($info);
+                //$vendorID = $this->guessVendor($info);
             }
             $name = $this->getItemName($vendorID, $info);
             if ($name === 'Unknown') {
@@ -174,7 +174,7 @@ class RpImportCsv extends FannieRESTfulPage
             $backupName = $this->getItemName($backupID, $info);
             $backupCatalog = false;
             if ($backupID) {
-                $backupCatalog = $this->findItem($backupID, $backupName);
+                //$backupCatalog = $this->findItem($backupID, $backupName);
             }
             foreach ($stores as $storeID) {
                 $args = array(
@@ -253,7 +253,7 @@ class RpImportCsv extends FannieRESTfulPage
             case 293:
                 return $info['cpw'];
             case 136:
-                return $info['rdw'];
+                return $info['rdwSKU'] . ':' . $info['rdw'];
             case 1:
                 return $info['unfi'];
             case -2:
@@ -351,7 +351,7 @@ class RpImportCsv extends FannieRESTfulPage
 
     private function vendorToID($vendor)
     {
-        switch (strtolower($vendor)) {
+        switch (strtolower(trim($vendor))) {
             case 'alberts':
             case 'al':
                 return 292;
@@ -362,6 +362,7 @@ class RpImportCsv extends FannieRESTfulPage
             case 'rd':
                 return 136;
             case 'unfi':
+            case 'unf':
             case 'un':
                 return 1;
             case 'direct':
@@ -430,82 +431,69 @@ if (php_sapi_name() == 'cli' && basename($_SERVER['PHP_SELF']) == basename(__FIL
         $found = file_exists($argv[1]) ? $argv[1] : false;
     }
     if ($found) {
-        $tempfile = tempnam('rpx', sys_get_temp_dir());
-        copy($found, $tempfile);
-        $cmd = 'java -cp jxl-1.0-SNAPSHOT-jar-with-dependencies.jar coop.wholefoods.jxl.App -i ' . $tempfile . ' -o /tmp/';
-        exec($cmd);
-        $dir = opendir('/tmp/');
         $otherData = array();
-        while (($file=readdir($dir)) !== false) {
-            if ($file == 'CSV_in_Full.tsv') {
-                $fp = fopen('/tmp/CSV_inFull.tsv', 'r');
-                $input = '';
-                $dupes = array();
-                while (!feof($fp)) {
-                    $line = fgets($fp);
-                    $data = explode("\t", $line);
+        $input = '';
+        $fp = fopen($found, 'r');
+        while (!feof($fp)) {
+            $dupes = array();
+            $data = fgetcsv($fp);
 
-                    if (is_numeric($data[0])) {
-                        $input .= 
-                            $data[0] . ']' .
-                            $data[11] . '[' .
-                            $data[5] . '{' .
-                            $data[1] . '}' .
-                            $data[13] . '\\' . $data[7] . '|' .
-                            $data[3] . '_' . "\n";
+            if (is_array($data) && is_numeric($data[0])) {
+                $input .= 
+                    $data[0] . ']' . // likecode
+                    $data[9] . '[' . // organic
+                    $data[12] . '{' . // name
+                    $data[1] . '}' . // price
+                    trim($data[4]) . '\\' . $data[13] . '|' . // ea/lb & origin
+                    trim($data[5]) . '_' . "\n"; // primary vendor
+            }
+
+            $lc = isset($data[0]) && is_numeric($data[0]) && $data[0] ? $data[0] : false;
+            if ($lc) {
+                if (!isset($otherData[$lc])) {
+                    $otherData[$lc] = array();
+                } else { 
+                    if (!in_array($lc, $dupes)) {
+                        $dupes[] = $lc;
                     }
-
-                    $lc = isset($data[0]) && is_numeric($data[0]) && $data[8] ? $data[0] : false;
-                    if ($lc) {
-                        if (!isset($otherData[$lc])) {
-                            $otherData[$lc] = array();
-                        } else { 
-                            if (!in_array($lc, $dupes)) {
-                                $dupes[] = $lc;
-                            }
-                            $lcPlus = substr($lc . '-' . md5($data[9]), 0, 11);
-                            $collide = 1;
-                            while (isset($otherData[$lcPlus])) {
-                                $lcPlus = substr($lc . '-' . md5($data[9] . $collide), 0, 11);
-                                $collide++;
-                            }
-                            $lc = $lcPlus;
-                            $otherData[$lc] = array();
-                        }
-                        $otherData[$lc]['active'] = $data[10];
-                        $otherData[$lc]['alberts'] = $data[15];
-                        $otherData[$lc]['cpw'] = $data[16];
-                        $otherData[$lc]['rdw'] = $data[17];
-                        $otherData[$lc]['unfi'] = $data[18];
-                        $otherData[$lc]['direct'] = $data[19];
-                        $otherData[$lc]['sort'] = $data[14];
-                        $otherData[$lc]['units'] = $data[12];
-                        $otherData[$lc]['cost'] = $data[12] * $data[2];
-                        $otherData[$lc]['primary'] = $data[3];
-                        $otherData[$lc]['secondary'] = $data[4];
+                    $lcPlus = substr($lc . '-' . md5($data[9]), 0, 11);
+                    $collide = 1;
+                    while (isset($otherData[$lcPlus])) {
+                        $lcPlus = substr($lc . '-' . md5($data[9] . $collide), 0, 11);
+                        $collide++;
                     }
-
+                    $lc = $lcPlus;
+                    $otherData[$lc] = array();
                 }
-                $page = new RpImportCsv();
-                $logger = FannieLogger::factory();
-                $dbc = FannieDB::get($config->get('OP_DB'));
-                $page->setConfig($config);
-                $page->setLogger($logger);
-                $page->setConnection($dbc);
-                $form = new COREPOS\common\mvc\ValueContainer();
-                $form->in = $input;
-                $page->setForm($form);
-                $page->cliWrapper();
-                $page->updateActive($otherData);
-                $page->updateVendors($otherData);
+                $otherData[$lc]['active'] = $data[10];
+                $otherData[$lc]['alberts'] = $data[7];
+                $otherData[$lc]['cpw'] = $data[7];
+                $otherData[$lc]['rdw'] = $data[7];
+                $otherData[$lc]['unfi'] = $data[7];
+                $otherData[$lc]['direct'] = $data[7];
+                $otherData[$lc]['rdwSKU'] = $data[8];
+                $otherData[$lc]['sort'] = $data[11];
+                $otherData[$lc]['units'] = $data[3];
+                $otherData[$lc]['cost'] = str_replace('$', '', $data[2]);
+                $otherData[$lc]['primary'] = $data[5];
+                $otherData[$lc]['secondary'] = $data[6];
             }
 
-            if (substr($file, -4) == '.tsv') {
-                unlink('/tmp/' . $file);
-            }
         }
-        unlink($tempfile);
+        $page = new RpImportCsv();
+        $logger = FannieLogger::factory();
+        $dbc = FannieDB::get($config->get('OP_DB'));
+        $page->setConfig($config);
+        $page->setLogger($logger);
+        $page->setConnection($dbc);
+        $form = new COREPOS\common\mvc\ValueContainer();
+        $form->in = $input;
+        $page->setForm($form);
+        $page->cliWrapper();
+        $page->updateActive($otherData);
+        $page->updateVendors($otherData);
     }
+
     exit(0);
 }
 

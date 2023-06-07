@@ -12,8 +12,12 @@ class RpFileManager extends FannieRESTfulPage
 
     protected function get_id_handler()
     {
+        $scriptName = '/RpImport.php';
+        if (FormLib::get('format') == 2) {
+            $scriptName = '/RpImportCsv.php';
+        }
         $cmd = 'php '
-            . escapeshellarg(__DIR__ . '/RpImport.php') . ' '
+            . escapeshellarg(__DIR__ . $scriptName) . ' '
             . escapeshellarg($this->id);
         exec($cmd, $output);
 
@@ -57,6 +61,11 @@ class RpFileManager extends FannieRESTfulPage
     <select id="infile" class="form-control">
         {$rps}
     </select>
+    <label>Format</label>:
+    <select id="format" name="format" class="form-control">
+        <option value="2">CSV</option>
+        <option value="1">XLSX</option>
+    </select>
     <p>
         <button type="button" class="btn btn-default" onclick="doImport(this);">Import</button>
         <em>This should take about 30 seconds</em>
@@ -86,7 +95,7 @@ function doImport(elem) {
     $('#counter').html(0);
     token = setTimeout(() => doCount(), 1000); 
     $.ajax({
-        data: 'id=' + encodeURIComponent($('#infile').val())
+        data: 'id=' + encodeURIComponent($('#infile').val()) + '&format=' + $('#format').val()
     }).fail(function () {
         alert('Something went wrong!');
     }).done(function (resp) {
