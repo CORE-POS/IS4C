@@ -75,6 +75,12 @@ class AddCashierPage extends FannieRESTfulPage
             // not stores were selected
         }
 
+        $callbacks = FannieConfig::config('EMP_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($emp_no);
+        }
+
         $message = sprintf("Cashier Created<br />Name:%s<br />Emp#:%d<br />Password:%d",
             $this->fname.' '.$this->lname,$emp_no,$passwd);
 

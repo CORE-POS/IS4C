@@ -78,6 +78,12 @@ class CashierEditor extends FannieRESTfulPage
 
                 $this->saveStoreMapping($dbc, $emp_no);
 
+                $callbacks = FannieConfig::config('EMP_CALLBACKS');
+                foreach ($callbacks as $cb) {
+                    $obj = new $cb();
+                    $obj->run($emp_no);
+                }
+
                 if ($saved) {
                     $message = "Cashier Updated. <a href=ViewCashiersPage.php>Back to List of Cashiers</a>";
                     $this->addOnloadCommand("showBootstrapAlert('#alert-area', 'success', '$message');\n");
