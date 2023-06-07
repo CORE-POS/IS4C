@@ -70,7 +70,7 @@ those same items revert to normal pricing.
       different SQL flavors. Also provides some
       de-duplication.
     */
-    public function forceStartBatch($id)
+    public function forceStartBatch($id, $upc=false)
     {
         $b_def = $this->connection->tableDefinition($this->name);
         $bt_def = $this->connection->tableDefinition('batchType');
@@ -82,15 +82,19 @@ those same items revert to normal pricing.
             return;
         }
 
+        $optionalS = ($upc !== false) ? ' AND p.upc = ? ' : '';
+
         $forceQ = "";
         $forceLCQ = "";
+        $log = FannieLogger::factory();
         // verify limit columns exist
         $p_def = $this->connection->tableDefinition('products');
         $bl_def = $this->connection->tableDefinition('batchList');
         $costChange = '';
-        if (isset($batchList['cost'])) {
+        if (isset($bl_def['cost'])) {
             $costChange = ", p.cost = CASE WHEN l.cost IS NOT NULL AND l.cost > 0 THEN l.cost ELSE p.cost END";
         }
+        $log->debug("Forcing batch $id");
         $has_limit = (isset($b_def['transLimit']) && isset($p_def['special_limit'])) ? true : false;
         $isHQ = FannieConfig::config('STORE_MODE') == 'HQ' ? true : false;
         if ($batchInfoW['discountType'] > 0) { // item is going on sale
@@ -115,7 +119,8 @@ those same items revert to normal pricing.
                     END ,
                     p.modified = NOW()
                 WHERE l.upc not like 'LC%'
-                    and l.batchID = ?";
+                    and l.batchID = ?
+                    $optionalS";
             if (isset($p_def['batchID'])) {
                 $forceQ = str_replace('NOW()', 'NOW(), p.batchID=b.batchID', $forceQ);
             }
@@ -142,7 +147,8 @@ those same items revert to normal pricing.
                     END,
                     p.modified = NOW()
                 WHERE l.upc LIKE 'LC%'
-                    AND l.batchID = ?";
+                    AND l.batchID = ?
+                    $optionalS";
             if (isset($p_def['batchID'])) {
                 $forceLCQ = str_replace('NOW()', 'NOW(), p.batchID=b.batchID', $forceLCQ);
             }
@@ -170,7 +176,8 @@ those same items revert to normal pricing.
                     WHERE l.upc = p.upc
                     and l.upc not like 'LC%'
                     and b.batchID = l.batchID
-                    and b.batchID = ?";
+                    and b.batchID = ?
+                    $optionalS";
 
                 $forceLCQ = "update products set special_price = l.salePrice,
                     end_date = b.endDate,start_date=b.startDate,
@@ -190,9 +197,11 @@ those same items revert to normal pricing.
                     upcLike as v on v.upc=p.upc left join
                     batchList as l on l.upc='LC'+convert(varchar,v.likecode)
                     left join batches as b on b.batchID = l.batchID
-                    where b.batchID=?";
+                    where b.batchID=?
+                    $optionalS";
             }
         } elseif ($batchInfoW['discountType'] == 0) { // normal price is changing
+            $log->debug("$id is a price change batch");
             $forceQ = "
                 UPDATE products AS p
                     INNER JOIN batchList AS l ON l.upc=p.upc
@@ -201,7 +210,8 @@ those same items revert to normal pricing.
                     p.modified = now()
                     {$costChange}
                 WHERE l.upc not like 'LC%'
-                    AND l.batchID = ?";
+                    AND l.batchID = ?
+                    $optionalS";
 
             $scaleQ = "
                 UPDATE scaleItems AS s
@@ -209,18 +219,21 @@ those same items revert to normal pricing.
                 SET s.price = l.salePrice,
                     s.modified = now()
                 WHERE l.upc not like 'LC%'
-                    AND l.batchID = ?";
+                    AND l.batchID = ?
+                    $optionalS";
 
             $forceLCQ = "
                 UPDATE products AS p
                     INNER JOIN upcLike AS v ON v.upc=p.upc 
-                    INNER JOIN batchList as b on b.upc=concat('LC',convert(v.likecode,char))
-                    " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON b.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
-                SET p.normal_price = b.salePrice,
+                    INNER JOIN batchList as l on l.upc=concat('LC',convert(v.likecode,char))
+                    " . ($isHQ ? ' INNER JOIN StoreBatchMap AS m ON l.batchID=m.batchID and p.store_id=m.storeID ' : '') . "
+                SET p.normal_price = l.salePrice,
                     p.modified=now()
                     {$costChange}
-                WHERE b.upc LIKE 'LC%'
-                    AND b.batchID = ?";
+                WHERE l.upc LIKE 'LC%'
+                    AND l.batchID = ?
+                    $optionalS";
+            $log->debug($forceLCQ);
 
             if ($this->connection->dbmsName() == 'mssql') {
                 $costChange = str_replace('p.cost', 'cost', $costChange);
@@ -234,7 +247,8 @@ those same items revert to normal pricing.
                       WHERE l.upc = p.upc
                       AND l.upc not like 'LC%'
                       AND b.batchID = l.batchID
-                      AND b.batchID = ?";
+                      AND b.batchID = ?
+                      $optionalS";
 
                 $scaleQ = "UPDATE scaleItems
                       SET price = l.salePrice,
@@ -245,7 +259,8 @@ those same items revert to normal pricing.
                       WHERE l.upc = s.plu
                       AND l.upc not like 'LC%'
                       AND b.batchID = l.batchID
-                      AND b.batchID = ?";
+                      AND b.batchID = ?
+                      $optionalS";
 
                 $forceLCQ = "update products set normal_price = b.salePrice,
                     modified=getdate()
@@ -253,19 +268,31 @@ those same items revert to normal pricing.
                     from products as p left join
                     upcLike as v on v.upc=p.upc left join
                     batchList as b on b.upc='LC'+convert(varchar,v.likecode)
-                    where b.batchID=?";
+                    where b.batchID=?
+                    $optionalS";
             }
 
         }
 
         $forceP = $this->connection->prepare($forceQ);
-        $forceR = $this->connection->execute($forceP,array($id));
+        $forceA = array($id);
+        if ($upc !== false)
+            $forceA[] = $upc;
+        $forceR = $this->connection->execute($forceP,$forceA);
         if (!empty($scaleQ)) {
             $scaleP = $this->connection->prepare($scaleQ);
-            $scaleR = $this->connection->execute($scaleP,array($id));
+            $scaleA = array($id);
+            if ($upc !== false) {
+                $scaleA[] = $upc;
+            }
+            $scaleR = $this->connection->execute($scaleP,$scaleA);
         }
         $forceLCP = $this->connection->prepare($forceLCQ);
-        $forceR = $this->connection->execute($forceLCP,array($id));
+        $forceLCA = array($id);
+        if ($upc !== false) {
+            $forceLCA[] = $upc;
+        }
+        $forceR = $this->connection->execute($forceLCP,$forceLCA);
         if ($batchInfoW['discountType'] != 0 && $batchInfoW['exitInventory'] == 1) {
             $storeP = $this->connection->prepare('SELECT storeID FROM StoreBatchMap WHERE batchID=?');
             $stores = $this->connection->getAllRows($storeP, array($id));
@@ -285,13 +312,17 @@ those same items revert to normal pricing.
             $args = array( (1 << (20 - 1)), date('Y-m-d H:i:s'));
             list($inStr, $args) = $this->connection->safeInClause($stores, $args);
             $args[] = $id;
+            if ($upc !== false) {
+                $args[] = $upc;
+            }
             $prodP = $this->connection->prepare("
                 UPDATE products AS p
                     INNER JOIN batchList AS b ON p.upc=b.upc
                 SET numflag = numflag | ?,
                     modified = ?
                 WHERE p.store_id IN ({$inStr})
-                    AND b.batchID=?"); 
+                    AND b.batchID=?
+                    $optionalS"); 
             $this->connection->execute($prodP, $args);
         }
 
