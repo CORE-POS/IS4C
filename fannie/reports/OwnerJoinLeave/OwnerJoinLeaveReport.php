@@ -94,6 +94,10 @@ class OwnerJoinLeaveReport extends FannieReportPage
             WHERE card_no=?
                 AND tdate <= ?
             ORDER BY tdate');
+        $storeP = $dbc->prepare("SELECT store_id
+            FROM " . FannieDB::fqn('dlogBig', 'arch') . "
+            WHERE tdate BETWEEN ? AND ?
+                AND trans_num=?");
 
 
         $franReqP = false;
@@ -121,13 +125,14 @@ class OwnerJoinLeaveReport extends FannieReportPage
         while ($row = $dbc->fetch_row($joinR)) {
             $actual = $dbc->getValue($stockP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
             $initial = $dbc->getValue($initialP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
-            list($emp, $reg, $trans) = explode('-', $initial);
+            list($start,) = explode(' ', $row['start_date'], 2);
+            $initial = $dbc->getValue($storeP, array($start, $start . ' 23:59:59', $initial));
             $store = '?';
-            if ($reg > 0 && $reg < 10) {
+            if ($initial == 1) {
                 $store = 'Hillside';
-            } elseif ($reg > 10 && $reg < 20) {
+            } elseif ($initial == 2) {
                 $store = 'Denfeld';
-            } elseif ($reg == 50) {
+            } elseif ($initial == 50) {
                 $store = 'Website';
             }
             if ($franReqP && (!$row['name'] || strpos($row['name'], 'FRAN'))) {
