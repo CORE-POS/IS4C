@@ -67,6 +67,7 @@ class EditBatchPage extends FannieRESTfulPage
             'post<id><upc><price>',
             'post<id><autotag>',
             'post<id><force>',
+            'post<id><forceoneitem>',
             'post<id><unsale>',
             'post<id><limit>',
             'post<id><upc><uid><cut>',
@@ -77,8 +78,7 @@ class EditBatchPage extends FannieRESTfulPage
             'post<id><trim>',
             'post<id><storeID>',
             'post<noteID><batchNotes>',
-            'post<partialID>',
-            'post<editBatch>',
+            'post<partialID>', 'post<editBatch>',
             'post<editDate>'
         );
 
@@ -476,6 +476,20 @@ class EditBatchPage extends FannieRESTfulPage
         $model = new BatchesModel($dbc);
         $model->forceStartBatch($this->id);
         $json = array('error'=>0, 'msg'=>'Batch #' . $this->id . ' has been applied');
+        echo $this->debugJSON($json);
+
+        return false;
+    }
+
+    protected function post_id_forceoneitem_handler()
+    {
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+        $upc = FormLib::get('upc');
+        $batchID = FormLib::get('id');
+        $model = new BatchesModel($dbc);
+        $model->forceStartBatch($batchID, $upc);
+        $json = array('error'=>0, 'msg'=>'Batch #' . $batchID . ' upc #' . $upc . ' has been applied');
         echo $this->debugJSON($json);
 
         return false;
