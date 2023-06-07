@@ -55,12 +55,12 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
         ),
         'vendor' => array(
             'display_name' => 'Vendor',
-            'default' => 3,
+            'default' => 5,
             'required' => false,
         ),
         'name' => array(
             'display_name' => 'Name',
-            'default' => 4,
+            'default' => 12,
             'required' => false,
         ),
     );
@@ -162,8 +162,18 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 continue;
             }
 
+            $upc = ($ftype=='UPCs') ? BarcodeLib::padUPC($upc) : 'LC'.$upc;
+            if ($has_checks && $ftype=='UPCs')
+                $upc = '0'.substr($upc,0,12);
+
             $cost = 0;
-            if ($indexes['cost'] && isset($line[$indexes['cost']])) {
+            if ($this->config->COOP_ID == 'WFC_Duluth' && substr($upc, 0, 2) == 'LC') {
+                $tmp = trim($line[17]);
+                $tmp = trim($tmp, '$');
+                if (is_numeric($tmp)) {
+                    $cost = $tmp;
+                }
+            } elseif ($indexes['cost'] && isset($line[$indexes['cost']])) {
                 $tmp = trim($line[$indexes['cost']]);
                 $tmp = trim($tmp, '$');
                 if (is_numeric($tmp)) {
@@ -171,16 +181,13 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 }
             }
 
-            $upc = ($ftype=='UPCs') ? BarcodeLib::padUPC($upc) : 'LC'.$upc;
-            if ($has_checks && $ftype=='UPCs')
-                $upc = '0'.substr($upc,0,12);
 
             if ($ftype == 'UPCs'){
                 $chkR = $dbc->execute($upcChk, array($upc));
                 if ($dbc->num_rows($chkR) ==  0) continue;
             }   
 
-            if (isset($line[5]) && trim($line[5]) == 's') {
+            if (isset($line[16]) && strtolower(trim($line[16])) == 'change') {
                 $mult = 0;
             }
 
@@ -193,12 +200,12 @@ class XlsBatchPage extends \COREPOS\Fannie\API\FannieUploadPage {
                 $vendor = isset($line[$indexes['vendor']]) ? trim($line[$indexes['vendor']]) : '';
                 $name = isset($line[$indexes['name']]) ? trim($line[$indexes['name']]) : '';
                 if ($vendor != '' && $name != '') {
-                    $this->queueUpdate($queue, $upc, $vendor, $name);
+                    $this->queueUpdate($queue, $upc, strtoupper($vendor), $name);
                 }
             }
-            if ($this->config->COOP_ID == 'WFC_Duluth' && substr($upc, 0, 2) == 'LC' && isset($line[6]) && isset($line[7])) {
-                $signOrigin = strtoupper(trim($line[7])) == 'Y' ? 1 : 0;
-                $origin = strtoupper(trim($line[6]));
+            if ($this->config->COOP_ID == 'WFC_Duluth' && substr($upc, 0, 2) == 'LC' && isset($line[13]) && isset($line[14])) {
+                $signOrigin = strtoupper(trim($line[14])) == 'Y' ? 1 : 0;
+                $origin = strtoupper(trim($line[13]));
                 $like = substr($upc, 2);
                 $dbc->execute($lc1P, array($signOrigin, $like));
                 if ($origin) {
