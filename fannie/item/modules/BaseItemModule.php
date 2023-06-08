@@ -1014,10 +1014,12 @@ HTML;
             }
             $desc = $this->formNoEx('descript', array());
             if (isset($desc[$i])) {
+                $desc[$i] = substr($desc[$i],0,30);
                 $model->description(strtoupper($desc[$i]));
             }
             $brand = $this->formNoEx('manufacturer', array());
             if (isset($brand[$i])) {
+                $brand[$i] = substr($brand[$i],0,30);
                 $model->brand(strtoupper($brand[$i]));
             }
             /**
