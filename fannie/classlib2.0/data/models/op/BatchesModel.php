@@ -335,7 +335,11 @@ those same items revert to normal pricing.
         
         $bu = new BatchUpdateModel($this->connection);
         $bu->batchID($id);
-        $bu->logUpdate($bu::UPDATE_FORCED);
+        if ($upc !== false) {
+            $bu->logUpdate($bu::UPDATE_APPLIED);
+        } else {
+            $bu->logUpdate($bu::UPDATE_FORCED);
+        }
     }
 
     /**

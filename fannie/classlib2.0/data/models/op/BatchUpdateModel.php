@@ -53,6 +53,7 @@ class BatchUpdateModel extends BasicModel
     const UPDATE_CREATE = 'BATCH CREATED';
     const UPDATE_DELETE = 'BATCH DELETED';
     const UPDATE_FORCED = 'BATCH STARTED';
+    const UPDATE_APPLIED = 'BATCH PRICE APPLIED';
     const UPDATE_STOPPED = 'BATCH STOPPED';
     const UPDATE_EDIT = 'BATCH EDITED';
     const UPDATE_PRICE_EDIT = 'ITEM EDITED';
