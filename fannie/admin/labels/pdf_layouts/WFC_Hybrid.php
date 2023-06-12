@@ -265,16 +265,37 @@ foreach($data as $row) {
         if (isset($dots[$upc]) && $dots[$upc] == 'REFRIGERATED' && $store == 2 && isset($locNames[$upc])) {
             foreach ($locNames[$upc] as $name) {
                 if (strpos(strtoupper($name), 'BEV') !== false) {
-                    $pdf->SetFillColor(0, 100, 255);
-                    $pdf->Circle($full_x+48.5, $full_y+4.5, 1.25, 'F');
+                    $pdf->SetFillColor(0, 100, 255); // blue
+                    $pdf->Circle($full_x+48.0, $full_y+4.5, 1.25, 'F');
+                    $pdf->SetFillColor(255,255,255);
+                    $pdf->SetTextColor(255,255,255);
+                    $pdf->SetFontSize(8);
+                    $pdf->Text($full_x+47.6, $full_y+5.3, 'r');
+                    $pdf->SetFillColor(0, 0, 0);
+                    $pdf->SetTextColor(0,0,0);
                 }
             }
+        }
+        if (isset($dots[$upc]) && $dots[$upc] == 'PRODUCE') {
+            $pdf->SetFillColor(0, 255, 100); // green 
+            $pdf->Circle($full_x+48.0, $full_y+9.5, 1.25, 'F');
+            $pdf->SetFillColor(255,255,255);
+            $pdf->SetTextColor(255,255,255);
+            $pdf->Text($full_x+47.3, $full_y+10, 'p');
+            $pdf->SetFillColor(0, 0, 0);
+            $pdf->SetTextColor(0,0,0);
         }
 
         // add a red dot to items with > 1 physical location
         if (count(isset($locations[$upc]) ? $locations[$upc] : array()) > 1 && $store == 2) {
-            $pdf->SetFillColor(255, 100, 0);
+            $pdf->SetFillColor(255, 100, 0); // orange
             $pdf->Circle($full_x+48.5, $full_y+7, 1.25, 'F');
+            $pdf->SetFillColor(255,255,255);
+            $pdf->SetTextColor(255,255,255);
+            $pdf->SetFontSize(6);
+            $pdf->Text($full_x+47.5, $full_y+7.5, 'm');
+            $pdf->SetFillColor(0, 0, 0);
+            $pdf->SetTextColor(0,0,0);
         }
         $pdf->SetFillColor(0, 0, 0);
 
@@ -405,14 +426,36 @@ foreach($data as $row) {
         // add a blue dot to items in REFRIGERATED department
         $pdf->SetXY($baseX+48.5, $baseY+3);
         if ($dots[$upc] == 'REFRIGERATED' && $store == 2) {
-            $pdf->SetFillColor(0, 100, 255);
+            $pdf->SetFillColor(0, 100, 255); // blue
             $pdf->Circle($baseX+27.5, $baseY-10, 1.25, 'F');
+            $pdf->SetFillColor(255,255,255);
+            $pdf->SetTextColor(255,255,255);
+            $pdf->SetFontSize(8);
+            $pdf->Text($full_x+28.7, $baseY-9.3, 'r');
+            $pdf->SetFillColor(0, 0, 0);
+            $pdf->SetTextColor(0,0,0);
+        }
+
+        // add green dot to produce
+        if (isset($dots[$upc]) && $dots[$upc] == 'PRODUCE') {
+            $pdf->SetFillColor(0, 255, 100); // green
+            $pdf->Circle($baseX+27.5, $baseY-10, 1.25, 'F');
+
+            $pdf->SetTextColor(255,255,255);
+            $pdf->Text($full_x+27.9, $baseY-9.3, 'p');
+            $pdf->SetFillColor(0, 0, 0);
+            $pdf->SetTextColor(0,0,0);
         }
 
         // add a red dot to items with > 1 physical location
         if (count(isset($locations[$upc]) ? $locations[$upc] : array()) > 1 && $store == 2) {
-            $pdf->SetFillColor(255, 100, 0);
+            $pdf->SetFillColor(255, 100, 0); // orange
             $pdf->Circle($baseX+27.5, $baseY-7.5, 1.25, 'F');
+            $pdf->SetTextColor(255,255,255);
+            $pdf->SetFontSize(6);
+            $pdf->Text($full_x+29, $baseY-7, 'm');
+            $pdf->SetFillColor(0, 0, 0);
+            $pdf->SetTextColor(0,0,0);
         }
         $pdf->SetFillColor(0, 0, 0);
    }
