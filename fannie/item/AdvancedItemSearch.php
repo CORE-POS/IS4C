@@ -698,6 +698,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
 
             $query = 'SELECT l.upc FROM batchList AS l INNER JOIN batches AS b
                         ON b.batchID=l.batchID WHERE ' . $where . ' 
+                        AND b.discountType > 0
                         GROUP BY l.upc';
             $prep = $this->connection->prepare($query);
             $result = $this->connection->execute($prep, $args);
