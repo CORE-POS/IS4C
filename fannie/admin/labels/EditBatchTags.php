@@ -60,7 +60,7 @@ class EditBatchTags extends FanniePage
                 $tag->normal_price($this->getOrDefault('price', $i, 0));
                 $tag->brand($this->getOrDefault('brand', $i, ''));
                 $tag->sku($this->getOrDefault('sku', $i, ''));
-                $tag->size($this->getOrDefalt('size', $i, ''));
+                $tag->size($this->getOrDefault('size', $i, ''));
                 $tag->units($this->getOrDefault('units', $i, ''));
                 $tag->vendor($this->getOrDefault('vendor', $i, ''));
                 $tag->pricePerUnit($this->getOrDefault('ppo', $i, ''));
