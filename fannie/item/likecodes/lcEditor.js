@@ -9,8 +9,22 @@ var lcEditor = (function ($) {
             method: 'post',
             data: dstr,
         }).done(function (resp) {
+            ajaxRespPopOnElm();
         });
     };
+
+    function ajaxRespPopOnElm(error=0) {
+        let response = (error == 0) ? 'Saved' : 'Error';
+        let alertType = (error == 0) ? 'success' : 'danger';
+
+        let zztmpdiv = "<div class='alert alert-"+alertType+"' id='zztmp-div' style='position: absolute; width: 100%; z-index: 9999'>"+response+"</div>";
+        $('#rightdiv').prepend(zztmpdiv);
+
+        setTimeout(function(){
+            $('#zztmp-div').empty();
+            $('#zztmp-div').remove();
+        }, 500);
+    }
 
     mod.toggleStrict = function(lc) {
         ajax('id='+lc+'&strict=flip');
