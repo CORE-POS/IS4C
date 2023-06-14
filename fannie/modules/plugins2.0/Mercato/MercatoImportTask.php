@@ -29,6 +29,8 @@ class MercatoImportTask extends FannieTask
             ));
             $filesystem = new Filesystem($adapter);
             $contents = $filesystem->listContents('outbound/orders');
+            $chkP = $dbc->prepare("SELECT hash FROM MercatoHashes WHERE hash=?");
+            $insP = $dbc->prepare("INSERT INTO MercatoHashes (hash) VALUES (?)");
             foreach ($contents as $c) {
                 if (isset($c['extension']) && $c['extension'] == 'csv') {
                     $filename = __DIR__ . '/noauto/archive/' . $c['basename'];
@@ -37,6 +39,19 @@ class MercatoImportTask extends FannieTask
                     }
                     $csv = $filesystem->read($c['path']);
                     file_put_contents($filename, $csv);
+                    $output = array();
+                    exec('sha1sum ' . escapeshellarg($filename), $output);
+                    if (!isset($output[0])) {
+                        $this->cronMsg("Could not obtain hash for " . basename($filename) . ", skipping for now", FannieLogger::ALERT);
+                        continue;
+                    }
+                    list($hash,) = explode(' ', $output[0], 2);
+                    $chkR = $dbc->execute($chkP, array($hash));
+                    if ($dbc->numRows($chkR) > 0) {
+                        $this->cronMsg("Appears to be a duplicate: " . basename($filename) . ", skipping for now", FannieLogger::ALERT);
+                        continue;
+                    }
+                    $dbc->execute($insP, array($hash));
                     echo "Processing {$c['basename']}\n";
                     $intake->shift();
                     $intake->process($filename);
