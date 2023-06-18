@@ -120,7 +120,12 @@ class FannieEntity extends FannieWebService
          * Make sure all provided columns are valid
          */
         $model = $args->entity . 'Model';
-        $obj = new $model(FannieDB::get(FannieConfig::config('OP_DB')));
+        $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
+        $obj = new $model($dbc);
+        if ($obj->preferredDB() == 'trans') {
+            $dbc = FannieDB::get(FannieConfig::config('TRANS_DB'));
+            $obj = new $model($dbc);
+        }
         $cols = $obj->getColumns();
         foreach ($args->columns as $key => $val) {
             if (!isset($cols[$key])) {
