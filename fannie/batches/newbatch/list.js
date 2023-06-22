@@ -177,17 +177,27 @@ function saveBatchLine(id)
     $('tr#batchRow'+id+' td:first').html(link);
 }
 
-function deleteBatch(id, name)
+function deleteBatch(id, name, endDate)
 {
+    
 	var audited = $('#isAudited').val();
 	if (audited === "1") {
-		window.alert("You're not allowed to delete batches");
-		return;
+            window.alert("You're not allowed to delete batches");
+            return;
 	}
+
+        var date1 = new Date(endDate+' 23:59:59');
+        var date2 = new Date();
+
+        if (date1 >= date2) {
+            window.alert("Cannot delete a batch with valid end date. To delete batch, change end date and reload this page.");
+            return false;
+        }
 
     var dataStr = 'delete=1&id='+id;
 
 	if (window.confirm('Delete this batch ('+name+')?')) {
+        console.log('anything');
         $.ajax({
             url: 'BatchListPage.php',
             data: dataStr,

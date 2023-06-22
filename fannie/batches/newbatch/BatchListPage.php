@@ -498,6 +498,7 @@ HTML;
         */
         $batch['startDate'] = strtotime($batch['startDate']) > 0 ? date('Y-m-d', strtotime($batch['startDate'])) : '';
         $batch['endDate'] = strtotime($batch['endDate']) > 0 ? date('Y-m-d', strtotime($batch['endDate'])) : '';
+        $endDate = $batch['endDate'];
         $bID = $batch['batchID'];
         $edit = FannieUI::editIcon();
         $save = FannieUI::saveIcon();
@@ -520,7 +521,7 @@ HTML;
         <a href="" onclick="saveBatchLine({$bID}); return false;"
             class="batchSaveLink btn btn-default btn-xs collapse">{$save}</a>
     <td><a href="" class="btn btn-danger btn-xs"
-        onclick="deleteBatch({$bID}, {$safeName}); return false;">{$trash}</a>
+        onclick="deleteBatch({$bID}, {$safeName}, '$endDate'); return false;">{$trash}</a>
     </td>
     <td><a href="batchReport.php?batchID={$bID}">Report</a></td>
 </tr>
@@ -532,7 +533,7 @@ HTML;
         $url = $this->config->get('URL');
         $inputForm = $this->newBatchInput();
         $batchList = $this->batchListDisplay();
-        $this->addScript('list.js?20170817');
+        $this->addScript('list.js?reload=always');
         $this->addScript('../../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addCssFile('index.css');
         $this->addOnloadCommand("\$('.tablesorter').tablesorter();");
