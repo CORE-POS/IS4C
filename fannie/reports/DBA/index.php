@@ -26,9 +26,9 @@ if (isset($_REQUEST['query'])){
         $errors .= "Illegal term <b>drop</b><br />";
     if (stristr($query,"truncate"))
         $errors .= "Illegal term <b>truncate</b><br />";
-    if (stristr($query,"delete"))
+    if (stristr($query,"delete") && stristr($query, 'deleted') == false)
         $errors .= "Illegal term <b>delete</b><br />";
-    if (stristr($query,"update"))
+    if (stristr($query,"update") && stristr($query,"prodUpdate") == false && stristr($query,"batchUpdate") == false)
         $errors .= "Illegal term <b>update</b><br />";
     if (stristr($query,"alter"))
         $errors .= "Illegal term <b>alter</b><br />";
