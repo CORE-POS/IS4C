@@ -7,6 +7,7 @@ import sys
 import os
 import os.path
 import getopt
+import traceback
 
 def usage():
     print("Usage: usf.py --user=USER --password=PASSWORD")
@@ -46,6 +47,7 @@ driver = webdriver.Chrome(chrome_options=chrome_opts)
 driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
 params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': '/tmp/usf'}}
 command_result = driver.execute("send_command", params)
+driver.set_window_size(1920, 1080)
 
 exit_code = 0
 try:
@@ -66,20 +68,20 @@ try:
 # The hover stuff is required to generate the
 # menu clickable elements
     if VERBOSE: print("Nav")
-    driver.find_element_by_id("cil3").click();
-    time.sleep(3)
-
+    driver.get("https://www3.usfoods.com/order/")
+    time.sleep(4)
     driver.get_screenshot_as_file("loggedin.png")
+
     mainMenu = driver.find_element_by_id("dgfSPT:pt_i7:2:pt_pgl21")
     hover = ActionChains(driver).move_to_element(mainMenu)
     hover.perform()
-    time.sleep(1)
+    time.sleep(2)
     subMenu = driver.find_element_by_id("dgfSPT:pt_i7:2:pt_s46:pt_i5:1:pt_cl6111")
     hover = ActionChains(driver).move_to_element(subMenu)
     hover.perform()
     time.sleep(1)
     subMenu.click()
-    time.sleep(3)
+    time.sleep(4)
 
 # Click one more link to download invoices
     if VERBOSE: print("More Nav")
@@ -123,6 +125,7 @@ try:
             break
         count += 1
         if count > 99:
+            raise Exception("Gave up on download")
             break
 
 except Exception as e:
