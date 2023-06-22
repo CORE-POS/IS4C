@@ -56,7 +56,7 @@ JAVASCRIPT;
         $preW = $dbc->fetchRow($preR);
          
         $args = array();
-        if ($preW['likeCode'] != '') {
+        if (is_array($preW) && $preW['likeCode'] != '') {
             $args[] = 'LC'.$preW['likeCode'];
         } else {
             $args[] = $upc;
