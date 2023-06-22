@@ -772,11 +772,12 @@ JAVASCRIPT;
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE v.cost > 0
-            AND v.srp > p.normal_price # comment me out to SHOW reduction suggestions
+            # AND v.srp > p.normal_price # comment me out to SHOW reduction suggestions
+            # AND v.srp < p.normal_price # un-comment me to show ONLY reductions
         ";
         // AND pr.priceRuleTypeID NOT IN (5, 6, 7, 8, 12)
 
-        //# TEMPORARILY DISABLING PRICE REDUCTIONS
+        //# TEMPORARILY DISABLING PRICE REDUCTIONS REDUX COMMENT comment
         //AND v.srp > p.normal_price
 
         if ($vidsStart != false && $vidsEnd != false) {
@@ -832,6 +833,10 @@ JAVASCRIPT;
             </thead><tbody><tr></tr>";
         $rounder = new PriceRounder();
         while ($row = $dbc->fetch_row($result)) {
+            /* UN-COMMENT THE FOLLOWING TO SHOW ONLY REDUX WITH OFF BY TARGET MARGIN BY > 5%
+                if ($row['current_margin'] - $row['desired_margin'] < 0.05) // only show redux. when margin off by > 10%
+                    continue;
+            */
             $vendorModel->reset();
             $vendorModel->upc($row['upc']);
             $vendorModel->vendorID($vendorID);
@@ -903,12 +908,12 @@ JAVASCRIPT;
             $date = $date->format('Y-m-d');
             $changeClassA = ($date == substr($row['date'], -10)) ? 'highlight' : '';
             /* 
-            $changeClassA = ('2022-07-06' == substr($row['date'], -10)) ? 'highlight' : '';
+            $changeClassA = ('2023-05-08' == substr($row['date'], -10)) ? 'highlight' : '';
             */
 
             $changeClassB = ($date == $row['reviewed']) ? 'highlight' : '';
             /*
-            $changeClassB = ('2022-07-06' == $row['reviewed']) ? 'highlight' : '';
+            $changeClassB = ('2023-05-08' == $row['reviewed']) ? 'highlight' : '';
             */
 
             $srpClassA = ($row['srp'] > $row['normal_price']) ? 'red' : 'yellow';
