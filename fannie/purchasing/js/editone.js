@@ -101,7 +101,7 @@ function oneResultForm(obj, resultNum){
 
 function saveItem(resultNum){
 	var dstr = 'id='+$('#order-id').val();
-	dstr += '&sku='+$('#srSKU'+resultNum).val();
+	dstr += '&sku='+encodeURIComponent($('#srSKU'+resultNum).val());
 	dstr += '&qty='+$('#srQty'+resultNum).val();
     saveQty = $('#srQty'+resultNum).val();
 	$.ajax({
