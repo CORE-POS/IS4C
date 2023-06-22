@@ -22,7 +22,7 @@ define('IDENTIFIER_OLE', pack("CCCCCCCC",0xd0,0xcf,0x11,0xe0,0xa1,0xb1,0x1a,0xe1
 class OLERead {
     var $data = '';
     
-    function OLERead()
+    function __construct()
     {
     }
 
@@ -144,12 +144,12 @@ class OLERead {
 
         $block = $this->rootStartBlock;
         $pos = 0;
-        $this->entry = $this->__readData($block);
+        $this->entry = $this->_readData($block);
         
-        $this->__readPropertySets();
+        $this->_readPropertySets();
     }
     
-     function __readData($bl) {
+     function _readData($bl) {
         $block = $bl;
         $pos = 0;
         $data = '';
@@ -164,7 +164,7 @@ class OLERead {
 		return $data;
      }
         
-    function __readPropertySets()
+    function _readPropertySets()
     {
         $offset = 0;
         while ($offset < strlen($this->entry)) {
@@ -240,7 +240,7 @@ class OLERead {
     function getWorkBook()
     {
     	if ($this->props[$this->wrkbook]['size'] < SMALL_BLOCK_THRESHOLD) {
-			$rootdata = $this->__readData($this->props[$this->rootentry]['startBlock']);
+			$rootdata = $this->_readData($this->props[$this->rootentry]['startBlock']);
 	        $block = $this->props[$this->wrkbook]['startBlock'];
             return $this->getSmallBlock($rootdata, $block, $this->smallBlockChain, SMALL_BLOCK_SIZE);
     	} else {
