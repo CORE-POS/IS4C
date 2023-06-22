@@ -445,7 +445,7 @@ echo $output;
                     AND tdate BETWEEN ? AND ?
                     AND " . DTrans::isStoreID($store));
             $tranR = $sql->execute($tranP, $args);
-            $collected = array(1 => 0, 2 => 0);
+            $collected = array(1 => 0, 2 => 0, 3 => 0);
             $taxP = $sql->prepare("SELECT total FROM {$dlog} WHERE tdate BETWEEN ? AND ?
                     AND emp_no=? AND register_no=? AND trans_no=? AND upc='TAX'");
             while ($w = $sql->fetchRow($tranR)) {
@@ -457,6 +457,7 @@ echo $output;
             $city = 0.015;
             $deli = 0.0225;
             $county = 0.005;
+            $canna = 0.10;
             $startDT = new DateTime($start);
             $noCounty = new DateTime('2017-10-01');
             if ($startDT >= $noCount) {
@@ -524,6 +525,11 @@ echo $output;
                 <td align="right">Deli Taxable Sales</td>
                 <td>' . sprintf('%.2f', $deliTax / $deli) . '</td>
                 </tr>';
+            echo '<tr><th>Tax Collected on Cannabis rate items</th>
+                    <th>' . sprintf('%.2f', $collected[3]) . '</th>
+                    <th>Cannabis Taxable Sales</th>
+                    <th>' . sprintf('%.2f', $collected[3]/($canna)) . '</th>
+                    </tr>';
 
             $stateTax = ($collected[1] * ($state/($state+$city+$county))) 
                         + ($collected[2] * ($state/($state+$city+$deli+$county)));
@@ -575,7 +581,7 @@ echo $output;
                 GROUP BY taxID';
     $prep = $sql->prepare($newTaxQ);
     $res = $sql->execute($prep, $args);
-    $collected = array(1 => 0.00, 2=>0.00);
+    $collected = array(1 => 0.00, 2=>0.00, 3=>0.00);
     while ($row = $sql->fetch_row($res)) {
         $collected[$row['taxID']] = $row['ttl'];
     }
@@ -583,6 +589,7 @@ echo $output;
     $city = 0.015;
     $deli = 0.0225;
     $county = 0.005;
+    $canna = 0.10;
     $startDT = new DateTime($start);
     $noCounty = new DateTime('2017-10-01');
     if ($startDT >= $noCounty) {
@@ -649,6 +656,11 @@ echo $output;
         <td align="right">Deli Taxable Sales</td>
         <td>' . sprintf('%.2f', $deliTax / $deli) . '</td>
         </tr>';
+    echo '<tr><th>Tax Collected on Cannabis rate items</th>
+            <th>' . sprintf('%.2f', $collected[3]) . '</th>
+            <th>Cannabis Taxable Sales</th>
+            <th>' . sprintf('%.2f', $collected[3]/($canna)) . '</th>
+            </tr>';
 
     $stateTax = ($collected[1] * ($state/($state+$city+$county))) 
                 + ($collected[2] * ($state/($state+$city+$deli+$county)));

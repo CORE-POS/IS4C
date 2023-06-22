@@ -115,6 +115,7 @@ if (true || !$output){
         and tdate BETWEEN ? AND ?
         AND register_no <> 20
         AND " . DTrans::isStoreID($store, 'l') . "
+        and (l.department < 600 or l.department = 902 OR l.register_no=35)
         GROUP BY card_no
         ORDER BY card_no");
 //        and (l.department < 600 or l.department IN (902, 990))
@@ -148,6 +149,7 @@ if (true || !$output){
         AND register_no <> 20
         and tdate BETWEEN ? AND ?
         AND " . DTrans::isStoreID($store, 'l') . "
+        and (l.department < 600 or l.department = 902 OR l.register_no=35)
         GROUP BY d.salesCode,d.margin,l.store_id
         ORDER BY d.salesCode");
     $totalR = $dbc->execute($totalQ,$args);
@@ -211,6 +213,7 @@ if (true || !$output){
         AND register_no <> 20
         and tdate BETWEEN ? AND ?
         AND " . DTrans::isStoreID($store, 'l') . "
+        and (l.department < 600 or l.department = 902 OR l.register_no=35)
         GROUP BY d.salesCode,d.margin, l.store_id
         ORDER BY d.salesCode");
     $taxP = $dbc->prepare("SELECT SUM(total) FROM {$dlog} WHERE tdate BETWEEN ? AND ? AND card_no=? AND upc='TAX' AND " . DTrans::isStoreID($store));
