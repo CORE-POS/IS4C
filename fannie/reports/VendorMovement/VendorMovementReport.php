@@ -163,7 +163,7 @@ class VendorMovementReport extends FannieReportPage
         $sumSales = 0.0;
         foreach ($data as $row) {
             $sumQty += $row[$q];
-            $sumSales += $row[$t];
+            $sumSales += (is_numeric($row[$t]) ? $row[$t] : 0);
         }
 
         return array($sumQty, $sumSales);
