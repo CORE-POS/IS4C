@@ -59,11 +59,6 @@ function WFC_Dark_Extended_24UP($data,$offset=0,$showPrice=0)
         }
         if ($i == 0) {
             $pdf = generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
-            //can't get UPC_A to work, get FPDF error: Could not include font metric file
-            //if (strlen($upc) <= 11)
-            //    $pdf->UPC_A($x,$y,$upc,7);  //generate barcode and place on label
-            //else
-            //    $pdf->EAN13($x,$y,$upc,7);  //generate barcode and place on label
         } else if ($i % 4 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
