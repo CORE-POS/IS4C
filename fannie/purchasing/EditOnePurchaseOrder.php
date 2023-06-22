@@ -363,7 +363,7 @@ HTML;
 
         $this->addOnloadCommand("\$('#searchField').focus();\n");
         $this->addOnloadCommand("enableLinea('#searchField', function(){ itemSearch(); });\n");
-        $this->addScript('js/editone.js?id=1');
+        $this->addScript('js/editone.js?date=20230619');
 
         return $ret;
     }
