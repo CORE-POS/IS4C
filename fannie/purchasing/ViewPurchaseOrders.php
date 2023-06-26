@@ -951,7 +951,7 @@ HTML;
         $this->addScript('js/view.js?date=20230306');
         $this->addScript('../src/javascript/tablesorter/jquery.tablesorter.min.js');
         $this->addScript($this->config->get('URL') . 'src/javascript/jquery.floatThead.min.js');
-        $this->addOnloadCommand("\$('.tablesorter').tablesorter();\n");
+        $this->addOnloadCommand("\$('.tablesorter').tablesorter({ sortList: [[0, 0], [3, 0]] });\n");
         $this->addOnloadCommand("\$('.table-float').floatThead();\n");
 
         return $ret;
