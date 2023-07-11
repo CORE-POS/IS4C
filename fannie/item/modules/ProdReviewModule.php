@@ -27,30 +27,45 @@ class ProdReviewModule extends \COREPOS\Fannie\API\item\ItemModule
     {
         $upc = BarcodeLib::padUPC($upc);
         $dbc = $this->db();
+        $defaultP = $dbc->prepare("SELECT default_vendor_id FROM products WHERE upc=?");
+        $defaultID = $dbc->getValue($defaultP, array($upc));
         $existsP = $dbc->prepare('SELECT upc FROM products WHERE upc=?');
         $exists = $dbc->getValue($existsP, array($upc));
-        $reviewP = $dbc->prepare('SELECT * FROM prodReview WHERE upc=?');
-        $review = $dbc->getRow($reviewP, array($upc));
+        $reviewP = $dbc->prepare('SELECT
+            r.*, 
+            CASE WHEN LENGTH(v.vendorName) > 0 THEN v.vendorName ELSE "default" END AS vendorName
+            FROM prodReview AS r LEFT JOIN vendors AS v ON v.vendorID=r.vendorID WHERE upc=?');
+        $comments = '';
+        $reviews = array();
+        $reviewR = $dbc->execute($reviewP, array($upc));
+        while ($row = $dbc->fetchRow($reviewR)) {
+            $reviews[] = $row;
+        }
         $newItem = ($exists === false && $review === false) ? 'checked' : '';
-        if ($review === false) {
-            $review = array('upc'=>$upc, 'user'=>'n/a', 'reviewed'=>'never', 'comment'=>'+');
+        if (empty($reviews)) {
+            $reviews[] = array('upc'=>$upc, 'user'=>'n/a', 'reviewed'=>'never', 'comment'=>'+', 'vendorID'=>$defaultID, 'vendorName'=>$defaultID);
+        }
+        $reviewRet = '';
+        foreach ($reviews as $row) {
+            $vendorName = $row['vendorName'];
+            $vendorID = $row['vendorID'];
+            $reviewed = $row['reviewed'];
+            $user = $row['user'];
+            $comment = $row['comment'];
+
+            $reviewRet .= "<div class=\"panel panel-info\" style=\"width: 500px;\">";
+            $reviewRet .= "<div class=\"panel-heading\">$vendorName</div>";
+            $reviewRet .= "<div class=\"panel-body\">";
+            $reviewRet .= "<div><strong>Last Reviewed</strong> $reviewed by $user</div>";
+            $reviewRet .= "<div><strong>Comments</strong></div><div><textarea name=\"prodReviewComment[$vendorID]\" class=\"form-control\">$comment</textarea></div>";
+            $reviewRet .= "<div>
+                <label>Mark as reviewed today 
+                    <input type=\"checkbox\" name=\"prodReviewCheck[$vendorID]\" value=\"1\" {$newItem} />
+                </label></div>";
+            $reviewRet .= "</div>";
+            $reviewRet .= "</div>";
         }
         $css = ($expand_mode == 1 || $newItem == 'checked') ? '' : ' collapse';
-
-        $prodReviewCommentClick = <<<JAVASCRIPT
-$(this).css('border', '1px solid lightgrey')
-    .css('border-radius', '3px')
-    .attr('contentEditable', true)
-    .css('padding', '5px')
-    .css('cursor', 'auto');
-JAVASCRIPT;
-
-        $prodReviewCommentChange = <<<JAVASCRIPT
-var upc = $upc;
-var text = $(this).val();
-$(this).css('border', '0px solid transparent')
-    .css('padding', '0px');
-JAVASCRIPT;
 
         return <<<HTML
 <div id="ProdReviewFieldset" class="panel panel-default">
@@ -59,14 +74,7 @@ JAVASCRIPT;
             Product Review</a>
     </div>
     <div id="ProdReviewContents" class="panel-body {$css}">
-        <strong>Last Reviewed</strong> {$review['reviewed']} by {$review['user']}<br/> 
-        <strong>Comment</strong> <input type="text" id="prodReviewComment" name="prodReviewComment"
-            style="cursor: pointer; display: inline-block; width: 90%; border: none;" 
-            onclick="$prodReviewCommentClick" onblur="$prodReviewCommentChange" 
-            value="{$review['comment']}" /><br />
-        <label>Mark as reviewed today 
-            <input type="checkbox" name="prodReview" value="1" {$newItem} />
-        </label>
+        $reviewRet
     </div>
 </div>
 HTML;
@@ -74,25 +82,35 @@ HTML;
 
     public function saveFormData($upc)
     {
-        try {
-            $mark = $this->form->prodReview;
-            $text = $this->form->prodReviewComment;
-            if ($mark) {
-                $dbc = $this->db();
-                $model = new ProdReviewModel($dbc);
-                $model->upc(BarcodeLib::padUPC($upc));
-                $model->user(FannieAuth::getUID());
-                $model->reviewed(date('Y-m-d H:i:s'));
-                $model->save();
+        $dbc = $this->db();
+        $data = FormLib::get('prodReviewCheck');
+        $comments = FormLib::get('prodReviewComment');
+        $user = FannieAuth::getUID();
+
+        $existsP = $dbc->prepare("SELECT reviewed FROM prodReview WHERE upc = ? AND vendorID = ?");
+
+        foreach ($data as $vendorID => $checked) {
+            if ($checked == 1) {
+                $comment = (isset($comments[$vendorID])) ? $comments[$vendorID] : null;
+
+                $exists = $dbc->getValue($existsP, array($upc, $vendorID));
+                if ($exists) {
+                    $args = array($comment, $user, $upc, $vendorID);
+                    $prep = $dbc->prepare("UPDATE prodReview
+                        SET comment = ?,
+                            reviewed = DATE(NOW()),
+                            user = ?
+                        WHERE upc = ?
+                            AND vendorID = ? ");
+                    $dbc->execute($prep, $args);
+                } else {
+                    $args = array($comment, $upc, $vendorID, $user);
+                    $prep = $dbc->prepare("INSERT INTO prodReview (comment, reviewed, upc, vendorID, user)
+                        VALUES (?, NOW(), ?, ?, ?);");
+                    $dbc->execute($prep, $args);
+                }
+
             }
-            if ($text != '+') {
-                $dbc = $this->db();
-                $model = new ProdReviewModel($dbc);
-                $model->upc(BarcodeLib::padUPC($upc));
-                $model->comment($text);
-                $model->save();
-            }
-        } catch (Exception $ex) {
         }
 
         return true;

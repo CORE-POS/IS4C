@@ -593,12 +593,14 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upcs = FormLib::get('checked');
         $user = FannieAuth::getUID($this->current_user);
+        $vendorID = FormLib::get('vendorID');
         $pr = new ProdReviewModel($dbc);
         $data = array();
         $error = 0;
         foreach ($upcs as $upc) {
             $pr->reset();
             $pr->upc($upc);
+            $pr->vendorID($vendorID);
             $pr->user($user);
             $pr->reviewed(date('Y-m-d'));
             if (!$pr->save()) {
@@ -617,6 +619,7 @@ HTML;
     public function get_vendor_view()
     {
         $vid = $this->vendor;
+        $vendorID = FormLib::get('vendor');
 
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -715,7 +718,6 @@ HTML;
             $shipping = '';
         }
 
-
         return <<<HTML
 {$this->backBtn()}
 <form class="form" method="get" name="vform">
@@ -733,7 +735,8 @@ HTML;
 $vdepts
 <form class="form-inline" method="get">
     {$table}
-    <input type="hidden" name="vendor" value="1">
+    <input type="hidden" name="vendor" value="1" />
+    <input type="hidden" name="vendorID" value="$vendorID" />
     <input type="submit" class="btn btn-warning" value="Mark checked items as Reviewed" />
 </form><br />
 HTML;
@@ -824,17 +827,40 @@ HTML;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upcs = FormLib::get('upcs');
         $user = FannieAuth::getUID($this->current_user);
-        $pr = new ProdReviewModel($dbc);
+        $vendor = FormLib::get('vendorToUpdate');
+        $pm = new ProductsModel($dbc);
+        //$pr = new ProdReviewModel($dbc);
         $data = array();
         $error = 0;
+
+        $defP = $dbc->prepare("INSERT INTO prodReview (upc, user, reviewed, vendorID) values (?, ?, ?, ?) 
+            ON DUPLICATE KEY UPDATE reviewed = ?");
+
         foreach ($upcs as $upc) {
-            $pr->reset();
-            $pr->upc($upc);
-            $pr->user($user);
-            $pr->reviewed(date('Y-m-d'));
-            if (!$pr->save()) {
-                $error = 1;
+            //$pr->reset();
+            //$pr->upc($upc);
+            //$pr->user($user);
+            //$pr->reviewed(date('Y-m-d'));
+            $now = date('Y-m-d');
+
+            if ($vendor == 'default') {
+                $pm->reset();
+                $pm->upc($upc);
+                $pm->load();
+                $vid = $pm->default_vendor_id();
+                //$pr->vendorID($vid);
+                $defA = array($upc, $user, $now, $vid, $now);
+                $defR = $dbc->execute($defP, $defA);
+            } else {
+                //$pr->vendorID($vendor);
+                $defA = array($upc, $user, $now, $vendor, $now);
+                $defR = $dbc->execute($defP, $defA);
             }
+
+            //if (!$pr->save()) {
+            //    $error = 1;
+            //}
+            $error = 0;
         }
         if (!$error) {
             header('Location: '.$_SERVER['PHP_SELF'].'?saved=true');
@@ -872,9 +898,26 @@ HTML;
         }
         $table = $this->draw_table($data,$dbc);
 
+        $model = new VendorsModel($dbc);
+        $vselect = '';
+        $exclude = array(-1);
+        foreach ($model->find('vendorName') as $obj) {
+            if (!in_array($obj->vendorID(),$exclude)) {
+                $vid = $obj->vendorID();
+                $vname = $obj->vendorName();
+                $vselect .= "<option value=\"$vid\">$vname - $vid</option>";
+            }
+        }
+
         return <<<HTML
 {$this->backBtn()}<br/><br/>
 <form class="form-inline" method="get">
+    <div class="form-group">
+        <select class="form-control" name="vendorToUpdate">
+            <option value="default">Default Vendor ID</option> 
+            $vselect
+        </select>
+    </div>
     {$table}
     {$input}
     <input type="hidden" name="list" value="1">

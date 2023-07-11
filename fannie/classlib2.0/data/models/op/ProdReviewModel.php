@@ -32,8 +32,8 @@ class ProdReviewModel extends BasicModel
     protected $preferred_db = 'op';
 
     protected $columns = array(
-    'id' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
-    'upc' => array('type'=>'VARCHAR(13)', 'unique'=>true),
+    'upc' => array('type'=>'VARCHAR(13)', 'unique'=>true, 'primary_key'=>true),
+    'vendorID' => array('type'=>'INT','primary_key'=>true), 
     'user' => array('type'=>'INT'),
     'reviewed' => array('type'=>'DATETIME'),
     'comment' => array('type'=>'text'),
