@@ -733,11 +733,12 @@ HTML;
 </form>
 <div>$shipping</div>
 $vdepts
-<form class="form-inline" method="get">
+<form class="form-inline" id="review-form" name="review-form" method="get">
     {$table}
     <input type="hidden" name="vendor" value="1" />
     <input type="hidden" name="vendorID" value="$vendorID" />
-    <input type="submit" class="btn btn-warning" value="Mark checked items as Reviewed" />
+    <a href="#" class="btn btn-warning" 
+        onclick=" if ($('#review-form input:checkbox:checked').length > 0) { document.forms['review-form'].submit(); } else { return false; }">Set Checked Items As Reviewed</a>
 </form><br />
 HTML;
     }
