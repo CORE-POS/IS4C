@@ -181,7 +181,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $skuExistsP = $dbc->prepare("SELECT sku FROM vendorItems WHERE sku=? AND vendorID=?");
         $skuClearP = $dbc->prepare("DELETE FROM vendorItems WHERE sku=? AND vendorID=?");
         $costP = $dbc->prepare('UPDATE products SET cost=?, modified=' . $dbc->now() . ' WHERE upc=? AND default_vendor_id=?');
-        $reviewP = $dbc->prepare('UPDATE prodReview SET user=?, reviewed=' . $dbc->now() . ' WHERE upc=?');
+        $reviewP = $dbc->prepare('UPDATE prodReview SET user=?, reviewed=' . $dbc->now() . ' WHERE upc=? AND vendorID=?');
         $prodInfoP = $dbc->prepare('SELECT brand, description FROM vendorItems WHERE sku=? AND vendorID=?');
         $updatedUPCs = array();
 
@@ -315,7 +315,7 @@ class UpdateUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 $updatedUPCs[] = $upc;
             }
             if ($this->session->vUploadChangeCosts) {
-                $dbc->execute($reviewP, array($user, $upc));
+                $dbc->execute($reviewP, array($user, $upc, $VENDOR_ID));
             }
         }
 
