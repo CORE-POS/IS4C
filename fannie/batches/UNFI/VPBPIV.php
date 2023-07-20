@@ -806,7 +806,7 @@ JAVASCRIPT;
                 LEFT JOIN VendorSpecificMargins AS g ON p.department=g.deptID AND v.vendorID=g.vendorID
                 LEFT JOIN upcLike AS l ON v.upc=l.upc 
                 LEFT JOIN productCostChanges AS c ON p.upc=c.upc 
-                LEFT JOIN prodReview AS r ON p.upc=r.upc
+                LEFT JOIN prodReview AS r ON p.upc=r.upc AND r.vendorID=v.vendorID
                 LEFT JOIN PriceRules AS pr ON p.price_rule_id=pr.priceRuleID
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
