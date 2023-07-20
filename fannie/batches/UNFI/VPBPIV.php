@@ -214,10 +214,43 @@ HTML;
     {
         $table = $this->getTable();
         $td = $table;
+        $superID = FormLib::get('super', -1);
+        $queueID = FormLib::get('queueID');
+        $vendorID = $this->id;
+        $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
+        $pcRadio = FormLib::get('rad_change_type', 3);
+        $pcRadHTML = '';
+        for ($i=1; $i<4; $i++) {
+            $sel = ($i == $pcRadio) ? ' checked ' : '';
+            $pcRadHTML .= "<td align=\"center\"><input type=\"radio\" name=\"rad_change_type\" id=\"rad_red\" value=\"$i\" $sel/></td>";
+        }
 
         return <<<HTML
 <div class="container" style=" user-select: none;">
     <!--<label><u>Current Product</u></label>-->
+    <div class="row">
+        <div class="col-lg-12">
+            <div align="left">
+                <form name="pc-type-form" action="VPBPIV.php" method="get">
+                <table>
+                    <tr><td colspan="3"><b>Suggestions To Show</b></td></tr>
+                    <tr>
+                        <td align="center" style="background: #F7BABA;">&#x2191;</td>
+                        <td align="center" style="background: #FFFF96;">&#x2193;</td>
+                        <td align="center" style="background: lightgrey;">all</td>
+                    </tr>
+                    <tr>
+                        $pcRadHTML
+                    </tr>
+                </table>
+                <input type="hidden" name="id" value="$vendorID"/>
+                <input type="hidden" name="super" value="$superID"/>
+                <input type="hidden" name="filter" value="$filter"/>
+                <input type="hidden" name="queueID" value="$queueID"/>
+                </form>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-lg-2">
             <div class="item-info-container">
@@ -582,6 +615,11 @@ $('tr.item').each(function(){
         $(this).css('background', '#76EE00');
     }
 });
+
+$("input[name='rad_change_type']").change(function(){
+    document.forms['pc-type-form'].submit();
+});
+
 JAVASCRIPT;
     }
 
@@ -607,6 +645,7 @@ JAVASCRIPT;
         $queueID = FormLib::get('queueID');
         $vendorID = $this->id;
         $filter = FormLib::get_form_value('filter') == 'Yes' ? True : False;
+        $priceChangeType = FormLib::get('rad_change_type', 3);
 
         $batched = $this->getBatchedItems();
 
@@ -772,13 +811,13 @@ JAVASCRIPT;
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE v.cost > 0
-            # AND v.srp > p.normal_price # comment me out to SHOW reduction suggestions
-            # AND v.srp < p.normal_price # un-comment me to show ONLY reductions
         ";
-        // AND pr.priceRuleTypeID NOT IN (5, 6, 7, 8, 12)
 
-        //# TEMPORARILY DISABLING PRICE REDUCTIONS REDUX COMMENT comment
-        //AND v.srp > p.normal_price
+        if ($priceChangeType == 1) {
+            $query .= " AND v.srp > p.normal_price ";
+        } elseif ($priceChangeType == 2) {
+            $query .= " AND v.srp < p.normal_price ";
+        }
 
         if ($vidsStart != false && $vidsEnd != false) {
             $ret .= "<h3 align=\"center\">Multiple Vendor View</h3>";
