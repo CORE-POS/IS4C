@@ -195,9 +195,7 @@ class AjaxEnd extends AjaxCallback
 
     private function uploadAndReset() 
     {
-        if ($this->session->get("testremote")==0) {
-            Database::testremote(); 
-        }
+        Database::testremote(); 
 
         if ($this->session->get("TaxExempt") != 0) {
             $this->session->set("TaxExempt",0);
