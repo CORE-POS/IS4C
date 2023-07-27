@@ -69,7 +69,7 @@ try:
 # menu clickable elements
     if VERBOSE: print("Nav")
     driver.get("https://www3.usfoods.com/order/")
-    time.sleep(4)
+    time.sleep(10)
     driver.get_screenshot_as_file("loggedin.png")
 
     mainMenu = driver.find_element_by_id("dgfSPT:pt_i7:2:pt_pgl21")
