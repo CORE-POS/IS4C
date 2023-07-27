@@ -431,8 +431,8 @@ class OverShortMAS extends FannieRESTfulPage {
             AND " . DTrans::isStoreID($store, 'd') . "
             AND tdate BETWEEN ? AND ?
             AND m.superID = 0
-            AND d.department = 902
-            AND d.numflag=32766
+            AND d.department IN (902,903)
+            AND (d.numflag=32766 OR d.store_id=50)
             AND register_no <> 20
             " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
             " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "

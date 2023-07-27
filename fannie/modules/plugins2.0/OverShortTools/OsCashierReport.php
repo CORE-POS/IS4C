@@ -38,7 +38,7 @@ class OsCashierReport extends FannieReportPage
         $countP = $this->connection->prepare("SELECT amt
             FROM " . FannieDB::fqn('dailyDeposit', 'trans') . "
             WHERE storeID=?
-                AND rowName LIKE ?
+                AND rowName = ?
                 AND countType='Regular'");
         $data = array();
         while ($row = $this->connection->fetchRow($cashR)) {
