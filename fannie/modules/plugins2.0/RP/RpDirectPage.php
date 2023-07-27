@@ -567,7 +567,7 @@ class RpDirectPage extends FannieRESTfulPage
                 }
             }
             $par = $this->connection->getValue($parP, array($store, $row['upc']));
-            if (($par / $row['caseSize']) < 0.1) {
+            if ($row['caseSize'] && ($par / $row['caseSize']) < 0.1) {
                 $par = 0.1 * $row['caseSize'];
             }
             // reset case size *after* setting min par at 0.1 standard cases

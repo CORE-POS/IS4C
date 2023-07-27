@@ -47,7 +47,7 @@ class RpDualPage extends FannieRESTfulPage
 
         $model->delete();
 
-        return 'RpOrderPage.php';
+        return 'RpDualPage.php';
     }
 
     protected function get_date1_date2_handler()
@@ -382,7 +382,7 @@ class RpDualPage extends FannieRESTfulPage
             $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
         }
         $sSelect = FormLib::storePicker();
-        $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpOrderPage.php?store=\' + this.value;"', $sSelect['html']);
+        $sSelect['html'] = str_replace('<select', '<select onchange="location=\'RpDualPage.php?store=\' + this.value;"', $sSelect['html']);
         $jsState = isset($_SESSION['rpDualState']) ? json_encode($_SESSION['rpDualState']) : "false";
         if ($jsState === "false") {
             $sModel = new RpSessionsModel($this->connection);
@@ -914,7 +914,7 @@ class RpDualPage extends FannieRESTfulPage
 </p>
 <hr />
 <p>
-    <a href="RpOrderPage.php?clear=1" class="btn btn-danger">Clear My Session</a>
+    <a href="RpDualPage.php?clear=1" class="btn btn-danger">Clear My Session</a>
 </p>
 <div id="eruda">
 </div>
