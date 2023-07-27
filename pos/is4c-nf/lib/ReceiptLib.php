@@ -44,7 +44,7 @@ class ReceiptLib
 // --------------------------------------------------------------
 static public function build_time($timestamp) {
 
-    return strftime("%m/%d/%y %I:%M %p", $timestamp);
+    return date('m/d/y h:i A', $timestamp);
 }
 // --------------------------------------------------------------
 static public function centerString($text) {

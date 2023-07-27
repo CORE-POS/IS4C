@@ -219,7 +219,7 @@ JAVASCRIPT;
 
         // this needs to be configurable; just fixing
         // a giant PHP warning for the moment
-        $time = strftime("%m/%d/%y %I:%M %p", time());
+        $time = date('m/d/y h:i A', time());
 
         $this->session->set("repeatable",0);
         ob_start();

@@ -39,7 +39,7 @@ class Franking
 
     public function frank($amount) 
     {
-        $date = strftime("%m/%d/%y %I:%M %p", time());
+        $date = date('m/d/y h:i A', time());
         $ref = trim($this->session->get("memberID"))." ".trim($this->session->get("CashierNo"))." ".trim($this->session->get("laneno"))." ".trim($this->session->get("transno"));
         $tender = _("AMT: ").MiscLib::truncate2($amount)._("  CHANGE: ").MiscLib::truncate2($this->session->get("change"));
         $output = $this->centerCheck($ref)."\n"
@@ -56,9 +56,9 @@ class Franking
     public function frankgiftcert($amount) 
     {
         $ref = trim($this->session->get("CashierNo"))."-".trim($this->session->get("laneno"))."-".trim($this->session->get("transno"));
-        $timeNow = strftime("%m/%d/%y", time());                // apbw 3/10/05 "%D" didn't work - Franking patch
+        $timeNow = date('m/d/y', time());
         $nextYearStamp = mktime(0,0,0,date("m"), date("d"), date("Y")+1);
-        $nextYear = strftime("%m/%d/%y", $nextYearStamp);        // apbw 3/10/05 "%D" didn't work - Franking patch
+        $nextYear = date('m/d/y', $nextYearStamp);
         // lines 200-207 edited 03/24/05 apbw Wedge Printer Swap Patch
         $output = "";
         $output .= str_repeat("\n", 6);
@@ -73,7 +73,7 @@ class Franking
 
     public function frankstock($amount) 
     {
-        $timeNow = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
+        $timeNow = date('m/d/y', time());
         $ref = trim($this->session->get("CashierNo"))."-".trim($this->session->get("laneno"))."-".trim($this->session->get("transno"));
         $output  = "";
         $output .= str_repeat("\n", 40);    // 03/24/05 apbw Wedge Printer Swap Patch
@@ -91,7 +91,7 @@ class Franking
     public function frankclassreg() 
     {
         $ref = trim($this->session->get("CashierNo"))."-".trim($this->session->get("laneno"))."-".trim($this->session->get("transno"));
-        $timeNow = strftime("%m/%d/%y", time());        // apbw 3/10/05 "%D" didn't work - Franking patch
+        $timeNow = date('m/d/y', time());
         $output  = "";        
         $output .= str_repeat("\n", 11);        // apbw 3/24/05 Wedge Printer Swap Patch
         $output .= str_repeat(" ", 5);        // apbw 3/24/05 Wedge Printer Swap Patch

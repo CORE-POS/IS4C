@@ -146,9 +146,9 @@ static private function addItem($strupc, $strdescription, $strtransType, $strtra
 
     $dbc = Database::tDataConnect();
 
-    $datetimestamp = strftime("%Y-%m-%d %H:%M:%S", time());
+    $datetimestamp = date('Y-m-d H:i:s', time());
     if (CoreLocal::get("DBMS") == "mssql") {
-        $datetimestamp = strftime("%m/%d/%y %H:%M:%S %p", time());
+        $datetimestamp = date('m/d/y H:i:s A', time());
     }
 
     CoreLocal::set("LastID",CoreLocal::get("LastID") + 1);
@@ -832,9 +832,9 @@ static public function finalizeTransaction($incomplete=false)
 
 static public function debugLog($val)
 {
-    $tdate = strftime("%Y-%m-%d %H:%M:%S", time());
+    $tdate = date('Y-m-d H:i:s', time());
     if (CoreLocal::get("DBMS") == "mssql") {
-        $tdate = strftime("%m/%d/%y %H:%M:%S %p", time());
+        $tdate = date('m/d/y H:i:s A', time());
     }
     $transNum = ReceiptLib::receiptNumber();
     $lastID = CoreLocal::get('LastID');
