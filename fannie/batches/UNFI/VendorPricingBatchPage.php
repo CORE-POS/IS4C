@@ -503,9 +503,6 @@ class VendorPricingBatchPage extends FannieRESTfulPage
             <button type=submit class="btn btn-default">Continue</button>
             </p>
 
-            <label for="list">(Optional) Enter a List of UPCs to Review</label>
-            This method is under construction (Corey)
-            <textarea class="form-control" name="list"></textarea>
             </form>
         </div>
         <?php

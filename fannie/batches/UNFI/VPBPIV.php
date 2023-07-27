@@ -811,6 +811,8 @@ JAVASCRIPT;
                 LEFT JOIN PriceRuleTypes AS prt ON pr.priceRuleTypeID=prt.priceRuleTypeID
                 LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
             WHERE v.cost > 0
+            ## AND c.date > CONCAT(YEAR(NOW()), '-04-01') ## DELETE THIS AFTER USING - SHOWING ONLY ITEMS WITH COST CHANGES THIS YEAR
+            ## AND p.normal_price - v.srp > 0.1 ## DELETE THIS AFTER USING
         ";
 
         if ($priceChangeType == 1) {
