@@ -33,6 +33,7 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
         $this->position = 0;
     }
 
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->value;
@@ -62,6 +63,7 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
     /**
         Countable method(s)
     */
+    #[\ReturnTypeWillChange]
     public function count()
     {
         return count($this->value);
@@ -70,11 +72,13 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
     /**
         ArrayAccess method(s)
     */
+    #[\ReturnTypeWillChange]
     public function offsetExists($offset)
     {
         return isset($this->value[$offset]);
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         if (!$this->offsetExists($offset)) {
@@ -84,6 +88,7 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
         return $this->value[$offset];
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
         if (!$this->offsetExists($offset)) {
@@ -95,6 +100,7 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
         return $this;
     }
 
+    #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {
         throw new LogicException("Cannot unset ParseResult values");
@@ -103,28 +109,33 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
     /**
         Iterator method(s)
     */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         $key = $this->key();
         return $key === null ? null : $this->value[$key];
     }
 
+    #[\ReturnTypeWillChange]
     public function key()
     {
         $keys = array_keys($this->value);
         return $this->valid() ? $keys[$this->position] : null;
     }
 
+    #[\ReturnTypeWillChange]
     public function next()
     {
         $this->position++;
     }
 
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         $this->position = 0;
     }
 
+    #[\ReturnTypeWillChange]
     public function valid()
     {
         $keys = array_keys($this->value);
@@ -140,6 +151,11 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
         return serialize($packed);
     }
 
+    public function __serialize()
+    {
+        return $this->serialize();
+    }
+
     public function unserialize($data)
     {
         $packed = unserialize($data);
@@ -149,6 +165,11 @@ class ParseResult implements ArrayAccess, Countable, Iterator, Serializable, Jso
 
         $this->value = $packed[0];
         $this->position = $packed[1];
+    }
+
+    public function __unserialize($data)
+    {
+        return $this->unserialize($data);
     }
 }
 
