@@ -41,7 +41,7 @@ class ProdReviewModule extends \COREPOS\Fannie\API\item\ItemModule
         while ($row = $dbc->fetchRow($reviewR)) {
             $reviews[] = $row;
         }
-        $newItem = ($exists === false && $review === false) ? 'checked' : '';
+        $newItem = ($exists === false && count($reviews) == 0) ? 'checked' : '';
         if (empty($reviews)) {
             $reviews[] = array('upc'=>$upc, 'user'=>'n/a', 'reviewed'=>'never', 'comment'=>'+', 'vendorID'=>$defaultID, 'vendorName'=>$defaultID);
         }
@@ -83,7 +83,7 @@ HTML;
     public function saveFormData($upc)
     {
         $dbc = $this->db();
-        $data = FormLib::get('prodReviewCheck');
+        $data = FormLib::get('prodReviewCheck', array());
         $comments = FormLib::get('prodReviewComment');
         $user = FannieAuth::getUID();
 
