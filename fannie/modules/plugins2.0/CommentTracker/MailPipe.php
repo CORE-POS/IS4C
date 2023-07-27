@@ -81,6 +81,9 @@ class MailPipe extends AttachmentEmailPipe
         if (substr(strtolower(trim($email)), -3) == '.ru') {
             return;
         }
+        if (strstr(strtolower($comment), 'bali')) {
+            return;
+        }
 
         $nameParts = explode(' ', $name);
         $nameParts = array_map('trim', $nameParts);
