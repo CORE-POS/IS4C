@@ -127,6 +127,7 @@ function generateMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     if ($par == 0)
         $par = 'n/a';
 
+
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
     $pdf->SetFont('Gill','', 9);
@@ -234,6 +235,10 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
     $desc = $Mdesc;
     $brand = $Mbrand;
 
+    // get local info
+    $localP = $dbc->prepare("SELECT 'true' FROM products WHERE local > 0 AND upc = ?");
+    $item['local'] = $dbc->getValue($localP, $upc);
+
     // prep tag canvas
     $pdf->SetXY($x,$y);
     $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
@@ -295,6 +300,16 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
     $pdf->SetXY($x,$y+27);
     if ($showPrice == 1 ) 
         $pdf->Cell($width, 5, "$".$price, 0, 1, 'C', true); 
+
+    // Print Local Logo (if local)
+    if ($item['local']) {
+        $localX = 0;
+        $localY = 24.5;
+        $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY, 15, 9);
+        $pdf->SetDrawColor(243, 115, 34);
+        //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
+        $pdf->SetDrawColor(0, 0, 0);
+    }
 
     /*
         Create Guide-Lines

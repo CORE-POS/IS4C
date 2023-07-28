@@ -210,6 +210,10 @@ function generateSimpleTag2($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     $Mdesc = $manualDescs[$MdescKey];
     $desc = $Mdesc;
 
+    // get local info
+    $localP = $dbc->prepare("SELECT 'true' FROM products WHERE local > 0 AND upc = ?");
+    $item['local'] = $dbc->getValue($localP, $upc);
+
     // prep tag canvas
     $pdf->SetXY($x,$y);
     $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
@@ -248,6 +252,16 @@ function generateSimpleTag2($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
     } else {
         $pdf->SetXY($x,$y+15);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
+    }
+
+    // Print Local Logo (if local)
+    if ($item['local']) {
+        $localX = 0;
+        $localY = 24.5;
+        $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY, 15, 9);
+        $pdf->SetDrawColor(243, 115, 34);
+        //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
+        $pdf->SetDrawColor(0, 0, 0);
     }
 
     /*
