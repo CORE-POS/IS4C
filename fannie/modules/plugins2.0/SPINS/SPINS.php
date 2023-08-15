@@ -49,6 +49,8 @@ class SPINS extends \COREPOS\Fannie\API\FanniePlugin
             'description'=>'Attempt the FTP upload this many times.'),
     'SpinsRetryDelay' => array('default'=>'30', 'label'=>'Retry Delay',
             'description'=>'Delay in seconds between upload attempts.'),
+    'SpinsSftp' => array('default'=>'0', 'label'=>'Use SFTP',
+            'description'=>'Use SFTP instead of regular FTP'),
     );
 
     public $plugin_description = 'Plugin for submitting SPINS data';

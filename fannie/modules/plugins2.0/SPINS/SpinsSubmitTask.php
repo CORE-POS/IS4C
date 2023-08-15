@@ -21,6 +21,9 @@
 
 *********************************************************************************/
 
+use League\Flysystem\Sftp\SftpAdapter;
+use League\Flysystem\Filesystem;
+
 include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
@@ -121,7 +124,10 @@ class SpinsSubmitTask extends FannieTask
             $maxAttempts = isset($FANNIE_PLUGIN_SETTINGS['SpinsUploadAttempts']) ? $FANNIE_PLUGIN_SETTINGS['SpinsUploadAttempts'] : 1;
             $delay = isset($FANNIE_PLUGIN_SETTINGS['SpinsRetryDelay']) ? $FANNIE_PLUGIN_SETTINGS['SpinsRetryDelay'] : 30;
             while (true) {
-                if ($this->upload($server, $outfile, $filename)) {
+                if ($FANNIE_PLUGIN_SETTINGS['SpinsSftp'] && $this->sftp_upload($server, $outfile, $filename)) {
+                    $this->cronMsg('SFTP upload successful', FannieLogger::INFO);
+                    break;
+                } elseif (!$FANNIE_PLUGIN_SETTTINGS['SpinsSftp'] && $this->upload($server, $outfile, $filename)) {
                     $this->cronMsg('FTP upload successful', FannieLogger::INFO);
                     break;
                 }
@@ -160,5 +166,21 @@ class SpinsSubmitTask extends FannieTask
         $uploaded = ftp_put($conn_id, $filename, $localPath, FTP_ASCII);
         ftp_close($conn_id);
         return $uploaded;
+    }
+
+    public function sftp_upload($server, $localPath, $filename)
+    {
+        $settings = FannieConfig::config('PLUGIN_SETTINGS');
+        $adapter = new SftpAdapter(array(
+            'host' => $server,
+            'username' => $settings['SpinsFtpUser'],
+            'password' => $settings['SpinsFtpPw'],
+            'port' => 22,
+        ));
+
+        $filesystem = new Filesystem($adapter);
+        $success = $filesystem->put($settings['SpinsFtpUser'] . '/' . $filename, file_get_contents($localPath));
+
+        return $success;
     }
 }
