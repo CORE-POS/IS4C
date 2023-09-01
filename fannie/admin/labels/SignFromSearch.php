@@ -316,9 +316,16 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
                 $mods[] = 'Legacy:' . $l;
             }
         }
+
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
+            $ret .= SignsLib::visualSignSelectHTML();
+            $visualSelectJS = SignsLib::visualSignSelectJS();
+            $this->addOnloadCommand($visualSelectJS);
+        }
+
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<label>Layout</label>:
-            <select name="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
+            <select name="signmod" id="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
         foreach ($mods as $m) {
             $name = $m;
             if (strstr($m, '\\')) {
@@ -444,10 +451,13 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
 
     public function css_content()
     {
+        $visualSelectCSS = SignsLib::visualSignSelectCSS();
+
         return <<<HTML
 .altView {
     display: none;
 }
+$visualSelectCSS
 HTML;
     }
 
@@ -531,6 +541,7 @@ $('#altViewCheckbox').click(function(e){
         });
     }
 });
+
 JAVASCRIPT;
     }
 

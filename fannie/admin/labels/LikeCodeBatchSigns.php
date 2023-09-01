@@ -12,6 +12,62 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
 
     public $discoverable = false;
 
+    public function preprocess()
+    {
+        $this->__routes[] = "post<edit>";
+
+        return parent::preprocess();
+    }
+
+    public function post_edit_handler()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+        $upcs = array();
+        $editField = FormLib::get('edit', false);
+        $value = FormLib::get('value', false);
+        $lc = FormLib::get('lc', false);
+
+        $args = array($lc);
+        $prep = $dbc->prepare("SELECT p.upc 
+            FROM upcLike l
+            INNER JOIN products p ON p.upc=l.upc
+            WHERE l.likeCode = ? 
+            GROUP BY p.upc");
+        $res = $dbc->execute($prep, $args);
+        while ($row = $dbc->fetchRow($res)) {
+            $upcs[] = $row['upc'];
+        }
+        
+        if ($editField == 'local') {
+            $localP = $dbc->prepare("UPDATE products SET local = ? WHERE upc = ?");
+            foreach ($upcs as $upc) {
+                $localA = array($value, $upc);
+                $localR = $dbc->execute($localP, $localA);
+                echo $upc; 
+            }
+        }
+
+        if ($editField == 'item') {
+            $localP = $dbc->prepare("UPDATE productUser SET description = ? WHERE upc = ?");
+            foreach ($upcs as $upc) {
+                $localA = array($value, $upc);
+                $localR = $dbc->execute($localP, $localA);
+                echo $upc; 
+            }
+        } 
+
+        if ($editField == 'origin') {
+            $localP = $dbc->prepare("UPDATE likeCodes SET origin = ? WHERE likeCode = ?");
+            $localA = array($value, $lc);
+            $localR = $dbc->execute($localP, $localA);
+        } 
+
+        echo "lc: $lc, value: $value, edit: $editField";
+
+        return false;
+    }
+
     protected function post_id_handler()
     {
         $mod  = FormLib::get('sign');
@@ -48,6 +104,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
                 'endDate' => '',
                 'originName' => $origins[$i],
                 'originShortName' => $origins[$i],
+                'likeCode' => $lcs[$i],
             );
         }
 
@@ -92,6 +149,20 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
         return $ret;
     }
 
+    private function getLocalOpts($cur)
+    {
+        $opts = array(0=>'NO', 1=>'SC', 2=>'MN/WI');
+        $ret = "<select class=\"form-control\" name=\"local[]\" style=\"max-width: 100px;\"
+            onchange=\"edit('local', this)\">";
+        foreach ($opts as $value => $label) {
+            $sel = ($cur == $value) ? ' selected ' : '';
+            $ret .= "<option value=\"$value\" $sel>$label</option>";
+        }
+        $ret .= "</select>";
+
+        return $ret;
+    }
+
     protected function get_id_view()
     {
         $query = 'SELECT * FROM batchList WHERE batchID=?';
@@ -101,7 +172,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, array($this->id));
         $prodP = $this->connection->prepare('SELECT 
-            p.description, p.brand, x.description as uDesc, x.brand as uBrand, p.scale
+            p.description, p.brand, x.description as uDesc, x.brand as uBrand, p.scale, p.local
             FROM upcLike AS u
                 INNER JOIN products AS p ON p.upc=u.upc
                 LEFT JOIN productUser AS x on u.upc=x.upc
@@ -121,14 +192,18 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
             if ($lc['organic']) {
                 $prod['uBrand'] = 'Organic';
             }
+            if ($map['inUse'] == 0) {
+                continue;
+            }
             $table .= sprintf('<tr><td><a href="../../item/likecodes/LikeCodeEditor.php?start=%d">%d</a>
-                <input type="hidden" name="lc[]" value="%s" />
+                <input type="hidden" name="lc[]" class="lc" value="%s" />
                 <input type="hidden" name="price[]" value="%s" />
                 <input type="hidden" name="scale[]" value="%s" />
+                <input type="hidden" name="brand[]" class="form-control input-sm" value="%s" disabled/>
                 </td>
-                <td><input type="text" name="brand[]" class="form-control input-sm" value="%s" /></td>
-                <td><input type="text" name="desc[]" class="form-control input-sm" value="%s" /></td>
-                <td><input type="text" name="origin[]" class="form-control input-sm" value="%s" /></td>
+                <td><input type="text" name="desc[]" class="form-control input-sm" value="%s" onchange="edit(\'item\', this); " /></td>
+                <td><input type="text" name="origin[]" class="form-control input-sm origin" value="%s" %s onchange="edit(\'origin\', this); " /></td>
+                <td>%s</td>
                 <td class="orgStatus"><a href="" onclick="toggleOrganic(event); return false;">%s</a></td>
                 <td class="defaultSign"><a href="" onclick="toggleSign(event); return false;">%s</a></td>
                 <td><input type="checkbox" class="exclude" name="exclude[]" value="%s" /></td>
@@ -141,7 +216,11 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
                 ($prod['uBrand'] ? $prod['uBrand'] : $prod['brand']),
                 ($prod['uDesc'] ? ucwords(strtolower($prod['uDesc'])) : ucwords(strtolower($prod['description']))),
                 ($lc['signOrigin'] ? $lc['origin'] : ''),
+                ($lc['signOrigin'] == 0) ? ' readonly ' : '',
                 ($lc['organic'] ? 'Organic' : 'Non-Organic'),
+                //$lc['signOrigin'],
+                $this->getLocalOpts($prod['local']),
+                //$v = ($map['defaultSign'] == 'Produce4UpP') ? 'Legacy:WFC New Produce Mockup' : $map['defaultSign'],
                 $map['defaultSign'],
                 $likeCode
             );
@@ -149,7 +228,54 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
         $signs = $this->getSignOpts();
         $all = FormLib::get('all') ? 'checked' : '';
 
+$js = <<<JAVASCRIPT
+var lastChecked = null;
+var i = 0;
+var indexCheckboxes = function(){
+    $(':checkbox').each(function(){
+        $(this).attr('data-index', i);
+        i++;
+    });
+};
+indexCheckboxes();
+$('table').click(function(){
+    indexCheckboxes();
+});
+$(':checkbox').on("click", function(e){
+    if(lastChecked && e.shiftKey) {
+        var i = parseInt(lastChecked.attr('data-index'));
+        var j = parseInt($(this).attr('data-index'));
+        var checked = $(this).is(":checked");
+
+        var low = i;
+        var high = j;
+        if (i>j){
+            var low = j;
+            var high = i;
+        }
+
+        for(var c = low; c < high; c++) {
+            if (c != low && c!= high) {
+                var check = checked ? true : false;
+                $('input[data-index="'+c+'"').prop("checked", check);
+            }
+        }
+    }
+    lastChecked = $(this);
+});
+JAVASCRIPT;
+
+        $visualSelectHTML = '';
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
+            $visualSelectHTML = SignsLib::visualSignSelectHTML();
+            $visualSelectJS = SignsLib::visualSignSelectJS('sign');
+            $this->addOnloadCommand($visualSelectJS);
+        }
+
+        $this->addOnloadCommand($js);
+
         return <<<HTML
+$visualSelectHTML
 <form method="post">
 <p class="form-inline">
 <input type="hidden" name="id" id="id" value="{$this->id}" />
@@ -163,10 +289,11 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
 <table class="table">
 <tr>
     <th>LC</th>
-    <th>Brand</th>
+    <!--<th>Brand</th>-->
     <th>Item</th>
     <th>Origin</th>
     <th>Organic</th>
+    <th>Local</th>
     <th>Default Sign</th>
     <th>Exclude</th>
 </tr>
@@ -174,6 +301,38 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
 </table>
 </form>
 <script type="text/javascript">
+
+var edit = function(field, elm)
+{
+    let target = $(elm);
+    let lc = target.closest('tr').find('td:eq(0)').text();
+    let value = null;
+    let elmType = target.prop('nodeName');
+    if (elmType == 'SELECT') {
+        value = target.find(':selected').val();
+    } else {
+        value = target.val();
+    }
+    console.log(value + ',' + field);
+    value = encodeURIComponent(value);
+    $.ajax ({
+        type: 'post',
+        data: 'edit='+field+'&value='+value+'&lc='+lc,
+        success: function(resp)
+        {
+            console.log('success:');
+            console.log(resp);
+            ajaxRespPopOnElm(target);
+        },
+        error: function(ts)
+        {
+            console.log('error');
+            console.log(ts.responseText);
+            ajaxRespPopOnElm(target, 1);
+        }
+    });
+}
+
 var organicMode = 99;
 var signMode = 99;
 function toggleAll() {
@@ -239,7 +398,39 @@ function toggleSign(ev) {
     }
     redoChecks();
 }
+
+var ajaxRespPopOnElm = function(el=false, error=0) {
+    if  (el == false) {
+        let target = $(this);
+    }
+    let target = $(el);
+
+    let response = (error == 0) ? 'Saved' : 'Error';
+    let responseColor = (error == 0) ? 'green' : 'tomato';
+    let inputBorder = target.css('border');
+    target.css('border', '1px solid green');
+
+    let zztmp = '<div style="color: black; background-color: white; padding: 5px; border-radius: 5px;border-bottom-right-radius: 0px; border: 1px solid grey; position: absolute; margin-left: -52px; margin-top: -30px" id="zztmp">'+response+'</div>';
+    target.closest('td').prepend(zztmp);
+
+    setTimeout(function(){
+        target.css('border', inputBorder);
+        $('#zztmp').empty();
+        $('#zztmp').remove();
+    }, 500);
+}
+
+
 </script>
+HTML;
+    }
+
+    public function css_content()
+    {
+        $visualSelectCSS = SignsLib::visualSignSelectCSS();
+
+        return <<<HTML
+$visualSelectCSS
 HTML;
     }
 

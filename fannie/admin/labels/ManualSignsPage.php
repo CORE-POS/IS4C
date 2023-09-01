@@ -218,7 +218,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $offset = '';
         $clearBtn = '';
         if (FormLib::get('queueID') == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
-            $mods = array('Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
+            $mods = array('Legacy:WFC New Produce Mockup','Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
             $offset = 'checked';
             $clearBtn = '<a href="ManualSignsPage.php?_method=delete&id=' . FormLib::get('queueID') . '"
                 class="btn btn-default pull-right">Clear Queue</a>';
@@ -226,7 +226,7 @@ class ManualSignsPage extends FannieRESTfulPage
 
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<label>Layout</label>: 
-            <select name="signmod" class="form-control" >';
+            <select name="signmod" id="signmod" class="form-control" >';
         foreach ($mods as $m) {
             $name = $m;
             if (strstr($m, '\\')) {
@@ -249,13 +249,20 @@ class ManualSignsPage extends FannieRESTfulPage
         $ret .= $this->formTableHeader();
         $ret .= $this->formTableBody($this->items);
         $ret .= '</tbody></table>';
+        $ret .= '<input type="hidden" name="form_page" value="ManualSignsPage" />';
 
         return $ret;
     }
 
     private function formTableHeader()
     {
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
+            $ret = SignsLib::visualSignSelectHTML();
+            $this->addOnloadCommand(SignsLib::visualSignSelectJS());
+        }
+
         return <<<HTML
+$ret
 <table class="table table-bordered table-striped small">
     <thead>
     <tr>
@@ -345,6 +352,16 @@ HTML;
         }
 
         return $ret;
+    }
+    
+    public function css_content()
+    {
+
+        $visualSelectCSS = SignsLib::visualSignSelectCSS();
+
+        return <<<HTML
+$visualSelectCSS
+HTML;
     }
 
     public function helpContent()
