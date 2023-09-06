@@ -199,7 +199,7 @@ class LikeCodeBatchSigns extends FannieRESTfulPage
                 <input type="hidden" name="lc[]" class="lc" value="%s" />
                 <input type="hidden" name="price[]" value="%s" />
                 <input type="hidden" name="scale[]" value="%s" />
-                <input type="hidden" name="brand[]" class="form-control input-sm" value="%s" disabled/>
+                <input type="hidden" name="brand[]" class="form-control input-sm" value="%s" />
                 </td>
                 <td><input type="text" name="desc[]" class="form-control input-sm" value="%s" onchange="edit(\'item\', this); " /></td>
                 <td><input type="text" name="origin[]" class="form-control input-sm origin" value="%s" %s onchange="edit(\'origin\', this); " /></td>
