@@ -26,6 +26,8 @@ namespace COREPOS\Fannie\API\item\signage {
 class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 200;
+    protected $BOGO_MED_FONT = 30;
+    protected $BOGO_BIG_FONT = 100;
     protected $MED_FONT = 22;
     protected $SMALL_FONT = 18;
     protected $SMALLER_FONT = 14;
@@ -96,9 +98,23 @@ class Giganto2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             if (!strstr($price, 'BUY')) {
                 $pdf->Cell($this->width, 50, $price, 0, 1, 'C');
             } else {
-                $pdf->Cell($this->width, 25, 'BUY ONE', 0, 1, 'C');
-                $pdf->Cell($this->width, 25, 'GET ONE FREE', 0, 1, 'C');
-            }
+                $pdf->SetTextColor(244, 116, 30);
+                $pdf->SetXY($this->left + ($this->width*$column) + 47, $this->top + ($row*$this->height) + 23);
+                $pdf->SetFont($this->font, 'B', $this->BOGO_MED_FONT);
+                $pdf->Cell($effective_width, 6, "Buy One, Get One", 0, 'C');
+
+                $pdf->SetXY($this->left + ($this->width*$column) + 1, $this->top + ($row*$this->height) + 45);
+                $pdf->SetFont($this->font, 'B', $this->BOGO_BIG_FONT);
+                $pdf->Cell($effective_width, 6, 'FREE', 0, 1, 'C');
+
+                $pdf->SetTextColor(0, 0, 0);
+
+                // BOGO regular price
+                $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+                $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
+                $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
+                }
             //$pdf->MultiCell($this->width, 25, $price, 0, 1, 'K');
 
             if ($this->validDate($item['startDate']) && $this->validDate($item['endDate'])) {
