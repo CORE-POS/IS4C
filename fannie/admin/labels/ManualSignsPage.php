@@ -148,7 +148,7 @@ class ManualSignsPage extends FannieRESTfulPage
             if ($descriptions[$i] == '') {
                 continue;
             } elseif (in_array($i, $exclude)) {
-                continue;
+                //continue;
             }
             $item = array(
                 'upc' => '',
@@ -218,7 +218,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $offset = '';
         $clearBtn = '';
         if (FormLib::get('queueID') == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
-            $mods = array('Legacy:WFC New Produce Mockup','Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
+            $mods = array('Legacy:WFC Produce SmartSigns','Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
             $offset = 'checked';
             $clearBtn = '<a href="ManualSignsPage.php?_method=delete&id=' . FormLib::get('queueID') . '"
                 class="btn btn-default pull-right">Clear Queue</a>';
@@ -250,6 +250,22 @@ class ManualSignsPage extends FannieRESTfulPage
         $ret .= $this->formTableBody($this->items);
         $ret .= '</tbody></table>';
         $ret .= '<input type="hidden" name="form_page" value="ManualSignsPage" />';
+
+        $jsExec = <<<JAVASCRIPT
+$('.exc').on('change', function(){
+    let checked = $(this).is(':checked');
+    if (checked === true) {
+        $(this).closest('tr').find('.input-description').attr('disabled', true);
+        $(this).closest('tr').find('.input-brand').attr('disabled', true);
+        $(this).closest('tr').find('.input-price').attr('disabled', true);
+    } else {
+        $(this).closest('tr').find('.input-description').attr('disabled', false);
+        $(this).closest('tr').find('.input-brand').attr('disabled', false);
+        $(this).closest('tr').find('.input-price').attr('disabled', false);
+    }
+});
+JAVASCRIPT;
+        $this->addOnloadCommand($jsExec);
 
         return $ret;
     }
