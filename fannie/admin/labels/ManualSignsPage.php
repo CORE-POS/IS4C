@@ -330,7 +330,7 @@ $ret
                 onchange="if (this.value !== '') $('.input-end').val(this.value);" />
         </td>
         <td>
-            <input type="checkbox" onchange="$('.exc').prop('checked', $(this).prop('checked'));" />
+            <input type="checkbox" onchange="$('.exc').prop('checked', $(this).prop('checked')).trigger('change');" />
         </td>
     </tr>
 HTML;
