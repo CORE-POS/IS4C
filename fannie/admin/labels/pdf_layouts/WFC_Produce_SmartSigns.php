@@ -94,11 +94,6 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     $rgb = array();
 
     /*
-        Like Code Batch Sign Form Data
-    */
-    $exclude = FormLib::get('exclude', array());
-
-    /*
     $lc = false;
     */
     $likeCodes = FormLib::get('lc', false);
@@ -136,7 +131,7 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     }
     $formOrganic = FormLib::get('brand', false); // [sic]
     if (isset($formOrganic[$tagNo])) {
-        $formOrganic = $formOrganic[$tagNo];
+        $formOrganic = trim($formOrganic[$tagNo]);
     }
     $formLocal = FormLib::get('local', false);
     if (isset($formLocal[$lcIndex])) {
