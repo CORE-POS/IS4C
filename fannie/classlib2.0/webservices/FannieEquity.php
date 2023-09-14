@@ -1,0 +1,162 @@
+<?php
+
+namespace COREPOS\Fannie\API\webservices;
+use \FannieDB;
+use \FannieConfig;
+use \DTrans;
+
+class FannieEquity extends FannieWebService
+{
+    public function run($args=[])
+    {
+        $config = FannieConfig::factory();
+        $dbc = FannieDB::get($config->get('TRANS_DB'));
+        $OP = $config->get('OP_DB') . $dbc->sep();
+        $submethod = strtolower($args->submethod);
+        $ret = array();
+
+        /*******************************
+         * validate all inputs
+         *******************************/
+
+        if ($submethod != 'add_equity') {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'only add_equity submethod is supported',
+            ];
+            return $ret;
+        }
+
+        // assume default employee from config unless specified
+        $empNo = $args->columns->emp_no;
+        if (!isset($empNo)) {
+            $empNo = $config->get('EMP_NO');
+        }
+
+        // assume default register from config unless specified
+        $regNo = $args->columns->register_no;
+        if (!isset($regNo)) {
+            $regNo = $config->get('REGISTER_NO');
+        }
+
+        // caller must specify card number
+        $cardNo = $args->columns->card_no;
+        if (!isset($cardNo)) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'card_no column is required',
+            ];
+            return $ret;
+        }
+
+        // caller must specify equity total
+        $total = $args->columns->total;
+        if (!isset($total)) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'total column is required',
+            ];
+            return $ret;
+        }
+
+        // caller must specify department
+        $deptNo = $args->columns->department;
+        if (!isset($deptNo)) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'department column is required',
+            ];
+            return $ret;
+        }
+
+        // fetch list of equity departments
+        $result = preg_match_all("/[0-9]+/", $config->get('EQUITY_DEPARTMENTS'), $equityDepartments);
+        if ($result == 0){
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'cannot read list of equity departments from config',
+            ];
+            return $ret;
+        }
+        $equityDepartments = $equityDepartments[0];
+
+        // validate requested department
+        if (!in_array($deptNo, $equityDepartments)) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => "department $deptNo cannot be used for equity",
+            ];
+            return $ret;
+        }
+
+        // make sure caller specified the tender
+        $tenderCode = $args->columns->tender;
+        if (!isset($tenderCode)) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'tender column is required',
+            ];
+            return $ret;
+        }
+
+        // fetch list of tenders
+        $tendersP = $dbc->prepare("SELECT TenderCode, TenderName FROM {$OP}tenders " .
+                                  "WHERE TenderModule != 'DisabledTender' ORDER BY TenderName");
+        $tendersR = $dbc->execute($tendersP, array());
+        $tenders = [];
+        while ($tender = $dbc->fetchArray($tendersR)) {
+             $tenders[$tender['TenderCode']] = $tender["TenderName"];
+        }
+
+        // validate requested tender
+        if (!isset($tenders[$tenderCode])) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'speficied tender is not valid',
+            ];
+            return $ret;
+        }
+        $tenderName = $tenders[$tenderCode];
+
+        /*******************************
+         * insert to dtransactions
+         *******************************/
+
+        $transNo = DTrans::getTransNo($dbc, $empNo, $regNo);
+        $params = [
+            'card_no' => $cardNo,
+            'register_no' => $regNo,
+            'emp_no' => $empNo,
+        ];
+
+        // open ring for equity
+        if (!DTrans::addOpenRing($dbc, $deptNo, $total, $transNo, $params)) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'Failed to insert open ring item',
+            ];
+            return $ret;
+        }
+
+        // tender to balance books
+        $params['description'] = $tenderName;
+        $params['trans_type'] = 'T';
+        $params['trans_subtype'] = $tenderCode;
+        $params['total'] = $total * -1;
+        if (!DTrans::addItem($dbc, $transNo, $params)) {
+            $ret['error'] = [
+                'code' => -32000, // TODO: what should this be?
+                'message' => 'Failed to insert tender item',
+            ];
+            return $ret;
+        }
+
+        $result = (array)$params;
+        $result['trans_no'] = $transNo;
+        $result['department'] = $deptNo;
+        $result['total'] = $total;
+        $result['fullTransactionNumber'] = "$empNo-$regNo-$transNo";
+        $ret['result'] = $result;
+        return $ret;
+    }
+}
