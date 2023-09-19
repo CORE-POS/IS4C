@@ -556,6 +556,8 @@ class OverShortMAS extends FannieRESTfulPage {
             FROM $dlog AS d WHERE department=703
             AND " . DTrans::isStoreID($store, 'd') . "
             AND trans_subtype = 'IC'
+            " . ($mc == 2 ? ' AND register_no <> 40 ' : '') . "
+            " . ($mc == 3 ? ' AND register_no = 40 ' : '') . "
             AND tdate BETWEEN ? AND ? ORDER BY tdate";
         $miscP = $dbc->prepare($miscQ);
         $miscR = $dbc->execute($miscP, $args);
