@@ -55,9 +55,10 @@ class COGSMovementReport extends FannieReportPage
                 SUM(total) AS retail,
                 SUM(CASE WHEN ABS(t.cost) < 1000 THEN t.cost ELSE d.margin * total END) AS cogs
             " . $from_where['query'] . "
-                AND t.trans_type IN ('I', 'D')
             GROUP BY d.salesCode
             ORDER BY d.salesCode";
+                //AND t.trans_type IN ('I', 'D')
+        $query = str_replace('AND t.memType NOT IN (4)', '', $query);
 
         $prep = $dbc->prepare($query);
         try {
