@@ -866,8 +866,9 @@ HTML;
         if (!$new_item && FannieConfig::config('STORE_MODE') == 'HQ') {
             $nav_tabs .= '<li><label title="Apply update to all stores">
                 <input type="checkbox" id="store-sync" ';
-            $audited = FannieAuth::validateUserQuiet('audited_pricechange');
-            $nav_tabs .= ($audited) ? 'disabled' : 'checked';
+            //$audited = FannieAuth::validateUserQuiet('audited_pricechange');
+            //$nav_tabs .= ($audited) ? 'disabled' : 'checked';
+            $nav_tabs .= 'checked';
             $nav_tabs .= ' /> Sync</label></li>';
         }
         $nav_tabs .= '</ul>';
