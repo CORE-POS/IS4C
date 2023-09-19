@@ -140,9 +140,12 @@ class FannieEquity extends FannieWebService
             'emp_no' => $empNo,
         ];
 
+        $dbc->startTransaction();
+
         // open ring for equity
         $params = (array)$common;
         if (!DTrans::addOpenRing($dbc, $deptNo, $total, $transNo, $params)) {
+            $dbc->rollbackTransaction();
             $ret['error'] = [
                 'code' => -32000, // TODO: what should this be?
                 'message' => 'Failed to insert open ring item',
@@ -157,6 +160,7 @@ class FannieEquity extends FannieWebService
         $params['trans_subtype'] = $tenderCode;
         $params['total'] = $total * -1;
         if (!DTrans::addItem($dbc, $transNo, $params)) {
+            $dbc->rollbackTransaction();
             $ret['error'] = [
                 'code' => -32000, // TODO: what should this be?
                 'message' => 'Failed to insert tender item',
@@ -171,6 +175,7 @@ class FannieEquity extends FannieWebService
             $params['trans_type'] = 'C';
             $params['trans_subtype'] = 'CM';
             if (!DTrans::addItem($dbc, $transNo, $params)) {
+                $dbc->rollbackTransaction();
                 $ret['error'] = [
                     'code' => -32000, // TODO: what should this be?
                     'message' => 'Failed to insert comment item',
@@ -178,6 +183,8 @@ class FannieEquity extends FannieWebService
                 return $ret;
             }
         }
+
+        $dbc->commitTransaction();
 
         $result = (array)$common;
         $result['trans_no'] = $transNo;
