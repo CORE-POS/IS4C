@@ -118,18 +118,30 @@ class FannieEquity extends FannieWebService
         }
         $tenderName = $tenders[$tenderCode];
 
+        // caller may specify transaction number, or we auto-generate
+        $transNo = $args->columns->trans_no;
+        if (!isset($transNo)) {
+            $transNo = DTrans::getTransNo($dbc, $empNo, $regNo);
+        }
+
+        // caller may specify extra comment
+        $comment = $args->columns->comment;
+        if (!isset($comment)) {
+            $comment = null;
+        }
+
         /*******************************
          * insert to dtransactions
          *******************************/
 
-        $transNo = DTrans::getTransNo($dbc, $empNo, $regNo);
-        $params = [
+        $common = [
             'card_no' => $cardNo,
             'register_no' => $regNo,
             'emp_no' => $empNo,
         ];
 
         // open ring for equity
+        $params = (array)$common;
         if (!DTrans::addOpenRing($dbc, $deptNo, $total, $transNo, $params)) {
             $ret['error'] = [
                 'code' => -32000, // TODO: what should this be?
@@ -139,6 +151,7 @@ class FannieEquity extends FannieWebService
         }
 
         // tender to balance books
+        $params = (array)$common;
         $params['description'] = $tenderName;
         $params['trans_type'] = 'T';
         $params['trans_subtype'] = $tenderCode;
@@ -151,7 +164,22 @@ class FannieEquity extends FannieWebService
             return $ret;
         }
 
-        $result = (array)$params;
+        // optionally record extra comment line
+        if ($comment) {
+            $params = (array)$common;
+            $params['description'] = $comment;
+            $params['trans_type'] = 'C';
+            $params['trans_subtype'] = 'CM';
+            if (!DTrans::addItem($dbc, $transNo, $params)) {
+                $ret['error'] = [
+                    'code' => -32000, // TODO: what should this be?
+                    'message' => 'Failed to insert comment item',
+                ];
+                return $ret;
+            }
+        }
+
+        $result = (array)$common;
         $result['trans_no'] = $transNo;
         $result['department'] = $deptNo;
         $result['total'] = $total;
