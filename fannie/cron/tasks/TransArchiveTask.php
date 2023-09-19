@@ -141,7 +141,7 @@ class TransArchiveTask extends FannieTask
     private function createPartitionIfNeeded($sql, $date, $bigArchive)
     {
         $partition_name = "p" . date("Ym", strtotime($date)); 
-        if (strstr($bigArchive, 'PARTITION ' . $partition_name . ' VALUES') === false) {
+        if (preg_match("/PARTITION `?$partition_name`? VALUES/", $bigArchive) === 0) {
             $ts = strtotime($date);
             $boundary = date("Y-m-d", mktime(0,0,0,date("n", $ts)+1,1,date("Y", $ts)));
             // new partition named pYYYYMM
