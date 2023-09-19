@@ -106,6 +106,8 @@ class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP
     {
         if (isset($item['batchName']) && strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/noauto/images/codeals_top_2.png';
+        } elseif (isset($item['batchName']) && strstr($item['batchName'], 'Fresh Deals')) {
+            return __DIR__ . '/noauto/images/freshdeals_top_4.png';
         } elseif (!empty($item['batchName'])) {
             return __DIR__ . '/noauto/images/chaching_top_2.png';
         } elseif ($item['basic']) {
@@ -125,6 +127,8 @@ class WfcSmartSigns4UpL extends \COREPOS\Fannie\API\item\signage\Giganto4UpP
     {
         if (isset($item['batchName']) && strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/cd_line_16.png';
+        } elseif (isset($item['batchName']) && strstr($item['batchName'], 'Fresh Deals')) {
+            return __DIR__ . '/noauto/images/freshdeals_bottom_4.png';
         } elseif (!empty($item['batchName'])) {
             return __DIR__ . '/noauto/images/chaching_bottom_12.png';
         } elseif ($item['basic']) {
