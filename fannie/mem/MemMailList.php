@@ -117,6 +117,7 @@ class MemMailList extends FannieReportPage
             $password = trim($password);
             $password = strtolower($password);
             $password = str_replace('.', '', $password);
+            $password = str_replace(',', '', $password);
             $password = str_replace('-', '', $password);
             $password = str_replace('\'', '', $password);
             $password = str_replace(' ', '', $password);
