@@ -22,16 +22,16 @@ $fannieDB = FannieDB::get($FANNIE_OP_DB);
 $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
     $fannieDB->concat('c.FirstName',"' '",'c.LastName','')." as name,
     m.phone, m.email_1 as email,
-    SUM(CASE WHEN charflag IN ('T') THEN quantity ELSE 0 END)-1 as guest_count,
-    SUM(CASE WHEN charflag IN ('K') THEN quantity ELSE 0 END) as child_count,
-    SUM(CASE WHEN charflag = 'T' THEN quantity ELSE 0 END) as taco,
+    SUM(CASE WHEN upc IN ('0000000001042','0000000001041') THEN quantity ELSE 0 END) - 1 as guest_count,
+    SUM(CASE WHEN upc='0000000001912' THEN quantity ELSE 0 END) as child_count,
+    SUM(CASE WHEN upc IN ('0000000001041','0000000001042') THEN quantity ELSE 0 END) as taco,
     'pos' AS source,
     n.note AS notes
     FROM ".$FANNIE_TRANS_DB.$fannieDB->sep()."dlog AS d
     LEFT JOIN custdata AS c ON c.CardNo=d.card_no AND c.personNum=1
     LEFT JOIN meminfo AS m ON d.card_no=m.card_no
     LEFT JOIN regNotes AS n ON d.card_no=n.card_no
-    WHERE upc IN ('0000000001041','0000000001042')
+    WHERE upc IN ('0000000001041','0000000001042','0000000001912')
     GROUP BY d.card_no
     HAVING SUM(quantity) > 0
     ORDER BY MIN(tdate)";
