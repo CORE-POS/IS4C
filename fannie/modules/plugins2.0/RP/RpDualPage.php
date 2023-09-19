@@ -375,7 +375,7 @@ class RpDualPage extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $this->addScript('rpDual.js?date=20230214');
+        $this->addScript('rpDual.js?date=20230801');
         $this->addOnloadCommand('rpOrder.initAutoCompletes();');
         $store = FormLib::get('store');
         if (!$store) {

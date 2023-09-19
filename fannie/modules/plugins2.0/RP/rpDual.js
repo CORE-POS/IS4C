@@ -226,6 +226,9 @@ var rpOrder = (function ($) {
 
     mod.updatePar = function(lc, adjPar) {
         var pars = state['pars'];
+        if (pars === null) {
+            pars = {};
+        }
         pars[lc] = adjPar;
         state['pars'] = pars;
     };
