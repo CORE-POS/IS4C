@@ -345,13 +345,13 @@ class BatchFromSearch extends FannieRESTfulPage
     </select>
 </div>
 <table class="table">
-    <tr><th>UPC</th><th>Description</th><th>Retail</th>
+    <tr><th>UPC</th><th>Brand</th><th>Description</th><th>Retail</th>
     <th>Cost</th>
     <th id="newPriceHeader">Sale Price</th></tr>
 HTML;
 
         list($in_sql, $args) = $dbc->safeInClause($this->upcs);
-        $query = 'SELECT p.upc, p.description, p.normal_price, m.superID, p.cost, 
+        $query = 'SELECT p.upc, p.description, p.brand, p.normal_price, m.superID, p.cost, 
                 MAX(CASE WHEN v.srp IS NULL THEN 0.00 ELSE v.srp END) as srp
                 FROM products AS p
                     LEFT JOIN vendorItems AS v ON p.upc=v.upc AND p.default_vendor_id=v.vendorID
@@ -367,6 +367,7 @@ HTML;
             $ret .= sprintf('<tr class="batchItem">
                             <td><input type="hidden" name="upc[]" class="itemUPC" value="%s" />%s</td>
                             <td>%s</td>
+                            <td>%s</td>
                             <td>$%.2f<input type="hidden" class="currentPrice" value="%.2f" /></td>
                             <td>$%.2f<input type="hidden" class="currentCost" value="%.2f" /></td>
                             <td><div class="input-group">
@@ -377,6 +378,7 @@ HTML;
                             </td>
                             </tr>',
                             $row['upc'], $row['upc'],
+                            $row['brand'],
                             $row['description'],
                             $row['normal_price'], $row['normal_price'],
                             $row['cost'], $row['cost'],
