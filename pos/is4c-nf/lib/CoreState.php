@@ -614,7 +614,7 @@ static public function customReceipt()
 
 static public function getCustomerPref($key)
 {
-    if (CoreLocal::get('memberID') == 0) {
+    if (!CoreLocal::get('memberID')) {
         return '';
     }
 
