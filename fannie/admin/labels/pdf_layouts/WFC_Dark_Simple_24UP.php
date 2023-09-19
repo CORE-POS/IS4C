@@ -254,15 +254,28 @@ function generateSimpleTag2($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
     }
 
-    // Print Local Logo (if local)
+    /* 
+        Print Local Star & Text
+    */
     if ($item['local']) {
-        $localX = 0;
-        $localY = 24.5;
+        $localX = 1;
+        $localY = 23.5;
         $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY, 15, 9);
         $pdf->SetDrawColor(243, 115, 34);
         //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
         $pdf->SetDrawColor(0, 0, 0);
     }
+    /*
+        Print Local STAR ONLY
+    if ($item['local']) {
+        $localX = 2;
+        $localY = 27;
+        $pdf->Image(__DIR__ . '/noauto/local_star.png', $x+$localX, $y+$localY, 5, 5);
+        $pdf->SetDrawColor(243, 115, 34);
+        //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
+        $pdf->SetDrawColor(0, 0, 0);
+    }
+    */
 
     /*
         Create Guide-Lines

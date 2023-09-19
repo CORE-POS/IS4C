@@ -53,7 +53,10 @@ function WFC_New_Produce_Mockup($data,$offset=0,$showPrice=0)
     $i = 0;
     $tagNo = 0;
     foreach($data as $k => $row){
+        $lc = false;
         $upc = $row['upc'];
+        if (isset($row['likeCode']))
+            $lc = $row['likeCode'];
         if ($i % 9 == 0 && $i != 0) {
             $pdf->AddPage('L');
             $x = $left;
@@ -61,14 +64,14 @@ function WFC_New_Produce_Mockup($data,$offset=0,$showPrice=0)
             $i = 0;
         }
         if ($i == 0) {
-            $pdf = generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo);
+            $pdf = generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo, $lc);
         }  else if ($i % 3 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
         } else {
             $x += $width+$guide-15;
         }
-        $pdf = generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo);
+        $pdf = generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo, $lc);
         $i++;
         $tagNo++;
     }
@@ -76,7 +79,7 @@ function WFC_New_Produce_Mockup($data,$offset=0,$showPrice=0)
     $pdf = $pdf->Output();
 }
 
-function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo)
+function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo, $lc)
 {
     $pdf->SetFont('Gill','', 16);
     if (!defined('FPDF_FONTPATH')) {
@@ -89,6 +92,61 @@ function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $
     $descFontSize = 26;
     $descFontSizeBig = 24;
     $rgb = array();
+
+    /*
+        Like Code Batch Sign Form Data
+    */
+    $exclude = FormLib::get('exclude', array());
+
+    /*
+    $lc = false;
+    */
+    $likeCodes = FormLib::get('lc', false);
+    $lcIndex = -1;
+    if ($lc !== false) {
+        $lcIndex = array_search($lc, $likeCodes);
+    }
+    $formOrigin = false;
+    $overOrigins = FormLib::get('origin', false);
+    if (isset($overOrigins[$lcIndex])) {
+        $formOrigin = $overOrigins[$lcIndex];
+    }
+    $formPrice = FormLib::get('price', false);
+    if (isset($rPrice[$lcIndex])) {
+        $formPrice = $formPrice[$lcIndex];
+    }
+    $formScale = FormLib::get('scale', null);
+    if (isset($formScale[$lcIndex])) {
+        $formScale = $formScale[$lcIndex];
+    }
+    $formDesc = FormLib::get('desc', false);
+    if (isset($formDesc[$lcIndex])) {
+        $formDesc = $formDesc[$lcIndex];
+    }
+    $formOrganic = FormLib::get('brand', false); // [sic]
+    if (isset($formOrganic[$tagNo])) {
+        $formOrganic = $formOrganic[$tagNo];
+    }
+    $formLocal = FormLib::get('local', false);
+    if (isset($formLocal[$lcIndex])) {
+        $formLocal = $formLocal[$lcIndex];
+    }
+    /*
+        Manual Signs Form Data
+    */
+    $formDescription = FormLib::get('description', false);
+    if (isset($formDescription[$tagNo])) {
+        $formDescription = $formDescription[$tagNo];
+    }
+
+
+    if ($lc !== false) {
+        $lcP = $dbc->prepare("SELECT likeCode, likeCodeDesc, upc, normal_price FROM likeCodeView WHERE likeCode = ? LIMIT 1");
+        $lcR = $dbc->execute($lcP, array($lc));
+        $lcW = $dbc->fetchRow($lcR);
+        //$lcDesc = $lcW['likeCodeDesc'];
+    }
+
 
     $originNames = array();
     $onP = $dbc->prepare("SELECT originID, fullName FROM originName");
@@ -123,6 +181,44 @@ function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $
     $item['organic'] = $dbc->getValue($organicP, $row['upc']);
     $item['local'] = $dbc->getValue($localP, $row['upc']);
 
+    if (isset($formOrganic)) {
+        if ($formOrganic != false) {
+            if (strToLower($formOrganic) == 'organic') {
+                $item['organic'] = true;
+            } elseif (strToLower($formOrganic) == 'local organic') {
+                $item['organicLocal'] = true;
+            } elseif (strToLower($formOrganic) == 'organic local') {
+                $item['organicLocal'] = true;
+            } elseif (strToLower($formOrganic) == 'local') {
+                $item['local'] = true;
+            } else {
+                $item['organic'] = false;
+            }
+        }
+    }
+    
+    if ($lc != false) {
+        $prep = $dbc->prepare("select organic from likeCodes where likeCode = ?");
+        $lcOrganic = $dbc->getValue($prep, array($lc));
+        $item['organic'] = $lcOrganic;
+
+        //$prep = $dbc->prepare("select local from products p inner join upcLike u on u.upc=p.upc where u.likeCode = ? GROUP BY p.upc");
+        //$lcLocal = $dbc->getValue($prep, array($lc));
+        //$item['local'] = $lcLocal;
+
+        //if ($item['local'] > 0 && $item['organic']) {
+        //    $item['organicLocal'] = true;
+        //}
+    }
+    if ($formLocal != false) {
+        if ($formLocal == 1 || $formLocal == 2) {
+            $item['local'] = true;
+        }
+        if (in_array($formLocal, array(1,2)) && $lcOrganic) {
+            $item['organicLocal'] = true;
+        }
+    }
+
     // Form Data 
     $updateUpcs = FormLib::get('update_upc');
     $manualDescs = FormLib::get('update_desc');
@@ -132,6 +228,10 @@ function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $
 
     $mOrigin = $originNames[$originID];
     $cOrigin = $customOrigins[array_search($upc, $updateUpcs)];
+
+    if (!isset($origin) && isset($row['originName'])) {
+        $origin = $row['originName'];
+    }
 
     $args = array($row['upc']);
     $prep = $dbc->prepare("
@@ -144,6 +244,17 @@ function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $
 
     $MdescKey = array_search($upc, $updateUpcs);
     $Mdesc = $manualDescs[$MdescKey];
+
+    if (isset($formDesc)) {
+        if ($formDesc != false) {
+            $Mdesc = $formDesc;
+        }
+    }
+    if (isset($formDescription)) {
+        if ($formDescription != false) {
+            $Mdesc = $formDescription;
+        }
+    }
 
     $desc = $Mdesc;
     $desc = str_replace("\n", "", $desc);
@@ -220,15 +331,19 @@ function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $
     */
     $pdf->SetFont('Gill','B', 46);
     $vrbg = ($pScale == 0) ? '/ea' : '/lb';
+    if (isset($formScale)) {
+        $vrbg = ($formScale == 0) ? '/ea' : '/lb';
+    }
     $priceText = '$'.$price.$vrbg;
     $pdf->SetXY($x, $y+38);
     $pdf->Cell($width-22, 10, $priceText, 0, 1, 'C', true);
+    //$pdf->Cell($width-22, 10, $lc, 0, 1, 'C', true);
 
     /*
         Origins Text
     */
-    if ($origin != null || strlen($mOrigin) > 0 || strlen($cOrigin > 0)) {
-        if ($origin != null)
+    if (isset($origin) || strlen($mOrigin) > 0 || strlen($cOrigin) > 0 || strlen($formOrigin) > 0) {
+        if (isset($origin)) 
             $printOrigin = $origin;
         if (strlen($mOrigin) > 0)
             $printOrigin = $mOrigin;
@@ -236,7 +351,11 @@ function generateWFC_New_Produce_Mockup_label($x, $y, $guide, $width, $height, $
             $printOrigin = $cOrigin;
         $pdf->SetFont('Gill','', 10);
         $pdf->SetXY($x, $y+52);
-        $pdf->Cell($width-22, 4, 'Product of ' . $printOrigin, 0, 1, 'C', true);
+        if ($formOrigin != false) {
+            $pdf->Cell($width-22, 4, 'Product of ' . $formOrigin, 0, 1, 'C', true);
+        } else {
+            $pdf->Cell($width-22, 4, 'Product of ' . $printOrigin, 0, 1, 'C', true);
+        }
     }
 
     /*

@@ -344,16 +344,6 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
 
     // Print Local Logo (if local)
     if ($item['local']) {
-        /* 
-            First Try - too big?
-        $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+114, $y+1, 20, 13);
-        $pdf->SetDrawColor(243, 115, 34);
-        $pdf->Rect($x+114, $y+2, 20, 12, 'D');
-        $pdf->Rect($x+113.8, $y+1.8, 20.4, 12.4, 'D');
-        $pdf->SetDrawColor(0, 0, 0);
-        */
-
-        // Second Try - smaller
         $localX = 121;
         $localY = 1;
         $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY, 15, 9);
