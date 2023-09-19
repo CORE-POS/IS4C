@@ -339,7 +339,7 @@ HTML;
             } elseif ($row['processor'] == 'RapidConnect') {
                 $ret .= 'FIRST DATA';
             } else {
-                $ret .= 'MERCURY';
+                $ret .= $row['processor'];
             }
             $ret .= '<br />';
             $pRef = $row['refNum'];
