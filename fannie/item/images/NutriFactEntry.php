@@ -249,13 +249,13 @@ LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
 LEFT JOIN NutriFactReqItems AS n ON p.upc=n.upc 
 LEFT JOIN NutriFactOptItems AS o ON o.upc=n.upc
 WHERE p.upc < 1000
-AND p.inUse = 1
+#AND p.inUse = 1
 AND m.superID = 1
-AND (
-    (p.last_sold > NOW() - INTERVAL 90 DAY OR p.last_sold IS NULL)
-OR
-    ((p.created > NOW() - INTERVAL 30 DAY) OR (p.modified > NOW() - INTERVAL 7 DAY))
-)
+#AND (
+#    (p.last_sold > NOW() - INTERVAL 90 DAY OR p.last_sold IS NULL)
+#OR
+#    ((p.created > NOW() - INTERVAL 30 DAY) OR (p.modified > NOW() - INTERVAL 7 DAY))
+#)
 OR p.upc IN (
 # NON BULK ITEMS TO INCLUDE (For bulk kombucha)
 '0086001000062','0086001000061','0086001000060','0086001000064','0086001000063',
