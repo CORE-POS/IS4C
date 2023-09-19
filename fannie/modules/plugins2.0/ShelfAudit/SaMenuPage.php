@@ -107,6 +107,9 @@ a[type="submit"] {
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../modules/plugins2.0/SMS/scan/ScannerSMS.php" />Test Scanner Just For Corey</a>
 <hr />
+<a class="btn btn-default btn-lg" type="submit"
+    href="../../../modules/plugins2.0/SMS/scan/BatchCheckScannerSMS.php" />New Batch Check</a>
+<hr />
 {$wfcTools[1]}
 </p>
 </body>
