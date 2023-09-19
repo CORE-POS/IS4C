@@ -18,6 +18,7 @@ class MercatoImportTask extends FannieTask
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $dbc = FannieDB::get($this->config->get('OP_DB'));
         $intake = new MercatoIntake($dbc);
+        $intakeV2 = new MercatoIntakeV2($dbc);
 
         if (class_exists('League\\Flysystem\\Sftp\\SftpAdapter')) {
             $settings = $this->config->get('PLUGIN_SETTINGS');
@@ -32,7 +33,7 @@ class MercatoImportTask extends FannieTask
             $chkP = $dbc->prepare("SELECT hash FROM MercatoHashes WHERE hash=?");
             $insP = $dbc->prepare("INSERT INTO MercatoHashes (hash) VALUES (?)");
             foreach ($contents as $c) {
-                if (isset($c['extension']) && $c['extension'] == 'csv') {
+                if (isset($c['extension']) && ($c['extension'] == 'csv' || $c['extension'] == 'txt')) {
                     $filename = __DIR__ . '/noauto/archive/' . $c['basename'];
                     if (file_exists($filename)) {
                         continue; // already imported
@@ -53,8 +54,12 @@ class MercatoImportTask extends FannieTask
                     }
                     $dbc->execute($insP, array($hash));
                     echo "Processing {$c['basename']}\n";
-                    $intake->shift();
-                    $intake->process($filename);
+                    if ($c['extension'] == 'txt') {
+                        $intakeV2->process($filename);
+                    } else {
+                        $intake->shift();
+                        $intake->process($filename);
+                    }
                 }
             }
         }
