@@ -25,7 +25,7 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 if (!class_exists('UIGLib')) {
-    include('UIGLib.php');
+    include(__DIR__ . '/UIGLib.php');
 }
 
 class MyUIGTask extends FannieTask
