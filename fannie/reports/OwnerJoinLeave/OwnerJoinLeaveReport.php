@@ -225,7 +225,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Annual Fran Skinner Goal',
                 null,
-                '130',
+                '100',
                 '',
                 null,
                 null,
@@ -245,7 +245,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Monthly New Owner Goal',
                 null,
-                '58',
+                '42',
                 '',
                 null,
                 null,
@@ -253,7 +253,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Annual New Owner Goal',
                 null,
-                '700',
+                '500',
                 '',
                 null,
                 null,
