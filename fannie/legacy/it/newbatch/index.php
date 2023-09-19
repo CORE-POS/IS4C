@@ -1,4 +1,5 @@
 <?php
+return;
 include('../../../config.php');
 include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 
