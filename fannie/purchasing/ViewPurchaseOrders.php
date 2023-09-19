@@ -430,7 +430,7 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mergable = array();
         while ($row = $dbc->fetchRow($result)) {
             if ($row['placed']) {
-                $tPlaced .= $this->orderRowToTable($row, $placed);
+                $tPlaced .= $this->orderRowToTable($row, 1);
             } else {
                 $tPending .= $this->orderRowToTable($row, $placed);
                 if (!isset($mergable[$row['vendorID']])) {
