@@ -21,7 +21,7 @@ class FannieEquity extends FannieWebService
 
         if ($submethod != 'add_equity') {
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => 'only add_equity submethod is supported',
             ];
             return $ret;
@@ -43,7 +43,7 @@ class FannieEquity extends FannieWebService
         $cardNo = $args->columns->card_no;
         if (!isset($cardNo)) {
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => 'card_no column is required',
             ];
             return $ret;
@@ -53,7 +53,7 @@ class FannieEquity extends FannieWebService
         $total = $args->columns->total;
         if (!isset($total)) {
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => 'total column is required',
             ];
             return $ret;
@@ -63,7 +63,7 @@ class FannieEquity extends FannieWebService
         $deptNo = $args->columns->department;
         if (!isset($deptNo)) {
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => 'department column is required',
             ];
             return $ret;
@@ -73,7 +73,7 @@ class FannieEquity extends FannieWebService
         $result = preg_match_all("/[0-9]+/", $config->get('EQUITY_DEPARTMENTS'), $equityDepartments);
         if ($result == 0){
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => 'cannot read list of equity departments from config',
             ];
             return $ret;
@@ -83,7 +83,7 @@ class FannieEquity extends FannieWebService
         // validate requested department
         if (!in_array($deptNo, $equityDepartments)) {
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => "department $deptNo cannot be used for equity",
             ];
             return $ret;
@@ -93,7 +93,7 @@ class FannieEquity extends FannieWebService
         $tenderCode = $args->columns->tender;
         if (!isset($tenderCode)) {
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => 'tender column is required',
             ];
             return $ret;
@@ -111,7 +111,7 @@ class FannieEquity extends FannieWebService
         // validate requested tender
         if (!isset($tenders[$tenderCode])) {
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 1,
                 'message' => 'speficied tender is not valid',
             ];
             return $ret;
@@ -147,7 +147,7 @@ class FannieEquity extends FannieWebService
         if (!DTrans::addOpenRing($dbc, $deptNo, $total, $transNo, $params)) {
             $dbc->rollbackTransaction();
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 2,
                 'message' => 'Failed to insert open ring item',
             ];
             return $ret;
@@ -162,7 +162,7 @@ class FannieEquity extends FannieWebService
         if (!DTrans::addItem($dbc, $transNo, $params)) {
             $dbc->rollbackTransaction();
             $ret['error'] = [
-                'code' => -32000, // TODO: what should this be?
+                'code' => 2,
                 'message' => 'Failed to insert tender item',
             ];
             return $ret;
@@ -177,7 +177,7 @@ class FannieEquity extends FannieWebService
             if (!DTrans::addItem($dbc, $transNo, $params)) {
                 $dbc->rollbackTransaction();
                 $ret['error'] = [
-                    'code' => -32000, // TODO: what should this be?
+                    'code' => 2,
                     'message' => 'Failed to insert comment item',
                 ];
                 return $ret;
