@@ -33,6 +33,13 @@ class SPINS extends \COREPOS\Fannie\API\FanniePlugin
     public $plugin_settings = array(
     'SpinsFtpServer' => array('default'=>'ftp.spins.com', 'label'=>'FTP Server',
             'description'=>'FTP server to which file should be uploaded.'),
+    'SpinsFtpSecure' => array(
+        'label' => 'Use Secure FTP',
+        'description' => 'Whether to connect via Secure FTP',
+        'options' => array(
+            'Yes, use Secure FTP' => 'true',
+            'No, do not use Secure FTP' => 'false'),
+        'default' => 'false'),
     'SpinsFtpUser' => array('default'=>'', 'label'=>'FTP Username',
             'description'=>'ftp.spins.com credentials'), 
     'SpinsFtpPw' => array('default'=>'', 'label'=>'FTP Password',

@@ -26,6 +26,9 @@ if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
 
+use \League\Flysystem\Sftp\SftpAdapter;
+use \League\Flysystem\Filesystem;
+
 /**
 */
 class SpinsSubmitTask extends FannieTask 
@@ -144,21 +147,49 @@ class SpinsSubmitTask extends FannieTask
 
     public function upload($server, $localPath, $filename) {
         global $FANNIE_PLUGIN_SETTINGS;
-
-        $conn_id = ftp_connect($server);
-        $login_id = ftp_login($conn_id, $FANNIE_PLUGIN_SETTINGS['SpinsFtpUser'], $FANNIE_PLUGIN_SETTINGS['SpinsFtpPw']);
-        if (!$conn_id || !$login_id) {
-            $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
-            return false;
-        }
-
+        $secure = isset($FANNIE_PLUGIN_SETTINGS['SpinsFtpSecure']) ? $FANNIE_PLUGIN_SETTINGS['SpinsFtpSecure'] === 'true' : false;
         $remoteDir = isset($FANNIE_PLUGIN_SETTINGS['SpinsFtpDir']) ? $FANNIE_PLUGIN_SETTINGS['SpinsFtpDir'] : 'data';
-        if ($remoteDir) {
-            ftp_chdir($conn_id, $remoteDir);
+
+        if ($secure) {
+            $this->cronMsg("using secure FTP", FannieLogger::INFO);
+
+            // connect to server
+            $adapter = new SftpAdapter(array(
+                'host' => $server,
+                'username' => $FANNIE_PLUGIN_SETTINGS['SpinsFtpUser'],
+                'password' => $FANNIE_PLUGIN_SETTINGS['SpinsFtpPw'],
+                'port' => 22,
+            ));
+            $filesystem = new Filesystem($adapter);
+
+            // upload file
+            $path = $filename;
+            if ($remoteDir) {
+                $remoteDir = rtrim($remoteDir, '/');
+                $path = "$remoteDir/$path";
+            }
+            $success = $filesystem->put($path, file_get_contents($localPath));
+            return $success;
+
+        } else {
+            // old-school plain FTP
+
+            // connect to server
+            $conn_id = ftp_connect($server);
+            $login_id = ftp_login($conn_id, $FANNIE_PLUGIN_SETTINGS['SpinsFtpUser'], $FANNIE_PLUGIN_SETTINGS['SpinsFtpPw']);
+            if (!$conn_id || !$login_id) {
+                $this->cronMsg('FTP Connection failed', FannieLogger::ERROR);
+                return false;
+            }
+
+            // upload file
+            if ($remoteDir) {
+                ftp_chdir($conn_id, $remoteDir);
+            }
+            ftp_pasv($conn_id, true);
+            $success = ftp_put($conn_id, $filename, $localPath, FTP_ASCII);
+            ftp_close($conn_id);
+            return $success;
         }
-        ftp_pasv($conn_id, true);
-        $uploaded = ftp_put($conn_id, $filename, $localPath, FTP_ASCII);
-        ftp_close($conn_id);
-        return $uploaded;
     }
 }
