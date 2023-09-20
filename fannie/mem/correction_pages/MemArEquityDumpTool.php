@@ -270,7 +270,7 @@ class MemArEquityDumpTool extends FanniePage
             <label>Comment</label>
             <?php $memNum = FormLib::get_form_value('memIN'); ?>
             <input type="text" name="comment" class="form-control" required
-                value="<?php echo $memNum; ?>" />
+                       maxlength="30" value="<?php echo $memNum; ?>" />
         </div>
         <p>
             <button type="submit" name="submit1" value="Submit"
