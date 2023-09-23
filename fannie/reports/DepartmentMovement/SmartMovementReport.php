@@ -131,7 +131,8 @@ class SmartMovementReport extends FannieReportPage
                         t.department,
                         d.dept_name,
                         m.super_name,
-                        v.vendorName
+                        v.vendorName,
+                        i.sku
                     ORDER BY SUM(t.total) DESC";
                 break;
             case 'Department':
