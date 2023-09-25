@@ -307,7 +307,7 @@ function generateExtended_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $
     if ($item['local']) {
         $localX = 1;
         $localY = 23.5;
-        $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY, 15, 9);
+        $pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY+1, 14, 8);
         $pdf->SetDrawColor(243, 115, 34);
         //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
         $pdf->SetDrawColor(0, 0, 0);
