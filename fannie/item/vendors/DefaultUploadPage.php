@@ -111,6 +111,12 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             'default' => 11,
             'required' => false
         ),
+        'uom' => array(
+            'name' => 'uom',
+            'display_name' => 'Unit of Measure',
+            'default' => 12,
+            'required' => false
+        ),       
     );
 
     protected $use_splits = true;
@@ -190,7 +196,9 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $qty = 1.0;
                 }
             }
+            $uom = ($indexes['uom'] === false) ? '' : substr($data[$indexes['uom']], 0, 25);
             $size = ($indexes['size'] === false) ? '' : substr($data[$indexes['size']], 0, 25);
+            $size = ($size != '' && $uom != '') ? $size . $uom : $size;
             $upc = $data[$indexes['upc']];
             $upc = str_replace(' ', '', $upc);
             $upc = str_replace('-', '', $upc);
@@ -402,6 +410,7 @@ class DefaultUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             <ul>
                 <li>Brand. If omitted, the vendor\'s name will go into the brand field.</li>
                 <li>Unit Size. If omitted, the field will remain blank.</li>
+                <li>Unit of Measure. If it exists it will be appended to Unit Size if Unit Size exists.</li>
                 <li>Unit Cost (sale) <strong>or</strong> Case Cost (sale). This is used to store a temporary,
                     promotional cost. Again case cost must be used in conjunction with case quantity.</li>
                 <li>Vendor subcategory. If omitted, all items will be assigned subcategory number one.</li>
