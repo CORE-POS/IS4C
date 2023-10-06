@@ -143,7 +143,11 @@ class FileData
         }
         $sheet = $objPHPExcel->getActiveSheet();
         $rows = $sheet->getHighestRow();
-        $cols = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
+        if (class_exists('\\PhpOffice\\PhpSpreadsheet\\IOFactory')) {
+            $cols = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($sheet->getHighestColumn());
+        } else {
+            $cols = \PHPExcel_Cell::columnIndexFromString($sheet->getHighestColumn());
+        }
         $ret = array();
         for ($i=1; $i<=$rows; $i++) {
             $new = array_map(function ($j) use ($i, &$sheet, $firstCol) {
