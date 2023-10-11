@@ -107,7 +107,7 @@ JAVASCRIPT;
             array('ItemList2UpP.png', 'Item List 2UP', 'ItemList2UpP'),
             array('WFCHerbNSpice3UP.png', 'Herb & Spice Jars', 'Legacy:WFC HerbNspice 3UP'),
             array('MeatLabel.png', 'WFC Meat 14UP', 'Legacy:WFC MEAT 14UP'),
-            array('WFCLegacyBulkRepack14UP.png', 'Bulk Repack', 'Legacy:WFC Bulk Repack 14UP.png'),
+            array('WFCLegacyBulkRepack14UP.png', 'Bulk Repack 14UP', 'Legacy:WFC Bulk Repack 14UP'),
             array('LegacyWFCDarkServiceCase12UP.png', 'Deli Service Case 12UP', 'Legacy:WFC Dark ServiceCase 12UP'),
             array('LegacyWFCDarkSimple24UP.png', 'Deli Shelftags (No Brand,Price)', 'Legacy:WFC Dark Simple 24UP'),
             array('LegacyWFCDarkExtended24UP.png', 'Deli Shelftags (Full Info)', 'Legacy:WFC Dark Extended 24UP'),
