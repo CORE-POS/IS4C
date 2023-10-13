@@ -230,6 +230,9 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     $manualDescs = FormLib::get('update_desc');
     $manualOrigins = FormLib::get('update_origin');
     $customOrigins = FormLib::get('custom_origin');
+    if (!is_array($updateUpcs)) {
+        $updateUpcs = array();
+    }
     $originID = $manualOrigins[array_search($upc, $updateUpcs)];
 
     $mOrigin = $originNames[$originID];
