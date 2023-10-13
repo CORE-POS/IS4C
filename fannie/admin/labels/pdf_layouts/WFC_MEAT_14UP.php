@@ -132,11 +132,11 @@ function generateMirrorMeatTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
         WHERE pu.upc = ?");
     $res = $dbc->execute($prep, $args);
     $row = $dbc->fetchRow($res);
-    $desc = $row['description'];
+    $desc = is_array($row) ? $row['description'] : '';
     $desc = str_replace("\n", "", $desc);
     $desc = str_replace("\r", "", $desc);
-    $par = $row['auto_par'];
-    $sku = $row['sku'];
+    $par = is_array($row) ? $row['auto_par'] : 0;
+    $sku = is_array($row) ? $row['sku'] : '';
     $date = new DateTime();
 
     // prep tag canvas
@@ -226,7 +226,7 @@ function generateMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc,
     $brand = strToUpper($row['brand']);
     $price = $row['normal_price'];
     $descFontSize = 20;
-    if (!defined(FPDF_FONTPATH)) {
+    if (!defined('FPDF_FONTPATH')) {
         define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
     }
     
