@@ -42,6 +42,7 @@ class BatchesModel extends BasicModel
     'transLimit' => array('type'=>'TINYINT', 'default'=>0),
     'notes' => array('type'=>'TEXT'),
     'applied' => array('type'=>'TINYINT', 'default'=>0),
+    'vendorID' => array('type'=>'INT'),
     );
 
     public function doc()

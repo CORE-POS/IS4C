@@ -59,6 +59,7 @@ class BatchUpdateModel extends BasicModel
     const UPDATE_PRICE_EDIT = 'ITEM EDITED';
     const UPDATE_REMOVED = 'ITEM REMOVED';
     const UPDATE_ADDED = 'ITEM ADDED';
+    const UPDATE_MAP = 'STORE BATCH MAP EDIT';
 
     /**
         Requires tables batches & batchUpdate exist.
