@@ -32,6 +32,7 @@ $hereQ = "SELECT MIN(tdate) AS tdate,d.card_no,".
     LEFT JOIN meminfo AS m ON d.card_no=m.card_no
     LEFT JOIN regNotes AS n ON d.card_no=n.card_no
     WHERE upc IN ('0000000001041','0000000001042','0000000001912')
+        AND d.card_no NOT IN (1640)
     GROUP BY d.card_no
     HAVING SUM(quantity) > 0
     ORDER BY MIN(tdate)";
@@ -54,7 +55,7 @@ $query = "SELECT r.tdate,r.card_no,name,email,
     phone,SUM(CASE WHEN m.type='GUEST' THEN 1 ELSE 0 END) AS guest_count,child_count,
     SUM(CASE WHEN m.subtype=1 THEN 1 ELSE 0 END) as taco,
     'website' AS source,
-    n.notes
+    r.remarks AS notes
     FROM registrations AS r LEFT JOIN
     regMeals AS m ON r.card_no=m.card_no
     LEFT JOIN regNotes AS n ON r.card_no=n.card_no
@@ -82,7 +83,7 @@ foreach($records as $w){
     list($fname, $lname) = wfc_am_get_names($w['name']);
     printf('<tr><td>%s</td><td>%d</td><td>%s</td><td>%s</td>
         <td>%s</td><td>%s</td><td>%d</td><td>%d</td>
-        <td>%s</td><td>%s</td></tr>',
+        <td>%s</td><td>%s</td><td>%s</td></tr>',
         $w['tdate'],$w['card_no'],$lname,$fname,$w['email'],
         $w['phone'],$w['guest_count']+1,
         $w['taco'],
