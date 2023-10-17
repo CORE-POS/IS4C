@@ -233,10 +233,11 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     if (!is_array($updateUpcs)) {
         $updateUpcs = array();
     }
-    $originID = $manualOrigins[array_search($upc, $updateUpcs)];
+    $updateIndex = array_search($upc, $updateUpcs);
+    $originID = isset($manualOrigins[$updateIndex]) ? $manualOrigins[$updateIndex]: '';
 
-    $mOrigin = $originNames[$originID];
-    $cOrigin = $customOrigins[array_search($upc, $updateUpcs)];
+    $mOrigin = isset($originNames[$originID]) ? $originNames[$originID] : '';
+    $cOrigin = isset($customOrigins[$updateIndex]) ? $customOrigins[$updateIndex]: '';
 
     if (!isset($origin) && isset($row['originName'])) {
         $origin = $row['originName'];
@@ -268,8 +269,8 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     $desc = $Mdesc;
     $desc = str_replace("\n", "", $desc);
     $desc = str_replace("\r", "", $desc);
-    $par = $row['auto_par'];
-    $backText = $row['long_text'];
+    $par = is_array($row) ? $row['auto_par'] : 0;
+    $backText = is_array($row) ? $row['long_text'] : '';
 
     // get scale info
     $prep = $dbc->prepare("
