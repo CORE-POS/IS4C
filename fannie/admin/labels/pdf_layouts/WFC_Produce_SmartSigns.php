@@ -253,7 +253,7 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     $row = $dbc->fetchRow($res);
 
     $MdescKey = array_search($upc, $updateUpcs);
-    $Mdesc = $manualDescs[$MdescKey];
+    $Mdesc = $MDescKey !== false ? $manualDescs[$MdescKey] : '';
 
     if (isset($formDesc)) {
         if ($formDesc != false) {
