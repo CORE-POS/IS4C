@@ -782,6 +782,7 @@ class RpOrderPage extends FannieRESTfulPage
             <option value="292">Alberts</option>
             <option value="293">CPW</option>
             <option value="136">RDW</option>
+            <option value="358">KeHE</option>
             <option value="1">UNFI</option>
             <option value="-2">Direct</option>
         </select>
