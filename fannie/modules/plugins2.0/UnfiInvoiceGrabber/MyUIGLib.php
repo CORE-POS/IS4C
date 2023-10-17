@@ -37,6 +37,7 @@ class MyUIGLib
     */
     static public function import($filename, $vendorID, $repeat=false)
     {
+        echo $filename . "\n";
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $create = $dbc->prepare('INSERT INTO PurchaseOrder (vendorID, creationDate, placed,
@@ -50,7 +51,13 @@ class MyUIGLib
 
         $header_info = array();
         $item_info = array();
-        $data = FileData::fileToArray($filename);
+        try {
+            $data = FileData::fileToArray($filename);
+        } catch (Exception $ex) {
+            echo "Cannot open file!\n";
+            unlink($filename); // typically JSON error message when download failed
+            return;
+        }
         $header_info = self::parseHeader($data);
         foreach ($data as $line) {
             $testVal = (string)$line[10];
@@ -61,7 +68,7 @@ class MyUIGLib
         }
 
         echo count($item_info) . "\n";
-        return;
+
 
         if (count($item_info) > 0) {
             $id = false;
@@ -211,6 +218,7 @@ class MyUIGLib
         $line[$SKU] = str_pad((string)$line[$SKU], 7, '0', STR_PAD_LEFT);
 
         $caseSize = (string)$line[$CASESIZE];
+        $unitSize = '';
         if (strstr($caseSize, '/')) {
             list($caseSize, $unitSize) = explode('/', $caseSize, 2);
         } elseif (strstr($caseSize, '#')) {

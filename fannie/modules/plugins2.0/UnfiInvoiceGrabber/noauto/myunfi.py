@@ -85,19 +85,23 @@ try:
     driver = init_driver()
     driver.maximize_window()
     driver.get("https://myunfi.com")
-    driver.find_element_by_name("USER").send_keys(SITE_LOGIN)
-    driver.find_element_by_name("password").send_keys(SITE_PASSWD)
-    driver.find_element_by_tag_name('button').click();
     time.sleep(2);
-    #driver.get_screenshot_as_file("login.png")
+    driver.find_element_by_id("signInName").send_keys(SITE_LOGIN)
+    driver.find_element_by_tag_name('button').click();
+    time.sleep(5);
+    driver.get_screenshot_as_file("login.png")
+
+    driver.find_element_by_id("password").send_keys(SITE_PASSWD)
+    driver.find_element_by_tag_name('button').click();
+    time.sleep(5);
 
     driver.get("https://www.myunfi.com/shopping")
     time.sleep(2);
-    #driver.get_screenshot_as_file("shopping.png")
+    driver.get_screenshot_as_file("shopping.png")
 
     driver.get("https://www.myunfi.com/shopping/orders/invoices?size=48")
     time.sleep(15)
-    #driver.get_screenshot_as_file("invoices.png")
+    driver.get_screenshot_as_file("invoices.png")
 
     invoices = []
     for elem in driver.find_elements_by_css_selector("td.MuiTableCell-alignLeft:nth-of-type(1) a"):

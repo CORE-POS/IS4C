@@ -54,7 +54,6 @@ class MyUIGTask extends FannieTask
         if ($ret != 0) {
             $this->cronMsg("UNFI download errored\n" . implode("\n", $output) . "\n", FannieLogger::ALERT);
         }
-        return;
 
         $dir = opendir('/tmp/un');
         while (($file = readdir($dir)) !== false) {
