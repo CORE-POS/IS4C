@@ -172,6 +172,14 @@ HTML;
                     </span>
               </div>
               </form>';
+          $ret .= '
+            <form method="get">
+                <input type="hidden" name="newUpc" id="newUpc" />
+                <input type="hidden" name="upc" id="altUpc" />
+                <div style="padding:25px"></div>
+                <button type="submit" class="btn btn-default" id="altSubmit" style="display: none;">Stay</button>
+            </form>
+          ';
           if ($insR === false) {
             $ret = '<div class="alert alert-danger">Error creating tag</div>';
           }
@@ -183,6 +191,15 @@ HTML;
           $this->addOnloadCommand("bindAutoComplete('#upc', '$wsUrl', 'item');\n");
           $this->addOnloadCommand('$(\'#upc\').focus();');
 
+          $this->addOnloadCommand('$(\'#upc\').focusout(function(){
+               let value = $(this).val();
+               $(\'#newUpc\').val(value);
+               $(\'#altUpc\').val(value);
+          });');
+          $this->addOnloadCommand('$(\'#upc\').keyup(function(){
+               $(\'#altSubmit\').css(\'display\', \'inline\');
+          });');
+
           return $ret;
         }
     }
@@ -190,8 +207,10 @@ HTML;
     protected function get_upc_view()
     {
         $dbc = FannieDB::get($this->config->get('OP_DB'));
+        $newUpc = FormLib::get('newUpc', false);
 
-        $upc = BarcodeLib::padUPC($this->upc);
+        $upc = ($newUpc === false) ? $this->upc : $newUpc;
+        $upc = BarcodeLib::padUPC($upc);
         $product = new ProductsModel($dbc);
         $product->upc($upc);
         $tagData = $product->getTagData();
@@ -219,7 +238,7 @@ HTML;
         <input type='hidden' name=upc value="<?php echo $upc; ?>">
         <div class="form-group form-inline">
             <label>Description</label>
-            <input type='text' name='description' maxlength=30
+            <input type='text' name='description' maxlength=30 style='width: 350px'
                 class="form-control focus" value="<?php echo strtoupper($desc); ?>" />
         <label>Brand</label>
             <input type='text' name='brand' maxlength=15 
