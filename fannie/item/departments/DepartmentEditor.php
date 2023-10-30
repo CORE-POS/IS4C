@@ -238,6 +238,12 @@ class DepartmentEditor extends FannieRESTfulPage
             </select>
         </div>
         <hr />
+        <div id="addOnBtns">
+            <div class="form-group">
+                <button id="prev" class="btn btn-default">Prev</button>
+                <button id="next" class="btn btn-default">Next</button>
+            </div>
+        </div>
         <div id="infodiv" class="deptFields"></div>
         <?php
     
@@ -245,6 +251,18 @@ class DepartmentEditor extends FannieRESTfulPage
         if ($selectedDID !== '') {
             $this->addOnloadCommand('deptEdit.deptchange();'); 
         }
+
+        $js = <<<JAVASCRIPT
+$('#next').on('click', function(){
+    $('#deptselect option:selected').next().prop('selected', true);
+    $('#deptselect').trigger('change');
+});
+$('#prev').on('click', function(){
+    $('#deptselect option:selected').prev().prop('selected', true);
+    $('#deptselect').trigger('change');
+});
+JAVASCRIPT;
+        $this->addOnloadCommand($js);
 
         return ob_get_clean();
     }
