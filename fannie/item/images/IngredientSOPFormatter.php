@@ -18,6 +18,9 @@ class IngredientSOPFormatter extends FanniePage
     public function body_content()
     {
 
+        $ingrHead = FormLib::get("ingrHead", '');
+        $ingrCheck = ($ingrHead == 1) ? ' checked ' : '';
+
         $long_text = strtolower(FormLib::get('ingredients'));
         $long_text = str_replace('ingredients', '', $long_text);
         $long_text = str_replace(':', '', $long_text);
@@ -32,7 +35,10 @@ Contains: " . ucwords($allergens);
         $contains = rtrim($contains, ',');
         $contains = rtrim($contains, ':');
         
-        $ing = "Ingredients: " . ucwords($long_text);
+        $ing = ucwords($long_text);
+        if ($ingrHead == 1) {
+            $ing = "Ingredients: " . ucwords($long_text);
+        }
         if ($allergens != null) {
             $ing .= "
 ";
@@ -74,6 +80,10 @@ Contains: " . ucwords($allergens);
                 <div class="form-group">
                     <label><strong>Allergents</strong></label>
                     <textarea name="allergens" class="form-control" rows=4>$allergens</textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ingrHead">Include the word <i>Ingredients:</i> in Formatted Text</label>
+                    <input type="checkbox" id="ingrHead" name="ingrHead" value=1 $ingrCheck/>
                 </div>
                 <div class="form-group">
                     <input type="submit" class="btn btn-default">
