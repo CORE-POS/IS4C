@@ -132,7 +132,7 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
         $storeP = $dbc->prepare('SELECT storeID FROM PurchaseOrder WHERE orderID=?');
         $storeID = $dbc->getValue($storeP, array($orderID));
 
-        $historyQ = 'SELECT placedDate, quantity
+        $historyQ = 'SELECT placedDate, quantity, receivedQty
             FROM PurchaseOrder AS o
                 INNER JOIN PurchaseOrderItems AS i ON o.orderID=i.orderID
             WHERE o.storeID=?
@@ -161,8 +161,15 @@ class EditOnePurchaseOrder extends FannieRESTfulPage
             $ret[$i]['history'] = array();
             $historyR = $dbc->execute($historyP, array($storeID, $sku));
             while ($historyW = $dbc->fetchRow($historyR)) {
+                $date = date('m/d/y', strtotime($historyW['placedDate']));
+                if (is_null($historyW['receivedQty'])) {
+                    $date .= ' (O)';
+                    $date = '<span class="text-danger">' . $date . '</span>';
+                } else {
+                    $date .= ' (R)';
+                }
                 $ret[$i]['history'][] = array(
-                    'date' => date('m/d/y', strtotime($historyW['placedDate'])),
+                    'date' => $date,
                     'cases' => $historyW['quantity'],
                 );
             }
