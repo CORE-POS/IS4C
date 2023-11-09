@@ -355,9 +355,16 @@ class SalesBatchTask extends FannieTask
                     INNER JOIN CoopDealsBogos AS u
                     ON p.upc=u.upc");
             } else {
+                $res = $dbc->query('SELECT upc, mixMatch FROM CoopDealsBogos ORDER BY upc, mixMatch');
+                $upP = $dbc->prepare("UPDATE products SET mixmatchcode=? WHERE upc=?");
+                while ($row = $dbc->fetchRow($res)) {
+                    $dbc->execute($upP, array($row['mixMatch'], $row['upc']));
+                }
+                /*
                 $dbc->query("UPDATE products AS p
                     INNER JOIN CoopDealsBogos AS u ON p.upc=u.upc
                     SET p.mixmatchcode=u.mixMatch");
+                 */
             }
         }
     }
