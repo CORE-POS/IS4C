@@ -133,6 +133,7 @@ class HobartDgwLib
         }
         $counter = 0;
         foreach ($selected_scales as $scale) {
+            //continue;
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $counter . '.csv';
             $fp = fopen($file_name, 'w');
             $realType = $scale['type'] == 'HOBART_QUANTUMTCP2' ? 'HOBART_QUANTUMTCP' : $scale['type'];
@@ -165,7 +166,7 @@ class HobartDgwLib
                         $realText = $item['ExpandedText' . $scale['storeID']];
                     }
                     if ($item['MOSA']) {
-                        $realText = str_replace('{mosa}', 'Certified Organic By MOSA', $realText);
+                        $realText = str_replace('{mosa}', 'Certified organic by MOSA', $realText);
                     } else {
                         $realText = str_replace('{mosa}', '', $realText);
                     }
