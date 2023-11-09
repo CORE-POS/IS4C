@@ -3,7 +3,7 @@ class FpdfLib
 {
     static function abbreviation_to_upper($text)
     {
-        $ABBREV= array('MN', 'WI', 'BBQ', 'TVP', 'TSP');
+        $ABBREV= array('MN', 'WI', 'BBQ', 'TVP', 'TSP', 'RBST');
         $chunks = explode(' ', $text);
         $new_text = "";
         foreach ($chunks as $chunk) {
