@@ -198,6 +198,10 @@ class WfcWeeklyReport extends FannieRESTfulPage
     protected function get_view()
     {
         $monday = date('Y-m-d', strtotime('last monday'));
+        if (date('N') != 1) {
+            $ts = strtotime($monday);
+            $monday = date('Y-m-d', mktime(0, 0, 0, date('n',$ts), date('j',$ts)-7,date('Y',$ts)));
+        }
         return <<<HTML
 <form method="get">
     <div class="form-group">
