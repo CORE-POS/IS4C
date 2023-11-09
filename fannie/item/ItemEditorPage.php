@@ -354,6 +354,20 @@ HTML;
             return $this->searchForm();
         }
 
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $lnUPCs = array();
+            $lnP = $dbc->prepare("SELECT code FROM AlternateCodes");
+            $lnR = $dbc->execute($lnP);
+            while ($lnW = $dbc->fetchRow($lnR)) {
+                $lnUPCs[] = BarcodeLib::padUPC($lnW['code']);
+            }
+            if (in_array($upc, $lnUPCs)) {
+                $this->msgs = '<div class="alert alert-danger"> PLU ' . $upc . ' is being used as a linked PLU.
+                    This item cannot exist in POS.</div>';
+                return $this->searchForm();
+            }
+        }
+
         $num = $dbc->numRows($result);
 
         /**
