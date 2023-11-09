@@ -257,12 +257,22 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
         ?>
         <form action=RecalculateVendorSRPs.php method=get>
         <p>
-        <label>Recalculate SRPs from margins for which vendor?</label>
-        <select id="vendor-id" name="id" class="form-control">
-            <?php echo $opts; ?></select>
-        <button type=submit class="btn btn-default">Recalculate</button>
-        <button type="button" onclick="location='VendorPricingIndex.php';return false;"
-            class="btn btn-default">Back to Vendor Pricing</button>
+        <div class="form-group">
+            <label>Recalculate SRPs from margins for which vendor?</label>
+            <select id="vendor-id" name="id" class="form-control">
+                <?php echo $opts; ?></select>
+        </div>
+        <div class="form-group">
+            <input type="checkbox" name="futureSrp" id="futureSrp"  value="futureSrp" />
+            <label for="futureSrp">Update Future SRP</label>
+        </div>
+        <div class="form-group">
+            <button type=submit class="btn btn-default">Recalculate</button>
+        </div>
+        <div class="form-group">
+            <button type="button" onclick="location='VendorPricingIndex.php';return false;"
+                class="btn btn-default">Back to Vendor Pricing</button>
+        </div>
         </p>
         </form>
         <?php
