@@ -61,11 +61,47 @@ class ViewPurchaseOrders extends FannieRESTfulPage
             'post<id><sku><isSO>',
             'post<id><sku><adjust>',
             'post<id><ignore>',
-            'get<merge>'
+            'get<merge>',
+            'get<id><receiveDone>'
         );
         if (FormLib::get('all') === '0')
             $this->show_all = false;
         return parent::preprocess();
+    }
+
+    protected function get_id_receiveDone_handler()
+    {
+        $prep = $this->connection->prepare("UPDATE
+            PurchaseOrderItems
+            SET receivedQty=0,
+                receivedTotalCost=0,
+                receivedDate=?
+            WHERE orderID=?
+                AND receivedQty IS NULL");
+        $this->connection->execute($prep, array(
+            date('Y-m-d H:i:s'),
+            $this->id,
+        ));
+
+        $dbc = $this->connection;
+        $storeP = $dbc->prepare("SELECT storeID FROM PurchaseOrder WHERE orderID=?");
+        $store = $dbc->getValue($storeP, array($this->id));
+        $upcP = $dbc->prepare("SELECT internalUPC FROM PurchaseOrderItems WHERE orderID=?");
+        $upcR = $dbc->execute($upcP, array($this->id));
+        $upcs = array();
+        while ($upcW = $dbc->fetchRow($upcR)) {
+            $upcs[] = $upcW['internalUPC'];
+        }
+        $uid = FannieAuth::getUID($this->current_user);
+        $this->newToInventory($this->id, $uid, $upcs);
+        $dbc->startTransaction();
+        $cache = new InventoryCacheModel($dbc);
+        foreach ($upcs as $upc) {
+            $cache->recalculateOrdered($upc, $store);
+        }
+        $dbc->commitTransaction();
+
+        return 'ViewPurchaseOrders.php?id=' . $this->id;
     }
 
     protected function post_id_ignore_handler()
@@ -1003,6 +1039,7 @@ HTML;
                 <button type="submit" class="btn btn-default">Continue</button>
                 <a href="?id=' . $this->id . '&receiveAll=1" class="btn btn-default btn-reset">All</a>
                 <a href="?id=' . $this->id . '" class="btn btn-default btn-reset">Order</a>
+                <a href="?id=' . $this->id . '&receiveDone=1" class="btn btn-default btn-reset">Done Receiving</a>
                 </form>
             </div></p>
             <div id="item-area">
@@ -1087,6 +1124,14 @@ HTML;
         }
 
         $this->newToInventory($this->id, $uid, $upcs);
+        $storeP = $dbc->prepare("SELECT storeID FROM PurchaseOrder WHERE orderID=?");
+        $store = $dbc->getValue($storeP, array($this->id));
+        $dbc->startTransaction();
+        $cache = new InventoryCacheModel($dbc);
+        foreach ($upcs as $upc) {
+            $cache->recalculateOrdered($upc, $store);
+        }
+        $dbc->commitTransaction();
 
         return false;
     }
