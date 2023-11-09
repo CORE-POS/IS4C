@@ -183,7 +183,7 @@ $data = array_merge($full, $half);
 $width = 52; // tag width in mm
 $height = 31; // tag height in mm
 $left = 1; // left margin
-$top = 1; // top margin
+$top = 0; // top margin
 $bTopOff = 0;
 
 $pdf->SetTopMargin($top);  //Set top margin of the page
@@ -198,13 +198,13 @@ $full_x = $left;
 $full_y = $top;
 
 // half size tag settings
-$upcX = 7;  //x location of barcode
+$upcX = 3;  //x location of barcode
 $upcY = $top; //y locaton of barcode
-$priceY = 14 + $top; //y location of size and price on label
-$priceX = 8; //x location of date and price on label
+$priceY = 12.5 + $top; //y location of size and price on label
+$priceX = 2; //x location of date and price on label
 $count = 0;  //number of labels created
-$baseY = 31 + $bTopOff; // baseline Y location of label
-$baseX = 6;  // baseline X location of label
+$baseY = 13 + $bTopOff; // baseline Y location of label
+$baseX = 2;  // baseline X location of label
 $down = 31.0;
 
 //cycle through result array of query
@@ -297,27 +297,27 @@ foreach($data as $row) {
         // basically just set cursor position
         // then write text w/ Cell
         $pdf->SetFont('Arial','',8);  //Set the font
-        $pdf->SetXY($full_x,$full_y+12);
-        $pdf->Cell($width,4,$desc,0,1,'L');
+        $pdf->SetXY($full_x,$full_y+11.5);
+        $pdf->Cell($width,3,$desc,0,1,'L');
         $pdf->SetX($full_x);
-        $pdf->Cell($width,4,$brand,0,1,'L');
+        $pdf->Cell($width,3,$brand,0,1,'L');
         $pdf->SetX($full_x);
-        $pdf->Cell($width,4,$size,0,1,'L');
+        $pdf->Cell($width,3,$size,0,1,'L');
         $pdf->SetX($full_x);
-        $pdf->Cell($width,4,$sku.' '.$vendor,0,0,'L');
+        $pdf->Cell($width,3.5,$sku.' '.$vendor,0,0,'L');
         $pdf->SetX($full_x);
-        $pdf->Cell($width-5,4,$ppu,0,0,'R');
+        $pdf->Cell($width-5,3.5,$ppu,0,0,'R');
 
         $lbMod = 0;
         if (strpos($size, '#') != 0) {
             $lbMod = -5;
             $pdf->SetFont('Arial','B',12);
-            $pdf->SetXY($full_x,$full_y+17);
+            $pdf->SetXY($full_x,$full_y+14);
             $pdf->Cell($width-5,8,'/lb',0,0,'R');
         }
 
         $pdf->SetFont('Arial','B',24);  //change font size
-        $pdf->SetXY($full_x+$lbMod,$full_y+16);
+        $pdf->SetXY($full_x+$lbMod,$full_y+14);
         $pdf->Cell($width-5,8,$price,0,0,'R');
 
    } else {
@@ -389,9 +389,9 @@ foreach($data as $row) {
         $pdf->SetXY($baseX, $baseY);
         $pdf->MultiCell(100, 3, $curStr);
         $pdf->SetX($baseX);
-        $pdf->Cell(0, 3, $tagdate);
+        $pdf->Cell(0, 2.5, $tagdate);
         $pdf->SetX($baseX+12);
-        $pdf->Cell(0, 3, $size, 0, 1);
+        $pdf->Cell(0, 2.5, $size, 0, 1);
 
         $words = preg_split('/[ ,-]+/',$brand);
         $curStr = "";
@@ -415,7 +415,7 @@ foreach($data as $row) {
            $curCnt++;
         }
         $pdf->SetX($baseX);
-        $pdf->Cell(0, 3, $curStr);
+        $pdf->Cell(0, 2.5, $curStr);
 
         // add a blue dot to items in REFRIGERATED department
         $pdf->SetXY($baseX+48.5, $baseY+3);
@@ -469,19 +469,21 @@ foreach($data as $row) {
    // one and reset x/y top left margins
    // otherwise if it's the end of a line,
    // reset x and move y down by tag height
+   if ($num < count($data)) {
     $pdf->AddPage();
+   }
     // full size
     $full_x = $left;
     $full_y = $top;
 
     // half size
-    $upcX = 7;  //x location of barcode
+    $upcX = 3;  //x location of barcode
     $upcY = $top; //y locaton of barcode
-    $priceY = 29 + $bTopOff; //y location of size and price on label
-    $priceX = 8; //x location of date and price on label
+    $priceY = 12.5 + $top; //y location of size and price on label
+    $priceX = 2; //x location of date and price on label
     $count = 0;  //number of labels created
-    $baseY = 31 + $bTopOff; // baseline Y location of label
-    $baseX = 6;  // baseline X location of label
+    $baseY = 13 + $bTopOff; // baseline Y location of label
+    $baseX = 2;  // baseline X location of label
 
    $num++;
 }

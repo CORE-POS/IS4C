@@ -176,7 +176,9 @@ foreach($data as $row) {
     // one and reset x/y top left margins
     // otherwise if it's the end of a line,
     // reset x and move y down by tag height
-    $pdf->AddPage();
+    if ($num < count($data)) {
+        $pdf->AddPage();
+    }
     // full size
     $full_x = $left;
     $full_y = $top;
