@@ -43,7 +43,7 @@ class MyUIGTask extends FannieTask
         $pass = $FANNIE_PLUGIN_SETTINGS[$this->password_field];
         $account = $FANNIE_PLUGIN_SETTINGS['UnfiAccount'];
 
-        $cmd = __DIR__ . '/noauto/myunfi.py'
+        $cmd = __DIR__ . '/noauto/myunfi2.py'
             . ' ' . escapeshellarg('-u')
             . ' ' . escapeshellarg($user)
             . ' ' . escapeshellarg('-p')
@@ -57,8 +57,9 @@ class MyUIGTask extends FannieTask
 
         $dir = opendir('/tmp/un');
         while (($file = readdir($dir)) !== false) {
-            if (substr($file, -5) == '.xlsx') {
-                MyUIGLib::import('/tmp/un/' . $file, $this->vendor_id);
+            if (substr($file, -4) == '.zip') {
+                UIGLib::import('/tmp/un/' . $file, $this->vendor_id);
+                unlink('/tmp/un/' . $file);
             }
         }
 
