@@ -264,8 +264,8 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
 
         $ret .= '<table class="table table-bordered" id="invoice-table">
             <thead><tr>
-                <th>SKU</th>
                 <th>UPC</th>
+                <th>SKU</th>
                 <th>Cases</th>
                 <th>Units/Case</th>
                 <th>Total Cost</th>
@@ -278,7 +278,7 @@ class ManualPurchaseOrderPage extends FannieRESTfulPage
 
         $ret .= '</form>';
 
-        $this->addScript('js/manual.js?date=20200616');
+        $this->addScript('js/manual.js?date=20231027');
         $this->addScript('../item/autocomplete.js');
         if (FormLib::get('adjust') == '') {
             $this->addOnloadCommand('addInvoiceLine();');
