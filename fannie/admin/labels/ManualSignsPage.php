@@ -107,7 +107,7 @@ class ManualSignsPage extends FannieRESTfulPage
             WHERE u.upc=?");
         while ($row = $this->connection->fetchRow($res)) {
             if ($row['upc'] != $prevUPC) {
-                if ($this->queueID == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
+                if (($this->queueID == 6 || $this->queueID == 1042)  && $this->config->get('COOP_ID') == 'WFC_Duluth') {
                     $lcRow = $this->connection->getRow($lcP, array($row['upc']));
                     $row['origin'] = is_array($lcRow) && $lcRow['signOrigin'] ? $lcRow['origin'] : '';
                     if ($row['normal_price'] > $row['price']) {
@@ -217,8 +217,8 @@ class ManualSignsPage extends FannieRESTfulPage
         }
         $offset = '';
         $clearBtn = '';
-        if (FormLib::get('queueID') == 6 && $this->config->get('COOP_ID') == 'WFC_Duluth') {
-            $mods = array('Legacy:WFC Produce SmartSigns','Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce');
+        if ((FormLib::get('queueID') == 6 || FormLib::get('queueID')  == 1042) && $this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $mods = array('Legacy:WFC Produce SmartSigns','Produce4UpP', 'Produce4UpSingle', 'Legacy:WFC Produce', 'Legacy:WFC Produce Single');
             $offset = 'checked';
             $clearBtn = '<a href="ManualSignsPage.php?_method=delete&id=' . FormLib::get('queueID') . '"
                 class="btn btn-default pull-right">Clear Queue</a>';
