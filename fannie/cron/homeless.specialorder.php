@@ -56,6 +56,7 @@ select p.order_id from PendingSpecialOrder as p
 left join SpecialOrders as n
 on p.order_id=n.specialOrderID
 where notes LIKE ''
+and s.deleted=0
 group by p.order_id
 having max(department)=0 and max(noteSuperID)=0
 and max(trans_id) > 0
@@ -70,6 +71,7 @@ from PendingSpecialOrder
 as s left join SpecialOrders as c on s.order_id=c.specialOrderID
 left join {$OP}custdata as b on s.card_no=b.CardNo and s.voided=b.personNum
 WHERE c.storeID NOT IN (1, 2)
+and s.deleted=0
 and trans_id > 0
 
 order by datetime
