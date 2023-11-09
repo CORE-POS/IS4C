@@ -49,6 +49,7 @@ class HouseCouponsModel extends BasicModel
     'superID' => array('type'=>'INT'),
     'summary' => array('type'=>'VARCHAR(65)'),
     'label' => array('type'=>'VARCHAR(30)'),
+    'salesCode' => array('type'=>'VARCHAR(255)'),
     );
 
     public function doc()
