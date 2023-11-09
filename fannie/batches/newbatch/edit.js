@@ -395,6 +395,24 @@ var batchEdit = (function ($) {
         }
     }
 
+    mod.setVendorID = function()
+    {
+        var batchID = $('#batchID').val();
+        var vendorID = $('#vendorID').val();
+        
+        $.ajax({
+            type: 'post',
+            url: 'EditBatchPage.php',
+            data: 'editVendorID='+vendorID+'&batchID='+batchID,
+        }).done(function(resp) {
+            if (resp.error) {
+                //inputAreaAlert('danger', resp.error);
+            } else {
+                //inputAreaAlert('success', resp);
+            }
+        });
+    }
+
     mod.editBatchDate = function(olddate, action)
     {
         //alert(olddate);

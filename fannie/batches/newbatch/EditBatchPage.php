@@ -79,10 +79,24 @@ class EditBatchPage extends FannieRESTfulPage
             'post<id><storeID>',
             'post<noteID><batchNotes>',
             'post<partialID>', 'post<editBatch>',
-            'post<editDate>'
+            'post<editDate>',
+            'post<editVendorID>'
         );
 
         return parent::preprocess();
+    }
+
+    protected function post_editVendorID_handler()
+    {
+        $vendorID = FormLib::get('editVendorID');
+        $batchID = FormLib::get('batchID');
+
+        $model = new BatchesModel($this->connection);
+        $model->batchID($batchID);
+        $model->vendorID($vendorID);
+        $model->save();
+
+        return true;
     }
 
     protected function post_editDate_handler()
@@ -937,6 +951,8 @@ class EditBatchPage extends FannieRESTfulPage
         $dbc->selectDB($this->config->OP_DB);
         $ret = array('error'=>0, 'display'=>'');
 
+        $bu = new BatchUpdateModel($dbc);
+
         $map = new StoreBatchMapModel($dbc);
         $map->storeID($this->storeID);
         $map->batchID($this->id);
@@ -944,11 +960,17 @@ class EditBatchPage extends FannieRESTfulPage
             $deleted = $map->delete();
             if (!$deleted) {
                 $ret['error'] = 'Error removing store mapping';
+            } else {
+                $bu->batchID($this->id);
+                $bu->logUpdate($bu::UPDATE_MAP);
             }
         } else {
             $saved = $map->save();
             if (!$saved) {
                 $ret['error'] = 'Error saving store mapping';
+            } else {
+                $bu->batchID($this->id);
+                $bu->logUpdate($bu::UPDATE_MAP);
             }
         }
         echo $this->debugJSON($ret);
@@ -1082,6 +1104,7 @@ HTML;
             return $this->showPairedBatchDisplay($id,$name);
         }
         $noprices = $typeModel->editorUI() == 4 ? 'collapse' : '';
+        $normalPriceHeader = ($type != 17) ? 'Normal Price' : 'Normal Cost';
 
         $limit = $model->transLimit();
         $hasLimit = $limit > 0 ? true : false;
@@ -1093,6 +1116,16 @@ HTML;
             $saleHeader = "% Discount";
         } elseif ($dtype == 0) {
             $saleHeader = "New price";
+        } elseif ($dtype == -1) {
+            $saleHeader = "New Cost";
+        }
+
+        $vidExistsP = $dbc->prepare("SHOW COLUMNS FROM `batches` LIKE 'vendorID'");
+        $vidExists = $dbc->getRow($vidExistsP);
+        $vendorID = null;
+        if ($vidExists != 0) {
+            $vidP = $dbc->prepare("SELECT vendorID FROM batches WHERE batchID=?");
+            $vendorID = $dbc->getValue($vidP, $id);
         }
 
         $fetchArgs = array();
@@ -1108,6 +1141,7 @@ HTML;
                     ELSE l.likeCodeDesc
                 END AS description,
                 p.normal_price,
+                p.cost,
                 b.salePrice,
                 CASE WHEN c.upc IS NULL then 0 ELSE 1 END as isCut,
                 b.quantity,
@@ -1163,6 +1197,26 @@ HTML;
         $this->addOnloadCommand("$('.be-editable-date').datepicker();");
         //$this->addOnloadCommand("$('#batchName').removeAttribute('tabIndex');");
 
+        $vendorDatalist = "";
+        $vendorsP = $dbc->prepare("SELECT vendorID, vendorName FROM vendors");
+        $vendorsR = $dbc->execute($vendorsP);
+        while ($vendorsRow = $dbc->fetchRow($vendorsR)) {
+            $vid = $vendorsRow['vendorID'];
+            $vendorName = $vendorsRow['vendorName'];
+            $vendorDatalist .= "<option value=\"$vid\">$vendorName</option>";
+        }
+
+        $vendorID_HTML = '';
+        if ($type == 17) {
+            $vendorID_HTML = "
+            <datalist id=\"vendorList\"$vendorDatalist>$vendorDatalist</datalist>
+            &nbsp;
+            <b>Vendor ID</b>:
+            <input list=\"vendorList\" type=\"text\" name=\"vendorID\" id=\"vendorID\" class=\"form-control \"
+                placeholder=\"vendor ID\" style=\"display: inline-block; width: 110px\" autocomplete=\"off\"
+                onchange=\"batchEdit.setVendorID(); return false;\" value=\"$vendorID\"/>";
+        }
+
         $ret = "<span class=\"newBatchBlack\"><b>Batch name</b>: <input type=\"text\" class=\"be-editable form-control wide\"
             value=\"$name\" name=\"batchName\" id=\"batchName\" onchange=\"batchEdit.renameBatch('$name'); return false;\" /></span> | ";
 
@@ -1179,7 +1233,7 @@ HTML;
             onchange="batchEdit.editBatchDate(\''.$endYMD.'\', \'end\'); return false;"
             name="startDate" id="endDate" value="'
             . date('Y-m-d', strtotime($model->endDate()))
-            . '"/> | ' . '<a href="batchReport.php?batchID=' . $id . '">Report</a><br />';
+            . '"/>  ' . $vendorID_HTML . ' | <a href="batchReport.php?batchID=' . $id . '">Report</a><br />';
         if ($this->config->get('STORE_MODE') === 'HQ') {
             $stores = new StoresModel($dbc);
             $stores->hasOwnItems(1);
@@ -1294,7 +1348,7 @@ HTML;
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=desc_d\">Description</a></th>";
         }
         if ($orderby != "ORDER BY p.normal_price DESC") {
-            $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=price_d\">Normal Price</a></th>";
+            $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=price_d\">$normalPriceHeader</a></th>";
         } else {
             $ret .= "<th><a href=\"EditBatchPage.php?id=$id&sort=price_a\">Normal Price</a></th>";
         }
@@ -1367,7 +1421,12 @@ HTML;
             }
             $ret .= "<td bgcolor=$colors[$cur]><span $tr_style>{$fetchW['brand']}</span></td>";
             $ret .= "<td bgcolor=$colors[$cur]><span $tr_style>{$fetchW['description']}</span></td>";
-            $ret .= "<td bgcolor=$colors[$cur] class=\"price\">{$fetchW['normal_price']}</td>";
+            if ($type != 17) {
+                $ret .= "<td bgcolor=$colors[$cur] class=\"price\">{$fetchW['normal_price']}</td>";
+            } else {
+                $ret .= "<td bgcolor=$colors[$cur] class=\"price\">{$fetchW['cost']}</td>";
+            }
+
             $qtystr = ($fetchW['pricemethod']>0 && is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0) ? $fetchW['quantity'] . " for " : "";
             $qty = is_numeric($fetchW['quantity']) && $fetchW['quantity'] > 0 ? $fetchW['quantity'] : 1;
             $ret .= "<td bgcolor=$colors[$cur] class=\"{$noprices} saleprice\">";
@@ -1689,7 +1748,7 @@ HTML;
     {
         $this->addScript($this->config->get('URL') . 'src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile($this->config->get('URL') . 'src/javascript/chosen/bootstrap-chosen.css');
-        $this->addScript('edit.js?20180523');
+        $this->addScript('edit.js?20180524');
         $this->addCssFile('index.css');
         $this->addOnloadCommand('$(\'#addItemUPC\').focus()');
         $this->addOnloadCommand("enableLinea('#addItemUPC');\n");
