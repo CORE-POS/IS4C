@@ -221,6 +221,14 @@ HTML;
         $prodR = $dbc->execute($prodQ,array($upc));
         $prodW = $dbc->fetchRow($prodR);
         $superID = $prodW['superID'];
+        if ($superID == 6) {
+            echo "PRODUCE";
+        }
+        $storeID = COREPOS\Fannie\API\lib\Store::getIdByIp();
+
+        if ($superID == 6 && $storeID == 2 && FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
+            $superID = 1042;
+        }
 
         $price = $tagData['normal_price'];
         $desc = $tagData['description'];
