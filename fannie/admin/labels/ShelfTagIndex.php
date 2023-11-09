@@ -142,7 +142,7 @@ function printMany(){
             if (!in_array($l, $tagEnabled) && count($tagEnabled) > 0) continue;
             if ($l == $sel) {
                 echo "<option selected>".$l."</option>";
-            } elseif ($l == 'WFC Hybrid') {
+            } elseif ($sel == '' && $l == 'WFC Hybrid') {
                 echo "<option selected>".$l."</option>";
             } else {
                 echo "<option>".$l."</option>";
