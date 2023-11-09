@@ -253,7 +253,7 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     $row = $dbc->fetchRow($res);
 
     $MdescKey = array_search($upc, $updateUpcs);
-    $Mdesc = $MDescKey !== false ? $manualDescs[$MdescKey] : '';
+    $Mdesc = $MdescKey !== false ? $manualDescs[$MdescKey] : '';
 
     if (isset($formDesc)) {
         if ($formDesc != false) {
@@ -362,9 +362,13 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
         $pdf->SetFont('Gill','', 10);
         $pdf->SetXY($x, $y+52);
         if ($formOrigin != false) {
-            $pdf->Cell($width-22, 4, 'Product of ' . $formOrigin, 0, 1, 'C', true);
+            if (strlen($formOrigin) > 0) {
+                $pdf->Cell($width-22, 4, 'Product of ' . $formOrigin, 0, 1, 'C', true);
+            }
         } else {
-            $pdf->Cell($width-22, 4, 'Product of ' . $printOrigin, 0, 1, 'C', true);
+            if (strlen($printOrigin) > 0) {
+                $pdf->Cell($width-22, 4, 'Product of ' . $printOrigin, 0, 1, 'C', true);
+            }
         }
     }
 
