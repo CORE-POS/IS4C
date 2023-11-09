@@ -344,6 +344,7 @@ HTML;
             WHERE closed=0 AND deleted=0
                 AND storeID=?
                 AND {$statClause}
+                AND YEAR(placedDate) = YEAR(NOW())
             ORDER BY pickupOrderID DESC");
         $res = $this->connection->execute($prep, array($store));
         $table = '';
