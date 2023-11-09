@@ -109,7 +109,7 @@ class EpScaleLib
     static private function expandedText($text, $item_info)
     {
         if ($item_info['MOSA']) {
-            $text = str_replace('{mosa}', 'Certified Organic By MOSA', $text);
+            $text = str_replace('{mosa}', 'Certified organic by MOSA', $text);
         } else {
             $text = str_replace('{mosa}', '', $text);
             $text = str_ireplace('CERTIFIED ', '', $text);
@@ -314,6 +314,7 @@ class EpScaleLib
                 $depts[] = $scale_model->epDeptNo();
             }
 
+            /*
             $file_name = sys_get_temp_dir() . '/' . $file_prefix . '_writeItem_' . $counter . '.dat';
             $fptr = fopen($file_name, 'w');
             fwrite($fptr, 'BNA' . $file_prefix . '_' . $counter . chr(253) . self::$NEWLINE);
@@ -332,6 +333,7 @@ class EpScaleLib
             if (!rename($file_name, $output_dir . '/' . basename($file_name))) {
                 unlink($file_name);
             }
+             */
 
             $counter++;
         }
