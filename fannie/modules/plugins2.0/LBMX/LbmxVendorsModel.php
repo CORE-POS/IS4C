@@ -33,6 +33,8 @@ class LbmxVendorsModel extends BasicModel
     protected $columns = array(
     'lbmxID' => array('type'=>'VARCHAR(255)', 'primary_key'=>true),
     'posID' => array('type'=>'INT'),
+    'outputName' => array('type'=>'VARCHAR(255)'),
+    'paymentMethod' => array('type'=>'INT', 'default'=>2),
     );
 
 }

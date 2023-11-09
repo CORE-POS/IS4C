@@ -68,7 +68,7 @@ class LbmxReformat2 extends COREPOS\Fannie\API\FannieUploadPage
     public function process_file($linedata, $indexes)
     {
         $getStoreP = $this->connection->prepare("SELECT posID FROM LbmxStores WHERE lbmxID=?");
-        $getVendorP = $this->connection->prepare("SELECT vendorName FROM LbmxVendors AS l
+        $getVendorP = $this->connection->prepare("SELECT vendorName, outputName, paymentMethod FROM LbmxVendors AS l
             LEFT JOIN vendors AS v on l.posID=v.vendorID WHERE lbmxID=?");
 
         /*
@@ -95,7 +95,9 @@ class LbmxReformat2 extends COREPOS\Fannie\API\FannieUploadPage
             } 
 
             $storeID = $this->connection->getValue($getStoreP, array($line[$indexes['customerID']]));
-            $vendorID = $this->connection->getValue($getVendorP, array($line[$indexes['vendorID']]));
+            $vendorRow = $this->connection->getRow($getVendorP, array($line[$indexes['vendorID']]));
+            $vendorID = $vendorRow['outputName'] ? $vendorRow['outputName'] : $vendorRow['vendorName'];
+            $paymentMethod = $vendorRow['paymentMethod'];
             $invDate = date('m/d/Y', strtotime($line[$indexes['date']]));
             $dueDate = date('m/d/Y', strtotime($line[$indexes['due']]));
             $coding = str_replace('-', '', $line[$indexes['coding']]);
@@ -109,7 +111,7 @@ class LbmxReformat2 extends COREPOS\Fannie\API\FannieUploadPage
             $invoice = $line[$indexes['invoice']];
             $po = $line[$indexes['po']];
 
-            fprintf($fp, '2,'
+            fprintf($fp, $paymentMethod .','
                 . $vendorID . ','
                 . $invoice . ','
                 . $invDate . ','
