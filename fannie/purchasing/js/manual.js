@@ -34,6 +34,11 @@ function upcField(row, vendor_id)
         .on( "autocompletechange", function(event,ui) {
             // post value to console for validation
             upcLookup($(this).val(), $(this));
+        })
+        .on("keyup", function(event,ui) {
+            if (event.keyCode == 13) {
+                addInvoiceLine();
+            }
         });
     row.append($('<td>').append(upc));
 }
@@ -135,8 +140,8 @@ function addInvoiceLine()
     var vendor_id = $('#vendor-id').val();
     var row = $('<tr>');
 
-    skuField(row, vendor_id);
     upcField(row, vendor_id);
+    skuField(row, vendor_id);
     qtyField(row);
     caseSizeField(row);
     totalField(row);
