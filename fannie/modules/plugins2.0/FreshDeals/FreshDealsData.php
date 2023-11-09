@@ -89,7 +89,8 @@ class FreshDealsData extends FannieRESTfulPage
 
         $args = array($store, $start, $end . ' 23:59:59');
         list($inStr, $args) = $this->connection->safeInClause($upcs, $args);
-        $query = "SELECT SUM(quantity) AS qty, SUM(total) AS ttl, AVG(unitPrice) AS retail
+        $query = "SELECT SUM(quantity) AS qty, SUM(total) AS ttl, 
+            AVG(CASE WHEN register_no=40 THEN null ELSE unitPrice END) AS retail
             FROM {$dlog}
             WHERE " . DTrans::isStoreID($store) . "
                 AND tdate BETWEEN ? AND ?
