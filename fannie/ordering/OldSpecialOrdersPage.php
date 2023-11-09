@@ -84,7 +84,8 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
             5 => "Arrived",
             7 => "Completed",
             8 => "Canceled",
-            9 => "Inquiry"
+            9 => "Inquiry",
+            99 => "Auto-closed",
         );
 
         /**
@@ -107,10 +108,13 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
         */
         $filterstring = '1=1 ';
         $filterargs = array();
-        if ($filter_status !== '') {
+        if ($filter_status !== '' && $filter_status != 99) {
             $filter_status = (int)$filter_status;
             $filterstring .= ' AND statusFlag=?';
             $filterargs[] = $filter_status;
+        } elseif ($filter_status == 99) {
+            $filter_status = (int)$filter_status;
+            $filterstring .= ' AND p.order_id IN (SELECT order_id FROM ' . FannieDB::fqn('SpecialOrderHistory', 'trans') . ' WHERE entry_type=\'AUTOCLOSE\' GROUP BY order_id) ';
         }
         if ($filter_name !== '') {
             $filterstring .= ' AND (o.lastName LIKE ? OR c.LastName LIKE ?) ';
@@ -197,7 +201,13 @@ class OldSpecialOrdersPage extends NewSpecialOrdersPage
             GROUP BY p.order_id,statusFlag,subStatus
             HAVING 
                 (count(*) > 1 OR SUM(CASE WHEN o.notes LIKE '' THEN 0 ELSE 1 END) > 0)";
-        if ($this->card_no === false) {
+        if ($filter_status == 99) {
+            $lookupQ .= "
+                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*6)
+                AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*6) ";
+            $filterargs[] = $page;
+            $filterargs[] = $page; // again
+        } elseif ($this->card_no === false) {
             $lookupQ .= "
                 AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." >= ((?-1)*2)
                 AND ".$dbc->monthdiff($dbc->now(),'min(datetime)')." < (?*2) ";
