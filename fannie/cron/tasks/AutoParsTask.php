@@ -118,6 +118,10 @@ class AutoParsTask extends FannieTask
                 break;
             }
         }
+
+        $zeroOldP = $dbc->prepare("UPDATE products SET auto_par = 0 where last_sold < NOW() - INTERVAL 180 DAY AND auto_par > 0;");
+        $dbc->execute($zeroOldP);
+
     }
 
     private function getAverage($dbc, $salesR)
