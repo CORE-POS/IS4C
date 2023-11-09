@@ -115,7 +115,7 @@ class OverShortMAS extends FannieRESTfulPage {
                     AND " . DTrans::isStoreID($store, 'd') . "
                     AND tdate BETWEEN ? AND ?
                 GROUP BY upc, description");
-        $coupP = $dbc->prepare("SELECT memberOnly FROM houseCoupons WHERE coupID=?");
+        $coupP = $dbc->prepare("SELECT memberOnly, salesCode FROM houseCoupons WHERE coupID=?");
         $tenderQ = "SELECT SUM(total) AS amount,
                 CASE WHEN description='REBATE CHECK' THEN 'RB'
                 WHEN trans_subtype IN ('CA','CK') THEN 'CA'
@@ -143,8 +143,14 @@ class OverShortMAS extends FannieRESTfulPage {
                 $icR = $dbc->execute($icP, $args);
                 while ($icW = $dbc->fetchRow($icR)) {
                     $coupID = sprintf('%d', substr($icW['upc'], -5));
-                    $memOnly = $dbc->getValue($coupP, array($coupID));
-                    $coding = (!$coupID || $memOnly) ? 66600 : 67715;
+                    $coupW = $dbc->getRow($coupP, array($coupID));
+                    $coding = 67715;
+                    if ($coupW['salesCode']) {
+                        $coding = $coupW['salesCode'];
+                    } elseif (!$coupID || $coupW['memberOnly']) {
+                        $coding = 66600;
+                    }
+                    //$coding = (!$coupID || $memOnly) ? 66600 : 67715;
                     $credit = $icW['ttl'] < 0 ? -1*$icW['ttl'] : 0;
                     $debit = $icW['ttl'] > 0 ? $icW['ttl'] : 0;
                     $row = array($dateID, $dateStr,
