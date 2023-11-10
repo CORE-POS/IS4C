@@ -258,10 +258,20 @@ $('.exc').on('change', function(){
         $(this).closest('tr').find('.input-description').attr('disabled', true);
         $(this).closest('tr').find('.input-brand').attr('disabled', true);
         $(this).closest('tr').find('.input-price').attr('disabled', true);
+        $(this).closest('tr').find('.input-scale').attr('disabled', true);
+        $(this).closest('tr').find('.input-size').attr('disabled', true);
+        $(this).closest('tr').find('.input-origin').attr('disabled', true);
+        $(this).closest('tr').find('.input-start').attr('disabled', true);
+        $(this).closest('tr').find('.input-end').attr('disabled', true);
     } else {
         $(this).closest('tr').find('.input-description').attr('disabled', false);
         $(this).closest('tr').find('.input-brand').attr('disabled', false);
         $(this).closest('tr').find('.input-price').attr('disabled', false);
+        $(this).closest('tr').find('.input-scale').attr('disabled', false);
+        $(this).closest('tr').find('.input-size').attr('disabled', false);
+        $(this).closest('tr').find('.input-origin').attr('disabled', false);
+        $(this).closest('tr').find('.input-start').attr('disabled', false);
+        $(this).closest('tr').find('.input-end').attr('disabled', false);
     }
 });
 JAVASCRIPT;
