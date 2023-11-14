@@ -910,11 +910,18 @@ HTML;
             }
         }
 
+        $FANNIE_URL = $this->config->get('URL');
+        $this->addScript($FANNIE_URL . 'src/javascript/chosen/chosen.jquery.min.js');
+        $this->addCssFile($FANNIE_URL . 'src/javascript/chosen/bootstrap-chosen.css');
+
+        $this->add_onload_command('$(\'.chosen-select:visible\').chosen();');
+        $this->add_onload_command('$(\'#store-tabs a\').on(\'shown.bs.tab\', function(){$(\'.chosen-select:visible\').chosen();});');
+
         return <<<HTML
 {$this->backBtn()}<br/><br/>
 <form class="form-inline" method="get">
     <div class="form-group">
-        <select class="form-control" name="vendorToUpdate">
+        <select class="form-control chosen-select" name="vendorToUpdate">
             <option value="default">Default Vendor ID</option> 
             $vselect
         </select>
