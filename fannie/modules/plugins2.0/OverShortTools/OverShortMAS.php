@@ -145,7 +145,7 @@ class OverShortMAS extends FannieRESTfulPage {
                     $coupID = sprintf('%d', substr($icW['upc'], -5));
                     $coupW = $dbc->getRow($coupP, array($coupID));
                     $coding = 67715;
-                    if ($coupW['salesCode']) {
+                    if (is_array($coupW) && $coupW['salesCode']) {
                         $coding = $coupW['salesCode'];
                     } elseif (!$coupID || $coupW['memberOnly']) {
                         $coding = 66600;
