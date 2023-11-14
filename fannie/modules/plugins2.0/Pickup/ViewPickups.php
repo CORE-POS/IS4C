@@ -45,6 +45,7 @@ class ViewPickups extends FannieRESTfulPage
                 LEFT JOIN productUser AS u ON i.upc=u.upc
             WHERE pickupOrderID=?
                 AND i.upc NOT IN ('', '0', 'TAX')
+                AND i.upc NOT LIKE '%DP%'
             ORDER BY brand DESC, description");
         foreach ($this->id as $id) {
             $order = new PickupOrdersModel($this->connection);
