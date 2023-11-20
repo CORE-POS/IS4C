@@ -222,8 +222,9 @@ class PluRangePage extends FannieRESTfulPage
         $ret .= '</div>';
         $ret .= '<div class="form-group">';
         $ret .= '<label># needed</label>';
-        $ret .= '<input type="number" name="number" class="form-control" 
+        $ret .= '<input type="number" name="number" id="number" class="form-control" 
                     required value="1" />';
+        $ret .= '<p id="addText" style="padding: 5px"></p>';
         $ret .= '</div>
             <div class="form-group">
             <label>PLU Type</label>
@@ -234,6 +235,24 @@ class PluRangePage extends FannieRESTfulPage
         ';
         $ret .= '<p><button type="submit" class="btn btn-default">Find PLUs</button></p>';
         $ret .= '</form>';
+
+        $js = <<<JAVASCRIPT
+$('select').on('change', function(){
+    let selected = $(this).find(':selected').text();
+    if (selected == 'Scale') {
+        $('#number').val(1);
+        $('#number').attr('readonly', true);
+        $('#addText').text('Only 1 scale PLU can be created at a time.');
+    } else {
+        $('#number').val(1);
+        $('#number').attr('readonly', false);
+        $('#addText').text('');
+    }
+    console.log(selected); 
+});
+JAVASCRIPT;
+
+        $this->addOnloadCommand($js);
 
         return $ret;
     }
