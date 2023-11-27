@@ -57,8 +57,10 @@ JAVASCRIPT;
          
         $args = array();
         $args[] = $upc;
+        $lcOr = '';
         if (is_array($preW) && $preW['likeCode'] != '') {
             $args[] = 'LC'.$preW['likeCode'];
+            $lcOr = ' OR l.upc = ? ';
         }
         $prep = $dbc->prepare("
             SELECT 
@@ -74,7 +76,7 @@ JAVASCRIPT;
                 AND b.endDate >= DATE(NOW())
                 AND (
                     l.upc = ?
-                    OR l.upc = ?
+                    $lcOr
                 )
             ORDER BY l.salePrice ASC
                 ");
