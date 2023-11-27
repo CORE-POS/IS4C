@@ -493,7 +493,7 @@ class NewSpecialOrdersPage extends FannieRESTfulPage
 function refilter(){
     var f1 = $('#f_1').val();
     var f2 = $('#f_2').val();
-    var f3 = $('#f_3').val();
+    var f3 = encodeURIComponent($('#f_3').val());
     var f4 = $('#f_4').val();
 
     var loc = '?f1='+f1+'&f2='+f2+'&f3='+f3+'&f4='+f4;
