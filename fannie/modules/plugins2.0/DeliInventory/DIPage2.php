@@ -325,6 +325,12 @@ HTML;
 
     protected function get_view()
     {
+        $authorized = false;
+        if (FannieAuth::validateUserQuiet('ordering_edit')) {
+            $authorized = true;
+            echo "Authorized to edit all columns";
+            echo "<input type=\"hidden\" name=\"authorized\" value=\"1\" />";
+        }
         $storeID = Store::getIdByIp();
         $storeID=2;
         $catP = $this->connection->prepare("SELECT deliCategoryID, name, salesCode FROM DeliCategories WHERE storeID=? ORDER BY seq, name");
@@ -405,18 +411,19 @@ HTML;
                 if ($total == INF) {
                     $total = 0;
                 }
+                $editable = ($authorized == true) ? ' editable ' : '';
                 $ret .= sprintf('<tr data-item-id="%d" class="%s %s">
                     <td><input type="checkbox" title="Flag needing attention" onchange="di.attention(this);" %s /></td>
                     <td class="category">%s</td>
-                    <td class="name editable">%s</td>
-                    <td class="size editable">%s</td>
-                    <td class="caseSize editable">%d</td>
+                    <td class="name %s">%s</td>
+                    <td class="size %s">%s</td>
+                    <td class="caseSize %s">%d</td>
                     <td class="cases editable">%.2f</td>
                     <td class="fractions editable">%.2f</td>
-                    <td class="cost editable">$%.2f</td>
+                    <td class="cost %s">$%.2f</td>
                     <td class="total">$%.2f</td>
-                    <td class="upc editable">%s</td>
-                    <td class="sku editable">%s</td>
+                    <td class="upc %s">%s</td>
+                    <td class="sku %s">%s</td>
                     <td class="vendor">%s</td>
                     <td class="trash"><a href="DIPage2.php?_method=delete&id=%d">%s</a></td>
                     </tr>',
@@ -425,14 +432,20 @@ HTML;
                     ($total > 500 ? 'warning' : ''),
                     ($itemW['attnFlag'] ? 'checked' : ''),
                     $catW['name'],
+                    $editable,
                     $itemW['item'],
+                    $editable,
                     $itemW['size'],
+                    $editable,
                     $itemW['units'],
                     $itemW['cases'],
                     $itemW['fraction'],
+                    $editable,
                     $itemW['price'],
                     $total,
+                    $editable,
                     $itemW['upc'],
+                    $editable,
                     $itemW['orderno'],
                     $itemW['vendorName'],
                     $itemW['id'], FannieUI::deleteIcon()
