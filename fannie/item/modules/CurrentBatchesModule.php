@@ -56,12 +56,10 @@ JAVASCRIPT;
         $preW = $dbc->fetchRow($preR);
          
         $args = array();
+        $args[] = $upc;
         if (is_array($preW) && $preW['likeCode'] != '') {
             $args[] = 'LC'.$preW['likeCode'];
-        } else {
-            $args[] = $upc;
         }
-
         $prep = $dbc->prepare("
             SELECT 
             l.batchID,
@@ -74,7 +72,10 @@ JAVASCRIPT;
                 INNER JOIN batchType AS t ON t.batchTypeID=b.batchType
             WHERE b.startDate <= DATE(NOW())
                 AND b.endDate >= DATE(NOW())
-                AND l.upc = ?
+                AND (
+                    l.upc = ?
+                    OR l.upc = ?
+                )
             ORDER BY l.salePrice ASC
                 ");
         $res = $dbc->execute($prep, $args);
