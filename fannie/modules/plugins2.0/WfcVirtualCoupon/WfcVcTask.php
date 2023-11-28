@@ -172,6 +172,9 @@ class WfcVcTask extends FannieTask
                                 AND (memType IN (1,5) OR memType IS NULL)
                                 AND CardNo IN (' . $in . ')');
         $dbc->execute($redo, $mems);
+
+        $todoP = $dbc->prepare("SELECT CardNo FROM custdata WHERE Type='PC' AND memType=5 AND CardNo NOT IN ({$in}) GROUP BY CardNo");
+        $todo = $dbc->getAllValues($todoP, $mems);
         $undo = $dbc->prepare('UPDATE custdata 
                                SET memType=1,
                                 Discount=0,
@@ -180,6 +183,13 @@ class WfcVcTask extends FannieTask
                                 AND memType IN (5)
                                 AND CardNo NOT IN (' . $in . ')');
         $dbc->execute($undo, $mems);
+
+        $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($todo);
+            $obj->run($mems);
+        }
 
         $start = date('Y-m-01');
         $end = date('Y-m-t');
