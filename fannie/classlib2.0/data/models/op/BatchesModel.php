@@ -385,7 +385,8 @@ those same items revert to normal pricing.
                 discounttype=0,
                 " . ($has_limit ? 'special_limit=0,' : '') . "
                 start_date='1900-01-01',
-                end_date='1900-01-01'
+                end_date='1900-01-01',
+                p.batchID=0
             WHERE b.upc NOT LIKE '%LC%'
                 AND b.batchID=?";
         if ($this->connection->dbmsName() == "mssql") {
@@ -393,7 +394,8 @@ those same items revert to normal pricing.
                 specialpricemethod=0,specialquantity=0,
                 specialgroupprice=0,discounttype=0,
                 " . ($has_limit ? 'special_limit=0,' : '') . "
-                start_date='1900-01-01',end_date='1900-01-01'
+                start_date='1900-01-01',end_date='1900-01-01',
+                batchID=0
                 FROM products AS p, batchList as b
                 WHERE p.upc=b.upc AND b.upc NOT LIKE '%LC%'
                 AND b.batchID=?";
