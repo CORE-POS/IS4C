@@ -338,11 +338,11 @@ HTML;
                     <label for="radioGroup">Cycle</label>
                     <div class="form-group" id="radioGroup">
                         <input type="radio" id="A" name="cycle" value="A" '.$cycleA.'>
-                        <label for="A">A</label>
+                        <label for="A" class="btn btn-default"><b>A</b></label>
                     </div>
                     <div class="form-group">
                         <input type="radio" id="B" name="cycle" value="B" '.$cycleB.'>
-                        <label for="B">B</label>
+                        <label for="B" class="btn btn-default"><b>B</b></label>
                     </div>
             ';
         }
