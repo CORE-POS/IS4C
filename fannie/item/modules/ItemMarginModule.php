@@ -47,6 +47,22 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
                 break;
             }
         }
+
+        $futureCostHTML = '';
+        $fcTableDef = $db->tableDefinition('FutureVendorItems');
+        if ($fcTableDef['upc']) {
+            $fcA = array($upc);
+            $fcP = $db->prepare("SELECT sku, f.vendorID, futureCost, startDate, v.vendorName
+                FROM FutureVendorItems AS f
+                    INNER JOIN vendors AS v ON v.vendorID=f.vendorID
+                WHERE upc = ?
+                AND startDate > NOW();");
+            $fcR = $db->execute($fcP, $fcA);
+            while ($fcW = $db->fetchRow($fcR)) {
+                $futureCostHTML .= "<div class=\"alert alert-warning\"><i>Future cost \${$fcW['futureCost']} on {$fcW['startDate']} from {$fcW['vendorName']}</i></div>";
+            }
+        }
+
         $ret = '<div id="ItemMarginFieldset" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
                 <a href=\"\" onclick=\"\$('#ItemMarginContents').toggle();return false;\">
@@ -72,7 +88,8 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
                     <input type="hidden" name="current_price_rule_id" value="' . $product->price_rule_id() . '" />
                     &nbsp;
                     <label>Avg. Daily Movement</label> ' . sprintf('%.2f', $this->avgSales($upc)) . '
-                 </div>';
+                 </div>
+                 ';
         $rule = new PriceRulesModel($db);
         if ($product->price_rule_id() > 1) {
             $rule->priceRuleID($product->price_rule_id());
@@ -89,6 +106,7 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
                     <input type="text" class="form-control input-sm" name="rule_details"
                         ' . $disabled . ' placeholder="Details" title="Details" value="{{RULE_DETAILS}}" />
                  </div>';
+         $ret .= $futureCostHTML;
         $types = new PriceRuleTypesModel($db);
         $ret = str_replace('{{RULE_TYPES}}', $types->toOptions($rule->priceRuleTypeID()), $ret);
         $ret = str_replace('{{REVIEW_DATE}}', $rule->reviewDate(), $ret);
