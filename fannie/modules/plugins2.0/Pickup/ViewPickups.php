@@ -86,10 +86,15 @@ class ViewPickups extends FannieRESTfulPage
 
             $pdf->SetFont('Arial','','12');
             $oiR = $this->connection->execute($oiP, array($id));
+            $lineHeight = 7;
+            if ($this->connection->numRows($oiR) > 6) {
+                $lineHeight = 5;
+                $pdf->SetFont('Arial','','10');
+            }
             while ($oiW = $this->connection->fetchRow($oiR)) {
                 $pdf->SetX($posX);
-                $pdf->Cell(20, 7, $oiW['quantity'], 0, 0, 'L');
-                $pdf->MultiCell(75, 7, $oiW['brand'] . ' ' . $oiW['description']);
+                $pdf->Cell(20, $lineHeight, $oiW['quantity'], 0, 0, 'L');
+                $pdf->MultiCell(75, $lineHeight, $oiW['brand'] . ' ' . $oiW['description']);
             }
 
             if ($multi > 1) {
@@ -345,7 +350,7 @@ HTML;
             WHERE closed=0 AND deleted=0
                 AND storeID=?
                 AND {$statClause}
-                AND YEAR(placedDate) = YEAR(NOW())
+                AND placedDate >= '2023-11-27'
             ORDER BY pickupOrderID DESC");
         $res = $this->connection->execute($prep, array($store));
         $table = '';
