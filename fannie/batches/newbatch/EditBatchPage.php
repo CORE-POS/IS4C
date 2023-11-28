@@ -1222,18 +1222,20 @@ HTML;
 
         $startYMD = date('Y-m-d', strtotime($model->startDate()));
         $endYMD = date('Y-m-d', strtotime($model->endDate()));
+        $readonly = (strpos($name, 'Co-op Deals') !== false) ? ' readonly ' : '';
+        $beEditableDate = (strpos($name, 'Co-op Deals') !== false) ? ' ' : ' be-editable-date ';
         $ret .= "<input type=\"hidden\" id=\"batchStartDate\" value=\"$startYMD\"/>";
         $ret .= "<input type=\"hidden\" id=\"batchEndDate\" value=\"$endYMD\"/>";
         $ret .= "<input type=\"hidden\" id=\"batchType\" value=\"$type\"/>";
-        $ret .= '<b>Sale Dates</b>: <input type="text" class="be-editable be-editable-date form-control"
+        $ret .= '<b>Sale Dates</b>: <input type="text" class="be-editable ' . $beEditableDate . ' form-control"
             onchange="batchEdit.editBatchDate(\''.$startYMD.'\', \'start\'); return false;"
             name="startDate" id="startDate" value="'
             . date('Y-m-d', strtotime($model->startDate()))
-            . '"/> - <input type="text" class="be-editable be-editable-date form-control"
+            . '"' . $readonly . '/> - <input type="text" class="be-editable ' . $beEditableDate . ' form-control"
             onchange="batchEdit.editBatchDate(\''.$endYMD.'\', \'end\'); return false;"
             name="startDate" id="endDate" value="'
             . date('Y-m-d', strtotime($model->endDate()))
-            . '"/>  ' . $vendorID_HTML . ' | <a href="batchReport.php?batchID=' . $id . '">Report</a><br />';
+            . '"' . $readonly . '/>  ' . $vendorID_HTML . ' | <a href="batchReport.php?batchID=' . $id . '">Report</a><br />';
         if ($this->config->get('STORE_MODE') === 'HQ') {
             $stores = new StoresModel($dbc);
             $stores->hasOwnItems(1);
