@@ -207,15 +207,27 @@ class VendorAliasesPage extends FannieRESTfulPage
                 v.upc");
         $ret .= '<table class="table table-bordered">
             <thead>
-                <th>Vendor SKU</th>
-                <th>Our UPC</th>
-                <th>Brand</th>
-                <th>Description</th>
-                <th>Unit Size</th>
-                <th>Multiplier</th>
-                <th>&nbsp;</th>
-                <th><span class="fas fa-print" onclick="$(\'.printUPCs\').prop(\'checked\', true);"></span></th>
-            </thead><tbody>';
+                <tr>
+                    <th>Vendor SKU</th>
+                    <th>Our UPC</th>
+                    <th>Brand</th>
+                    <th>Description</th>
+                    <th>Unit Size</th>
+                    <th>Multiplier</th>
+                    <th>&nbsp;</th>
+                    <th><span class="fas fa-print" onclick="$(\'.printUPCs\').prop(\'checked\', true);"></span></th>
+                </tr>
+                <tr style="height: 40px" class="filter-tr">
+                    <th class="column-filter"></th> 
+                    <th class="column-filter"></th> 
+                    <th class="column-filter"></th> 
+                    <th class="column-filter"></th> 
+                    <th class="column-filter"></th> 
+                    <th class="column-filter"></th> 
+                    <th class="column-filter"></th> 
+                    <th class="column-filter"></th> 
+                </tr>
+                </thead><tbody>';
         $res = $dbc->execute($prep, array($this->id));
         while ($row = $dbc->fetchRow($res)) {
             $ret .= sprintf('<tr %s>
@@ -228,7 +240,7 @@ class VendorAliasesPage extends FannieRESTfulPage
                 <td><a class="btn btn-default btn-xs btn-danger" href="?_method=delete&id=%d&sku=%s&upc=%s">%s</a></td>
                 <td><input type="checkbox" class="printUPCs" name="printUPCs[]" value="%d" /></td>
                 </tr>',
-                ($row['isPrimary'] ? 'class="info"' : ''),
+                ($row['isPrimary'] ? 'class="info prod-row"' : 'class="prod-row"'),
                 $row['sku'],
                 $row['upc'], $row['upc'],
                 $row['brand'],
@@ -266,6 +278,39 @@ $(window).scroll(function () {
             .css('border', '1px solid white');
     }
 });
+
+/*
+    Add Column Fitlers
+*/
+var columnFilterLast = '';
+$('.column-filter').each(function(){
+    $(this).attr('contentEditable', true);
+});
+$('.column-filter').focusin(function(){
+    $(this).select();
+    columnFilterLast = $(this);
+});
+$('.column-filter').focusout(function(){
+    $(this).text('');
+});
+$('.column-filter').keyup(function(){
+    $('tr.prod-row').each(function(){
+        $(this).hide();
+    });
+    var text = $(this).text().toUpperCase();
+    var column = $(this).index();
+    $('tr.prod-row').each(function(){
+        let contents = $(this).find('td:eq('+column+')').text();
+        contents = contents.toUpperCase();
+        let includes = contents.includes(text);
+        if (contents.includes(text) == true) {
+            $(this).show();
+        } else {
+            $(this).hide();;
+        }
+    });
+});
+
 JAVASCRIPT;
         $trimInputWhitespace = <<<HTML
 $('input[type="text"]').on('keyup', function(){
