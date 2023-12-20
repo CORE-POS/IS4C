@@ -89,6 +89,7 @@ class SalesBatchTask extends FannieTask
 
         // ensure likecode items are mixmatch-able
         $this->setLikeCodeMixMatch($dbc);
+        $this->setLikeCodeMixMatchOverrides($dbc);
         $this->setBogoMixMatch($dbc);
 
         $likeP = $dbc->prepare('SELECT u.upc 
@@ -341,6 +342,30 @@ class SalesBatchTask extends FannieTask
             $dbc->query("UPDATE products AS p
                 INNER JOIN upcLike AS u ON p.upc=u.upc
                 SET p.mixmatchcode=convert(u.likeCode+500,char)");
+        }
+    }
+
+    private function setLikeCodeMixMatchOverrides($dbc)
+    {
+        if ($dbc->tableExists('LikeCodeMixMatchOverrides')) {
+            if ($dbc->dbmsName() == 'mssql') {
+                $dbc->query("UPDATE products
+                    SET mixmatchcode=u.mixMatchCode
+                    FROM 
+                    products AS p
+                    INNER JOIN LikeCodeMixMatchOverrides AS u
+                    ON p.upc=u.upc");
+            } elseif ($dbc->dbmsName() == 'postgres9') {
+                $dbc->query("
+                    UPDATE products AS p
+                    SET mixmatchcode = u.mixMatchCode
+                    FROM LikeCodeMixMatchOverrides AS u
+                    WHERE p.upc=u.upc");
+            } else {
+                $dbc->query("UPDATE products AS p
+                    INNER JOIN LikeCodeMixMatchOverrides AS u ON p.upc=u.upc
+                    SET p.mixmatchcode=u.mixMatchCode");
+            }
         }
     }
 
