@@ -508,13 +508,13 @@ class DatabarCoupon extends SpecialUPC
         $chkR = $dbc->query($chkQ);
         $ttlRequired = MiscLib::truncate2($req->value / 100.00);
         if ($dbc->num_rows($chkR) == 0) {
-            $json['output'] = DisplayLib::boxMsg(_(sprintf("Coupon requires transaction of at least \$%.2f", $ttlRequired)));
+            $json['output'] = DisplayLib::boxMsg(sprintf(_("Coupon requires transaction of at least \$%.2f", $ttlRequired)));
             return array($req, $json);
         }
 
         $chkW = $dbc->fetch_row($chkR);
         if ($chkW[0] < $ttlRequired) {
-            $json['output'] = DisplayLib::boxMsg(_(sprintf("Coupon requires transaction of at least \$%.2f", $ttlRequired)));
+            $json['output'] = DisplayLib::boxMsg(sprintf(_("Coupon requires transaction of at least \$%.2f", $ttlRequired)));
             return array($req, $json);
         }
 
