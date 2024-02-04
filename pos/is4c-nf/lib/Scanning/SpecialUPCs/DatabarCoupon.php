@@ -455,6 +455,7 @@ class DatabarCoupon extends SpecialUPC
            no company prefixing
         */
         if ($req->code == 2) {
+            $req->department = 0;
             return $this->validateTransactionTotal($req, $json);
         }
 
