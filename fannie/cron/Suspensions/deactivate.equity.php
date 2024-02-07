@@ -74,7 +74,6 @@ $susQ = "INSERT INTO suspensions
 if (!isset($custdata['ChargeLimit'])) {
     $susQ = str_replace('c.ChargeLimit', 'c.MemDiscountLimit', $susQ);
 }
-$sql->query($susQ);
 
 $histQ = "INSERT INTO suspension_history
         select 'automatic',".$sql->now().",'',
@@ -98,6 +97,7 @@ $histQ = "INSERT INTO suspension_history
         and NOT EXISTS(SELECT NULL FROM suspensions as s
         WHERE s.cardno=m.card_no)";
 $sql->query($histQ);
+$sql->query($susQ);
 
 $custQ = "UPDATE custdata as c LEFT JOIN
         suspensions as s on c.CardNo=s.cardno
@@ -114,4 +114,16 @@ $memQ = "UPDATE meminfo as m LEFT JOIN
     SET ads_OK=0
     where s.cardno is not null";
 $sql->query($memQ);
+
+$todayQ = "SELECT cardno FROM suspensions WHERE suspDate > '$dStr'";
+$todayR = $sql->query($todayQ);
+$cards = array();
+while ($todayW = $sql->fetchRow($todayR)) {
+    $cards[] = $todayW['cardno'];
+}
+$callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+foreach ($callbacks as $cb) {
+    $obj = new $cb();
+    $obj->run($cards);
+}
 
