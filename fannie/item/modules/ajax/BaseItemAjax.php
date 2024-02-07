@@ -32,9 +32,22 @@ class BaseItemAjax extends FannieRESTfulPage
 
     public function preprocess()
     {
-        $this->addRoute('get<action>', 'get<dept_defaults>', 'get<vendorChanged>');
+        $this->addRoute('get<action>', 'get<dept_defaults>', 'get<vendorChanged>', 'get<deleteVendorItem>');
 
         return parent::preprocess();
+    }
+
+    protected function get_deleteVendorItem_handler()
+    {
+        $dbc = $this->dbc();
+        $sku = FormLib::get('sku');
+        $vendorID = FormLib::get('vendorID');
+
+        $args = array($vendorID, $sku);
+        $prep = $dbc->prepare("DELETE FROM vendorItems WHERE vendorID=? AND sku=?");
+        $res = $dbc->execute($prep, $args);
+
+        return false;
     }
 
     protected function get_dept_defaults_handler()

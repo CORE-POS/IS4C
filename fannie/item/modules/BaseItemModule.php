@@ -448,6 +448,9 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
         if ($new_item) {
             // new item
             $ret .= "<div class=\"alert alert-warning\">Item not found.  You are creating a new one.</div>";
+            if (strlen($rowItem['sku']) > 0) {
+                $ret .= "<div class=\"well\">Click <a onclick=\"baseItem.deleteVendorItem('{$rowItem['sku']}', {$rowItem['default_vendor_id']}); return false; \" style=\"color: brown; cursor: pointer;\">here </a> to delete this information and free SKU for use elsewhere (and begin with clean slate).</div>";
+            }
             if (!$this->confidentDepartment($upc)) {
                 $ret .= '<div class="alert alert-danger">Please double-check POS department auto selection</div>';
             }

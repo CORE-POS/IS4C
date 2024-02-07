@@ -56,6 +56,16 @@ var baseItem = (function() {
         );
     };
 
+    mod.deleteVendorItem = function(sku, vendorID) {
+        $.ajax({
+            url: 'modules/ajax/BaseItemAjax.php',
+            data: 'deleteVendorItem=true&vendorID='+vendorID+'&sku='+sku,
+            cache: false
+        }).done(function(resp) {
+            location.reload();
+        });
+    }
+
     mod.vendorChanged = function(newVal) {
         var vendors = [];
         $('#CatalogContents tr').each(function(){
