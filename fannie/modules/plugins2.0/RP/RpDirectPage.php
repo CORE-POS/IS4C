@@ -780,6 +780,11 @@ class RpDirectPage extends FannieRESTfulPage
         $farms = new RpFarmsModel($this->connection);
         $farmOpts = $farms->toOptions();
 
+        $autoOrder = 'checked';
+        if (COREPOS\Fannie\API\lib\Store::getIdByIp() == 2) {
+            $autoOrder = '';
+        }
+
         return <<<HTML
 <div class="row">
 <div class="col-sm-6">
@@ -913,7 +918,7 @@ class RpDirectPage extends FannieRESTfulPage
 <p>
     <div class="form-group">
         <label>
-            <input type="checkbox" checked id="autoOrderCheck" />
+            <input type="checkbox" {$autoOrder} id="autoOrderCheck" />
             Auto-fill order amounts
         </label>
     </div>

@@ -156,6 +156,9 @@ class RpImportCsv extends FannieRESTfulPage
             $mainCatalog = false;
             if ($vendorID) {
                 $mainCatalog = $this->findItem($vendorID, $name);
+                if ($realLC == 443 && $vendorID == 292) {
+                    $mainCatalog['sku'] = 74663;
+                }
                 if ($mainCatalog && $vendorID > 0) {
                     $vendLC->likeCode($lc);
                     $vendLC->vendorID($vendorID);

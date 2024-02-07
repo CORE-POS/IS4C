@@ -740,6 +740,11 @@ class RpDualPage extends FannieRESTfulPage
         $cats = new RpOrderCategoriesModel($this->connection);
         $catOpts = $cats->toOptions();
 
+        $autoOrder = 'checked';
+        if (COREPOS\Fannie\API\lib\Store::getIdByIp() == 2) {
+            $autoOrder = '';
+        }
+
         return <<<HTML
 <div class="row">
 <div class="col-sm-6">
@@ -881,7 +886,7 @@ class RpDualPage extends FannieRESTfulPage
     </div>
     <div class="form-group">
         <label>
-            <input type="checkbox" checked id="autoOrderCheck" />
+            <input type="checkbox" {$autoOrder} id="autoOrderCheck" />
             Auto-fill order amounts
         </label>
     </div>
