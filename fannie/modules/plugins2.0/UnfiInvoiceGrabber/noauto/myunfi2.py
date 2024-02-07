@@ -117,10 +117,9 @@ try:
     driver.get("https://www.myunfi.com/download-center");
     time.sleep(5)
     download_js = """
-var menus = document.querySelectorAll('button[data-testid="IconMenu.Button"]');
-for (var i = 0; i < menus.length; i++) {
-    menus[i].click();
-    document.querySelector('div#boxToClick li').click();
+var buttons = document.querySelectorAll('div[title="Download"]');
+for (var i = 0; i < buttons.length; i++) {
+    buttons[i].click();
 }
     """
     driver.execute_script(download_js)
