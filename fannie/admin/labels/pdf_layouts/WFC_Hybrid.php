@@ -244,33 +244,40 @@ foreach($data as $row) {
             $border = $mtLength == 7 ? 'TBR' : 'TBL';
             $pdf->Cell(9, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
             $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
-            $pdf->SetXY($full_x+38, $full_y+8);
-            $pdf->Cell(9, 4, isset($locations[$upc]) ? current($locations[$upc]) : '', 0, 1, 'C');
-            if (isset($locations[$upc])) {
-                $key = key($locations[$upc]);
-                if (isset($locations[$upc][$key+1])) {
-                    next($locations[$upc]);
-                }
-            }
         } else {
             //Start laying out a label
             if (strlen($upc) <= 11)
-            $pdf->UPC_A($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
+            $pdf->UPC_A($full_x+3,$full_y+4,$upc,7);  //generate barcode and place on label
             else
-            $pdf->EAN13($full_x+7,$full_y+4,$upc,7);  //generate barcode and place on label
+            $pdf->EAN13($full_x+3,$full_y+4,$upc,7);  //generate barcode and place on label
         }
 
-        // add a blue dot to items in REFRIGERATED department
+        $pdf->SetXY($full_x+38, $full_y+8);
+        $pdf->Cell(9, 4, isset($locations[$upc]) ? current($locations[$upc]) : '', 0, 1, 'C');
+        if (isset($locations[$upc])) {
+            $key = key($locations[$upc]);
+            if (isset($locations[$upc][$key+1])) {
+                next($locations[$upc]);
+            }
+        }
+
+
+        // add a blue dot to items in REFRIGERATED department STORE 2 = DENFELD = BLUE DOT = REFR
         $pdf->SetXY($full_x+48.5, $full_y+3);
-        if (isset($dots[$upc]) && $dots[$upc] == 'REFRIGERATED' && $store == 2 && isset($locNames[$upc])) {
+        if (isset($dots[$upc]) && $dots[$upc] == 'REFRIGERATED'  && isset($locNames[$upc])) {
             foreach ($locNames[$upc] as $name) {
                 if (strpos(strtoupper($name), 'BEV') !== false) {
                     $pdf->SetFillColor(0, 100, 255); // blue
-                    $pdf->Circle($full_x+48.0, $full_y+4.5, 1.25, 'F');
+                    if ($full_x < 100) {
+                        // move the first two columns in a little
+                        $pdf->Circle($full_x+48, $full_y+4.5, 1.25, 'F');
+                    } else {
+                        $pdf->Circle($full_x+48.5, $full_y+4.5, 1.25, 'F');
+                    }
                     $pdf->SetFillColor(255,255,255);
                     $pdf->SetTextColor(255,255,255);
                     $pdf->SetFontSize(8);
-                    $pdf->Text($full_x+47.6, $full_y+5.3, 'r');
+                    //$pdf->Text($full_x+47.6, $full_y+5.3, 'r');
                     $pdf->SetFillColor(0, 0, 0);
                     $pdf->SetTextColor(0,0,0);
                 }
@@ -278,10 +285,10 @@ foreach($data as $row) {
         }
         if (isset($dots[$upc]) && $dots[$upc] == 'PRODUCE') {
             $pdf->SetFillColor(0, 255, 100); // green 
-            $pdf->Circle($full_x+48.0, $full_y+9.5, 1.25, 'F');
+            $pdf->Circle($full_x+48.5, $full_y+9.5, 1.25, 'F');
             $pdf->SetFillColor(255,255,255);
             $pdf->SetTextColor(255,255,255);
-            $pdf->Text($full_x+47.3, $full_y+10, 'p');
+            $pdf->Text($full_x+47.3, $full_y+10, '');
             $pdf->SetFillColor(0, 0, 0);
             $pdf->SetTextColor(0,0,0);
         }
@@ -289,13 +296,15 @@ foreach($data as $row) {
         // add a red dot to items with > 1 physical location
         if (count(isset($locations[$upc]) ? $locations[$upc] : array()) > 1 && $store == 2) {
             $pdf->SetFillColor(255, 100, 0); // orange
-            $pdf->Circle($full_x+48.5, $full_y+7, 1.25, 'F');
+            $pdf->SetDrawColor(255,0,0);
+            $pdf->Circle($full_x+48.5, $full_y+7, 1.25, 'D');
             $pdf->SetFillColor(255,255,255);
             $pdf->SetTextColor(255,255,255);
             $pdf->SetFontSize(6);
-            $pdf->Text($full_x+47.5, $full_y+7.5, 'm');
+            $pdf->Text($full_x+47.5, $full_y+7.5, '');
             $pdf->SetFillColor(0, 0, 0);
             $pdf->SetTextColor(0,0,0);
+            $pdf->SetDrawColor(0,0,0);
         }
         $pdf->SetFillColor(0, 0, 0);
 
@@ -337,6 +346,33 @@ foreach($data as $row) {
         $check = $pdf->GetCheckDigit($upc);
         $tagdate = date('m/d/y');
         $vendor = substr(isset($row['vendor']) ? $row['vendor'] : '',0,7);
+        $vfixes = array(
+            'ANCIENT' => 'ANCIEN',
+            'SPROUT' => 'SPROU',
+            'WILD FE' => 'WILDFE',
+            'COUNTRY' => 'COUNTR',
+            'HERB PH' => 'HERBPH',
+            'HERBS E' => 'HERBETC',
+            'UNFI' => '   UNFI',
+            'THRESHO' => 'THRESH',
+            'AMAZING' => 'AMAZNG',
+        );
+        if (array_key_exists($vendor, $vfixes)) {
+            $vendor = $vfixes[$vendor];
+        }
+        $bfixes = array(
+            'Natural Factors ' => 'Natural Fac',
+            'Source Naturals ' => 'Source Nat',
+            'Nordic Naturals ' => 'Nordic Nat',
+            'Amazing Grass ' => 'AmazingGr',
+            'Whole Foods C' => 'WFC',
+            'Oregon\'s Wild H' => 'OWH',
+            'Superior/finnegan\'s ' => 'Finnegan',
+            'Thousand Hills ' => 'ThousHill',
+            'Earth Science ' => 'EarthSci',
+            'Sweet Land F' => 'Sweet Land',
+            'Dr. Bronner\'s ' => 'Dr Bronner',
+        );
 
         //Start laying out a label
         $pdf->SetFont('Arial','',8);  //Set the font
@@ -346,15 +382,16 @@ foreach($data as $row) {
             $border = $mtLength == 7 ? 'TBR' : 'TBL';
             $pdf->Cell(7, 4, sprintf('%.1f', ($row['movementTag']*$mtLength)), $border, 1, 'C');
             $dbc->execute($updateMT, array(($row['movementTag']*$mtLength), $row['upc'], $store));
-            $pdf->SetXY($full_x+20, $full_y+9);
-            $pdf->Cell(9, 4, isset($locations[$upc]) ? current($locations[$upc]) : '', 0, 1, 'C');
-            if (isset($locations[$upc])) {
-                $key = key($locations[$upc]);
-                if (isset($locations[$upc][$key+1])) {
-                    next($locations[$upc]);
-                }
-            }
 
+        }
+
+        $pdf->SetXY($full_x+20, $full_y+9);
+        $pdf->Cell(9, 4, isset($locations[$upc]) ? current($locations[$upc]) : '', 0, 1, 'C');
+        if (isset($locations[$upc])) {
+            $key = key($locations[$upc]);
+            if (isset($locations[$upc][$key+1])) {
+                next($locations[$upc]);
+            }
         }
         /*
         if (strlen($upc) <= 11)
@@ -420,8 +457,19 @@ foreach($data as $row) {
            }
            $curCnt++;
         }
+
+        $printbrand = $curStr;
+        if (array_key_exists($curStr, $bfixes)) {
+            $brand= $bfixes[$curStr];
+            $printbrand = $bfixes[$curStr];
+        }
+        $printbrand = substr($printbrand, 0, 10);
+
         $pdf->SetX($baseX);
-        $pdf->Cell(0, 3, $curStr);
+        //$pdf->Cell(0, 3, "'".$printbrand."'");
+        $pdf->Cell(0, 3, $printbrand);
+        $pdf->SetX($baseX + 18);
+        $pdf->Cell(0, 3, strtoupper($vendor));
 
         // add a blue dot to items in REFRIGERATED department
         $pdf->SetXY($baseX+48.5, $baseY+3);

@@ -306,7 +306,7 @@ function generateServiceCaseTag($x, $y, $guide, $width, $height, $pdf, $row, $db
     if ($showPrice == 1) {
         $pdf->SetFont('Gill', 'B', 26); 
         $pdf->SetXY($x,$y+47);
-        $pdf->Cell($width, 5, "$".$price."/lb", 0, 1, 'C', true); 
+        $pdf->Cell($width, 5, "$".$price.($row['scale'] ? "/lb" : ''), 0, 1, 'C', true); 
         $pdf->SetFont('Gill', 'B', 16); 
     }
 
