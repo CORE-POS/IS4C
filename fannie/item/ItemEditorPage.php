@@ -327,6 +327,10 @@ HTML;
 
     private function searchResults()
     {
+        $authorized = false;
+        if (FannieAuth::validateUserQuiet('admin')) {
+            $authorized = true;
+        }
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $upc = trim(FormLib::get_form_value('searchupc'));
@@ -366,6 +370,12 @@ HTML;
                     This item cannot exist in POS.</div>';
                 return $this->searchForm();
             }
+
+            if (substr(BarcodeLib::padUPC($upc), 0, 1) != '0' && $authorized == false) {
+                $this->msgs = '<div class="alert alert-danger">A check digit is incuded in the UPC that was entered. There must be at least one leading zero to be a valid item.</div>';
+                return $this->searchForm();
+            }
+
         }
 
         $num = $dbc->numRows($result);
