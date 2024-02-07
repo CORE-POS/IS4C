@@ -567,10 +567,12 @@ HTML;
             </div>
             <div class="col-lg-4"></div>
             <div class="col-lg-4">
-                <label for="hide-deli-check">Hide Deli &nbsp;</label>
+                <label for="hide-deli-check">Hide Deli&nbsp;</label>
                 <input type="checkbox" id="hide-deli-check" /> | 
-                <label for="show-deli-check">Show Only Deli &nbsp;</label>
-                <input type="checkbox" id="show-deli-check" />
+                <label for="show-deli-check">Show Only Deli&nbsp;</label>
+                <input type="checkbox" id="show-deli-check" /> |
+                <label for="hide-wait-check">Hide Wait&nbsp;</label>
+                <input type="checkbox" id="hide-wait-check" />
             </div>
         </div>
         <h4 align="center">Batches Staged for Price Changes</h4>
@@ -674,6 +676,7 @@ HTML;
                 $table .= '<td>'.$obj->description().'</td>';
                 $pr->reset();
                 $pr->upc($obj->upc());
+                $pr->vendorID($obj->default_vendor_id());
                 if ($pr->load()) {
                     $table .= '<td class="reviewed">'.$pr->reviewed().'</td>';
                 } else {
@@ -748,20 +751,25 @@ HTML;
         $table = '<table class="table table-condensed table-striped small">';
         $table .= '<thead><th>UPC</th><th>Brand</th><th>Description</th>
             <th>Last Reviewed</th></thead><tbody>';
+
+        $pP = $dbc->prepare("SELECT default_vendor_id FROM products WHERE upc = ?");
+        $rP = $dbc->prepare("SELECT reviewed FROM prodReview WHERE upc = ? AND vendorID = ?"); 
+
+        $p = new ProductsModel($dbc);
         $pr = new ProdReviewModel($dbc);
         $table .= '<tr>';
         foreach ($data as $upc => $arr) {
             foreach ($arr as $k => $v) {
                 if ($k == 'upc') {
-                    $pr->reset();
-                    $pr->upc($v);
+                    $vendorID = $dbc->getValue($pP, array($v));
+                    $reviewed = $dbc->getValue($rP, array($v, $vendorID));
                     $table .= '<td>'.$v.'</td>';
                 } elseif ($k == 'brand') {
                     $table .= '<td>'.$v.'</td>';
                 } elseif ($k == 'description') {
                     $table .= '<td>'.$v.'</td>';
-                    if ($pr->load()) {
-                        $table .= '<td>'.$pr->reviewed().'</td>';
+                    if ($reviewed != NULL) {
+                        $table .= '<td>'.$reviewed.'</td>';
                     } else {
                         $table .= '<td><i>no review date</i></td>';
                     }
@@ -1243,6 +1251,29 @@ $('#hide-deli-check').change(function(){
             let depts = $(this).find('td.super-depts').text();
             console.log(depts);
             if (depts.includes('DELI')) {
+                $(this).show();
+            }
+        });
+
+    }
+    indexCheckboxes();
+});
+
+$('#hide-wait-check').change(function(){
+    let c = $(this).is(":checked");
+    if (c == true) {
+        $('tr').each(function(){
+            let comments = $(this).find('td:eq(7)').text();
+            console.log(comments);
+            if (comments.indexOf('WAIT') != -1) {
+                $(this).hide();
+            }
+        });
+    } else {
+        $('tr').each(function(){
+            let comments = $(this).find('td:eq(7)').text();
+            console.log(comments);
+            if (comments.indexOf('WAIT') != -1) {
                 $(this).show();
             }
         });
