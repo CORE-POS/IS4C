@@ -20,8 +20,12 @@ class FreshDealsData extends FannieRESTfulPage
 
     protected function get_batchID_view()
     {
-        $batchP = $this->connection->prepare("SELECT upc FROM batchList WHERE batchID=?");
-        $batchR = $this->connection->execute($batchP, array($this->batchID));
+        if (!is_array($this->batchID)) {
+            $this->batchID = array($this->batchID);
+        }
+        list($inStr, $batchArgs) = $this->connection->safeInClause($this->batchID);
+        $batchP = $this->connection->prepare("SELECT upc FROM batchList WHERE batchID IN ({$inStr})");
+        $batchR = $this->connection->execute($batchP, $batchArgs);
         $itemP = $this->connection->prepare("SELECT brand, description FROM products WHERE upc=?");
         $lcP = $this->connection->prepare("SELECT likeCodeDesc FROM likeCodes WHERE likeCode=?");
         $ret = '';
@@ -140,15 +144,17 @@ class FreshDealsData extends FannieRESTfulPage
 
     protected function get_view()
     {
-        $batchR = $this->connection->query("SELECT batchID, batchName FROM batches WHERE batchName LIKE '%FRESH DEAL%' ORDER BY batchID DESC");
-        $opts = '<option value="">Select batch</option>';
+        $batchR = $this->connection->query("SELECT batchID, batchName, endDate FROM batches WHERE batchName LIKE '%FRESH DEAL%' ORDER BY batchID DESC");
+        $opts = '';
         while ($row = $this->connection->fetchRow($batchR)) {
-            $opts .= sprintf('<option value="%d">%s</option>', $row['batchID'], $row['batchName']);
+            $ends = date('M j', strtotime($row['endDate']));
+            $opts .= sprintf('<option value="%d">(Ends %s) %s</option>', $row['batchID'], $ends, $row['batchName']);
         }
         $stores = FormLib::storePicker();
         return <<<HTML
 <script>
 function getDates(id) {
+    console.log(id);
     $.ajax({
         type: 'post',
         dataType: 'json',
@@ -167,7 +173,7 @@ function getDates(id) {
 <form method="get" action="FreshDealsData.php">
     <div class="form-group">
         <label>Batch</label>
-        <select name="batchID" class="form-control" onchange="getDates(this.value);">
+        <select name="batchID[]" multiple size="10" class="form-control" onchange="getDates(this.value);">
             {$opts}
         </select>
     </div>
