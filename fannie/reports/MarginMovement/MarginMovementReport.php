@@ -127,11 +127,13 @@ class MarginMovementReport extends FannieReportPage
         $query .= "WHERE tdate BETWEEN ? AND ?
             AND " . DTrans::isStoreID($store, 'd') . "
             AND $where
+            AND d.register_no <> 40
             AND d.cost <> 0 ";
         if ($include_sales != 1) {
             $query .= "AND d.discounttype=0 ";
         }
         $query .= "GROUP BY d.upc,p.brand,p.description,d.department,t.dept_name
+                HAVING SUM(d.quantity) <> 0
             ORDER BY sum(total) DESC";
 
         $prep = $dbc->prepare($query);
@@ -151,8 +153,8 @@ class MarginMovementReport extends FannieReportPage
         for ($i=0; $i<count($data); $i++) {
             // (item_total - item_cost) / total sales
             $contrib = 0;
-            if (is_numeric($data[$i][5]) && is_numeric($data[$i][4])) {
-                $contrib = ($data[$i][5] - $data[$i][4]) / $sum_total * 100;
+            if (is_numeric($data[$i][6]) && is_numeric($data[$i][5])) {
+                $contrib = ($data[$i][6] - $data[$i][5]) / ($sum_total - $sum_cost) * 100;
             }
             $data[$i][] = sprintf('%.2f', $contrib);
         }
