@@ -260,7 +260,8 @@ CSS;
 <div id="results"></div>
 <div id="recent"></div>
 <div id="instructions">
-Use this tool for Produce and Deli items that are sold to customers. Deli ingredients that are sold to customers by Grocery rather than Deli should be entered <a href="../DeliInventory/DIScanner.php">here</a> instead.
+<p>Use this tool for Produce, Grocery, and Deli items that are sold to customers.</p>
+<p> Deli production ingredients should be entered <a href="../DeliInventory/DIScanner.php"><strong>here</strong></a> instead.</p>
 </div>
 HTML;
     }
