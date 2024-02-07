@@ -38,7 +38,7 @@ class ProdReviewModel extends BasicModel
     'reviewed' => array('type'=>'DATETIME'),
     'comment' => array('type'=>'text'),
     );
-    protected $unique = array('upc'); 
+    protected $unique = array('upc', 'vendorID'); 
 
     public function doc()
     {
