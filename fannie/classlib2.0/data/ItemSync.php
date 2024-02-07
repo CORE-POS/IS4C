@@ -107,7 +107,7 @@ class ItemSync
         self::addProductAllLanes($upc);
     }
 
-    public static function sync($upc)
+    public static function sync($upc, $priceOnly=false)
     {
         if (!is_array($upc)) {
             $upc = array($upc);
@@ -119,7 +119,7 @@ class ItemSync
         $callbacks = \FannieConfig::config('ITEM_CALLBACKS');
         foreach ($callbacks as $cb) {
             $obj = new $cb();
-            $obj->run($upc);
+            $obj->run($upc, $priceOnly);
         }
     }
 
