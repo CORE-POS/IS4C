@@ -11,7 +11,8 @@ class SyncItem extends Job
             return false;
         }
 
-        \COREPOS\Fannie\API\data\ItemSync::sync($this->data['upc']);
+        $priceOnly = isset($this->data['priceOnly']) && $this->data['priceOnly'] ? true : false;
+        \COREPOS\Fannie\API\data\ItemSync::sync($this->data['upc'], $priceOnly);
     }
 }
 
