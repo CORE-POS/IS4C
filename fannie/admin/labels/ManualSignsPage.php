@@ -242,6 +242,18 @@ class ManualSignsPage extends FannieRESTfulPage
         $ret .= '<button type="submit" name="pdf" value="Print" 
                     class="btn btn-default">Print</button>
                  <label><input type="checkbox" name="offset" value="1" ' . $offset . ' /> Offset</label>';
+        $jsCloneBtn = <<<JAVASCRIPT
+$('tr.item-row').each(function(){
+    let clone = $(this).html();
+    clone = '<tr class=\'item-row\'>' + clone + '</tr>';
+    let descText = $(this).find('td:eq(1)').find('input').val();
+    if (descText.length > 0) {
+        $(this).after(clone);
+        console.log(clone);
+    }
+});
+JAVASCRIPT;
+        $ret .= ' | <label><a id="clone-trs" onclick="'.$jsCloneBtn.'">Duplicate Rows</a></label>';
         $ret .= $clearBtn;
         $ret .= '</div>';
         $ret .= '<hr />';
@@ -360,9 +372,9 @@ HTML;
             $start = isset($items[$i]) ? $items[$i]['startDate'] : '';
             $end = isset($items[$i]) ? $items[$i]['endDate'] : '';
             $ret .= <<<HTML
-<tr>
+<tr class="item-row">
     <td><input type="text" name="brand[]" class="form-control input-sm input-brand" value="{$brand}" /></td>
-    <td><input type="text" name="description[]" class="form-control input-sm input-description" value="{$desc}" /></td>
+    <td style="min-width: 300px"><input type="text" name="description[]" class="form-control input-sm input-description" value="{$desc}" /></td>
     <td><input type="text" name="price[]" class="form-control input-sm input-price price-field" value="{$price}" /></td>
     <td><select name="scale[]" class="form-control input-sm input-scale">
         <option value="0">No</option>
