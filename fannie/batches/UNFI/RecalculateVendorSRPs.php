@@ -263,10 +263,6 @@ class RecalculateVendorSRPs extends FannieRESTfulPage
                 <?php echo $opts; ?></select>
         </div>
         <div class="form-group">
-            <input type="checkbox" name="futureSrp" id="futureSrp"  value="futureSrp" />
-            <label for="futureSrp">Update Future SRP</label>
-        </div>
-        <div class="form-group">
             <button type=submit class="btn btn-default">Recalculate</button>
         </div>
         <div class="form-group">
