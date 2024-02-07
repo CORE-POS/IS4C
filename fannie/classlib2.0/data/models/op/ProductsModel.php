@@ -90,6 +90,8 @@ class ProductsModel extends BasicModel
 
     protected $normalize_lanes = true;
 
+    protected $manualUser = false;
+
     public function __construct($con)
     {
         // change uniqueness constraint in HQ mode
@@ -352,6 +354,11 @@ it won\'t *do* anything.
         $this->log_updates = $e;
     }
 
+    public function setUser($u)
+    {
+        $this->manualUser = $u;
+    }
+
     public function save()
     {
         // using save() to update lane-side product records
@@ -377,7 +384,7 @@ it won\'t *do* anything.
             $update = new ProdUpdateModel($this->connection);
             $update->upc($this->upc());
             $update->storeID($this->store_id());
-            $update->logUpdate(ProdUpdateModel::UPDATE_EDIT);
+            $update->logUpdate(ProdUpdateModel::UPDATE_EDIT, $this->manualUser);
         }
 
         return $try;
