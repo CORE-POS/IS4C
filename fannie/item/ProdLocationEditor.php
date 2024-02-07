@@ -95,11 +95,11 @@ class ProdLocationEditor extends FannieRESTfulPage
             <div class="form-group">
                 <textarea class="form-control" name="remove_list" rows=10></textarea>
             </div>
-        <label for="storeA">Store A</label>
+        <label for="storeA">Hillside</label>
             <div class="form-group">
                 <input type="checkbox" class="form-control" name="storeA" value="1"/>
             </div>
-        <label for="storeA">Store B</label>
+        <label for="storeA">Denfeld</label>
             <div class="form-group">
                 <input type="checkbox" class="form-control" name="storeB" value="2"/>
             </div>
@@ -256,8 +256,9 @@ HTML;
         $cache = new FloorSectionsListTableModel($dbc);
         $cache->refresh();
 
-        $ret .= '<br><br><a class="btn btn-default btn-back" href="javascript:history.back()">Back</a><br><br>';
-        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
+        $ret .= '<div class="form-group"><a class="btn btn-default btn-back" href="javascript:history.back()">Back</a></div>';
+        $ret .= '<div class="form-group"><a class="btn btn-default btn-back" href="ProdLocationEditor.php?list=">Start Over</a></div>';
+        $ret .= '<div class="form-group"><a class="btn btn-default" href="ProdLocationEditor.php">Return</a></div>';
 
         return $ret;
     }
@@ -298,8 +299,9 @@ HTML;
         }
         $ret .= '<div class="alert alert-success">Update Successful</div>';
 
-        $ret .= '<br><br><a class="btn btn-default btn-back" href="javascript:history.back()">Back</a><br><br>';
-        $ret .= '<a class="btn btn-default" href="ProdLocationEditor.php">Return</a><br><br>';
+        $ret .= '<div class="form-group"><a class="btn btn-default btn-back" href="javascript:history.back()">Back</a></div>';
+        $ret .= '<div class="form-group"><a class="btn btn-default btn-back" href="ProdLocationEditor.php?list=">Start Over</a></div>';
+        $ret .= '<div class="form-group"><a class="btn btn-default" href="ProdLocationEditor.php">Return</a></div>';
 
         return $ret;
     }
@@ -740,7 +742,7 @@ HTML;
    public function javascript_content()
    {
        return <<<JAVASCRIPT
-$('a').not('.btn-back').attr('target','_blank');
+//$('a').not('.btn-back').attr('target','_blank');
 $(document).ready(function(){
     $('tr').each(function(){
         let upc = $(this).find('td:eq(0)').text();
