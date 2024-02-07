@@ -145,6 +145,25 @@ class FannieSignage
             }
         }
 
+        $fspm_def = $dbc->tableDefinition('FloorSectionProductMap');
+        $subs_def = $dbc->tableDefinition('FloorSubSections');
+        $fetchLocations = false;
+        $locations = array();
+        if (isset($fspm_def['upc']) && isset($subs_def['upc'])) {
+            $fetchLocations = true;
+        }
+        $locP = $dbc->prepare("SELECT
+            CASE WHEN subSection IS NOT NULL THEN
+                UPPER(CONCAT(SUBSTRING(name, 1, 2), SUBSTRING(name, -1), '-', subSection))
+                ELSE
+                UPPER(CONCAT(SUBSTRING(name, 1, 2), SUBSTRING(name, -1)))
+            END AS abbr
+            FROM FloorSectionProductMap m
+                INNER JOIN FloorSections s ON s.floorSectionID=m.floorSectionID
+                LEFT JOIN FloorSubSections f ON f.floorSectionID=m.floorSectionID AND f.upc=m.upc
+            WHERE m.upc = ? 
+                AND s.storeID = ?");
+
         $data = array();
         $prep = $dbc->prepare($sql['query']);
         $result = $dbc->execute($prep, $sql['args']);
@@ -208,6 +227,12 @@ class FannieSignage
                     }
                     $row[$key] = $val;
                 }
+            }
+
+            if ($fetchLocations == true) {
+                $locR = $dbc->execute($locP, array($row['upc'], Store::getIdByIp()));
+                $locW = $dbc->fetchRow($locR);
+                $row['locAbbr'] = is_array($locW) ? $locW['abbr'] : '';
             }
 
             if (!isset($row['signCount']) || $row['signCount'] < 0 || !is_numeric($row['signCount'])) {

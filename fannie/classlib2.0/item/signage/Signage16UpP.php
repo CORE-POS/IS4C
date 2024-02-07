@@ -139,6 +139,15 @@ class Signage16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 6, $text, 0, 1, 'L');
         }
 
+        if (isset($item['locAbbr'])) {
+            //$pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            //$pdf->SetXY($this->left + ($this->width*$column) + 14, $this->top + ($this->height*$row) + ($this->height - 33));
+            //$pdf->Cell($effective_width, 20, " ".$item['locAbbr'], 0, 1, 'L');
+            $pdf->SetXY($this->left + ($this->width*$column) + 20, $this->top + ($this->height*$row) + ($this->height - $this->top - 10));
+            $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+            $pdf->Cell($effective_width, 6, $item['locAbbr'], 0, 1, 'L');
+        }
+
         return $pdf;
     }
 
