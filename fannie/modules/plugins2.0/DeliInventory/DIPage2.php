@@ -412,9 +412,11 @@ HTML;
                     $total = 0;
                 }
                 $editable = ($authorized == true) ? ' editable ' : '';
+                $preventclick = ($authorized == false) ? ' style="pointer-events: none;" ' : '';
+                $addConfirm = ($authorized != true) ? ' onclick="let c = confirm("Delete this item?"); if (c == false) { return false; } ' : '';
                 $ret .= sprintf('<tr data-item-id="%d" class="%s %s">
                     <td><input type="checkbox" title="Flag needing attention" onchange="di.attention(this);" %s /></td>
-                    <td class="category">%s</td>
+                    <td class="category" '.$preventclick.'>%s</td>
                     <td class="name %s">%s</td>
                     <td class="size %s">%s</td>
                     <td class="caseSize %s">%d</td>
@@ -424,8 +426,8 @@ HTML;
                     <td class="total">$%.2f</td>
                     <td class="upc %s">%s</td>
                     <td class="sku %s">%s</td>
-                    <td class="vendor">%s</td>
-                    <td class="trash"><a href="DIPage2.php?_method=delete&id=%d">%s</a></td>
+                    <td class="vendor" '.$preventclick.'>%s</td>
+                    <td class="trash" '.$preventclick.'><a href="DIPage2.php?_method=delete&id=%d" '.$addConfirm.'>%s</a></td>
                     </tr>',
                     $itemW['id'],
                     ($itemW['attnFlag'] ? 'danger' : ''),
