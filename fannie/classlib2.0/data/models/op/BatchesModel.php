@@ -578,6 +578,7 @@ those same items revert to normal pricing.
             'class' => 'COREPOS\\Fannie\\API\\jobs\\SyncItem',
             'data' => array(
                 'upc' => array_keys($upcs),
+                'priceOnly' => array(true),
             ),
         ));
 
