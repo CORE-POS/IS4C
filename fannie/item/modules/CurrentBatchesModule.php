@@ -68,10 +68,12 @@ JAVASCRIPT;
             DATE(startDate) AS startDate, 
             DATE(endDate) AS endDate, 
             batchName, batchType, salePrice,
-            t.typeDesc
+            t.typeDesc,
+            GROUP_CONCAT(DISTINCT m.storeID ORDER BY m.storeID SEPARATOR ' & ') as activeStores
             FROM batches AS b
                 INNER JOIN batchList AS l ON l.batchID=b.batchID
                 INNER JOIN batchType AS t ON t.batchTypeID=b.batchType
+                INNER JOIN StoreBatchMap AS m ON m.batchID=l.batchID
             WHERE b.startDate <= DATE(NOW())
                 AND b.endDate >= DATE(NOW())
                 AND (
@@ -88,16 +90,21 @@ JAVASCRIPT;
             $name = $row['batchName'];
             $type = $row['typeDesc'];
             $price = $row['salePrice'];
-            $ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
+            $activeStores = $row['activeStores'];
+            if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
+                $activeStores = str_replace("1", "HILL", $activeStores);
+                $activeStores = str_replace("2", "DENF", $activeStores);
+            }
+            $ret .= sprintf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td><td>%s</td>
                 <td align=\"center\"><span class=\"btn btn-success\" onClick=\"$ajax\" data-batchID=\"$id\" data-upc=\"$upc\">Apply Sale</span></td></tr>",
-                $id, $name, $start, $end, $price, $type
+                $id, $name, $start, $end, $price, $type, $activeStores
             );
         }
         if ($ret == '') {
             $ret = "This item is not currently in a sales batch.";
         } else {
             $thead = "<th>BatchID</th> <th>Batch Name</th> <th>Start Date</th>
-                <th>End Date</th> <th>Sale Price</th> <th>Batch Type</th>";
+                <th>End Date</th> <th>Sale Price</th> <th>Batch Type</th> <th>Stores</th>";
         }
 
         return <<<HTML
