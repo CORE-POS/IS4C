@@ -62,8 +62,11 @@ class UPC extends Parser
     const HID_PREFIX = '0XC';
     const HID_STATUS = 'HI';
 
-    const GS1_PREFIX = 'GS1~RX';
-    const GS1_STATUS = 'GS';
+    const GS1_EXPANDED_PREFIX = 'GS1~RX';
+    const GS1_EXPANDED_STATUS = 'GS';
+
+    const GS1_ITEM_PREFIX = 'GS1~R4';
+    const GS1_ITEM_STATUS = 'NA';
 
     /**
       The default case is pretty simple. A numeric string
@@ -101,7 +104,8 @@ class UPC extends Parser
             self::SCANNED_STATUS => self::SCANNED_PREFIX, 
             self::MACRO_STATUS => self::MACRO_PREFIX, 
             self::HID_STATUS => self::HID_PREFIX, 
-            self::GS1_STATUS => self::GS1_PREFIX,
+            self::GS1_EXPANDED_STATUS => self::GS1_EXPANDED_PREFIX,
+            self::GS1_ITEM_STATUS => self::GS1_ITEM_PREFIX,
         );
     }
 
@@ -131,9 +135,33 @@ class UPC extends Parser
     function parse($str)
     {
         $this->source = $this->getPrefix($str);
-        if ($this->source == self::GS1_PREFIX) {
+        if ($this->source == self::GS1_ITEM_PREFIX ||
+            $this->source == self::GS1_EXPANDED_PREFIX) {
             $str = $this->fixGS1($str);
         }
+
+        /* If fixGS1() found a problem report it and return.
+         */
+        if (strpos($str,'*PROBLEM') === 0)
+        {
+            /** $problem
+             * [0] '*PROBLEM'
+             * [1] A description of the problem
+             * [2] The string being parsed at the point the problem was found.
+             */
+            $problem = explode('|',$str);
+            $ret = $this->default_json();
+            $problem[1] = str_replace('  ','<br />',$problem[1]);
+            $msg = sprintf("%s<br />%s%s", $problem[1], _('Item: '), $problem[2]);
+            $ret['output'] = DisplayLib::boxMsg(
+                $msg,
+                _('DataBar Problem'),
+                false,
+                DisplayLib::standardClearButton()
+            );
+            return $ret;
+        }
+
         $this->status = self::GENERIC_STATUS;
         if ($this->source !== false) {
             $this->status = $this->getStatus($this->source);
@@ -551,7 +579,7 @@ class UPC extends Parser
         $this->session->set("refund",$saveRefund);
     }
 
-    function fixGS1($str){
+    function fixGS1($str) {
         // remove GS1~ prefix
         $str = substr($str, 6);
 
@@ -561,10 +589,25 @@ class UPC extends Parser
         if (substr($str,0,4) == "8110")
             return $str;
 
-        // GTIN-14; return w/o check digit,
-        // ignore any other fields for now
-        if (substr($str,0,2) == "10")
-            return substr($str,2,13);
+        /* GTIN-14; return w/ or w/o check digit,
+         * ignore any other fields for now
+         * There are cases where the first digit after
+         *  the AI is not 0 and so the with check digit
+         *  will lose that and the lookup to products fail.
+         * Trap cases where keeping the check digit and
+         *  the first digit after the AI is not 0.
+         */
+        if (substr($str,0,2) == "01") {
+            if ($this->session->get("UpcIncludeCheckDigits") &&
+                    $str[2] != '0') {
+                return sprintf("%s|%s|%s", '*PROBLEM',
+                    _("Cannot handle this item ID.  Perhaps try the PLU on the sticker."),
+                    substr($str,2));
+            }
+            return substr($str,
+                ($this->session->get("UpcIncludeCheckDigits")) ? 3 : 2,
+                13);
+        }
         
         // application identifier not recognized
         // will likely cause no such item error
@@ -590,7 +633,8 @@ class UPC extends Parser
         $entered = trim($entered);
 
         // leave GS1 barcodes alone otherwise
-        if ($this->source == self::GS1_PREFIX) {
+        if ($this->source == self::GS1_ITEM_PREFIX ||
+            $this->source == self::GS1_EXPANDED_PREFIX) {
             return $entered;
         }
         if (substr($entered, 0, 4) == '8110' && strlen($entered) > 16) {
