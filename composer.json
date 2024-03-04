@@ -39,7 +39,7 @@
         "spomky-labs/otphp": "^8.0",
         "drewm/mailchimp-api": "^2.4",
         "league/flysystem-sftp": "^1.0",
-        "phpseclib/phpseclib": "2.0.31",
+        "phpseclib/phpseclib": "2.0.47",
         "php-coveralls/php-coveralls": "^2.4",
         "endroid/qr-code": "^2.5",
         "oomphinc/composer-installers-extender": "^2.0",
