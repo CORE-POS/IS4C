@@ -193,6 +193,7 @@ class ItemEditorPage extends FanniePage
             {$vars['enter']}
             <select name="ntype" id="searchselect" class="form-control">
                 <option>UPC</option>
+                <option>EAN-8</option>
                 <option>SKU</option>
                 <option>Brand Prefix</option>
                 <option>Batch ID</option>
@@ -295,6 +296,8 @@ HTML;
             $query .= ' AND inUse=1 ';
         }
         if ($this->config->get('STORE_MODE') == 'HQ') {
+            if ($store_id === false)
+                $store_id = 1;
             $query .= " AND p.store_id=? ";
             $args[] = $store_id;
         }
@@ -360,8 +363,14 @@ HTML;
 
         if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
             $lnUPCs = array();
+            $bannedUPCs = array();
+
             $lnP = $dbc->prepare("SELECT code FROM AlternateCodes");
+            $bannedP = $dbc->prepare("SELECT code, reason FROM BannedCodes WHERE code = ?");
+
             $lnR = $dbc->execute($lnP);
+            $bannedR = $dbc->execute($bannedP, array($upc));
+
             while ($lnW = $dbc->fetchRow($lnR)) {
                 $lnUPCs[] = BarcodeLib::padUPC($lnW['code']);
             }
@@ -371,7 +380,17 @@ HTML;
                 return $this->searchForm();
             }
 
-            if (substr(BarcodeLib::padUPC($upc), 0, 1) != '0' && $authorized == false) {
+            $banned = '';
+            while ($bannedW = $dbc->fetchRow($bannedR)) {
+                 $banned = $bannedW['reason'];
+            }
+            if ($banned != '') {
+                $this->msgs = '<div class="alert alert-danger"> PLU ' . $upc . ' is banned from POS: 
+                    <strong>' . $banned. '</strong></div>';
+                return $this->searchForm();
+            }
+
+            if (is_numeric($upc) && substr(BarcodeLib::padUPC($upc), 0, 1) != '0' && $authorized == false) {
                 $this->msgs = '<div class="alert alert-danger">A check digit is incuded in the UPC that was entered. There must be at least one leading zero to be a valid item.</div>';
                 return $this->searchForm();
             }
@@ -798,9 +817,16 @@ HTML;
 
     public function javascript_content()
     {
+        $WfcDuluth = (FannieConfig::config('COOP_ID') == 'WFC_Duluth') ? 1 : 0;
+
         return <<<JAVASCRIPT
+var flags1 = null;
+var flags2 = null;
+
 $(document).ready(function(){
     alterTable();
+
+    var WfcDuluth = '$WfcDuluth';
 
     // don't use default keyup on inputs
     $('#upc').keyup(function(e){
@@ -837,6 +863,101 @@ $(document).ready(function(){
                 break;
         }
     });
+
+    // hide store-wise controls for Duluth (HOST server eplum compatibility)
+    if (WfcDuluth == 1) {
+        $("a.nav-tab").each(function() {
+            $(this).css('display', 'none');
+        });
+
+        let syncChecked = $("#si_sync").is(":checked");
+        if (syncChecked == false) {
+            $("#si_sync").trigger('click');
+        }
+        $("#si_sync").css('display', 'none');
+
+        var prepack = ['Bread', 'DPrepack', 'Prepack'];
+        var deli = ['Counter', 'DCounter', 'DKitchen', 'Kitchen'];
+        var produce = ['Produce', 'DProduce'];
+        var pre = false;
+        var del = false;
+        var pro = false;
+        $(".scale-sync-checkbox").each(function(){
+            let name = $(this).parent().find("span.label-text").text();
+            let checked = $(this).is(":checked");
+
+            if (checked == true) {
+                if (prepack.includes(name)) {
+                    pre = true;
+                }
+                if (deli.includes(name)) {
+                    del = true;
+                }
+                if (produce.includes(name)) {
+                    pro = true;
+                }
+                $(this).trigger('click');
+            }
+        });
+
+
+        $(".scale-sync-checkbox").each(function(){
+            let name = $(this).parent().find("span.label-text").text();
+            let checked = $(this).is(":checked");
+            if (name != 'Kitchen' && name != 'Prepack' && name != 'DProduce') {
+                $(this).parent().css('display', 'none');
+            } else {
+                if (name == 'Kitchen') {
+                    let newtext = 'Deli Scales';
+                    $(this).parent().find("span.label-text").text(newtext);
+                    if (del == true && checked == false) {
+                        $(this).trigger('click');
+                    }
+                }
+                if (name == 'Prepack') {
+                    let newtext = 'Prepack Scales';
+                    $(this).parent().find("span.label-text").text(newtext);
+                    if (pre == true && checked == false) {
+                        $(this).prop('checked', true);
+                    }
+                }
+                if (name == 'DProduce') {
+                    let newtext = 'Produce Scales';
+                    $(this).parent().find("span.label-text").text(newtext);
+                    if (pro == true && checked == false) {
+                        $(this).trigger('click');
+                    }
+                }
+            }
+        });
+
+    }
+
+    /*
+        also, ensure flags1[]-flags2[] (organic 17, seasonal 2, fair trade 1, gluten free 18) always match between stores
+    */
+
+    var flags2match = [1, 2, 17, 18];
+    if (WfcDuluth == 1) {
+        $.each(flags2match, function(i, v) {
+            $('input[name="flags1[]"]').on('click', function(){
+                flags1 = $('input[name="flags1[]"][value='+v+']').is(':checked');
+                flags2 = $('input[name="flags2[]"][value='+v+']').is(':checked');
+
+                if (flags1 != flags2) {
+                    $('input[name="flags2[]"][value='+v+']').trigger('click');
+                }
+            });
+            $('input[name="flags2[]"]').on('click', function(){
+                flags1 = $('input[name="flags1[]"][value='+v+']').is(':checked');
+                flags2 = $('input[name="flags2[]"][value='+v+']').is(':checked');
+
+                if (flags1 != flags2) {
+                    $('input[name="flags1[]"][value='+v+']').trigger('click');
+                }
+            });
+        });
+    }
 });
 $(window).on("resize", function(event){
     alterTable();
@@ -864,6 +985,7 @@ function alterTable()
         });
    } 
 }
+
 JAVASCRIPT;
     }
     
