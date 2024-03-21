@@ -142,6 +142,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $start = FormLib::get('start');
         $end = FormLib::get('end');
         $exclude = FormLib::get('exclude', array());
+        $smartType = FormLib::get('smartType', false);
 
         $items = array();
         for ($i=0; $i<count($descriptions); $i++) {
@@ -166,6 +167,7 @@ class ManualSignsPage extends FannieRESTfulPage
                 'endDate' => $end[$i],
                 'originName' => $origins[$i],
                 'originShortName' => $origins[$i],
+                'smartType' => $smartType[$i],
             );
             if (strstr($origins[$i], '/')) {
                 list($origin, $regPrice) = explode('/', $origins[$i], 2);
@@ -254,6 +256,10 @@ $('tr.item-row').each(function(){
 });
 JAVASCRIPT;
         $ret .= ' | <label><a id="clone-trs" onclick="'.$jsCloneBtn.'">Duplicate Rows</a></label>';
+        $ret .= ' | <label>Smart Signs Override</label>:&nbsp; <input type="checkbox" class="smartOverride" name="CoopDeals" id="smartCoopDealOverr" value=1> <label for="smartCoopDealOverr">Coop Deals</label> |';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="ChaChing" id="smartChaChingOverr" > <label for="smartChaChingOverr" value=1>Cha-Ching!</label> |';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="FreshDeals" id="smartFreshDealOverr" > <label for="smartFreshDealOverr" value=1>Fresh Deals<label>';
+
         $ret .= $clearBtn;
         $ret .= '</div>';
         $ret .= '<hr />';
@@ -288,6 +294,30 @@ $('.exc').on('change', function(){
 });
 JAVASCRIPT;
         $this->addOnloadCommand($jsExec);
+
+        $jsSmartOverr = <<<JAVASCRIPT
+$('.smartOverride').on('click', function(){
+    let id = $(this).attr('id');
+    let type = $(this).attr('name');
+    $('.smartOverride').each(function(){
+        if (id != $(this).attr('id')) {
+            let checked = $(this).is(':checked');
+            if (checked) {
+                $(this).trigger('click');
+            }
+        }
+    });
+
+    $('.smartTypeTd').each(function(){
+        $(this).remove();
+    });
+
+    $('.item-row').each(function(){
+        $(this).append("<td class=\"smartTypeTd\" style=\"display: none;\"><input type=\"text\" name=\"smartType[]\" value=\""+type+"\" /></td>");
+    });
+});
+JAVASCRIPT;
+        $this->addOnloadCommand($jsSmartOverr);
 
         return $ret;
     }
