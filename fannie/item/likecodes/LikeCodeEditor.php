@@ -138,6 +138,18 @@ function loadlc(id){
             $opts .= "<option value=\"$row[0]\">$row[0] $row[1]</option>";
         }
 
+        $js = <<<JAVASCRIPT
+$('#next').on('click', function(){
+    $('#lcselect option:selected').next().prop('selected', true);
+    $('#lcselect').trigger('change').trigger('chosen:updated');
+});
+$('#prev').on('click', function(){
+    $('#lcselect option:selected').prev().prop('selected', true);
+    $('#lcselect').trigger('change').trigger('chosen:updated');
+});
+JAVASCRIPT;
+        $this->addOnloadCommand($js);
+
         ob_start();
         ?>
         <div id="leftdiv" class="col-sm-6">
@@ -148,6 +160,12 @@ function loadlc(id){
                 size=15 onchange="loadlc(this.value);">
             <?php echo $opts; ?>
             </select><p />
+            <div style="padding: 15px;">
+                <div class="form-group">
+                    <span id="prev" class="btn btn-default">Prev</span>
+                    <span id="next" class="btn btn-default">Next</span>
+                </div>
+            </div>
             <div class="form-group col-sm-3">
                 <label class="col-sm-4 control-label">#</label>
                 <div class="col-sm-8">
