@@ -56,6 +56,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         'searchTax',
         'searchLocal',
         'searchFoodstamp',
+        'searchIDEnforced',
         'searchInUse',
         'searchDiscountable',
         'searchLocation',
@@ -496,6 +497,16 @@ class AdvancedItemSearch extends FannieRESTfulPage
         if ($form->fs !== '') {
             $search->where .= ' AND p.foodstamp=? ';
             $search->args[] = $form->fs;
+        }
+
+        return $search;
+    }
+
+    private function searchIDEnforced($search, $form)
+    {
+        if ($form->idReq !== '') {
+            $search->where .= ' AND p.idEnforced=? ';
+            $search->args[] = $form->idReq;
         }
 
         return $search;
