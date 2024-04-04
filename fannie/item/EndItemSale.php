@@ -80,6 +80,7 @@ class EndItemSale extends FannieRESTfulPage {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
         $upc = BarcodeLib::padUPC($this->id);
+        $storeID = FormLib::get('storeID', 1);
 
         $itemP = $dbc->prepare('SELECT p.description,p.special_price,
                         CASE WHEN u.likeCode IS NULL THEN -1 ELSE u.likeCode END as lc
@@ -95,9 +96,10 @@ class EndItemSale extends FannieRESTfulPage {
 
         $batchP = $dbc->prepare("SELECT b.batchName, b.batchID, l.upc FROM batches AS b 
             LEFT JOIN batchList as l
+            INNER JOIN StoreBatchMap as m ON m.batchID=l.batchID AND m.storeID=?
             on b.batchID=l.batchID WHERE '".date('Y-m-d')."' BETWEEN b.startDate
             AND b.endDate AND (l.upc=? OR l.upc=?)");
-        $batchR = $dbc->execute($batchP,array($upc,'LC'.$itemW['lc']));
+        $batchR = $dbc->execute($batchP,array($storeID, $upc,'LC'.$itemW['lc']));
         if ($dbc->num_rows($batchR) == 0) {
             $ret .= '<div class="alert alert-warning">The item does not appear to be in an active batch</div>';
         } else {
