@@ -90,6 +90,7 @@ class EditLocations extends FannieRESTfulPage
         $storeID = FormLib::get('storeID');
         $floorSectionID = FormLib::get('floorSectionID');
         $newSection = FormLib::get('newSection');
+        $isnew = FormLib::get('isnew');
         $json = array();
         $json['error'] = 0;
 
@@ -103,14 +104,15 @@ class EditLocations extends FannieRESTfulPage
         $row = $dbc->fetchRow($res);
         $exists = ($row['upc'] > 0) ? true : false;
 
-        if ($exists == true && $floorSectionID != 0) {
-            $prep = $dbc->prepare("UPDATE FloorSectionProductMap SET floorSectionID = ? 
-                WHERE upc = ? AND floorSectionID = ?;");
-            $res = $dbc->execute($prep, array($newSection, $upc, $floorSectionID));
-        } elseif ($exists == false || $floorSectionID == 0) {
+        if ($isnew == 'true') {
             $prep = $dbc->prepare("INSERT INTO FloorSectionProductMap (floorSectionID, upc) 
                 VALUES (?, ?) ");
             $res = $dbc->execute($prep, array($newSection, $upc));
+        }
+        if ($isnew == 'false') {
+            $prep = $dbc->prepare("UPDATE FloorSectionProductMap SET floorSectionID = ? 
+                WHERE upc = ? AND floorSectionID = ?;");
+            $res = $dbc->execute($prep, array($newSection, $upc, $floorSectionID));
         }
 
         if ($er = $dbc->error())
@@ -145,9 +147,9 @@ class EditLocations extends FannieRESTfulPage
         return false; 
     }
 
-    public function floorSectionSelect($options, $floorSectionID)
+    private function floorSectionSelect($options, $floorSectionID, $new='false')
     {
-        $select = "<select class=\"form-control edit-floorSection\" style=\"width: 175px; display: inline-block;\">
+        $select = "<select class=\"form-control edit-floorSection\" style=\"width: 175px; display: inline-block;\" data-isnew=\"$new\">
             <option value=\"\">NEW FLOOR SECTION</option>";
         foreach ($options as $id => $name) {
             $sel = ($floorSectionID == $id) ? "selected" : "";
@@ -274,7 +276,7 @@ class EditLocations extends FannieRESTfulPage
                 data-upc=\"%s\" data-floorSectionID=\"%s\" data-subSection=\"%s\" data-storeID=\"%s\">
                 </td></tr>", 
             'orange',
-            $this->floorSectionSelect($sections, 0),
+            $this->floorSectionSelect($sections, 0, 'true'),
             'orange',
             $upc, 0, 0, $storeID
         );
@@ -587,6 +589,7 @@ $('.edit-floorSection').change(function(){
     var floorSectionID = rowData.attr('data-floorSectionID');
     var newSection = $(this).children('option:selected').val();
     var storeID = $('#storeID').val();
+    var isnew = $(this).attr('data-isnew');
     if (upc == null) {
         upc = $('#upc').val();
     }
@@ -595,7 +598,7 @@ $('.edit-floorSection').change(function(){
     }
     $.ajax({
         type: 'post',
-        data: 'newSection='+newSection+'&upc='+upc+'&floorSectionID='+floorSectionID+'&storeID='+storeID,
+        data: 'newSection='+newSection+'&upc='+upc+'&floorSectionID='+floorSectionID+'&storeID='+storeID+'&isnew='+isnew,
         dataType: 'json',
         url: 'EditLocations.php',
         success: function(resp) {
