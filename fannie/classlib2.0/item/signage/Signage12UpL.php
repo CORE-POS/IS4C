@@ -56,6 +56,8 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf = $this->fitText($pdf, $this->MED_FONT, 
             $item['description'], array($column, 6, 2));
 
+        if (isset($item['smartType']) && $item['smartType'] == 'CoopDeals') {}
+
         $pdf->SetX($this->left + ($this->width*$column));
         $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
         $item['size'] = $this->formatSize($item['size'], $item);
@@ -82,9 +84,10 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
 
                 // BOGO limit
                 if ($item['transLimit'] > 0) {
-                    $pdf->SetFont($this->font, '', $this->SMALLEST_FONT);
+                    $pdf->SetFont($this->font, 'B', $this->SMALLEST_FONT);
                     $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 29));
                     $pdf->Cell($this->width, 12, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
+                    $pdf->SetFont($this->font, '', $this->SMALLEST_FONT);
                 }
 
             }
@@ -122,7 +125,7 @@ class Signage12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 20, $item['upc'], 0, 1, 'L');
         } 
         
-        if (isset($item['locAbbr'])) {
+        if (isset($item['locAbbr']) && $item['transLimit'] == 0) {
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $pdf->SetXY($this->left + ($this->width*$column) + 14, $this->top + ($this->height*$row) + ($this->height - 33));
             $pdf->Cell($effective_width, 20, " ".$item['locAbbr'], 0, 1, 'L');
