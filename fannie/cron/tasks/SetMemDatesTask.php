@@ -78,7 +78,6 @@ equity reaches final required balance';
                     $next_year = date('Y-m-d', mktime(0, 0, 0, date('n', $ts), date('j', $ts), date('Y', $ts)+1));
                     $account['endDate'] = $next_year;
                 }
-                $account['contactAllowed'] = 1;
 
                 $resp = \COREPOS\Fannie\API\member\MemberREST::post($account['cardNo'], $account);
                 if ($resp['errors'] > 0) {
