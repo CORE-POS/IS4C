@@ -37,7 +37,7 @@ function WFC_HerbNspice_Flat($data,$offset=0,$showPrice=0)
     $pdf->SetFont('Gill','B', 16);
 
     $width = 68;
-    $height = 20;
+    $height = 15;
     $left = 3;  
     $top = 5;
     $guide = 0.3;
@@ -180,11 +180,11 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     /*
         Add PLU
     */
-    $pdf->SetXY($x+34,$y+$step);
+    $pdf->SetXY($x+34,$y-3+$step);
     $pdf->Cell(25, 4, 'PLU#', 0, 1, 'L', true);
 
     $pdf->SetFont('Gill','B', $descFontSizeBig);
-    $pdf->SetXY($x+48,$y+4);
+    $pdf->SetXY($x+48,$y+1);
     $pdf->Cell(8, 8, substr($upc, -3), 0, 1, 'L', true);
 
     $pdf->SetFont('Gill','B', $descFontSize);
@@ -193,7 +193,8 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     */
     $pdf->SetFillColor(0,0,0);
     // PLU Barcode
-    $pdf->EAN13($x+42, $y+$step*2,substr($upc, -3),4,.25);  //generate barcode and place on label
+    //$pdf->EAN13($x+42, $y-8+$step*2, substr($upc, -3),0, 0);  //generate barcode and place on label
+
     // SKU Barcode
     //if (is_numeric($sku)) {
     //    $pdf->EAN13($x+2, $y+$step*2,$sku,4,.25);  //generate barcode and place on label
@@ -204,7 +205,7 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
             $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
             $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
             imagepng($img, $file);
-            $pdf->Image($file, $x-1, $y+$step*2);
+            $pdf->Image($file, $x-1, $y-4+$step*2);
             unlink($file);
         }
     }
@@ -213,31 +214,29 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
 
 
     // cover up 1
-    //$pdf->SetFillColor(255,0,0);
-    $pdf->Rect($x+2, $y-1+$step*2, $width, 7, 'F');
-    //$pdf->SetFillColor(255,255,255);
+    $pdf->Rect($x+2, $y-1+$step*2, $width-25, 7, 'F');
 
     /* UPC / PLU Barcode */
     $pdf->SetFillColor(0,0,0);
-    $pdf->EAN13($x+42, $y+$step*2,substr($upc, -3),4,.25);  //generate barcode and place on label
+    $pdf->EAN13($x+42, $y-3+$step*2, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
     $pdf->SetFillColor(255,255,255);
 
     // cover up 2
     $pdf->SetFillColor(255,255,255);
-    $pdf->Rect($x+42, $y-1+$step*2, 25, 3, 'F');
+    $pdf->Rect($x+42, $y-4+$step*2, 25, 3, 'F');
 
 
     /*
         Add Vendor Info
     */
     $pdf->SetFont('Gill','', 8.5);
-    $pdf->SetXY($x+1, $y-4+$step*3);
+    $pdf->SetXY($x+1, $y-6+$step*3);
     $pdf->Cell(18, 2, $vendor, 0, 1, 'L', true);
     /*
         Add SKU if numeric
     */
     if (is_numeric($sku)) {
-        $pdf->SetXY($x+18, $y-4+$step*3);
+        $pdf->SetXY($x+18, $y-6+$step*3);
         $pdf->Cell(18, 2, $sku, 0, 1, 'L', true);
     }
     $pdf->SetFont('Gill','B', 16.5);
@@ -246,12 +245,12 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
         Add Price
     */
     $priceText = '$'.$price.'/LB';
-    $pdf->SetXY($x+12, $y-0.5+$step*1);
+    $pdf->SetXY($x+12, $y-4+$step*1);
     $pdf->Cell(10, 5, $priceText, 0, 1, 'C', true);
 
     $pdf->SetFont('Gill','B', 6);
-    $pdf->SetXY($x+57.5,$y+1.5);
-    $pdf->Cell(10, 1, $mtText, 0, 1, 'R', true);
+    $pdf->SetXY($x+67,$y+1.5);
+    $pdf->Cell(1, 1, $mtText, 0, 1, 'R', true);
 
 
     return $pdf;
