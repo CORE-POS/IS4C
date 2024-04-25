@@ -106,12 +106,15 @@ JAVASCRIPT;
             array('ItemList4UpL.png', 'Item List 4UP', 'ItemList4UpL'),
             array('ItemList2UpP.png', 'Item List 2UP', 'ItemList2UpP'),
             array('WFCHerbNSpice3UP.png', 'Herb & Spice Jars', 'Legacy:WFC HerbNspice 3UP'),
-            array('MeatLabel.png', 'WFC Meat 14UP', 'Legacy:WFC MEAT 14UP'),
-            array('WFCLegacyBulkRepack14UP.png', 'Bulk Repack 14UP', 'Legacy:WFC Bulk Repack 14UP'),
+            array('MeatLabel.png', 'Meat 14UP (full length)', 'Legacy:WFC MEAT 14UP'),
+            array('MeatLabelSN.png', 'Meat 14UP (shorter)', 'Legacy:WFC MEAT SN 14UP'),
+            array('WFCLegacyBulkRepack14UP.png', 'Bulk Repack 14UP (no price)', 'Legacy:WFC Bulk Repack 14UP'),
             array('LegacyWFCDarkServiceCase12UP.png', 'Deli Service Case 12UP', 'Legacy:WFC Dark ServiceCase 12UP'),
-            array('LegacyWFCDarkSimple24UP.png', 'Deli Shelftags (No Brand,Price)', 'Legacy:WFC Dark Simple 24UP'),
-            array('LegacyWFCDarkExtended24UP.png', 'Deli Shelftags (Full Info)', 'Legacy:WFC Dark Extended 24UP'),
-            array('LegacyWFCHerbNspiceFlat.png', 'Herb & Spice (xs)', 'Legacy:WFC HerbNspice Flat'),
+            array('LegacyWFCDarkSimple24UP.png', 'Deli Shelftags (no brand, no price)', 'Legacy:WFC Dark Simple 24UP'),
+            array('LegacyWFCDarkExtended24UP.png', 'Regular Deli Shelftags (Full Info)', 'Legacy:WFC Dark Extended 24UP'),
+            array('LegacyWFCDeliNarrow24UP.png', 'Deli Narrow Tags', 'Legacy:WFC Deli Narrow 24UP'),
+            array('LegacyWFCDeliShort24UP.png', 'Deli Short Tags (5mm Shorter)', 'Legacy:WFC Deli Short 24UP'),
+            array('LegacyWFCHerbNspiceFlat2.png', 'Herb & Spice (xs)', 'Legacy:WFC HerbNspice Flat'),
             array('Giganto4UpSingle.png', 'Single Giganto (4UP)', 'Giganto4UpSingle'),
             array('WFC_Produce_SmartSigns.png', 'Produce Smart Signs', 'Legacy:WFC Produce SmartSigns'),
         );
@@ -152,7 +155,9 @@ HTML;
 <div style="background-color: rgba(0,0,0,0.3); margin: 15px; padding: 25px; position: fixed; top: 0; bottom: 0; right: 0; overflow-y: scroll; overflow-x:hidden;
      border-radius: 5px">
     <div class="container-fluid" id="visualSelect-container">
-        <div align="right" style="cursor: pointer;" id="close-visualSelect">X</div>
+        <div align="right" style="cursor: pointer; " id="close-visualSelect">
+            <span style="background: white; height: 25px; width: 25px; padding: 5px; box-shadow: 1px 1px lightgrey;">X</span>
+        </div>
         $output
     </div>
 </div>
