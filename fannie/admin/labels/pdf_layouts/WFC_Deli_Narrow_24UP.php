@@ -55,7 +55,7 @@ function WFC_Deli_Narrow_24UP($data,$offset=0,$showPrice=0)
     $i = 0;
     foreach($data as $k => $row){
         $upc = $row['upc'];
-        if ($i % 24 == 0 && $i != 0) {
+        if ($i % 30 == 0 && $i != 0) {
             $pdf->AddPage('L');
             $x = $left;
             $y = $top;
@@ -78,15 +78,15 @@ function WFC_Deli_Narrow_24UP($data,$offset=0,$showPrice=0)
     */
     $i = 0;
     $x = $left+$guide; $y = $top+$guide;
-    if (count($data) % 4 != 0) {
+    if (count($data) % 5 != 0) {
         for ($j=count($data) % 4; $j<4; $j++) {
             $data[] = '';
         }
     }
-    $data = arrayMirrorRowsNarrow_24UP($data, 4);
+    $data = arrayMirrorRowsNarrow_24UP($data, 5);
     $pdf->AddPage('L');
     foreach($data as $k => $row){
-        if ($i % 24 == 0 && $i != 0) {
+        if ($i % 30 == 0 && $i != 0) {
             $pdf->AddPage('L');
             $x = $left;
             $y = $top;
@@ -94,7 +94,7 @@ function WFC_Deli_Narrow_24UP($data,$offset=0,$showPrice=0)
         }
         if ($i == 0) {
             $pdf = generateDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
-        } else if ($i % 4 == 0 && $i != 0) {
+        } else if ($i % 5 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
         } else {
@@ -110,6 +110,7 @@ function WFC_Deli_Narrow_24UP($data,$offset=0,$showPrice=0)
 
 function generateDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
+    $x += 17;
     $upc = isset($row['upc']) ? $row['upc'] : '';
     $sku = isset($row['sku']) ? $row['sku'] : '';
     if (strlen($sku) < 1)
