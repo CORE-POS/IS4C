@@ -129,6 +129,20 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'C');
         }
 
+        /*
+            Create Guide-Lines
+        */
+        $pdf->SetFillColor(155, 155, 155);
+
+        // horizontal
+        $pdf->SetXY(0, $this->height-2 );
+        $pdf->Cell(10, 0.3, ' ', 0, 1, 'C', true);
+
+        $pdf->SetXY($this->width - 1, $this->height-2 );
+        $pdf->Cell(5, 0.3, ' ', 0, 1, 'C', true);
+
+        $pdf->SetFillColor(0, 0, 0);
+
         return $pdf;
     }
 
