@@ -312,6 +312,7 @@ class EditLocations extends FannieRESTfulPage
                 <div class="row">
                     <div class="col-lg-1"></div>
                     <div class="col-xs-6">
+                        <label>Edit a single item</label>
                         <div class="form-group">
                             <input name="upc" id="upc" value="$upc" class="input-small small form-control" autofocus pattern="\d*">
                         </div>
@@ -338,16 +339,19 @@ class EditLocations extends FannieRESTfulPage
             <div class="table-responsive"><table class="table table-bordered table-sm small" id="handheldtable"><thead>$th</thead><tbody>$td</tbody></table></div>
             </form>
             <div class="form-group" align="center">
+                <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php?list=">Edit List</a>
+            </div>
+            <div class="form-group" align="center">
+                <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php?remove=">Remove List</a>
+            </div>
+            <div class="form-group" align="center">
+                <a class="btn btn-default menu-btn" href="../../item/FloorSections/EditLocations.php">Edit Sub-Locations</a>
+            </div>
+            <div class="form-group" align="center">
+                <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/SMS/scan/ScannerSMS.php">SMS List Builder</a>
+            </div>
+            <div class="form-group" align="center">
                 <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Mobile Menu</a>
-            </div>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php">Edit Locations: by List</a>
-            </div>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../item/FloorSections/EditLocations.php">Edit Sub-Locations: by List</a>
-            </div>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/SMS/scan/ScannerTest.php">SMS Scanner Test</a>
             </div>
         </div>
         <div class="col-lg-4"></div>
@@ -507,6 +511,10 @@ HTML;
                 <select name="editAllSubs" id="editAllSubs" class="form-control">$options</select>
                 <textarea class="hidden" name="upcs">$upcsStr</textarea>
                 <textarea class="hidden" name="floorSections">$floorSectionsForm</textarea>
+            </div>
+            <div class="form-group">
+                <label>Filter Sections</label> (check to exclude section)
+                <div id="section-filters"></div>
             </div>
         </form>
     </div>
@@ -688,8 +696,47 @@ $('#editAllSubs').change(function(){
     var c = confirm('Set All Sub-Sections to "'+value+'"?');
     if (c == true) {
         $('.edit-subsection').each(function(){
-            $(this).val(value).trigger('change');
+            if ($(this).is(":visible")) {
+                $(this).val(value).trigger('change');
+            }
         });
+    }
+});
+
+var filterSections = []
+$('tr').each(function(){
+    let section = $(this).find('select.edit-floorSection').find(':selected').text();
+    if (!filterSections.includes(section)) {
+        filterSections.push(section)
+    }
+});
+for (let i=0; i<filterSections.length; i++) {
+    if (filterSections[i].length > 0) {
+        let html = "<input type='checkbox' class='filter-checkbox' name='" + filterSections[i] + "'/>" + filterSections[i] + ", ";
+        $('#section-filters').append(html);
+    }
+}
+
+$('.filter-checkbox').on('click', function() {
+    $('tr').each(function(){
+        $(this).show();
+        $(this).find('select.edit-floorSection').attr('disabled', false);
+        $(this).find('select.edit-subsection').attr('disabled', false);
+    });
+    let checked = $(this).is(":checked");
+    let checkedSection = $(this).attr('name');
+    if (checked) {
+        $('tr').each(function(){
+            let section = $(this).find('select.edit-floorSection').find(':selected').text();
+            if (section == checkedSection) {
+                $(this).find('select.edit-floorSection').attr('disabled', 'true');
+                $(this).find('select.edit-subsection').attr('disabled', 'true');
+                $(this).hide();
+            }
+        });
+        //$('#section-filters').append(checked);
+    } else {
+        //$('#section-filters').append('false');
     }
 });
 JAVASCRIPT;

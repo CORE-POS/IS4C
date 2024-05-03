@@ -84,6 +84,10 @@ class ProdLocationEditor extends FannieRESTfulPage
     
     function get_remove_view()
     {
+        $store_id = COREPOS\Fannie\API\lib\Store::getIdByIp();
+        $checkedA = ($store_id == 1) ? ' checked ' : '';
+        $checkedB = ($store_id == 2) ? ' checked ' : '';
+
         return <<<HTML
 <div class="row">
     <div class="col-lg-4">
@@ -97,11 +101,11 @@ class ProdLocationEditor extends FannieRESTfulPage
             </div>
         <label for="storeA">Hillside</label>
             <div class="form-group">
-                <input type="checkbox" class="form-control" name="storeA" value="1"/>
+                <input type="checkbox" class="form-control" name="storeA" value="1" $checkedA />
             </div>
         <label for="storeA">Denfeld</label>
             <div class="form-group">
-                <input type="checkbox" class="form-control" name="storeB" value="2"/>
+                <input type="checkbox" class="form-control" name="storeB" value="2" $checkedB />
             </div>
             <div class="form-group">
                 <input type="submit" class="btn btn-default" />
@@ -226,43 +230,6 @@ HTML;
         return $ret;
     }
 
-    function post_batch_save_view()
-    {
-
-        global $FANNIE_OP_DB;
-        $dbc = FannieDB::get($FANNIE_OP_DB);
-
-        $storeID = FormLib::get('storeID', 1);
-        $start = FormLib::get('start');
-        $end = FormLib::get('end');
-
-        $ret = '';
-        $item = array();
-        foreach ($_POST as $upc => $section) {
-            if (!is_numeric($upc)) continue;
-            $upc = str_pad($upc, 13, '0', STR_PAD_LEFT);
-            if ($section > 0) $item[$upc] = $section;
-        }
-
-        $prep = $dbc->prepare('
-            INSERT INTO FloorSectionProductMap (upc, floorSectionID) values (?, ?);
-        ');
-        foreach ($item as $upc => $section) {
-            $args = array($upc, $section );
-            $dbc->execute($prep, $args);
-        }
-        $ret .= '<div class="alert alert-success">Update Successful</div>';
-
-        $cache = new FloorSectionsListTableModel($dbc);
-        $cache->refresh();
-
-        $ret .= '<div class="form-group"><a class="btn btn-default btn-back" href="javascript:history.back()">Back</a></div>';
-        $ret .= '<div class="form-group"><a class="btn btn-default btn-back" href="ProdLocationEditor.php?list=">Start Over</a></div>';
-        $ret .= '<div class="form-group"><a class="btn btn-default" href="ProdLocationEditor.php">Return</a></div>';
-
-        return $ret;
-    }
-
     function post_list_save_view()
     {
 
@@ -271,6 +238,7 @@ HTML;
         $storeID = FormLib::get('storeID', 1);
         $start = FormLib::get('start');
         $end = FormLib::get('end');
+        $updateType = FormLib::get('updateType');
         $ret = '';
         $item = array();
         foreach ($_POST as $upc => $section) {
@@ -279,17 +247,31 @@ HTML;
         }
 
         foreach ($item as $upc => $section) {
-            $floorSectionRange = array();
-            if ($storeID == 1) {
-                $floorSectionRange[] = 1;
-                $floorSectionRange[] = 19;
-            } elseif ($storeID == 2) {
-                $floorSectionRange[] = 30;
-                $floorSectionRange[] = 47;
+            if ($updateType == 1) {
+                $checkIDs = array();
+                $checkA = array($upc, $storeID);
+                $checkP = $dbc->prepare("SELECT f.floorSectionProductMapID
+                    FROM FloorSectionProductMap f
+                        INNER JOIN FloorSections s ON s.floorSectionID=f.floorSectionID
+                    WHERE upc = ? AND storeID = ?");
+                $checkR = $dbc->execute($checkP, $checkA);
+                while ($row = $dbc->fetchRow($checkR)) {
+                    $checkID = $row['floorSectionProductMapID'];
+                    $checkIDs[] = $checkID;
+                }
+                echo $dbc->error();
+
+                foreach ($checkIDs as $checkID) {
+                    $delA = array($upc, $checkID);
+                    $delP = ("DELETE FROM FloorSectionProductMap
+                        WHERE upc = ? AND floorSectionProductMapID = ?");
+                    $delR = $dbc->execute($delP, $delA);
+                }
+                echo $dbc->error();
             }
-            $args = array($upc,$floorSectionRange[0],$floorSectionRange[1]);
-            $prepZ = ("DELETE FROM FloorSectionProductMap WHERE upc = ? AND floorSectionID BETWEEN ? AND ?");
-            $dbc->execute($prepZ,$args);
+        }
+
+        foreach ($item as $upc => $section) {
 
             $args = array($upc,$section);
             $prep = $dbc->prepare('
@@ -457,24 +439,35 @@ HTML;
 
         $suggestions = $this->getSuggestions();
 
+        $updateType = FormLib::get('updateType', null);
+        $updateTypeSelect = array();
+        $updateTypeSelect[0] = ($updateType == 1) ? ' selected ' : '';
+        $updateTypeSelect[1] = ($updateType == 2) ? ' selected ' : '';
+
         $ret = "";
         $ret .= '
         <div class="row">
             <form method="get" action="ProdLocationEditor.php">
                 <div class="col-lg-2" style="background: rgba(0,0,0,0.1); padding: 5px"">
-                    <textarea class="form-control" name="upcs" rows=6>'.$upcs.'</textarea>
+                    <textarea class="form-control" name="upcs" rows=7>'.$upcs.'</textarea>
                 </div>
                 <div class="col-lg-2" style="background: rgba(0,0,0,0.1); padding: 5px">
                     <div>
                     <input type="hidden" name="list" value="1">
                     <div class="form-group"> '.$storePicker['html'].' </div>
                     <div class="form-group">
+                        <select name="updateType" id="updateType" class="form-control">
+                            <option value=1 '. $updateTypeSelect[0] .'>REPLACE Current Mapping</option>
+                            <option value=2 '. $updateTypeSelect[1] .'>ADD TO Current Mapping</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <button type="submit" class="btn btn-default form-control">Submit List</button>
                     </div>
+            </form>
             </div>
                 <div class="col-lg-8"></div>
             </div>
-            </form>
         </div>
         <div class="row">
             <div class="col-lg-2"></div>
@@ -630,6 +623,7 @@ HTML;
                 </th>
             </thead>
             <form method="post" name="update" id="update">
+                <input type="hidden" name="updateType" id="sendUpdateType" value=1 />
                 <input type="hidden" name="save" value="1">
             ';
         foreach ($item as $key => $row) {
@@ -665,37 +659,6 @@ HTML;
 
     }
 
-    function get_batch_view()
-    {
-        $stores = FormLib::storePicker('storeID', 1);
-        $ret = '
-            <form method="get"class="form-inline">
-
-            <div class="input-group" style="width:200px;">
-                <span class="input-group-addon">Batch#</span>
-                <input type="text" class="form-control inline" name="start" autofocus required>
-            </div>
-            <div class="input-group" style="width:200px;">
-                <span class="input-group-addon">to Batch#</span>
-                <input type="text" class="form-control inline" name="end" required><br>
-            </div><br><br>
-            <div class="input-group" style="width:200px;">
-                <span class="input-group-addon">Store</span>
-                ' . $stores['html'] . '
-            </div><br /><br />
-
-                <input type="submit" class="btn btn-default" value="Find item locations">
-
-                <button type="submit" class="btn btn-default"
-                    onclick="$(\'input.inline\').val(\'CURRENT\');">Current Batches</button>
-
-            </form><br>
-            <a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br>
-        ';
-
-        return $ret;
-    }
-
     function get_view()
     {
         return <<<HTML
@@ -706,9 +669,6 @@ HTML;
         <form method="get">
             <div class="form-group">
                 <button type="submit" class="btn btn-default" style="width: 300px" name="list">Edit a list of <strong>upcs</strong></button>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-default" style="width: 300px" name="batch">Edit Locations by <strong>batch-ids</strong></button>
             </div>
             <div class="form-group">
                 <a class="btn btn-default" style="width: 300px" href="FloorSections/EditLocations.php">Edit Floor <strong>sub-locations</strong></a>
@@ -812,6 +772,11 @@ $('.checkboxx').on('change', function(){
 $("#alt-update-form-btn").click(function(){
     document.forms['update'].submit();
 });
+
+$('#updateType').on('change', function(){
+    let value = $(this).find(':selected').val();
+    $('#sendUpdateType').val(value);
+});
 JAVASCRIPT;
    }
 
@@ -866,7 +831,6 @@ JAVASCRIPT;
     public function unitTest($phpunit)
     {
         $phpunit->assertInternalType('string', $this->get_view());
-        $phpunit->assertInternalType('string', $this->get_batch_view());
         $phpunit->assertInternalType('string', $this->get_list_view());
         $phpunit->assertInternalType('string', $this->get_start_view());
     }
