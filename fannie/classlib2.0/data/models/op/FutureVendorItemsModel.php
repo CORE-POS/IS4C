@@ -28,7 +28,7 @@
 class FutureVendorItemsModel extends BasicModel 
 {
 
-    protected $name = "vendors";
+    protected $name = "FutureVendorItems";
     protected $preferred_db = 'op';
 
     protected $columns = array(
