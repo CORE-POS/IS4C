@@ -63,6 +63,18 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
             }
         }
 
+        $onChange = <<<JAVASCRIPT
+if (this.value>=0) {
+    $('#custom-pricing-fields :input').prop('disabled', true);
+    let html = '<option>NONE</option>';
+    $('#custom-pricing-fields').find('select').prepend(html);
+    $('#custom-pricing-fields').find('select').find('option:eq(0)').prop('selected', true);
+} else {
+    $('#custom-pricing-fields :input').prop('disabled', false);
+    $('#custom-pricing-fields').find('select').find('option:eq(0)').remove();
+}
+JAVASCRIPT;
+
         $ret = '<div id="ItemMarginFieldset" class="panel panel-default">';
         $ret .=  "<div class=\"panel-heading\">
                 <a href=\"\" onclick=\"\$('#ItemMarginContents').toggle();return false;\">
@@ -79,8 +91,7 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '<div class="form-group form-inline">
                     <label>Pricing Rule</label>
                     <select name="price_rule_id" class="form-control input-sm"
-                        onchange="if(this.value>=0)$(\'#custom-pricing-fields :input\').prop(\'disabled\', true);
-                        else $(\'#custom-pricing-fields :input\').prop(\'disabled\', false);">
+                        onchange="'.$onChange.'">
                         <option value="0" ' . ($product->price_rule_id() == 0 ? 'selected' : '') . '>Normal</option>
                         <option value="1" ' . ($product->price_rule_id() == 1 ? 'selected' : '') . '>Variable</option>
                         <option value="-1" ' . ($product->price_rule_id() > 1 ? 'selected' : '') . '>Custom</option>
@@ -99,6 +110,7 @@ class ItemMarginModule extends \COREPOS\Fannie\API\item\ItemModule
         $ret .= '<div id="custom-pricing-fields" class="form-group form-inline">
                     <label>Custom</label>
                     <select ' . $disabled . ' name="price_rule_type" class="form-control input-sm">
+                        <option value="null">NONE</option>
                     {{RULE_TYPES}}
                     </select>
                     <input type="text" class="form-control date-field input-sm" name="rule_review_date"
