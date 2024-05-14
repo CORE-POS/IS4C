@@ -167,7 +167,7 @@ class ManualSignsPage extends FannieRESTfulPage
                 'endDate' => $end[$i],
                 'originName' => $origins[$i],
                 'originShortName' => $origins[$i],
-                'smartType' => $smartType[$i],
+                'smartType' => is_array($smartType) ? $smartType[$i] : '',
             );
             if (strstr($origins[$i], '/')) {
                 list($origin, $regPrice) = explode('/', $origins[$i], 2);
@@ -258,7 +258,13 @@ JAVASCRIPT;
         $ret .= ' | <label><a id="clone-trs" onclick="'.$jsCloneBtn.'">Duplicate Rows</a></label>';
         $ret .= ' | <label>Smart Signs Override</label>:&nbsp; <input type="checkbox" class="smartOverride" name="CoopDeals" id="smartCoopDealOverr" value=1> <label for="smartCoopDealOverr">Coop Deals</label> |';
         $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="ChaChing" id="smartChaChingOverr" > <label for="smartChaChingOverr" value=1>Cha-Ching!</label> |';
-        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="FreshDeals" id="smartFreshDealOverr" > <label for="smartFreshDealOverr" value=1>Fresh Deals<label>';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="FreshDeals" id="smartFreshDealOverr" > <label for="smartFreshDealOverr" value=1>Fresh Deals<label>&nbsp;|';
+
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="Regular" id="smartRegularOverr" > <label for="smartRegularOverr" value=1>Regular<label>&nbsp;|';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="RegularLocal" id="smartRegularLocalOverr" > <label for="smartRegularLocalOverr" value=1>Regular Local<label>&nbsp;|';
+
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="Organic" id="smartOrganicOverr" > <label for="smartOrganicOverr" value=1>Organic<label>&nbsp;|';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="OrganicLocal" id="smartOrganicLocalOverr" > <label for="smartOrganicLocalOverr" value=1>Organic Local<label>';
 
         $ret .= $clearBtn;
         $ret .= '</div>';
