@@ -100,12 +100,20 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
     private function getTopImage($item)
     {
         // Manual Signs Page && smartType override checked takes precedence
-        if ($item['smartType'] == 'CoopDeals') {
+        if (isset($item['smartType']) && $item['smartType'] == 'CoopDeals') {
             return __DIR__ . '/noauto/images/codeals_top_12.png';
-        } else if ($item['smartType'] == 'ChaChing') {
+        } else if (isset($item['smartType']) && $item['smartType'] == 'ChaChing') {
             return __DIR__ . '/noauto/images/chaching_top_12.png';
-        } else if ($item['smartType'] == 'FreshDeals') {
+        } else if (isset($item['smartType']) && $item['smartType'] == 'FreshDeals') {
             return __DIR__ . '/noauto/images/freshdeals_top_4.png';
+        } else if (isset($item['smartType']) && $item['smartType'] == 'Regular') {
+            return __DIR__ . '/noauto/images/standard_top_12.png';
+        } else if (isset($item['smartType']) && $item['smartType'] == 'RegularLocal') {
+            return __DIR__ . '/noauto/images/local-top.png';
+        } else if (isset($item['smartType']) && $item['smartType'] == 'Organic') {
+            return __DIR__ . '/noauto/images/organic_top_12.png';
+        } else if (isset($item['smartType']) && $item['smartType'] == 'OrganicLocal') {
+            return __DIR__ . '/noauto/images/local_og_top.png';
         }
 
         if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
@@ -130,12 +138,16 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
     private function getBottomImage($item)
     {
         // Manual Signs Page && smartType override checked takes precedence
-        if ($item['smartType'] == 'CoopDeals') {
+        if (isset($item['smartType']) && $item['smartType'] == 'CoopDeals') {
             return __DIR__ . '/cd_line_16.png';
-        } else if ($item['smartType'] == 'ChaChing') {
+        } else if (isset($item['smartType']) && $item['smartType'] == 'ChaChing') {
             return __DIR__ . '/noauto/images/chaching_bottom_12.png';
-        } else if ($item['smartType'] == 'FreshDeals') {
+        } else if (isset($item['smartType']) && $item['smartType'] == 'FreshDeals') {
             return __DIR__ . '/noauto/images/freshdeals_bottom_4.png';
+        } else if (isset($item['smartType']) && $item['smartType'] == 'Organic') {
+            return __DIR__ . '/noauto/images/organic_bottom_12.png';
+        } else if (isset($item['smartType']) && $item['smartType'] == 'OrganicLocal') {
+            return __DIR__ . '/noauto/images/organic_bottom_12.png';
         }
 
         if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
