@@ -286,13 +286,13 @@ function generateMeat_SN_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $d
         Add Description Text
     */
     $length = strlen($desc);
-    if ($length > 26) {
+    if ($length > 16) {
         $descFontSize = 18;
     }
-    if ($length > 35) {
+    if ($length > 25) {
         $descFontSize = 16;
     }
-    if ($length > 45) {
+    if ($length > 35) {
         $descFontSize = 14;
     }
     $pdf->SetFont('Gill','B', $descFontSize);
