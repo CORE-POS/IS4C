@@ -14,7 +14,7 @@ var productList = (function($) {
         elem.find('.' + cell + ':first').html(content);
     };
 
-    var drawKeyValSelect = function(elem, cell, field, obj) {
+    var drawKeyValSelect = function(elem, cell, field, obj, onChange) {
         var dept = elem.find('.' + cell + ':first').text();
         var content = "<select class=\"" + field + " form-control input-sm\"><optgroup style=\"font-size: 90%;\">";
         for (var i in obj) {
@@ -25,6 +25,20 @@ var productList = (function($) {
         }
         content += '</optgroup></select>';
         elem.find('.' + cell + ':first').html(content);
+        if (onChange) {
+            elem.find('select')[0].addEventListener('change', onChange);
+        }
+    };
+
+    var departmentChanged = function(event) {
+        var deptSelect = event.target;
+        var dept = $(deptSelect).val();
+
+        // update available subdepts
+        var obj = subdeptMap[dept];
+        var td = $('.td_subdept');
+        td.find('select')[0].remove();
+        drawKeyValSelect(td.parents('tr:first'), 'td_subdept', 'in_subdept', obj);
     };
 
     var drawTupleSelect = function(elem, cell, field, obj) {
@@ -47,7 +61,10 @@ var productList = (function($) {
             drawTextBox(elem, 'td_'+i.name, 'in_'+i.name, i.size);
         });
 
-        drawKeyValSelect(elem, 'td_dept', 'in_dept', deptObj);
+        drawKeyValSelect(elem, 'td_dept', 'in_dept', deptObj, departmentChanged);
+        var dept = elem.find('.in_dept:first').val();
+        subdeptObj = subdeptMap[dept] || [];
+        drawKeyValSelect(elem, 'td_subdept', 'in_subdept', subdeptObj);
         drawKeyValSelect(elem, 'td_supplier', 'in_supplier', vendorObj);
 
         var checks = ['fs', 'disc', 'wgt'];
@@ -106,6 +123,10 @@ var productList = (function($) {
         var dept = elem.find('.in_dept:first').val();
         elem.find('.td_dept:first').html(deptObj[dept]);
 
+        var subdept = elem.find('.in_subdept:first').val();
+        var obj = subdeptMap[dept] || {};
+        elem.find('.td_subdept:first').html(obj[subdept] || '');
+
         var tax = elem.find('.in_tax:first').val().split(':');
         elem.find('.td_tax:first').html(tax[0]);
         
@@ -119,7 +140,8 @@ var productList = (function($) {
         elem.find('.td_cmd:first .edit-link').show();
         elem.find('.td_cmd:first .save-link').hide();
 
-        dstr += '&upc='+upc+'&dept='+dept+'&store_id='+store_id;
+        dstr += '&upc='+upc+'&dept='+dept+'&store_id='+store_id
+            + '&subdept=' + (subdept || 0);
         dstr += '&tax='+tax[1]+'&local='+local[1];
         $.ajax({
             url: 'ProductListPage.php',
