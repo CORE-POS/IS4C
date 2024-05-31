@@ -77,11 +77,24 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         if ($this->excel) return '';
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
+
         $depts = array();
         $prep = $dbc->prepare('SELECT dept_no,dept_name FROM departments ORDER BY dept_no');
         $result = $dbc->execute($prep);
         while($row = $dbc->fetchRow($result))
             $depts[$row[0]] = $row[1];
+
+        $subdeptMap = [];
+        $prep = $dbc->prepare('SELECT subdept_no, subdept_name, dept_ID FROM subdepts ORDER BY subdept_no');
+        $result = $dbc->execute($prep);
+        while($row = $dbc->fetchRow($result)) {
+            $deptno = $row[2];
+            if (!array_key_exists($deptno, $subdeptMap)) {
+                $subdeptMap[$deptno] = [];
+            }
+            $subdeptMap[$deptno][$row[0]] = $row[1];
+        }
+
         $taxes = array('-'=>array(0,'NoTax'));
         $prep = $dbc->prepare('SELECT id, description FROM taxrates ORDER BY id');
         $result = $dbc->execute($prep);
@@ -91,6 +104,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             else
                 $taxes[strtoupper(substr($row[1],0,1))] = array($row[0], $row[1]);
         }
+
         $local_opts = array('-'=>array(0,'No'));
         $origins = new OriginsModel($dbc);
         $local_origins = $origins->getLocalOrigins();
@@ -98,19 +112,22 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
             $local_opts[substr($shortName,0,1)] = array($originID,$shortName);
         }
         if (count($local_opts) == 1) $local_opts['X'] = array(1,'Yes'); // generic local if no origins defined
+
         $vendors = array('', 'DIRECT');
         $vModel = new VendorsModel($dbc);
         foreach ($vModel->find('vendorName') as $v) {
             $vendors[] = $v->vendorName();
         }
+
         ob_start();
         ?>
         var deptObj = <?php echo json_encode($depts); ?>;
+        var subdeptObj = [];
+        var subdeptMap = <?php echo json_encode($subdeptMap); ?>;
         var taxObj = <?php echo json_encode($taxes); ?>;
         var localObj = <?php echo json_encode($local_opts); ?>;
         var vendorObj = <?php echo json_encode($vendors); ?>;
         <?php
-
         return ob_get_clean();
     }
 
@@ -149,6 +166,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         'brand' => 'brand',
         'desc' => 'description',
         'dept' => 'department',
+        'subdept' => 'subdept',
         'price' => 'normal_price',
         'cost' => 'cost',
         'tax' => 'tax',
@@ -351,6 +369,8 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 i.description,
                 i.brand,
                 d.dept_name as department,
+                u.subdept_no,
+                u.subdept_name,
                 i.normal_price,
                 (CASE WHEN i.tax = 1 THEN 'X' WHEN i.tax=0 THEN '-' ELSE LEFT(t.description,1) END) as Tax,              
                 (CASE WHEN i.foodstamp = 1 THEN 'X' ELSE '-' END) as FS,
@@ -364,6 +384,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
                 l.description AS storeName
             FROM products as i 
                 LEFT JOIN departments as d ON i.department = d.dept_no
+                LEFT JOIN subdepts AS u ON u.subdept_no = i.subdept
                 LEFT JOIN taxrates AS t ON t.id = i.tax
                 LEFT JOIN vendors AS v ON i.default_vendor_id=v.vendorID
                 LEFT JOIN Stores AS l ON i.store_id=l.storeID
@@ -444,7 +465,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $ret .= '<table class="table table-striped table-bordered tablesorter small">
             <thead>
             <tr>';
-        $ret .= "<th>UPC</th><th>Brand</th><th>Description</th><th>Dept</th><th>" . _('Vendor') . "</th><th>Cost</th><th>Price</th>";
+        $ret .= "<th>UPC</th><th>Brand</th><th>Description</th><th>Dept</th><th>Subdept</th><th>" . _('Vendor') . "</th><th>Cost</th><th>Price</th>";
         $ret .= "<th>Tax</th><th>FS</th><th>Disc</th><th>Wg'd</th><th>Local</th>";
         if (!$this->excel && $this->canEditItems !== false) {
             $ret .= '<th>&nbsp;</th>';
@@ -492,6 +513,7 @@ class ProductListPage extends \COREPOS\Fannie\API\FannieReportTool
         $ret .= "<td align=center class=\"td_brand clickable\">{$row['brand']}</td>";
         $ret .= "<td align=center class=\"td_desc clickable\">{$row['description']}</td>";
         $ret .= "<td align=center class=\"td_dept clickable\">{$row['department']}</td>";
+        $ret .= "<td align=center class=\"td_subdept clickable\">{$row['subdept_name']}</td>";
         $ret .= "<td align=center class=\"td_supplier clickable\">{$row['distributor']}</td>";
         $ret .= "<td align=center class=\"td_cost clickable\">".sprintf('%.3f',$row['cost'])."</td>";
         $ret .= "<td align=center class=\"td_price clickable\">{$row['normal_price']}</td>";
