@@ -87,6 +87,16 @@ class AdvancedItemSearch extends FannieRESTfulPage
         return parent::preprocess();
     }
 
+    private function userIsAdmin()
+    {
+        $authorized = false;
+        if (FannieAuth::validateUserQuiet('admin')) {
+            $authorized = true;
+        }
+
+        return $authorized;
+    }
+
     protected function post_upc_handler()
     {
         return $this->get_search_handler();
@@ -151,7 +161,9 @@ class AdvancedItemSearch extends FannieRESTfulPage
             if ($form->tryGet('skuToo')) {
                 list($inStr, $search->args) = $this->connection->safeInClause($upcs, $search->args);
                 list($inStr2, $search->args) = $this->connection->safeInClause($skus, $search->args);
-                $search->where .= " AND (p.upc IN ({$inStr}) OR v.sku IN ({$inStr2})) ";
+                list($inStr2, $search->args) = $this->connection->safeInClause($skus, $search->args);
+                $search->from .= " LEFT JOIN VendorAliases AS va ON va.upc=p.upc";
+                $search->where .= " AND (p.upc IN ({$inStr}) OR v.sku IN ({$inStr2}) OR va.sku IN ({$inStr2})) ";
             } else {
                 list($inStr, $search->args) = $this->connection->safeInClause($upcs, $search->args);
                 $search->where .= " AND (p.upc IN ({$inStr})) ";
@@ -1014,6 +1026,10 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
+
+        $admin = $this->userIsAdmin();
+        if ($admin) 
+            $this->addOnloadCommand("$('.showOnAdmin').each(function(){ $(this).show(); });");
 
         $url = $this->config->get('URL');
         $today = date('Y-m-d');
