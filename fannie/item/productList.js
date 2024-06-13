@@ -33,12 +33,12 @@ var productList = (function($) {
     var departmentChanged = function(event) {
         var deptSelect = event.target;
         var dept = $(deptSelect).val();
+        var subdepts = subdeptMap[dept];
 
-        // update available subdepts
-        var obj = subdeptMap[dept];
-        var td = $('.td_subdept');
-        td.find('select')[0].remove();
-        drawKeyValSelect(td.parents('tr:first'), 'td_subdept', 'in_subdept', obj);
+        // replace dropdown to update available subdepts
+        var tr = $(deptSelect).parents('tr:first');
+        tr.find('.td_subdept select')[0].remove();
+        drawKeyValSelect(tr, 'td_subdept', 'in_subdept', subdepts);
     };
 
     var drawTupleSelect = function(elem, cell, field, obj) {
