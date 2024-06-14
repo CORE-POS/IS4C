@@ -53,13 +53,14 @@ JAVASCRIPT;
         $dbc->selectDB($this->config->get('TRANS_DB'));
         $status = array(
             ""=> "Any",
-            0 => "New",
-            2 => "Pending",
-            4 => "Placed"
+            1 => "New",
+            3 => "Pending",
+            5 => "Placed"
         );
 
         $order = FormLib::get('order', 'mixMatch');
-        $filter = FormLib::get('f', 4);
+        /* f and s come from the re-submission in refilter() */
+        $filter = FormLib::get('f', 5);
         $supp = FormLib::get('s');
         if ($filter !== '') {
             $filter = (int)$filter;
