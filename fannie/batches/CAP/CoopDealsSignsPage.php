@@ -175,36 +175,36 @@ class CoopDealsSignsPage extends FannieRESTfulPage
     <h4>Print Signs for <strong>$month $cycle $year</strong> </h4>
     <div class="form-group">
         <a class="btn btn-success" onclick="
-            window.open('{$batchLists["12CD"]["MERCH"]}');
-            window.open('{$batchLists["12CD"]["DELI"]}');
-            window.open('{$batchLists["12CD"]["LAMINATES"]}');
-            window.open('{$batchLists["12CD"]["GROCERY"]}');
+            window.open('{$batchLists["12CD"]["MERCH"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
+            window.open('{$batchLists["12CD"]["DELI"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
+            window.open('{$batchLists["12CD"]["LAMINATES"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
+            window.open('{$batchLists["12CD"]["GROCERY"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
             return false;
             "
             id="a1" target="_blank">12UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
         <a class="btn btn-success" onclick="
-            window.open('{$batchLists["16CD"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
-            window.open('{$batchLists["16CD"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            window.open('{$batchLists["16CD"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact16UpP');
+            window.open('{$batchLists["16CD"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact16UpP');
             return false;
             "
             id="a2" target="_blank">16UP <b>{$cycle}</b></a>
     </div>
     <div class="form-group">
         <a class="btn btn-warning $disabled" onclick="
-            window.open('{$batchLists["12TPR"]["MERCH"]}');
-            window.open('{$batchLists["12TPR"]["DELI"]}');
-            window.open('{$batchLists["12TPR"]["LAMINATES"]}');
-            window.open('{$batchLists["12TPR"]["GROCERY"]}');
+            window.open('{$batchLists["12TPR"]["MERCH"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
+            window.open('{$batchLists["12TPR"]["DELI"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
+            window.open('{$batchLists["12TPR"]["LAMINATES"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
+            window.open('{$batchLists["12TPR"]["GROCERY"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
             return false;
             "
             id="a3" target="_blank">12UP <b>TPR</b></a>
     </div>
     <div class="form-group">
         <a class="btn btn-warning $disabled" onclick="
-            window.open('{$batchLists["16TPR"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
-            window.open('{$batchLists["16TPR"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Signage16UpP');
+            window.open('{$batchLists["16TPR"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact16UpP');
+            window.open('{$batchLists["16TPR"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact16UpP');
             return false;
             "
             id="a4" target="_blank">16UP <b>TPR</b></a>
