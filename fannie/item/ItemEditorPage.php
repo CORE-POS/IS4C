@@ -934,10 +934,10 @@ $(document).ready(function(){
     }
 
     /*
-        also, ensure flags1[]-flags2[] (organic 17, seasonal 2, fair trade 1, gluten free 18) always match between stores
+        also, ensure flags1[]-flags2[] (organic 17, vegan 3,  seasonal 2, fair trade 1, gluten free 18) always match between stores
     */
 
-    var flags2match = [1, 2, 17, 18];
+    var flags2match = [1, 2, 3, 17, 18];
     if (WfcDuluth == 1) {
         $.each(flags2match, function(i, v) {
             $('input[name="flags1[]"]').on('click', function(){
