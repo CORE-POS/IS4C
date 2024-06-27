@@ -88,10 +88,12 @@ class ProdLocationEditor extends FannieRESTfulPage
         $checkedA = ($store_id == 1) ? ' checked ' : '';
         $checkedB = ($store_id == 2) ? ' checked ' : '';
 
+        $fsNav = file_get_contents('FloorSectionsNav.html', 'r');
+
         return <<<HTML
 <div class="row">
     <div class="col-lg-4">
-        <button onClick="location.href = 'ProdLocationEditor.php'" class="btn btn-default">Back</button>
+        $fsNav
     </div>
     <div class="col-lg-4">
         <h5>Remove Floor Locations</h5>
@@ -444,16 +446,18 @@ HTML;
         $updateTypeSelect[0] = ($updateType == 1) ? ' selected ' : '';
         $updateTypeSelect[1] = ($updateType == 2) ? ' selected ' : '';
 
+        $fsNav = file_get_contents('FloorSectionsNav.html', 'r');
+
         $ret = "";
         $ret .= '
         <div class="row">
-            <form method="get" action="ProdLocationEditor.php">
+            <form method="get" action="ProdLocationEditor.php" name="upcsListForm">
                 <div class="col-lg-2" style="background: rgba(0,0,0,0.1); padding: 5px"">
                     <textarea class="form-control" name="upcs" rows=7>'.$upcs.'</textarea>
                 </div>
                 <div class="col-lg-2" style="background: rgba(0,0,0,0.1); padding: 5px">
                     <div>
-                    <input type="hidden" name="list" value="1">
+                        <input type="hidden" name="list" value="1">
                     <div class="form-group"> '.$storePicker['html'].' </div>
                     <div class="form-group">
                         <select name="updateType" id="updateType" class="form-control">
@@ -462,11 +466,14 @@ HTML;
                         </select>
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn btn-default form-control">Submit List</button>
+                            <button type="submit" class="btn btn-default form-control">Submit List</button>
                     </div>
-            </form>
-            </div>
-                <div class="col-lg-8"></div>
+                    </form>
+                </div>
+                </div>
+                <div class="col-lg-8">
+                    '.$fsNav.'
+                </div>
             </div>
         </div>
         <div class="row">
@@ -652,8 +659,6 @@ HTML;
         $ret .= '<tr><td><input type="submit" class="class=btn btn-primary form-control" value="Update Locations"></td>
             <td><a class="btn btn-default btn-back" href="ProdLocationEditor.php">Back</a><br><br></td></table>
             </form>';
-        // tablesorter scripts not included?
-        //$this->addOnloadCommand("$('.mySortableTable').tablesorter();");
 
         return $ret;
 
@@ -702,7 +707,6 @@ HTML;
    public function javascript_content()
    {
        return <<<JAVASCRIPT
-//$('a').not('.btn-back').attr('target','_blank');
 $(document).ready(function(){
     $('tr').each(function(){
         let upc = $(this).find('td:eq(0)').text();
@@ -744,8 +748,8 @@ $('.checkboxx').on('change', function(){
             if ($(this).hasClass('locations')) {
                 if (value == boxval) {
                     let tr = $(this).closest('tr');
-                    let selected = tr.attr('data-selected');
-                    tr.find('.locationSelect').val(selected);
+                    let select = tr.find('.locationSelect');
+                    select.attr('disabled', false);
                     tr.show();
 
                 }
@@ -758,11 +762,9 @@ $('.checkboxx').on('change', function(){
             if ($(this).hasClass('locations')) {
                 if (value == boxval) {
                     let tr = $(this).closest('tr');
-                    let selected = tr.find('.locationSelect option:selected').val();;
-                    tr.attr('data-selected', selected);
-                    tr.find('.locationSelect').val(0);
+                    let select = tr.find('.locationSelect');
+                    select.attr('disabled', true);
                     tr.hide();
-                    //next, i need to change the selected to = 0
                 }
             }
         });
@@ -774,9 +776,9 @@ $("#alt-update-form-btn").click(function(){
 });
 
 $('#updateType').on('change', function(){
-    let value = $(this).find(':selected').val();
-    $('#sendUpdateType').val(value);
+    document.forms['upcsListForm'].submit();
 });
+
 JAVASCRIPT;
    }
 
