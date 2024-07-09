@@ -29,7 +29,7 @@ if (!class_exists('FannieAPI')) {
 class UnfiExportForMas extends FannieReportPage 
 {
 
-    protected $report_headers = array('Vendor', 'Inv#', 'PO#', 'Date', 'Inv Ttl', 'Code Ttl', 'Code');
+    protected $report_headers = array('Method', 'Vendor', 'Inv#', 'Date', 'Date', 'Inv Ttl', 'Code Ttl', 'Code', 'PO#');
     protected $sortable = false;
     protected $no_sort_but_style = true;
 
@@ -113,14 +113,23 @@ class UnfiExportForMas extends FannieReportPage
             if (empty($code) && $this->report_format == 'html') {
                 $code = 'n/a';
             }
+            $method = 2;
+            if ($codingW['vendor'] == 'RDW') {
+                $codingW['vendor'] = 'RUSS';
+            } elseif ($codingW['vendor'] == 'US FOODS') {
+                $method = 1;
+            }
+            list($rdate,) = explode(' ', $codingW['rdate']);
             $record = array(
+                $method,
                 $codingW['vendor'],
                 '<a href="../ViewPurchaseOrders.php?id=' . $codingW['orderID'] . '">' . $codingW['vendorInvoiceID'] . '</a>',
-                $codingW['vendorOrderID'] ? $codingW['vendorOrderID'] : $codingW['orderID'],
-                $codingW['rdate'],
+                date('n/j/Y', strtotime($rdate)),
+                date('n/j/Y', strtotime($rdate)),
                 0.00,
                 sprintf('%.2f', $codingW['rtc']),
                 $code,
+                $codingW['vendorOrderID'] ? $codingW['vendorOrderID'] : $codingW['orderID'],
             );
             if (!isset($invoice_sums[$codingW['vendorInvoiceID']])) {
                 $invoice_sums[$codingW['vendorInvoiceID']] = 0;
@@ -137,11 +146,11 @@ class UnfiExportForMas extends FannieReportPage
             $invTTL = 0;
             for ($i=0; $i<count($data); $i++) {
                 $row = $data[$i];
-                $invTTL += $row[5];
+                $invTTL += $row[6];
             }
 
             foreach ($orders[$id] as $row) {
-                $row[4] = $invTTL;
+                $row[5] = $invTTL;
                 $report[] = $row;
             }
         }
