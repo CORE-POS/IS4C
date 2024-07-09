@@ -77,7 +77,7 @@ class WfcVcTask extends FannieTask
             VALUES
                 (?, 'WfcVcTask', ?, ?)");
 
-        $last_year = date('Y-m-d', mktime(0, 0, 0, date('n'), date('j'), date('Y')-1));
+        $last_year = date('Y-m-d', mktime(0, 0, 0, date('n') - 2, date('j'), date('Y')-1));
         $dlog_ly = DTransactionsModel::selectDlog($last_year, date('Y-m-d'));
         $accessQ = 'SELECT card_no, MAX(tdate) AS tdate
                     FROM ' . $dlog_ly . '
@@ -189,6 +189,25 @@ class WfcVcTask extends FannieTask
             $obj = new $cb();
             $obj->run($todo);
             $obj->run($mems);
+        }
+
+        $record = DTrans::defaults();
+        $record['emp_no'] = 1001;
+        $record['register_no'] = 30;
+        $record['trans_no'] = DTrans::getTransNo($dbc, 1001, 30);
+        $record['trans_id'] = 1;
+        $record['trans_type'] = 'I';
+        $record['upc'] = 'ACCESSEXP';
+        $record['description'] = 'ACCESS EXPIRED';
+        $record['quantity'] = 1;
+        $record['ItemQtty'] = 1;
+        foreach ($todo as $c) {
+            $record['card_no'] = $c;
+            $pInfo = DTrans::parameterize($record, 'datetime', $dbc->now());
+            $insP = $dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') 
+                . " ({$pInfo['columnString']}) VALUES ({$pInfo['valueString']})");
+            $dbc->execute($insP, $pInfo['arguments']);
+            $record['trans_id']++;
         }
 
         $start = date('Y-m-01');
