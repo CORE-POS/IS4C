@@ -69,7 +69,7 @@ function Barcode($x,$y,$barcode,$h,$w,$len)
     if(strlen($barcode)==12)
         $barcode.=$this->GetCheckDigit($barcode);
     elseif(!$this->TestCheckDigit($barcode)) {
-        $this->Error('This is an Incorrect check digit' . $barcode);
+        //$this->Error('This is an Incorrect check digit' . $barcode);
         //echo $x.$y.$barcode."\n";
     }
     //Convert digits to bars
@@ -174,7 +174,7 @@ while($m < 32){
    $newUPC = $upc . $check;
    //echo $newUPC . "<br>";
       //echo "<br>" . $row['upc'] . "check: " . $check . "new: " . $newUPC;;
-     $pdf->UPC_A($i,$j,$upc,7);
+     $pdf->EAN3($i,$j,$upc,7);
    
    $i =$i+ 53;
    $k = $k + 53;
