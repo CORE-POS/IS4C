@@ -73,13 +73,14 @@ JAVASCRIPT;
             FROM batches AS b
                 INNER JOIN batchList AS l ON l.batchID=b.batchID
                 INNER JOIN batchType AS t ON t.batchTypeID=b.batchType
-                INNER JOIN StoreBatchMap AS m ON m.batchID=l.batchID
+                LEFT JOIN StoreBatchMap AS m ON m.batchID=l.batchID
             WHERE b.startDate <= DATE(NOW())
                 AND b.endDate >= DATE(NOW())
                 AND (
                     l.upc = ?
                     $lcOr
                 )
+            GROUP BY l.batchID
             ORDER BY l.salePrice ASC
                 ");
         $res = $dbc->execute($prep, $args);
