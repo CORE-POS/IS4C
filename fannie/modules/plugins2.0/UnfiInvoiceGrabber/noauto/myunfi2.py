@@ -68,7 +68,7 @@ try:
     driver = init_driver()
     driver.maximize_window()
     driver.get("https://myunfi.com")
-    time.sleep(2);
+    time.sleep(5);
     driver.find_element_by_id("signInName").send_keys(SITE_LOGIN)
     driver.find_element_by_tag_name('button').click();
     time.sleep(5);
@@ -82,16 +82,32 @@ try:
     time.sleep(2);
     driver.get_screenshot_as_file("shopping.png")
 
+
     today = datetime.date.today()
     for i in xrange(5):
         cur = today - datetime.timedelta(i)
         driver.get("https://www.myunfi.com/shopping/reports");
         time.sleep(5)
 
-        driver.find_element_by_css_selector('div[data-testid="ReportCardOverlay.Root"]:nth-child(2) > div > div:nth-child(2) > div:nth-child(2) > div').click()
+        report_js = """
+var panes = document.querySelectorAll('div[data-testid="ReportCardOverlay.Root"]');
+var divs = panes[3].querySelectorAll('div');
+for (var i=0; i < divs.length; i++) {
+    if (divs[i].innerHTML == 'Generate Report') {
+        divs[i].click();
+        break;
+    }
+}
+"""
+        driver.execute_script(report_js);
         time.sleep(1)
+        inputs = driver.find_elements_by_css_selector('input[data-testid="InputField.Input"]')
+        for inp in inputs:
+            inp.send_keys(cur.__format__('%m/%d/%Y'))
+            time.sleep(1)
         driver.find_element_by_css_selector('input[data-testid="InputField.Input"]').send_keys(cur.__format__('%m/%d/%Y'))
         time.sleep(1)
+        driver.get_screenshot_as_file("dates" + str(i) + ".png")
         driver.find_element_by_id('transactionTypes').click();
         time.sleep(1)
         select_js = "document.querySelectorAll('div.MuiPopover-root')[0].querySelector('span.MuiTypography-root').click();"
@@ -106,12 +122,12 @@ try:
         select_js = "document.querySelectorAll('div.MuiPopover-root')[1].querySelectorAll('li.MuiButtonBase-root')[1].click()"
         driver.execute_script(select_js)
         time.sleep(1)
+        driver.get_screenshot_as_file("nextdate" + str(i) + ".png")
         download_js = "document.querySelector('div[data-testid=\"GenerateReportDialog.Root\"]').querySelectorAll('span.BaseButton-Label')[1].click();"
         driver.execute_script(download_js);
         time.sleep(1)
-        driver.get_screenshot_as_file("nextdate" + str(i) + ".png")
-        dialog_js = "document.querySelectorAll('div.MuiDialog-root')[1].querySelectorAll('button')[0].click()"
-        driver.execute_script(dialog_js)
+        #dialog_js = "document.querySelectorAll('div.MuiDialog-root')[1].querySelectorAll('button')[0].click()"
+        #driver.execute_script(dialog_js)
         time.sleep(1)
 
     driver.get("https://www.myunfi.com/download-center");
