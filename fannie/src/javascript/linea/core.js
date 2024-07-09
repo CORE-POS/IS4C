@@ -129,7 +129,14 @@ function enableLinea(selector, callback) {
         }
     });
     document.body.appendChild(socketm);
+
+    if (typeof EB != 'undefined') {
+        EB.Barcode.enable({}, function (params) {
+            lineaBarcode(params.data, params.type, selector, callback);
+        });
+    }
 }
+
 
 function lineaBeep() {
 
