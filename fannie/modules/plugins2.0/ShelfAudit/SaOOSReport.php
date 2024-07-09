@@ -28,7 +28,8 @@ class SaOOSReport extends FannieReportPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
         $parts = FormLib::standardItemFromWhere();
-        $parts['query'] = str_replace('dlog', 'dtransactions', $parts['query']);
+        preg_match('/FROM (.+) AS t/', $parts['query'], $matches);
+        $parts['query'] = str_replace($matches[1], $dlog, $parts['query']);
         $parts['query'] = str_replace('t.tdate', 't.datetime', $parts['query']);
 
         $query = "SELECT t.upc, t.description, SUM(t.quantity) AS qty,
