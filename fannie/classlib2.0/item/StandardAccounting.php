@@ -101,6 +101,7 @@ class StandardAccounting extends Accounting
             case '1505':
             case '1510':
             case '1515':
+            case '1517':
             case '1520':
             case '1600':
             case '1605':
