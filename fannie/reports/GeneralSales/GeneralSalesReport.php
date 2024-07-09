@@ -92,6 +92,7 @@ JAVASCRIPT;
                     AND t.trans_type IN ('I', 'D')
                     AND (tdate BETWEEN ? AND ?)
                     AND " . DTrans::isStoreID($store, 't') . "
+                    AND t.memType NOT IN " . DTrans::memTypeIgnore($dbc) . "
                 GROUP BY s.superID,s.super_name,d.dept_name,t.department
                 ORDER BY s.superID,t.department";
         
