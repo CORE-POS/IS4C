@@ -47,16 +47,18 @@ class FindItem extends FannieRESTfulPage
             $storeSection .= '<strong>' . $s->description() . '</strong><br />';
             $item = $this->connection->getRow($itemP, array($upc, $s->storeID()));
             $lastSold = $item['last_sold'];
+            $days = 30;
             if ($lastSold) {
                 $today = new DateTime();
                 list($lastSold,) = explode(' ', $lastSold);
                 $then = new DateTime($lastSold);
                 $days = $today->diff($then)->days;
-                $storeSection .= 'Last sold: ' . $days . ' ' . ($days != 1 ? 'days' : 'day') . ' ago<br />';
+                $storeSection .= '<div>Last sold: ' . $days . ' ' . ($days != 1 ? 'days' : 'day') . ' ago</div>';
             } else {
                 $storeSection .= 'Last sold: never<br />';
+                $storeSection .= '<em>This item is either new or<br /> has not been stocked at this location</em><br />';
             }
-            if ($item['numflag'] & (1 << 18)) {
+            if ($item['numflag'] & (1 << 18) || $days > 29) {
                 $storeSection .= '<em>This item may be out of stock</em><br />';
             }
             if ($item['numflag'] & (1 << 19)) {
@@ -71,10 +73,12 @@ class FindItem extends FannieRESTfulPage
                     if ($l['subSection']) {
                         $l['name'] .= ' (' . $l['subSection'] . ')';
                     }
-                    $storeSection .= sprintf('<a href="StoreFloorsPage.php?id=%d&section=%d">%s
+                    $storeSection .= sprintf('<a href="%s?id=%d&section=%s&subSection=%s">%s
                             <span class="fas fa-info-circle"></span></a><br />',
+                        'NewStoreFloorsPage.php',
                         $s->storeID(),
-                        $l['floorSectionID'],
+                        ($l['subSection']) ? substr($l['name'], 0, strpos($l['name'], '(') - 1) : $l['name'],
+                        isset($l['subSection']) ? $l['subSection'] : '',
                         $l['name']);
                 }
             }
