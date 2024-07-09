@@ -387,7 +387,17 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $ret .= $darkExtendOnly;
         if (FormLib::get('signmod') == 'Legacy:WFC MEAT 14UP') 
             $ret .= $darkExtendOnly;
+        if (FormLib::get('signmod') == 'Legacy:WFC New MEAT 14UP') 
+            $ret .= $darkExtendOnly;
+        if (FormLib::get('signmod') == 'Legacy:WFC MEAT SN 14UP') 
+            $ret .= $darkExtendOnly;
         if (FormLib::get('signmod') == 'Legacy:WFC Dark ServiceCase 12UP') 
+            $ret .= $darkExtendOnly;
+        if (FormLib::get('signmod') == 'Legacy:WFC Deli Narrow 24UP') 
+            $ret .= $darkExtendOnly;
+        if (FormLib::get('signmod') == 'Legacy:WFC Deli Short 24UP') 
+            $ret .= $darkExtendOnly;
+        if (FormLib::get('signmod') == 'Legacy:New WFC Deli Regular') 
             $ret .= $darkExtendOnly;
         $ret .= '</div>';
         $ret .= '<hr />';
