@@ -468,6 +468,8 @@ HTML;
             $options .= "<option value=\"$letter\" >$letter</option>";
         }
 
+        $fsNav = file_get_contents('FloorSectionsNav.html', 'r');
+
         return <<<HTML
 <div class="alert alert-success ajax-resp-alert" id="ajax-success">Saved</div>
 <div class="alert alert-success ajax-resp-alert" id="ajax-danger">Error</div>
@@ -519,9 +521,9 @@ HTML;
         </form>
     </div>
     <div class="col-lg-4">
+        $fsNav
         <ul>
             <li><a href="SubLocationViewer.php">Sub-Location Mapper</a></li>
-            <li><a href="../ProdLocationEditor.php">Edit Locations: by List</a></li>
         </ul>
     </div>
 </div>
