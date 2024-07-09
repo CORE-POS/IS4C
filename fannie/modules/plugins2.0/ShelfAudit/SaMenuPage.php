@@ -110,6 +110,12 @@ a[type="submit"] {
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../modules/plugins2.0/SMS/scan/BatchCheckScannerSMS.php" />New Batch Check</a>
 <hr />
+<a class="btn btn-default btn-lg" type="submit"
+    href="http://10.11.11.250:8000/mfloor/index-zebra.html" />mFloor Hillside</a>
+<hr />
+<a class="btn btn-default btn-lg" type="submit"
+    href="http://10.22.22.250:8000/mfloor/index-zebra.html" />mFloor Denfeld</a>
+<hr />
 {$wfcTools[1]}
 </p>
 </body>
