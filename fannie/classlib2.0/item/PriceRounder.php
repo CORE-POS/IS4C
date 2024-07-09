@@ -40,6 +40,9 @@ class PriceRounder
     */
     public function round($price, $extra_parameters=array())
     {
+        // remove the thousandths place without rounding
+        $price = floor($price * 100)/100;
+
         $wholeP = floor($price);
         $fractionP = $price - $wholeP;
 
@@ -64,6 +67,10 @@ class PriceRounder
                     if ($k == $level ) {
                         foreach ($endArray as $end) {
                             if ($fractionP < $end) {
+                                /*
+
+                                    2024-02-15 WFC we are no longer rounding down until further notice
+
                                 if ($fractionP <= $specialRound[$level] && $wholeP > 0) {
                                     // special round down to nearest whole.99
                                     $wholeP--;
@@ -73,6 +80,8 @@ class PriceRounder
                                 if ($wholeP % 10 == 0 && $end == 0.99 && $wholeP != 10 && $wholeP != 0) {
                                     $wholeP--;
                                 }
+
+                                */
                                 $price = $wholeP + $end;
 
                                 return $price;
