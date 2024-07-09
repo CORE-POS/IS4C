@@ -114,7 +114,7 @@ class MailPipe extends AttachmentEmailPipe
         }
 
         $model = new \CommentsModel($dbc);
-        $model->categoryID($catW['categoryID']);
+        $model->categoryID(isset($catW['categoryID']) ? $catW['categoryID'] : 0);
         $model->publishable(1);
         $model->name($name);
         $model->email($email);
