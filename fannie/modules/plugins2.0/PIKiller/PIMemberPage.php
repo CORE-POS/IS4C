@@ -339,6 +339,9 @@ class PIMemberPage extends PIKillerPage {
         else if ($this->auth_mode == 'Limited' && isset($this->__models['suspended']) && $this->__models['suspended']->reasoncode() == 256){
             echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?fixpaperwork=1&id='.$this->card_no.'"
                 onclick="return confirm(\'Paperwork is signed?\');">Paperwork completed</a>';
+        } else if ($this->auth_mode == 'Limited' && !isset($this->__models['suspended'])) {
+            echo '&nbsp;&nbsp;&nbsp;<a href="PISuspensionPage.php?setpaperwork=1&id='.$this->card_no.'"
+                onclick="return confirm(\'New account still needs paperwork completed?\');">Deactivate Account for Paperwork</a>';
         }
         echo '</td>';
         echo "<td><a href=\"{$FANNIE_URL}ordering/clearinghouse.php?card_no="

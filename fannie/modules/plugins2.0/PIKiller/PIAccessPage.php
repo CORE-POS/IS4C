@@ -47,55 +47,48 @@ class PIAccessPage extends PIKillerPage
 
     protected function get_id_view()
     {
-        $date = date('Y-m-d', strtotime('3 years ago'));
-        $dlog = DTransactionsModel::selectDlog($date);
-
-        $this->id = sprintf('%d', $this->id);
-        /**
-         * This seems to be a VERY weird MySQL bug.
-         * The type of the column "card_no" is VARCHAR
-         * but binding card_no as a string, which happens
-         * when using a prepared statement, returns zero
-         * rows. Putting single quotes around the embedded
-         * value also returns zero rows. The query only
-         * returns rows when provided the wrong data type
-         */
-        $query = $this->connection->prepare("
-            SELECT tdate, trans_num, numflag
-            FROM {$dlog}
-            WHERE upc='ACCESS'
-                AND tdate >= ?
-                AND card_no={$this->id}
-            ORDER BY tdate DESC");
-
-        $ret = '<tr><td>Access History since ' . $date;
-        $ret .= '<table cellspacing="0" cellpadding="4" border="1">';
-        $res = $this->connection->execute($query, array($date));
-        $max = false;
-        while ($row = $this->connection->fetchRow($res)) {
-            if (!$max) {
-                $max = new DateTime($row['tdate']);
-            }
-            $tdate = new DateTime($row['tdate']); 
-            $ret .= sprintf('<tr><td>%s</td><td><a href="%sadmin/LookupReceipt/RenderReceiptPage.php?date=%s&receipt=%s">%s</a></td><td>%s</td></tr>',
-                    $row['tdate'],
-                    $this->config->get('URL'),
-                    $tdate->format('Y-m-d'),
-                    $row['trans_num'],
-                    $row['trans_num'],
-                    (isset($this->programs[$row['numflag']]) ? $this->programs[$row['numflag']] : '?')
-            );
+        $infoP = $this->connection->prepare("SELECT * FROM AccessDiscounts WHERE cardNo=?");
+        $info = $this->connection->getRow($infoP, array($this->id));
+        if (!is_array($info)) {
+            return 'No access discount information found!';
         }
-        $ret .= '</table>';
-        if ($max) {
-            $max->add(new DateInterval('P1Y'));
-            $ret .= sprintf('<p>Discount expires %s</p>', $max->format('Y-m-d'));
-        } else {
-            $ret .= '<p>No access activity found</p>';
-        }
-        $ret .= '</td></tr>';
 
-        return $ret;
+        return <<<HTML
+<table>
+    <tr>
+        <td class="yellowbg">Last Renewed</td>
+        <td>{$info['lastRenewal']}</td>
+    </tr>
+    <tr>
+        <td class="yellowbg">Program</td>
+        <td>{$this->programs[$info['programID']]}</td>
+    <tr>
+        <td class="yellowbg">Renewed By</td>
+        <td>{$info['renewerName']}</td>
+    </tr>
+    <tr>
+        <td class="yellowbg">Discount Expires</td>
+        <td>{$info['expires']}</td>
+    </tr>
+    <tr>
+        <td class="yellowbg">Notes</td>
+        <td></td>
+    </tr>
+    <tr>
+        <td colspan="2">{$info['notes']}</td>
+    </tr>
+</table>
+HTML;
+
+    }
+
+    public function css_content(){
+        return '
+            .greenbg { background: #006633; }
+            .greentxt { color: #006633; }
+            .yellowbg { background: #FFFF33; }
+            .yellowtxt { color: #FFFF33; }
+        ';
     }
 }
 

@@ -64,6 +64,7 @@ class PISuspensionPage extends PIKillerPage {
         $this->__routes[] = 'get<id><edit>';
         $this->__routes[] = 'get<id><fixaddress>';
         $this->__routes[] = 'get<id><fixpaperwork>';
+        $this->__routes[] = 'get<id><setpaperwork>';
         return parent::preprocess();
     }
 
@@ -113,6 +114,86 @@ class PISuspensionPage extends PIKillerPage {
         }
         else
             return $this->unknown_request_handler();
+    }
+
+    protected function get_id_setpaperwork_handler()
+    {
+        global $FANNIE_OP_DB;
+        if (!FannieAuth::validateUserQuiet('editmembers') && !FannieAuth::validateUserQuiet('editmembers_csc'))
+            return $this->unknown_request_handler();
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $status = 'INACT';
+        $code = 256;
+        $cas_model = new CustomerAccountSuspensionsModel($dbc);
+        $cas_model->card_no($this->id);
+        $current_id = 0;
+        $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
+        // suspend active account
+        // create suspensions and log/history records
+        // set custdata & meminfo to inactive
+        $discount = 0;
+        foreach ($account['customers'] as $c) {
+            if ($c['accountHolder']) {
+                $discount = $c['discount'];
+                break;
+            }
+        }
+        
+        $susp = new SuspensionsModel($dbc);
+        $susp->cardno($this->id);
+        $susp->type( $status == 'TERM' ? 'T' : 'I' );           
+        $susp->memtype1($account['customerTypeID']);
+        $susp->memtype2($account['memberStatus']);
+        $susp->suspDate(date('Y-m-d H:i:s'));
+        $susp->reason('');
+        $susp->mailflag($account['contactAllowed']);
+        $susp->discount($discount);
+        $susp->chargelimit($account['chargeLimit']);
+        $susp->reasoncode($code);
+        $susp->save();
+
+        $cas_model->savedType($account['memberStatus']);
+        $cas_model->savedMemType($account['customerTypeID']);
+        $cas_model->savedDiscount($discount);
+        $cas_model->savedChargeLimit($account['chargeLimit']);
+        $cas_model->savedMailFlag($account['contactAllowed']);
+        $cas_model->suspensionTypeID( $status == 'TERM' ? 2 : 1 );
+        $cas_model->tdate(date('Y-m-d H:i:s'));
+        $cas_model->username($this->current_user);
+        $cas_model->reasonCode($code);
+        $cas_model->active(1);
+        $current_id = $cas_model->save();
+
+        $history = new SuspensionHistoryModel($dbc);
+        $history->username($this->current_user);
+        $history->cardno($this->id);
+        $history->reasoncode($code);
+        $history->postdate(date('Y-m-d H:i:s'));
+        $history->save();
+
+        $json = array(
+            'cardNo' => $this->id,
+            'chargeLimit' => 0,
+            'activeStatus' => $status,
+            'customerTypeID' => 0,
+            'contactAllowed' => 0,
+            'customers' => array(),
+        );
+        foreach ($account['customers'] as $c) {
+            $c['discount'] = 0;
+            $json['customers'][] = $c;
+        }
+        \COREPOS\Fannie\API\member\MemberREST::post($this->id, $json);
+
+        $callbacks = FannieConfig::config('MEMBER_CALLBACKS');
+        foreach ($callbacks as $cb) {
+            $obj = new $cb();
+            $obj->run($this->id);
+        }
+
+        header('Location: PIMemberPage.php?id='.$this->id);
+        return False;
     }
 
     protected function get_id_handler(){

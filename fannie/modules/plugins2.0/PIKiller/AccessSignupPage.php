@@ -4,6 +4,9 @@ include(dirname(__FILE__).'/../../../config.php');
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../../classlib2.0/FannieAPI.php');
 }
+if (!class_exists('AccessDiscountsModel')) {
+    include(__DIR__ . '/models/AccessDiscountsModel.php');
+}
 
 class AccessSignupPage extends FannieRESTfulPage
 {
@@ -11,6 +14,7 @@ class AccessSignupPage extends FannieRESTfulPage
     protected $title = 'Access Signup';
     public $disoverable = false;
     protected $must_authenticate = true;
+    protected $auth_classes = array('editmembers', 'editmembers_csc');
 
     public function preprocess()
     {
@@ -75,6 +79,7 @@ class AccessSignupPage extends FannieRESTfulPage
             'description' => 'ACCESS SIGNUP',
             'quantity' => 1,
             'ItemQtty' => 1,
+            'mixMatch' => substr($this->current_user, 0, 13),
         ));
 
         $account = \COREPOS\Fannie\API\member\MemberREST::get($this->id);
@@ -89,6 +94,16 @@ class AccessSignupPage extends FannieRESTfulPage
             $obj = new $cb();
             $obj->run($this->id);
         }
+
+        $model = new AccessDiscountsModel($this->connection);
+        $model->cardNo($this->id);
+        $model->lastRenewal(date('Y-m-d H:i:s'));
+        $model->expires(date('Y-m-d', mktime(0,0,0,date('n')+2,date('j'),date('Y')+1)));
+        $model->userID(FannieAuth::getUID($this->current_user));
+        $model->programID($numflag);
+        $model->renewerName(FormLib::get('name'));
+        $model->notes(FormLib::get('notes'));
+        $model->save();
 
         return 'AccessSignupPage.php?complete=' . $this->id;
     }
@@ -123,6 +138,13 @@ class AccessSignupPage extends FannieRESTfulPage
         <option value="7">SSDI or RSDI</option>
         <option value="8">WIC</option>
     </select>
+</div>
+<div class="form-group">
+    <label>Your Name</label>
+    <input type="text" name="name" class="form-control" />
+</div>
+<div class="form-group">
+    <textarea rows="4" class="form-control" name="notes"></textarea>
 </div>
 <div class="form-group collapse" id="submitBtn">
     <button type="submit" class="btn btn-default">Sign Up</button>
