@@ -611,7 +611,7 @@ HTML;
                 list($date,$time) = explode(' ',$rowItem['end_date']);
                 $ret .= "<strong>End Date:</strong>
                         $date 
-                        (<a href=\"EndItemSale.php?id=$upc\">Unsale Now</a>)";
+                        (<a href=\"EndItemSale.php?id=$upc&storeID=$store_id\">Unsale Now</a>)";
                 $ret .= '</td>';
             }
 
