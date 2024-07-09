@@ -1,0 +1,4 @@
+function tc52xMain()
+{
+
+}
