@@ -92,6 +92,7 @@ class OverShortMAS extends FannieRESTfulPage {
         'RR' => 63380,  
         'OB' => 66600,
         'AD' => 66600,
+        'SP' => 66600,
         'RB' => 31140,
         'PP' => 10295,
         'TC' => 10730,
@@ -125,7 +126,7 @@ class OverShortMAS extends FannieRESTfulPage {
                 WHEN trans_subtype = 'IC' AND upc='0049999900002' THEN 'AD'
                 WHEN trans_subtype = 'GD' AND numflag=32766 THEN 'SG'
                 ELSE trans_subtype END as type,
-                MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') OR description='REBATE CHECK' 
+                MAX(CASE WHEN d.upc IN ('0049999900001','0049999900002') OR description='REBATE CHECK' OR trans_subtype='SP'
                     THEN d.description ELSE TenderName END) as name
                 FROM $dlog AS d LEFT JOIN
                 tenders AS t ON d.trans_subtype=t.TenderCode
