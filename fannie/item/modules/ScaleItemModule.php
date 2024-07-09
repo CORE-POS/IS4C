@@ -149,7 +149,7 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             <ul class="nav nav-tabs" role="tablist">';
         foreach ($stores as $id => $store) {
             $ret .= '<li role="presentation" ' . ($selfStore == $id ? 'class="active"' : '') . '>
-                <a href="#si-store-' . $id . '" aria-controls="home" role="tab" data-toggle="tab"
+                <a href="#si-store-' . $id . '" aria-controls="home" role="tab" data-toggle="tab" class="nav-tab"
                 onclick="setTimeout(() => scaleItem.countField(\'s_text\', \'expLength\'), 25);">' . $store . '</a></li>';
         }
         $ret .= '</ul>';
@@ -220,8 +220,8 @@ class ScaleItemModule extends \COREPOS\Fannie\API\item\ItemModule
             $title = '';
             $ret .= sprintf('<div class="form-group %s" title="%s"><div class="checkbox">
                             <label class="control-label">
-                            <input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d %s />
-                            %s</label>
+                            <input type="checkbox" name="scaleID[]" id="scaleID%d" value=%d class="scale-sync-checkbox" %s/>
+                            <span class="label-text">%s</span></label>
                             </div></div>',
                             $css_class, $title,
                             $scale->serviceScaleID(), $scale->serviceScaleID(), ($checked ? 'checked' : ''),
