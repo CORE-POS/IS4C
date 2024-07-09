@@ -5,6 +5,7 @@ class MercatoIntakeV2
     private $dbc = null;
 
     private $COL_ORDER_DATE = 7;
+    private $COL_ORDER_FEES = 6;
     private $COL_ORDER_ID = 0;
     private $COL_AMT = 7;
     private $COL_UPC = 2;
@@ -19,7 +20,7 @@ class MercatoIntakeV2
     public function process($filename)
     {
         $fp = fopen($filename, 'r');
-        $currentOrder = array('id' => false, 'total' => 0, 'tax' => 0, 'card_no' => 11, 'memType'=>0, 'tdate' => '');
+        $currentOrder = array('id' => false, 'total' => 0, 'qty' => 0, 'fees' => 0, 'card_no' => 11, 'tdate' => '', 'items' => array());
         $trans_id = 1;
         $storeID = 1;
         $itemP = $this->dbc->prepare("SELECT description, department, tax, cost, scale FROM products WHERE upc=?");
@@ -34,6 +35,7 @@ class MercatoIntakeV2
                 $header = fgetcsv($fp);
                 $currentOrder['id'] = $header[$this->COL_ORDER_ID];
                 $currentOrder['tdate'] = date('Y-m-d H:i:s', strtotime($header[$this->COL_ORDER_DATE]));
+                $currentOrder['fees'] = date('Y-m-d H:i:s', strtotime($header[$this->COL_ORDER_FEES]));
                 $owner = $this->findOwner($this->dbc, $currentOrder['id'], $storeID);
                 if ($owner != false) {
                     $currentOrder['card_no'] = $owner;
