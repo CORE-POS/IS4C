@@ -1,3 +1,4 @@
 config.php.bak
 auth/shadowread/shadowread
 src/javascript/composer-components/
+src/javascript/ebapi-modules.js
