@@ -296,7 +296,7 @@ function appendTokens(token) {
 
 function logJsErrors(urlStem) {
     window.onerror = function(msg, scriptURL, lineNo, colNo, error) {
-        if (msg && msg.toLowerCase().substring(0, 12) != 'script error') {
+        if (msg && msg.toLowerCase().substring(0, 12) != 'script error' && !scriptURL.includes('ebapi-modules.js') && !msg.includes('valid JSON')) {
             var logEntry = { 
                 message: msg,
                 url: scriptURL,
