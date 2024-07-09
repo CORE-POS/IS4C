@@ -33,7 +33,7 @@ class VendorListReport extends FannieReportPage
     public $report_set = 'Vendors';
     protected $title = "Fannie : Vendor List";
     protected $header = "Vendor List Report";
-    protected $report_headers = array('Vendor', 'Phone', 'Fax', 'Email', 'Notes','# of items');
+    protected $report_headers = array('Vendor', 'Phone', 'Fax', 'Email', 'Notes','# of items', '# of Org. items');
 
     public function fetch_report_data()
     {
@@ -45,6 +45,13 @@ class VendorListReport extends FannieReportPage
         } catch (Exception $ex) {
             return array();
         }
+        $op = '=';
+        $joinSuper = 'LEFT JOIN superdepts AS s ON p.department=s.dept_ID';
+        if ($super == -1) {
+            $op = '<>';
+            $joinSuper = 'LEFT JOIN MasterSuperDepts AS s ON p.department=s.dept_ID';
+            $super = 0;
+        }
 
         $prep = $dbc->prepare('
             SELECT v.vendorName,
@@ -52,11 +59,12 @@ class VendorListReport extends FannieReportPage
                 v.fax,
                 v.email,
                 MAX(v.notes) AS notes,
-                COUNT(p.upc) AS skus
+                COUNT(p.upc) AS skus,
+                SUM(CASE WHEN ((1 << 16) & numflag) != 0 THEN 1 ELSE 0 END) as orgCount
             FROM vendors AS v
                 LEFT JOIN products AS p ON p.default_vendor_id=v.vendorID
-                LEFT JOIN superdepts AS s ON p.department=s.dept_ID
-            WHERE s.superID=?
+                ' . $joinSuper . '
+            WHERE s.superID ' . $op . ' ?
                 AND p.store_id=?
             GROUP BY v.vendorName,
                 v.phone,
@@ -81,6 +89,7 @@ class VendorListReport extends FannieReportPage
             $row['email'] == null ? '' : $row['email'],
             $row['notes'] == null ? '' : $row['notes'],
             $row['skus'],
+            $row['orgCount'],
         );
     }
 
@@ -94,6 +103,7 @@ class VendorListReport extends FannieReportPage
             <div class="form-group">
                 <label>Super Department</label>
                 <select name="super" class="form-control">
+                    <option value="-1">All retail</option>
                 ' . $names->toOptions() . '
                 </select>
             </div> 
