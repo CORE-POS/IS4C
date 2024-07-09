@@ -141,7 +141,7 @@ class FanniePage extends \COREPOS\common\ui\CorePage
                 $this->addScript($url . 'src/javascript/jquery-ui.js');
             }
             $this->addScript($url . 'src/javascript/calculator.js');
-            $this->addScript($url . 'src/javascript/core.js?date=20200312');
+            $this->addScript($url . 'src/javascript/core.js?date=20240509');
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                 // windows has trouble with symlinks
                 $this->addCssFile($url . 'src/javascript/jquery-ui-1.10.4/css/smoothness/jquery-ui.min.css?id=20140625');
@@ -164,7 +164,14 @@ class FanniePage extends \COREPOS\common\ui\CorePage
             if (strpos(filter_input(INPUT_SERVER, 'HTTP_USER_AGENT'), 'iPod touch')) {
                 $this->addScript($url . 'src/javascript/linea/WebHub.js');
             }
-            $this->addScript($url . 'src/javascript/linea/core.js?date=20200311');
+            $this->addScript($url . 'src/javascript/linea/core.js?date=20240509');
+            if (file_exists(__DIR__ . '/../src/javascript/ebapi-modules.js')) {
+                $this->addScript($url . 'src/javascript/ebapi-modules.js');
+            }
+            if (strpos($_SERVER['HTTP_USER_AGENT'], 'Linux; Android 10; K') !== false) {
+                // call Zebra TC52X script(s)
+                $this->addScript($url . 'src/javascript/TC52X/core.js');
+            }
         }
 
         echo $this->getMessages();
