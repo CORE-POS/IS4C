@@ -832,6 +832,10 @@ HTML;
         |
         <input type="text" name="search" class="form-control" placeholder="Search incidents" />
         <button type="submit" class="btn btn-default">Search</button>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="TrespassReport.php" class="btn btn-default">Current Trespasses</a>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="TrespassReport.php?expired=1" class="btn btn-default">Past Trespasses</a>
     </form>
 </p>
 <table class="table small table-bordered">
