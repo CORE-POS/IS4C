@@ -228,7 +228,7 @@ HTML;
         return <<<HTML
 <div class="row">
     <div class="col-lg-4">
-        <h5><a href="#" onClick="window.location.href = 'PriceRuleEditor.php';">Back</a></h5>
+        <h5><a href="#" onClick="window.location.href = 'PriceRuleEditor.php';" class="btn btn-default">Back</a></h5>
     </div>
     <div class="col-lg-4"></div>
     <div class="col-lg-4" align="right">
@@ -237,6 +237,7 @@ HTML;
         </div>
     </div>
 </div>
+<!-- Deprecated Chunk
 <div class="well">
     <p><strong>To recalculate MIN/MAX price fields</strong>
         <ol>
@@ -261,6 +262,7 @@ HTML;
     </div>
     <p><strong>Where does MSRP come from?</strong> This number is pulled from a vendor items table in POS, it will be the last value uploaded as SRP, OR, the WFC value if the SRP recalculation was run in Batch Pricing Tools. To prevent the wrong MAP values being entered, it is encouraged to upload a price sheet with MSRP values before setting MAP values.
 </div>
+-->
 <table class="table table-bordered" id="mytable"><thead>{$this->thead}</thead><tbody>$td</tbody></table>
 HTML;
     }
@@ -371,6 +373,13 @@ $('.price-rule-select-all').on('change', function(){
     }
 });
 
+$('.edit-details-all').on('keydown', function(e){
+    let pressed = e.keyCode;
+    if (pressed == 188) {
+        e.preventDefault();
+    }
+});
+
 $('.edit-details-all').on('change', function(){
     var value = $(this).val();
     var c = confirm('Change all Details to *'+value+'* ?');
@@ -399,6 +408,7 @@ var save = function()
             var prt = $(this).find('td:eq(4)').find(":selected").val();
     $(this).find(":selected").val();
             var details = $(this).find('td:eq(7)').text();
+            details = encodeURIComponent(details);
             items.push([upc, prt, details]);
 
             upcs.push(upc);
