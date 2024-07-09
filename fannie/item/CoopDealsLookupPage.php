@@ -99,6 +99,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
             }
         }
         
+        $this->addOnloadCommand('window.history.back();');
 
         return <<<HTML
 <div class="row">
@@ -218,8 +219,9 @@ HTML;
             $ret .=  '<td><b>Flyer Period</b></td><td>' . $flyerPeriod . '</tr>';
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
             $srp = $row['srp'];
+            $pBogo = ($srp == 0.0) ? '<i>possible BOGO deal</i>' : '';
             $ret .= '<td><b>Normal Price / Sale Price</b></td><td>$' . $normal_price . ' > ' . 
-                 '<b>$'.$srp . '</b></td></tr>';
+                 '<b>$'.$srp . '</b> '.$pBogo.'</td></tr>';
             $ret .=  '<td><b>Department</b></td><td>' . $superName .'</td></tr>';
             $check = $row['upc'];
         }
