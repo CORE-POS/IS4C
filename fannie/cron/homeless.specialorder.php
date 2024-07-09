@@ -79,7 +79,7 @@ order by datetime
 
 $r = $sql->query($q);
 if ($sql->num_rows($r) > 0){
-    $msg_body = "Homeless orders detected!\n\n";
+    $msg_body = "Uncategorized orders detected!\n\n";
     while($w = $sql->fetch_row($r)){
         $msg_body .= $w['datetime'].' - '.(empty($w['name'])?'(no name)':$w['name']).' - '.$w['description']."\n";
         $msg_body .= "http://key".$FANNIE_URL."ordering/OrderViewPage.php?orderID=".$w['order_id']."\n\n";
