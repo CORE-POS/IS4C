@@ -194,7 +194,7 @@ class SaReportPage extends FanniePage {
             COALESCE(c.margin, d.margin, 0) AS margin
 
         FROM sa_inventory AS s 
-            LEFT JOIN {$OPDB}products AS p ON s.upc=p.upc AND p.store_id=1 
+            LEFT JOIN {$OPDB}products AS p ON s.upc=p.upc AND p.store_id=s.storeID
             LEFT JOIN {$OPDB}departments AS d ON p.department=d.dept_no
             LEFT JOIN {$OPDB}{$superTable} AS m ON p.department=m.dept_ID
             LEFT JOIN {$OPDB}vendorItems AS v ON s.upc=v.upc AND v.vendorID=1
