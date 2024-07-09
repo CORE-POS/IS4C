@@ -112,6 +112,7 @@ class StoreSummaryReport extends FannieReportPage {
         $d1 = $this->form->date1;
         $d2 = $this->form->date2;
         $dept = FormLib::get_form_value('dept',0);
+        $store = FormLib::get('store');
 
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
@@ -186,6 +187,7 @@ class StoreSummaryReport extends FannieReportPage {
                     AND t.register_no != 99
                     AND t.upc != 'DISCOUNT'
                     AND t.trans_subtype not in ('CP','IC')
+                    AND " . DTrans::isStoreID($store, 't') . "
                 GROUP BY
                     s.superID, s.super_name, d.dept_name, t.department
                 ORDER BY
@@ -230,6 +232,7 @@ class StoreSummaryReport extends FannieReportPage {
                 AND t.register_no != 99
                 AND t.upc != 'DISCOUNT'
                 AND t.trans_subtype not in ('CP','IC')
+                AND " . DTrans::isStoreID($store, 't') . "
             GROUP BY
                 CASE WHEN s.superID IS NULL THEN r.superID ELSE s.superID end,
                 CASE WHEN s.super_name IS NULL THEN r.super_name ELSE s.super_name END,
@@ -241,6 +244,7 @@ class StoreSummaryReport extends FannieReportPage {
         }
         $costsP = $dbc->prepare($costs);
         $costArgs = array($d1.' 00:00:00', $d2.' 23:59:59');
+        $costArgs[] = $store;
         $costsR = $dbc->execute($costsP, $costArgs);
 
         // Array in which totals used in the report are accumulated.
@@ -289,7 +293,7 @@ class StoreSummaryReport extends FannieReportPage {
             }
 
             $this->report_headers[] = array("{$s['name']}",'Qty','Costs','% Costs',
-                'DeptC%','Sales','% Sales','DeptS %', 'Margin %','GST','HST');
+                'DeptC%','Sales','% Sales','DeptS %', 'Margin %','Contrib', 'GST','HST');
 
             // add department records
             $superCostsSum = $s['costs'];
@@ -328,6 +332,8 @@ class StoreSummaryReport extends FannieReportPage {
                     $margin = sprintf('%.2f%%', (100 * ($d['sales']-$d['costs']) / $d['sales']));
                 $record[] = $margin;
 
+                $record[] = sprintf('$%.2f', $d['sales'] - $d['costs']);
+
                 $record[] = sprintf('%.2f',$d['taxes2']);
                 $record[] = sprintf('%.2f',$d['taxes1']);
 
@@ -357,6 +363,7 @@ class StoreSummaryReport extends FannieReportPage {
             if ($s['sales'] > 0 && $s['costs'] > 0)
                 $margin = sprintf('%.2f%%', (100 * ($s['sales']-$s['costs']) / $s['sales']));
             $record[] = $margin;
+            $record[] = sprintf('$%.2f', $s['sales'] - $s['costs']);
             $record[] = sprintf('%.2f',$s['taxes2']);
             $record[] = sprintf('%.2f',$s['taxes1']);
 
@@ -410,6 +417,7 @@ class StoreSummaryReport extends FannieReportPage {
                     AND t.emp_no not in (9999){$shrinkageUsers}
                     AND t.register_no != 99
                     AND t.trans_subtype not in ('CP','IC')
+                    AND " . DTrans::isStoreID($store, 't') . "
                 GROUP BY m.memDesc
                 ORDER BY m.memDesc");
         $discR = $dbc->execute($discQ,$costArgs);
@@ -507,6 +515,7 @@ class StoreSummaryReport extends FannieReportPage {
     function form_content()
     {
         list($lastMonday, $lastSunday) = \COREPOS\Fannie\API\lib\Dates::lastWeek();
+        $stores = FormLib::storePicker();
         ob_start();
         ?>
         <form action=StoreSummaryReport.php method=get>
@@ -536,6 +545,10 @@ class StoreSummaryReport extends FannieReportPage {
                 <label>Show SuperDepts with $0 or net $0 sales
                     <input type="checkbox" name="sortable" />
                 </label>
+            </div>
+            <div class="form-group">
+                <label>Store</label>
+                <?php echo $stores['html']; ?>
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Submit</button>
