@@ -142,6 +142,7 @@ class ManualSignsPage extends FannieRESTfulPage
         $start = FormLib::get('start');
         $end = FormLib::get('end');
         $exclude = FormLib::get('exclude', array());
+        $mult = FormLib::get('mult');
         $smartType = FormLib::get('smartType', false);
 
         $items = array();
@@ -175,7 +176,9 @@ class ManualSignsPage extends FannieRESTfulPage
                 $item['originShortName'] = trim($origin);
                 $item['nonSalePrice'] = trim($regPrice);
             }
-            $items[] = $item;
+            for ($j=0; $j<$mult[$i]; $j++) {
+                $items[] = $item;
+            }
         }
 
         $class = FormLib::get('signmod');
@@ -349,6 +352,7 @@ $ret
         <th>Start Date</th>
         <th>End Date</th>
         <th>Exclude</th>
+        <th>Multiple</th>
     </tr>
     </thead>
     <tbody>
@@ -390,6 +394,9 @@ $ret
         <td>
             <input type="checkbox" onchange="$('.exc').prop('checked', $(this).prop('checked')).trigger('change');" />
         </td>
+        <td>
+            <input type="number" class="form-control input=sm" onchange="$('.mult').val($(this).val()).trigger('change');" value="1" />
+        </td>
     </tr>
 HTML;
     }
@@ -421,6 +428,7 @@ HTML;
     <td><input type="text" name="start[]" class="form-control input-sm input-start date-field" value="{$start}" /></td>
     <td><input type="text" name="end[]" class="form-control input-sm input-end date-field" value="{$end}" /></td>
     <td><input type="checkbox" class="exc" name="exclude[]" value="{$i}" /></td>
+    <td><input type="number" name="mult[]" class="mult form-control input-sm" value="1"></td>
 </tr>
 HTML;
         }
