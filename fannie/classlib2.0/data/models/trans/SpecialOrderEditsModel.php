@@ -35,6 +35,7 @@ class SpecialOrderEditsModel extends BasicModel
     'specialOrderEditID' => array('type'=>'INT', 'primary_key'=>true, 'increment'=>true),
     'specialOrderID' => array('type'=>'INT', 'index'=>true),
     'userID' => array('type'=>'INT'),
+    'storeID' => array('type'=>'INT'),
     'tdate' => array('type'=>'DATETIME'),
     'action' => array('type'=>'VARCHAR(255)'),
     'detail' => array('type'=>'VARCHAR(255)'),
