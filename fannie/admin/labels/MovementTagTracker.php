@@ -350,7 +350,7 @@ HTML;
                 AND p.numflag & (1 << 19) = 0
                 AND not numflag & (1 << 1)
             GROUP BY p.upc, DATE(m.modified), p.brand, p.description, f.name
-            ORDER BY f.name
+            ORDER BY m.modified, f.name
         ");
         $cols = array('upc', 'brand', 'description', 'modified', 'name');
         $res = $dbc->execute($prep, $args);
