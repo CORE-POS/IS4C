@@ -282,10 +282,10 @@ function generateNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $db
     }
     if ($strlen >= 30) {
         $pdf->SetFont('Gill','B', 9);
-    } elseif ($strlen > 20 && $strlen < 30) {
+    } elseif ($strlen > 15 && $strlen < 20) {
         $pdf->SetFont('Gill','B', 12);
     } else {
-        $pdf->SetFont('Gill','B', 16);
+        $pdf->SetFont('Gill','B', 11);
     }
     if (count($lines) > 1) {
         $pdf->SetXY($x,$y+13);

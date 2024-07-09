@@ -331,6 +331,20 @@ foreach($data as $row) {
         $check = $pdf->GetCheckDigit($upc);
         $tagdate = date('m/d/y');
         $vendor = substr(isset($row['vendor']) ? $row['vendor'] : '',0,7);
+        $vfixes = array(
+            'ANCIENT' => 'ANCIEN',
+            'SPROUT' => 'SPROU',
+            'WILD FE' => 'WILDFE',
+            'COUNTRY' => 'COUNTR',
+            'HERB PH' => 'HERBPH',
+            'HERBS E' => 'HERBETC',
+            'UNFI' => '   UNFI',
+            'THRESHO' => 'THRESH',
+            'AMAZING' => 'AMAZNG',
+        );
+        if (array_key_exists($vendor, $vfixes)) {
+            $vendor = $vfixes[$vendor];
+        }
 
         //Start laying out a label
         $pdf->SetFont('Arial','',8);  //Set the font
@@ -416,6 +430,12 @@ foreach($data as $row) {
         }
         $pdf->SetX($baseX);
         $pdf->Cell(0, 2.5, $curStr);
+
+        /* add vendor to narrow tag */
+        $pdf->SetX($baseX);
+        $pdf->Cell(0, 3, $printbrand);
+        $pdf->SetX($baseX + 18);
+        $pdf->Cell(0, 3, strtoupper($vendor));
 
         // add a blue dot to items in REFRIGERATED department
         $pdf->SetXY($baseX+48.5, $baseY+3);

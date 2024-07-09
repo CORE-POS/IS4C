@@ -95,20 +95,20 @@ $aisles = array();
 //$aisles[] = array('Wellness 2', null,  'A', 'G');
 //$aisles[] = array('Wellness 3', null,  'A', 'G');
 
-$aisles[] = array("Bev 1", null, "A","I");
-$aisles[] = array("Bulk 3 Cooler", null, "A","A");
+//$aisles[] = array("Bev 1", null, "A","I");
+//$aisles[] = array("Bulk 3 Cooler", null, "A","A");
 //$aisles[] = array("Cool 1", null, "A","L");
 //$aisles[] = array("Cool 2", null, "A","I");
 //$aisles[] = array("Cool 3", null, "A","F");
-$aisles[] = array("Grocery 1", null, "A","F");
-$aisles[] = array("Grocery 2", null, "A","K");
-$aisles[] = array("Grocery 3", null, "A","G");
-$aisles[] = array("Grocery 4", null, "A","I");
-$aisles[] = array("Grocery 5", null, "A","I");
-$aisles[] = array("Grocery 6", null, "A","I");
-$aisles[] = array("Grocery 7", null, "A","G");
-$aisles[] = array("Grocery 8", null, "C","I");
-$aisles[] = array("Grocery 8 FE", null, "A","E");
+//$aisles[] = array("Grocery 1", null, "A","F");
+//$aisles[] = array("Grocery 2", null, "A","K");
+//$aisles[] = array("Grocery 3", null, "A","G");
+//$aisles[] = array("Grocery 4", null, "A","I");
+//$aisles[] = array("Grocery 5", null, "A","I");
+//$aisles[] = array("Grocery 6", null, "A","I");
+//$aisles[] = array("Grocery 7", null, "A","G");
+//$aisles[] = array("Grocery 8", null, "C","I");
+$aisles[] = array("Frozen 2", null, "A","E");
 
 
 
@@ -162,16 +162,26 @@ function WFC_Aisle_Tags($data,$offset=0){
 
     foreach($data as $row){
        // extract & format data
-       $price = $row['normal_price'];
-       $desc = strtoupper(substr($row['description'],0,27));
-       $brand = ucwords(strtolower(substr($row['brand'],0,13)));
-       $pak = $row['units'];
-       $size = $row['units'] . "-" . $row['size'];
-       $sku = $row['sku'];
-       $ppu = $row['pricePerUnit'];
-       $upc = ltrim($row['upc'],0);
-       $check = $pdf->GetCheckDigit($upc);
-       $vendor = substr($row['vendor'],0,7);
+       if (isset($row['normal_price']))
+           $price = $row['normal_price'];
+       if (isset($row['description']))
+           $desc = strtoupper(substr($row['description'],0,27));
+       if (isset($row['brand']))
+           $brand = ucwords(strtolower(substr($row['brand'],0,13)));
+       if (isset($row['units']))
+           $pak = $row['units'];
+       if (isset($row['size']))
+           $size = $row['units'] . "-" . $row['size'];
+       if (isset($row['sku']))
+           $sku = $row['sku'];
+       if (isset($row['pricePerUnit']))
+           $ppu = $row['pricePerUnit'];
+       if (isset($row['upc']))
+           $upc = ltrim($row['upc'],0);
+       if (isset($upc))
+           $check = $pdf->GetCheckDigit($upc);
+       if (isset($row['vendor']))
+           $vendor = substr($row['vendor'],0,7);
 
 
        //$pdf->SetFont('Arial','',48);  //Set the font 
