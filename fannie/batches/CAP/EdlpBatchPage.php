@@ -50,6 +50,8 @@ class EdlpBatchPage extends FannieRESTfulPage
         $date = FormLib::get('date', false);
         $id = FormLib::get('id', 6);
 
+        $products = new ProductsModel($this->connection);
+
         $model = new PriceRuleTypesModel($this->connection);
         $model->priceRuleTypeID($id);
         $model->load();
@@ -91,13 +93,18 @@ class EdlpBatchPage extends FannieRESTfulPage
         $list = new BatchListModel($dbc);
         $list->batchID($batchID);
         while ($itemW = $dbc->fetchRow($itemR)) {
-            $list->upc($itemW['upc']);
-            $list->salePrice($itemW['maxPrice']);
-            $list->save();
-            $bu->reset();
-            $bu->batchID($batchID);
-            $bu->upc($itemW['upc']);
-            $bu->logUpdate($bu::UPDATE_ADDED);
+            $products->upc($itemW['upc']);
+            $products->load();
+            if ($products->normal_price() > $itemW['maxPrice']) {
+                $list->upc($itemW['upc']);
+                $list->salePrice($itemW['maxPrice']);
+                $list->save();
+                $bu->reset();
+                $bu->batchID($batchID);
+                $bu->upc($itemW['upc']);
+                $bu->logUpdate($bu::UPDATE_ADDED);
+            }
+
         }
 
         return sprintf('<div class="alert alert-success">Created Batch. 
@@ -121,6 +128,7 @@ class EdlpBatchPage extends FannieRESTfulPage
     public function get_view()
     {
         $model = new PriceRuleTypesModel($this->connection);
+
         $ret = '<form method="get">
             <div class="form-group">
                 <label>Rule Type</label>

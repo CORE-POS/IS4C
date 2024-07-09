@@ -64,7 +64,8 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
         $rm_checks = (FormLib::get('rm_cds') != '') ? true : false;
         $ruleType = FormLib::get('ruleType');
         $review = FormLib::get('reviewDate');
-        $upcP = $dbc->prepare('SELECT upc, price_rule_id FROM products WHERE upc=? AND inUse=1');
+        $vendorID = FormLib::get('vendorID');
+        $upcP = $dbc->prepare('SELECT upc, price_rule_id FROM products WHERE upc=? AND inUse=1 AND default_vendor_id=?');
         $ruleP = $dbc->prepare('SELECT * FROM PriceRules WHERE priceRuleID=?');
         $skuP = $dbc->prepare('
             SELECT s.upc,
@@ -74,8 +75,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 ' . DTrans::joinProducts('s', 'p', 'INNER') . '
             WHERE s.sku=?
                 AND s.isPrimary=1
-                AND v.vendorName LIKE \'%UNFI%\'
-                AND v.vendorName != \'UNFI Conventional\'');
+                AND v.vendorID=?');
         $insP = $dbc->prepare('
             INSERT INTO PriceRules 
                 (priceRuleTypeID, maxPrice, reviewDate, details)
@@ -90,7 +90,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                 details=?
             WHERE priceRuleID=?');
         $extraP = $dbc->prepare('UPDATE prodExtra SET variable_pricing=1 WHERE upc=?');
-        $prodP = $dbc->prepare('UPDATE products SET price_rule_id=? WHERE upc=?');
+        $prodP = $dbc->prepare('UPDATE products SET price_rule_id=? WHERE upc=? AND default_vendor_id=?');
         $dbc->startTransaction();
         foreach ($linedata as $data) {
             if (!is_array($data)) continue;
@@ -104,11 +104,11 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $rule_id = 0;
 
             // try to find item by SKU if not in products
-            $lookup = $dbc->execute($upcP, array($upc));
+            $lookup = $dbc->execute($upcP, array($upc, $vendorID));
             if ($dbc->numRows($lookup) == 0 && $SKU !== false) {
                 $sku = str_replace('-', '', $data[$SKU]);
                 $found = false;
-                $look2 = $dbc->execute($skuP, array($sku));
+                $look2 = $dbc->execute($skuP, array($sku, $vendorID));
                 if ($dbc->numRows($look2)) {
                     $w = $dbc->fetchRow($look2);
                     $upc = $w['upc'];
@@ -116,7 +116,7 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
                     $found = true;
                 }
                 $sku = str_pad($sku, 7, '0', STR_PAD_LEFT);
-                $look3 = $dbc->execute($skuP, array($sku));
+                $look3 = $dbc->execute($skuP, array($sku, $vendorID));
                 if ($dbc->numRows($look3)) {
                     $w = $dbc->fetchRow($look3);
                     $upc = $w['upc'];
@@ -143,17 +143,17 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             $ruleR = $dbc->execute($ruleP, array($rule_id));
             if ($rule_id > 1 && $dbc->numRows($ruleR)) {
                 // update existing rule with latest price
-                $args = array($ruleType, $price, $review, 'MIN/MAX' . $price, $rule_id);
+                $args = array($ruleType, $price, $review, 'MAX PRICE ' . $price, $rule_id);
                 $dbc->execute($upP, $args);
                 $dbc->execute($extraP, array($upc));
             } else {
                 // create a new pricing rule
                 // attach it to the item
-                $args = array($ruleType, $price, $review, 'MIN/MAX' . $price);
+                $args = array($ruleType, $price, $review, 'MAX PRICE ' . $price);
                 $dbc->execute($insP, $args);
                 $rule_id = $dbc->insertID();
                 $dbc->execute($extraP, array($upc));
-                $dbc->execute($prodP, array($rule_id, $upc));
+                $dbc->execute($prodP, array($rule_id, $upc, $vendorID));
             }
         }
         $dbc->commitTransaction();
@@ -169,7 +169,14 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
 
     public function preview_content()
     {
+        $vendors = new VendorsModel($this->connection);
+        $vendorHTML = "<select name=\"vendorID\" class=\"form-control\"><option value=\"\">Select a vendor</option>";
+        foreach ($vendors->find() as $obj) {
+            $vendorHTML .= "<option value=\"" . $obj->vendorID() . "\">" . $obj->vendorName() . "</option>";
+        }
+        $vendorHTML .= "</select>";
         $model = new PriceRuleTypesModel($this->connection);
+
         $ret = '<p><div class="form-inline">
             <label>Rule type</label>
             <select name="ruleType" class="form-control">
@@ -177,6 +184,8 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
             </select>
             <label>Review Date</label>
             <input type="text" class="form-control date-field" name="reviewDate" required />
+            <label>Vendor</label>
+            ' . $vendorHTML . '
             <label><input type="checkbox" name="rm_cds" /> Remove check digits</label>
             </div></p>
         ';
@@ -187,6 +196,9 @@ class EdlpUploadPage extends \COREPOS\Fannie\API\FannieUploadPage
     public function results_content()
     {
         $ret = "<p>Import complete</p>";
+        $ret .= '<p>
+            <a href="EdlpUploadPage.php" class="btn btn-default">Upload Another File</a>
+            </p>';
         $ret .= '<p>
             <a href="EdlpBatchPage.php" class="btn btn-default">Create Price Change Batch</a>
             </p>';
