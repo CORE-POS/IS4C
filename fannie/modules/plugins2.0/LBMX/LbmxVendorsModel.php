@@ -35,6 +35,7 @@ class LbmxVendorsModel extends BasicModel
     'posID' => array('type'=>'INT'),
     'outputName' => array('type'=>'VARCHAR(255)'),
     'paymentMethod' => array('type'=>'INT', 'default'=>2),
+    'omitDueDate' => array('type'=>'INT', 'default'=>0),
     );
 
 }

@@ -68,7 +68,7 @@ class LbmxReformat2 extends COREPOS\Fannie\API\FannieUploadPage
     public function process_file($linedata, $indexes)
     {
         $getStoreP = $this->connection->prepare("SELECT posID FROM LbmxStores WHERE lbmxID=?");
-        $getVendorP = $this->connection->prepare("SELECT vendorName, outputName, paymentMethod FROM LbmxVendors AS l
+        $getVendorP = $this->connection->prepare("SELECT vendorName, outputName, paymentMethod, omitDueDate FROM LbmxVendors AS l
             LEFT JOIN vendors AS v on l.posID=v.vendorID WHERE lbmxID=?");
 
         /*
