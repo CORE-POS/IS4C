@@ -26,11 +26,12 @@ class ContributionTool extends FannieRESTfulPage
             $out = array();
             foreach ($data as $name => $items) {
                 $out[] = array($name);
-                $out[] = array('Item', 'Name', 'Current Margin', '% Store Sales', '% Category Sales');
+                $out[] = array('Item', 'Name', 'Vendor', 'Current Margin', '% Store Sales', '% Category Sales');
                 foreach ($items as $row) {
                     $out[] = array(
                         $row['upc'],
                         $row['brand'] . ' ' . $row['description'],
+                        $row['vendorName'],
                         $row['margin'] * 100,
                         $row['store'] * 100,
                         ($row['layer'] == 'dept' ? $row['dept'] : $row['super']) * 100,
@@ -293,26 +294,24 @@ class ContributionTool extends FannieRESTfulPage
         return $ret;
     }
 
-    private function allItemsHTML($data)
+    private function allItemsHTML($data, $highlight)
     {
         $uri = $_SERVER['REQUEST_URI'];
         $uri .= strpos($uri, '?') ? '&itemExcel=1' : '?itemExcel=1';
         $ret = '<p><a href="' . $uri . '">Export to Excel</a></p>';
         $ret .= '<table class="table table-bordered">';
         foreach ($data as $name => $items) {
-            $ret .= sprintf('<tr class="info"><th colspan="5">%s</th></tr>', $name);
-            $ret .= '<tr><th>Item</th><th>Name</th><th>Current Margin</th><th>% Store Sales</th><th>% Category Sales</th></tr>';
+            $ret .= sprintf('<tr class="info"><th colspan="6">%s</th></tr>', $name);
+            $ret .= '<tr><th>Item</th><th>Name</th><th>Vendor</th><th>Current Margin</th><th>% Store Sales</th><th>% Category Sales</th></tr>';
             foreach ($items as $row) {
                 $css = '';
-                /** Throwing notices; not sure if $highlight should be getting through to here
                 if ($row['margin'] > 0 && ($row['margin']*100) < $highlight) {
                     $css = 'class="danger"';
                 }
-                 */
                 $ret .= sprintf('<tr %s><td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
-                    <td>%s</td><td>%.2f</td><td>%.3f</td><td>%.2f</td>',
+                    <td>%s</td><td>%s</td><td>%.2f</td><td>%.3f</td><td>%.2f</td>',
                     $css, $row['upc'], $row['upc'],
-                    $row['brand'] . ' ' . $row['description'], $row['margin']*100, $row['store']*100,
+                    $row['brand'] . ' ' . $row['description'], $row['vendorName'], $row['margin']*100, $row['store']*100,
                     ($row['layer'] == 'dept' ? $row['dept'] : $row['super']) * 100
                 );
             }
@@ -357,7 +356,8 @@ class ContributionTool extends FannieRESTfulPage
                     CASE WHEN p.cost = 0 THEN NULL ELSE (p.normal_price-p.cost)/p.normal_price END AS margin,
                     q.percentageStoreSales AS store,
                     q.percentageSuperDeptSales AS super,
-                    q.percentageDeptSales AS dept
+                    q.percentageDeptSales AS dept,
+                    v.vendorName
                 FROM " . FannieDB::fqn('productSummaryLastQuarter', 'arch') . " AS q
                     INNER JOIN products AS p ON q.upc=p.upc AND q.storeID=p.store_id
                     INNER JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
@@ -396,7 +396,7 @@ class ContributionTool extends FannieRESTfulPage
         $store = FormLib::get('store', COREPOS\Fannie\API\lib\Store::getIdByIp());
         $bTable = $this->basicsHTML($this->getBasics($store, $superDept), $superDept);
         $vTable = $this->getAllVendors($store, $vendors, $superDept, 0);
-        $iTable = $this->allItemsHTML($this->getAllItems($store, $items, $superDept, $highlight));
+        $iTable = $this->allItemsHTML($this->getAllItems($store, $items, $superDept, $highlight), $highlight);
         $allURI = 'ContributionTool.php?all=1&store=' . $store;
         return <<<HTML
 <p><form method="get">
