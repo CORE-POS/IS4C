@@ -72,10 +72,11 @@ class OrderViewPage extends FannieRESTfulPage
         $poID = $bridge->addItemToPurchaseOrder($this->orderID, $this->transID, $this->storeID);
         if ($poID) {
             echo json_encode(array('error'=>false, 'poID'=>$poID));
+            $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
             $audit = $this->connection->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-                (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+                (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
             $this->connection->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Add to PO', 
-                "SPO #{$this->orderID}, Item #{$this->transID}, PO#{$poID}"));
+                "SPO #{$this->orderID}, Item #{$this->transID}, PO#{$poID}", $myStore));
         } else {
             echo json_encode(array('error'=>true));
         }
@@ -142,10 +143,11 @@ class OrderViewPage extends FannieRESTfulPage
         $upR = $dbc->execute($upP, array($this->qty, $this->orderID, $this->transID));
         $this->reprice($this->orderID, $this->transID);
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
         $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Item Quantity',
-            "Item #{$this->transID}, Qty {$this->qty}"));
+            "Item #{$this->transID}, Qty {$this->qty}", $myStore));
 
         $this->runCallbacks($this->orderID, $this->transID);
 
@@ -188,12 +190,13 @@ class OrderViewPage extends FannieRESTfulPage
         }
 
         $uid = FannieAuth::getUID();
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
         $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Edit Item',
-            "Item #{$this->transID}, {$this->description}, {$this->vendor}"));
+            "Item #{$this->transID}, {$this->description}, {$this->vendor}", $myStore));
         $dbc->execute($audit, array($this->orderID, $uid, date('Y-m-d H:i:s'), 'Edit Item',
-            "Item #{$this->transID}, Unit {$this->unitPrice}, Reg {$info['regPrice']}, Total {$info['total']}"));
+            "Item #{$this->transID}, Unit {$this->unitPrice}, Reg {$info['regPrice']}, Total {$info['total']}", $myStore));
 
         $fetchP = $dbc->prepare("SELECT ROUND(100*((regPrice-total)/regPrice),0)
             FROM {$transDB}PendingSpecialOrder WHERE trans_id=? AND order_id=?");
@@ -276,9 +279,10 @@ class OrderViewPage extends FannieRESTfulPage
         $bridge = new SoPoBridge($dbc, $this->config);
         $bridge->removeItemFromPurchaseOrder($this->orderID, $this->transID);
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Delete Item', "Item #{$this->transID}"));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Delete Item', "Item #{$this->transID}", $myStore));
 
         return $this->get_orderID_items_handler();
     }
@@ -300,9 +304,10 @@ class OrderViewPage extends FannieRESTfulPage
         }
 
         $dbc = $this->connection;
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Add Item', "UPC {$this->upc}, Cases {$this->cases}"));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Add Item', "UPC {$this->upc}, Cases {$this->cases}", $myStore));
 
         return false;
     }
@@ -343,9 +348,10 @@ class OrderViewPage extends FannieRESTfulPage
         $json['saved'] = $soModel->save() ? true : false;
         echo json_encode($json);
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Update Contact Info', ""));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Update Contact Info', "", $myStore));
 
         return false;
     }
@@ -417,9 +423,10 @@ class OrderViewPage extends FannieRESTfulPage
                 WHERE order_id=?");
             $dbc->execute($prep,array($memNum,$orderID));
 
+            $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
             $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-                (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-            $dbc->execute($audit, array($orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Set Owner', "Owner #{$memNum}"));
+                (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+            $dbc->execute($audit, array($orderID, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Set Owner', "Owner #{$memNum}", $myStore));
 
             // clear contact fields if member number changed
             // so that defaults are reloaded from meminfo
@@ -504,12 +511,14 @@ class OrderViewPage extends FannieRESTfulPage
 
         $callback = 2;
         $user = 'Unknown';
+        $fullName = '';
         $orderDate = "";
         $prep = $dbc->prepare("SELECT datetime,numflag,mixMatch FROM 
                 {$TRANS}PendingSpecialOrder WHERE order_id=? AND trans_id=0");
         $res = $dbc->execute($prep, array($orderID));
         if ($dbc->num_rows($res) > 0) {
             list($orderDate,$callback,$user) = $dbc->fetch_row($res);
+            $fullName = FannieAuth::getRealName(FannieAuth::getUID($user));
         }
 
         $status = array(
@@ -582,7 +591,7 @@ class OrderViewPage extends FannieRESTfulPage
 
         $extra = "";    
         $extra .= '<div class="row"><div class="col-sm-6 text-left">';
-        $extra .= "<b>Taken by</b>: ".$user."<br />";
+        $extra .= "<b>Taken by</b>: ".$user." ({$fullName})<br />";
         $extra .= "<b>On</b>: ".date("M j, Y g:ia",strtotime($orderDate))."<br />";
         if ($canEdit) {
             $extra .= '<a href="SpoEditsPage.php?id=' . $orderID . '">Edit History</a><br />';
@@ -777,6 +786,18 @@ class OrderViewPage extends FannieRESTfulPage
             $item['discounttype'] = 0;
         }
 
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $item['discounttype'] == 1 && $mempricing['isMember']) {
+            $batchP = $this->connection->prepare("SELECT batchName FROM products as p
+                LEFT JOIN batches AS b ON p.batchID=b.batchID
+            WHERE p.specialpricemethod <> 7
+                AND p.batchID > 0
+                AND p.upc=?");
+            $batch = $this->connection->getValue($batchP, array($item['upc']));
+            if (strstr($batch, 'Co-op Deals A') || strstr($batch, 'Co-op Deals B')) {
+                $casePrice *= 0.9;
+            }
+        }
+
         $ins_array['upc'] = $item['upc'];
         $ins_array['quantity'] = $item['caseSize'];
         $ins_array['mixMatch'] = $item['vendorName'];
@@ -959,8 +980,9 @@ HTML;
                         name="srp" value="%.2f" /></td>
                     <td><input size="5" class="form-control input-sm price-field item-field" id="act%d" 
                         value="%.2f" name="actual" /></td>
-                    <td><input size="4" class="form-control input-sm price-field item-field" 
-                        value="%.2f" name="qty" /></td>
+                    <td><input size="4" class="form-control input-sm price-field item-field" id="qty%d"
+                        value="%.2f" name="qty" />
+                        <input type="hidden"  value="%d" class="item-field" name="discounttype" /></td>
                     <td><select class="form-control input-sm editDept item-field" 
                         name="dept">',
                     $row['upc'],
@@ -969,7 +991,8 @@ HTML;
                     $row['ItemQtty'],
                     $row['trans_id'],$row['regPrice'],
                     $row['trans_id'],$row['total'],
-                    $row['quantity']
+                    $row['trans_id'], $row['quantity'],
+                    $row['discounttype']
                 );
             foreach($depts as $id=>$name) {
                 $ret .= sprintf('<option value="%d" %s>%d %s</option>',
@@ -1381,7 +1404,7 @@ HTML;
 <input type=hidden value="{$orderID}" id="init_oid" />
 HTML;
 
-        $this->addScript('orderview.js?date=20180806');
+        $this->addScript('orderview.js?date=20240627');
         $this->addScript('../item/autocomplete.js');
         $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');

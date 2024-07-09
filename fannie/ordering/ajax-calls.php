@@ -127,6 +127,11 @@ switch (FormLib::get('action')) {
         $info = reprice($orderID,$_REQUEST['transID']);
         echo $info['regPrice'].'`'.$info['total'];
         break;
+    case 'saveDiscounttype':
+        $upP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
+            discounttype=? WHERE order_id=? AND trans_id=?");
+        $dbc->execute($upP, array($_REQUEST['discounttype'],$orderID,$_REQUEST['transID']));
+        break;
     case 'newQty':
         $upP = $dbc->prepare("UPDATE {$TRANS}PendingSpecialOrder SET
             quantity=? WHERE order_id=? AND trans_id=?");
@@ -237,6 +242,18 @@ function addUPC($orderID,$memNum,$upc,$num_cases=1)
     $casePrice = OrderItemLib::getCasePrice($item, $mempricing);
     if ($unitPrice == $item['normal_price'] && !OrderItemLib::useSalePrice($item, $mempricing)) {
         $item['discounttype'] = 0;
+    }
+
+    if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $item['discounttype'] == 1 && $mempricing['isMember']) {
+        $batchP = $dbc->prepare("SELECT batchName FROM products as p
+            LEFT JOIN batches AS b ON p.batchID=b.batchID
+        WHERE p.specialpricemethod <> 7
+            AND p.batchID > 0
+            AND p.upc=?");
+        $batch = $dbc->getValue($batchP, array($item['upc']));
+        if (strstr($batch, 'Co-op Deals A') || strstr($batch, 'Co-op Deals B')) {
+            $casePrice *= 0.9;
+        }
     }
 
     $ins_array['upc'] = $item['upc'];
@@ -1308,7 +1325,8 @@ function editableItemList($orderID)
                 <td>%d</td>
                 <td><input size="5" id="srp%d" onchange="saveSRP($(this).val(),%d);return false;" value="%.2f" /></td>
                 <td><input size="5" id="act%d" onchange="savePrice($(this).val(),%d);return false;" value="%.2f" /></td>
-                <td><input size="4" onchange="saveQty($(this).val(),%d);return false;" value="%.2f" /></td>
+                <td><input size="4" onchange="saveQty($(this).val(),%d);return false;" value="%.2f" />
+                    <input type="hidden" name="discounttype" onchange="saveDiscounttype($(this).val(),%d); return false;" value="%d" /></td>
                 <td><select class="editDept" onchange="saveDept($(this).val(),%d);return false;">',
                 $w['upc'],
                 (!empty($w['sku'])?$w['sku']:'&nbsp;'),
@@ -1317,6 +1335,7 @@ function editableItemList($orderID)
                 $w['trans_id'],$w['trans_id'],$w['regPrice'],
                 $w['trans_id'],$w['trans_id'],$w['total'],
                 $w['trans_id'],$w['quantity'],
+                $w['trans_id'],$w['discounttype'],
                 $w['trans_id']
             );
         foreach($depts as $id=>$name) {

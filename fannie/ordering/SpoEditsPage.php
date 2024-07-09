@@ -15,18 +15,21 @@ class SpoEditsPage extends FannieReportPage
     protected $required_fields = array('id');
 
     protected $new_tablesorter = true;
-    protected $report_headers = array('Date/Time', 'User', 'Action', 'Detail');
+    protected $report_headers = array('Date/Time', 'User', 'Store', 'Action', 'Detail');
 
     public function fetch_report_data()
     {
-        $prep = $this->connection->prepare('SELECT s.*, u.name FROM ' . FannieDB::fqn('SpecialOrderEdits', 'trans') .
-            ' AS s LEFT JOIN ' . FannieDB::fqn('Users', 'op') . ' AS u ON s.userID=u.uid WHERE specialOrderID=?');
+        $prep = $this->connection->prepare('SELECT s.*, u.name, t.description AS storeName FROM ' . FannieDB::fqn('SpecialOrderEdits', 'trans') .
+            ' AS s LEFT JOIN ' . FannieDB::fqn('Users', 'op') . ' AS u ON s.userID=u.uid 
+                LEFT JOIN ' . FannieDB::fqn('Stores', 'op') . ' AS t on s.storeID=t.storeID
+            WHERE specialOrderID=?');
         $res = $this->connection->execute($prep, array($this->form->id));
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $data[] = array(
                 $row['tdate'],
                 $row['name'],
+                $row['storeName'],
                 $row['action'],
                 $row['detail'],
             );

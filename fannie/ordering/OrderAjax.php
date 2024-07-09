@@ -142,9 +142,10 @@ class OrderAjax extends FannieRESTfulPage
         $soModel->storeID($this->store);
         $soModel->save();
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Store', 'Store #' . $this->store));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Store', 'Store #' . $this->store, $myStore));
     }
 
     protected function post_id_confirm_handler()
@@ -163,9 +164,10 @@ class OrderAjax extends FannieRESTfulPage
             $dbc->execute($del,array($this->id));
         }
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Toggled Confirm', ($this->confirm ? 'On' : 'Off')));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Toggled Confirm', ($this->confirm ? 'On' : 'Off'), $myStore));
 
         return false;
     }
@@ -180,9 +182,10 @@ class OrderAjax extends FannieRESTfulPage
             voided=? WHERE order_id=?");
         $dbc->execute($prep,array($this->pn,$this->id));
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Household Name', 'Person #' . $this->pn));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Household Name', 'Person #' . $this->pn, $myStore));
 
         return false;
     }
@@ -228,9 +231,10 @@ class OrderAjax extends FannieRESTfulPage
             }
         }
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Status', 'Status #' . $this->status));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Status', 'Status #' . $this->status, $myStore));
 
         $this->runCallbacks($this->id);
 
@@ -257,9 +261,10 @@ class OrderAjax extends FannieRESTfulPage
         $prep = $dbc->prepare('UPDATE SpecialOrders SET noDuplicate=? WHERE specialOrderID=?');
         $res = $dbc->execute($prep, array($this->nodupe ? 1 : 0, $this->id));
 
+        $myStore = COREPOS\Fannie\API\lib\Store::getIdByIp();
         $audit = $dbc->prepare('INSERT INTO ' . FannieDB::fqn('SpecialOrderEdits', 'trans') . '
-            (specialOrderID, userID, tdate, action, detail) VALUES (?, ?, ?, ?, ?)');
-        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Duplication', ($this->nodupe ? 'Off' : 'On')));
+            (specialOrderID, userID, tdate, action, detail, storeID) VALUES (?, ?, ?, ?, ?, ?)');
+        $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Duplication', ($this->nodupe ? 'Off' : 'On'), $myStore));
 
         echo 'Done';
 

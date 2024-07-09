@@ -209,7 +209,11 @@ var orderView = (function($) {
         });
         $('.itemChkA').change(function () {
             var checked = $(this).is(':checked');
-            mod.toggleA($(this).data('order'), $(this).data('trans'), checked);
+            if (checked && confirm('Are you sure this item arrived?')) {
+                mod.toggleA($(this).data('order'), $(this).data('trans'), checked);
+            } else {
+                $(this).prop('checked', false);
+            }
         });
         $('.add-po-btn').click(function(ev) {
             ev.preventDefault();
@@ -432,6 +436,25 @@ var orderView = (function($) {
             data: 'id='+$('#orderID').val() + '&commID=' + msgID
         }).done(function (resp) {
             $('#commLog').html(resp);
+        });
+    };
+
+    mod.getBetterDeal = function() {
+        let isMember = $('#isMember').val();
+        $('tbody').each(function(){
+            let srp = $(this).find('input[name="srp"]').val()
+            let actual = $(this).find('input[name="actual"]').val()
+            let discPercent = 1 - (actual / srp);
+            let discPercentString = $(this).find('td.disc-percent').text()
+
+            if (actual < srp && discPercentString == 'Sale' && discPercent < 0.15) {
+                let discPrice = srp - (srp * 0.15)
+                discPrice = discPrice.toFixed(2);
+
+                $(this).find('input[name="actual"]').val(discPrice);
+                $(this).find('input[name="actual"]').change();
+                $(this).find('td.disc-percent').text('15%');
+            }
         });
     };
 
