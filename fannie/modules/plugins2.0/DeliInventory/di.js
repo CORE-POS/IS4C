@@ -153,7 +153,7 @@ var di = (function ($) {
     }
 
     function swapIn(elem) {
-        var name = $(elem).attr('class').replace(' editable', '');
+        var name = $(elem).attr('class').replace(' editable', '').trim();
         var input = '<input name="' + name + '" class="form-control input-sm" value="' + $(elem).html() + '" />';
         $(elem).html(input);
         $(elem).find('input').focus().select();

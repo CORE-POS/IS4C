@@ -143,6 +143,7 @@ class DIPage2 extends FannieRESTfulPage
     protected function post_id_handler()
     {
         $now = $this->connection->now();
+        $this->logger->debug(print_r($_POST, true));
         if (FormLib::get('name', false) !== false) {
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET item=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(FormLib::get('name'), $this->id));
@@ -161,6 +162,8 @@ class DIPage2 extends FannieRESTfulPage
         } elseif (FormLib::get('cost', false) !== false) {
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET price=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(trim(FormLib::get('cost'), '$'), $this->id));
+            $this->logger->debug('ID: ' .$this->id);
+            $this->logger->debug('Cost: ' . trim(FormLib::get('cost'), '$'));
         } elseif (FormLib::get('upc', false) !== false) {
             $upP = $this->connection->prepare("UPDATE deliInventoryCat SET upc=?, modified={$now} WHERE id=?");
             $this->connection->execute($upP, array(BarcodeLib::padUPC(FormLib::get('upc')), $this->id));
@@ -496,7 +499,7 @@ HTML;
 
         $this->addScript('../../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../../src/javascript/chosen/bootstrap-chosen.css');
-        $this->addScript('di.js?date=20190412');
+        $this->addScript('di.js?date=20240604');
         $this->addOnloadCommand('di.initRows();');
         $this->addOnloadCommand("di.setVendors({$vendors});");
         $this->addOnloadCommand("di.setCategories({$categories});");

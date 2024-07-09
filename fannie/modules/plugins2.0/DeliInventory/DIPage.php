@@ -468,7 +468,7 @@ HTML;
 
         $this->addScript('../../../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../../../src/javascript/chosen/bootstrap-chosen.css');
-        $this->addScript('di.js?date=20190403');
+        $this->addScript('di.js?date=20240604');
         $this->addOnloadCommand('di.initRows();');
         $this->addOnloadCommand("di.setVendors({$vendors});");
 
