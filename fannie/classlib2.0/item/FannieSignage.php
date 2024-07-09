@@ -1135,6 +1135,10 @@ class FannieSignage
             return 'PLU# ' . ltrim($item['upc'], '0'); // show PLU #s on by-weight
         }
 
+        if (strpos($size, 'PLU') !== false) {
+            return $size;
+        }
+
         $size = trim(strtolower($size));
         if ($size == '0' || $size == '00' || $size == '') {
             return '';
