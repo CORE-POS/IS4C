@@ -34,6 +34,8 @@ class SubDeptsModel extends BasicModel
     'subdept_no' => array('type'=>'SMALLINT', 'primary_key'=>true),
     'subdept_name' => array('type'=>'VARCHAR(30)'),
     'dept_ID' => array('type'=>'SMALLINT'),
+    'subdept_tax' => array('type'=>'SMALLINT', 'default'=>0),
+    'subdept_fs' => array('type'=>'SMALLINT', 'default'=>0),
     );
 
     public function doc()
