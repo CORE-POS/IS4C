@@ -63,7 +63,20 @@ class WfcSmartSigns2UpP extends \COREPOS\Fannie\API\item\signage\Signage2UpP
             $item['local'] = $dbc->getValue($localP, $item['upc']);
 
             $pdf->Image($this->getTopImage($item), ($left-1), ($top-42) + ($row*$height), $width);
-            $pdf->Image($this->getBottomImage($item), ($left-1), $top + ($height*$row) + ($height-$top-6), $width, 2);
+            $bottomImg = $this->getBottomImage($item);
+            if ($bottomImg != 'EXTRAS') {
+                $pdf->Image($bottomImg, ($left-1), $top + ($height*$row) + ($height-$top-6), $width, 2);
+            } else {
+                $pdf->SetFillColor(0xFB, 0xAA, 0x28);
+                $pdf->Rect(($left-1), $top + ($height*$row) + ($height-$top-14), $width, 12, 'F');
+                $pdf->SetTextColor(0xff, 0xff, 0xff);
+                $pdf->SetFont($this->font, '', $this->MED_FONT);
+                $pdf->SetXY(($left+1) + 50, $top + ($height*$row) + ($height-$top-12));
+                $pdf->Cell(51, 8, 'owners save an ', 0, 0);
+                $pdf->SetFont($this->font, 'B', $this->MED_FONT);
+                $pdf->Cell(15, 8, 'extra 10%', 0, 0);
+                $pdf->SetTextColor(0, 0, 0);
+            }
 
             // if sale is new NCG BOGO
             if (strstr($item['batchName'], 'Co-op Deals') && $item['signMultiplier'] == -3) {
@@ -131,7 +144,9 @@ class WfcSmartSigns2UpP extends \COREPOS\Fannie\API\item\signage\Signage2UpP
             return __DIR__ . '/noauto/images/organic_bottom_12.png';
         }
 
-        if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
+        if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR') && $item['signMultiplier'] != -3) {
+            return 'EXTRAS';
+        } elseif (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
             return __DIR__ . '/cd_line_16.png';
         } elseif (isset($item['batchName']) && strstr(strtoupper($item['batchName']), 'FRESH DEALS')) {
             return __DIR__ . '/noauto/images/freshdeals_bottom_2.png';
