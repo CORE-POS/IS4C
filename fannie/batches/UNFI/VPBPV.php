@@ -821,7 +821,7 @@ JAVASCRIPT;
             CASE WHEN l.upc IS NULL THEN 0 ELSE 1 END AS likecoded,
 
             CASE
-                WHEN f.futureCost THEN f.futureCost - p.cost 
+                WHEN f.futureCost AND ABS(f.futureCost - p.cost) > 0.02 THEN f.futureCost - p.cost 
                 ELSE c.difference
             END AS difference,
 
@@ -1029,7 +1029,7 @@ JAVASCRIPT;
             $direction = ($row['srp'] > $row['normal_price']) ? '&#x2191;' : '&#x2193;';
 
             $row['inbatch'] = isset($batched[$row['upc']]) ? $batched[$row['upc']] : '';
-            if (!in_array($priceRuleTypeID, array(5, 6, 12, 9))) {
+            if (!in_array($priceRuleTypeID, array(5, 6, 12, 9)) && $rounder->round($row['rawSRP']) != $row['normal_price'] ) {
                 $td .= sprintf("<tr id=row%s class='%s %s item'>
                     <td class=\"sub\" 
                         data-upc=\"%s\"
