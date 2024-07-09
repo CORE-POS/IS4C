@@ -80,7 +80,7 @@ var subDept = (function($) {
     mod.add = function() {
         var name = $('#newname').val();
         var did = deptList.deptID;
-        var d = 'action=addSub&name='+name+'&did='+did;
+        var d = 'action=addSub&name='+encodeURIComponent(name)+'&did='+did;
         $.ajax({
             type: 'post',
             data: d,
@@ -107,6 +107,33 @@ var subDept = (function($) {
         }).done(function(resp){
             subList.subs = resp;
             goodMsg('Deleted sub department(s)');
+        });
+    };
+
+    mod.getSettings = function() {
+        $.ajax({
+            type: 'post',
+            data: 'action=getSettings&sid='+$('#subselect').val(),
+            dataType: 'json'
+        }).fail(function() {
+            errorMsg('Error getting tax/fs settings');
+        }).done(function(resp) {
+            $('#subtax').val(resp.tax);
+            $('#subfs').val(resp.fs);
+        });
+    };
+
+    mod.saveSettings = function() {
+        var d = 'action=saveSettings&sid='+$('#subselect').val();
+        d+= '&tax='+$('#subtax').val();
+        d+= '&fs='+$('#subfs').val();
+        $.ajax({
+            type: 'post',
+            data: d
+        }).fail(function() {
+            errorMsg('Error getting tax/fs settings');
+        }).done(function(resp) {
+            goodMsg('Updated tax/fs settings');
         });
     };
 

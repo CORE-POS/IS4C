@@ -62,6 +62,25 @@ class SubDeptEditor extends FanniePage
             case 'showSubsForDept':
                 echo $this->get_subs_as_options(FormLib::get('did'));
                 break;
+            case 'getSettings':
+                $ret = array('tax' => 0, 'fs' => 0);
+                $prep = $this->connection->prepare("SELECT subdept_tax, subdept_fs FROM subdepts WHERE subdept_no=?");
+                $res = $this->connection->execute($prep, array(FormLib::get('sid')));
+                while ($row = $this->connection->fetchRow($res)) {
+                    $ret['tax'] = $row['subdept_tax'];
+                    $ret['fs'] = $row['subdept_fs'];
+                }
+                echo json_encode($ret);
+                break;
+            case 'saveSettings':
+                $prep = $this->connection->prepare("UPDATE subdepts SET subdept_tax=?, subdept_fs=? WHERE subdept_no=?");
+                $res = $this->connection->execute($prep, array(
+                    FormLib::get('tax'),
+                    FormLib::get('fs'),
+                    FormLib::get('sid'),
+                ));
+                echo 'Done';
+                break;
             default:
                 echo 'Bad request';
                 break;
@@ -84,7 +103,7 @@ class SubDeptEditor extends FanniePage
             }
         }
 
-        $ins = $dbc->prepare('INSERT INTO subdepts VALUES (?,?,?)');  
+        $ins = $dbc->prepare('INSERT INTO subdepts (subdept_no, subdept_name, dept_ID) VALUES (?,?,?)');  
         $dbc->execute($ins,array($sid, $name, $deptID));
     }
 
@@ -141,6 +160,12 @@ class SubDeptEditor extends FanniePage
             }
         }
 
+        $taxR = $dbc->query("SELECT id, description FROM taxrates");
+        $taxOpts = '<option value="0">No Tax</option>';
+        while ($taxW = $dbc->fetchRow($taxR)) {
+            $taxOpts .= sprintf('<option value="%d">%s</option>', $taxW['id'], $taxW['description']);
+        }
+
         ob_start();
         ?>
         <div id="alertarea"></div>
@@ -153,7 +178,7 @@ class SubDeptEditor extends FanniePage
         <div class="col-sm-3">
             <p id="subdiv">
                 <label class="control-label" id=subname>{{ dept }}</label>
-                <select class="form-control" id=subselect size=12 multiple v-model="selected">
+                <select class="form-control" id=subselect size=12 v-model="selected" onchange="subDept.getSettings();">
                     <option v-for="sub in subs" v-bind:key="sub.id" v-bind:value="sub.id">{{ sub.name }}</option>
                 </select>
             </p>
@@ -170,10 +195,31 @@ class SubDeptEditor extends FanniePage
                     class="btn btn-default">Delete Selected</button>
             </p>
         </div>
+        <div id="settingsdiv" class="col-sm-3">
+            <label class="control-label">Sub Department Settings</label>
+            <div class="input-group">
+                <span class="input-group-addon">Tax</span>
+                <select class="form-control" id="subtax" name="subtax">
+                    <?php echo $taxOpts; ?>
+                </select>
+            </div>
+            <br />
+            <div class="input-group">
+                <span class="input-group-addon">FS</span>
+                <select class="form-control" id="subfs" name="subfs">
+                    <option value="0">No</option>
+                    <option value="1">Yes</option>
+                </select>
+            </div>
+            <br />
+            <div class="form-group">
+                <button class="btn btn-default" onclick="subDept.saveSettings();">Save Settings</button>
+            </div>
+        </div>
         <?php
 
         $this->addScript('../../src/javascript/vue.js');
-        $this->addScript('sub.js');
+        $this->addScript('sub.js?date=20240515');
         $this->addOnloadCommand('subDept.show('.$firstID.');');
         
         return ob_get_clean();
