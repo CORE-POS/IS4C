@@ -54,15 +54,46 @@ class FormLib extends \COREPOS\common\FormLib
     }
 
     /**
-      Get a fieldset to select certain date ranges
-      Requires JQquery
-      @param $one id for date input (default 'date1')
-      @param $two id for date input (default 'date2')
-      @param $week_start day number (default 1/Monday)
-      @return HTML string
-    */
+      Get date ranges for a quarter period
+      @param $month any month in the period
+      @param $year of the period
+      @return array of two ('Y-m-d') dates
+     */
+    public static function getQuarterDates($year, $month)
+    {
+  /*
+    Convert negative months into positive months and fewer years,
+    and extra months into extra years.
+   */
+      while ($month < 1) {
+        $year--;
+        $month += 12;
+      }
+
+      while ($month > 12) {
+        $year++;
+        $month -= 12;
+      }
+
+      $first_month = $month - ($month-1) % 3;
+      $start = mktime(0, 0, 0, $first_month, 1, $year);
+      // date('t'...) returns the last day of the month
+      $lmld = date('t', mktime(0, 0, 0, $first_month+2, 1, $year));
+      $end = mktime(0, 0, 0, $first_month+2, $lmld, $year);
+
+      return array(date('Y-m-d', $start), date('Y-m-d', $end));
+    }
+
     public static function dateRangePicker($one='date1',$two='date2',$week_start=1)
     {
+    /**
+      Get a fieldset to select certain date ranges
+      Requires JQquery
+      @param $one html id for date input (default 'date1')
+      @param $two html id for date input (default 'date2')
+      @param $week_start day number (default 1/Monday)
+      @return HTML string
+     */
         /**
           calculate all the applicable dates in PHP
         */
@@ -115,6 +146,14 @@ class FormLib extends \COREPOS\common\FormLib
         //$thisWeekLY = array(date('Y-m-d', $mondayLY), date('Y-m-d', mktime(0,0,0,date('n',$mondayLY),date('j',$mondayLY)+6,date('Y',$mondayLY))));
         $lastWeekLY = array(date('Y-m-d', strtotime('next monday', strtotime($ly))),date('Y-m-d', strtotime('next sunday', strtotime($ly))),date('Y',$mondayLY));
 
+        $current_month = date('n');
+        $current_year = date('Y');
+        $current_quarter = self::getQuarterDates($current_year, $current_month);
+        $last_quarter = self::getQuarterDates($current_year, $current_month - 3);
+        $current_quarterLY = self::getQuarterDates($current_year-1, $current_month);
+        $next_quarterLY = self::getQuarterDates($current_year, $current_month - 9);
+        $last_quarterLY = self::getQuarterDates($current_year-1, $current_month - 3);
+
         $extra_opts = sprintf('
             <div class="panel panel-default">
                 <div class="panel-heading">Other dates</div>
@@ -138,6 +177,12 @@ class FormLib extends \COREPOS\common\FormLib
                         onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
                     This month
                 </label>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od13" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    This quarter 
+                </label>
                 </td></tr>
                 <tr><td>
                 <label>
@@ -156,6 +201,12 @@ class FormLib extends \COREPOS\common\FormLib
                     <input class="radio-inline" id="od22" type="radio" name="other_dates" 
                         onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
                     Last month
+                </label>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od23" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    Last quarter 
                 </label>
                 </td></tr>
                 <tr><td>
@@ -176,6 +227,12 @@ class FormLib extends \COREPOS\common\FormLib
                         onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
                     This month last year
                 </label>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od33" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    This quarter last year
+                </label>
                 </td></tr>
                 <tr><td>
                 <label>
@@ -195,12 +252,26 @@ class FormLib extends \COREPOS\common\FormLib
                         onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
                     Next month last year
                 </label>
-                </td></tr>
-                <tr><td>
+                </td><td>
                 <label>
                     <input class="radio-inline" id="od43" type="radio" name="other_dates" 
                         onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    Next quarter last year
+                </label>
+                </td></tr>
+                <tr><td>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od51" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
                     Last week last year
+                </label>
+                </td><td>
+                </td><td>
+                <label>
+                    <input class="radio-inline" id="od53" type="radio" name="other_dates" 
+                        onclick="$(\'#%s\').val(\'%s\');$(\'#%s\').val(\'%s\')" />
+                    Last quarter last year
                 </label>
                 </td></tr>
 
@@ -210,16 +281,21 @@ class FormLib extends \COREPOS\common\FormLib
             $one,$today[0],$two,$today[1],
             $one,$this_week[0],$two,$this_week[1],
             $one,$this_month[0],$two,$this_month[1],
+            $one,$current_quarter[0],$two,$current_quarter[1],
             $one,$yesterday[0],$two,$yesterday[1],
             $one,$last_week[0],$two,$last_week[1],
             $one,$last_month[0],$two,$last_month[1],
+            $one,$last_quarter[0],$two,$last_quarter[1],
             $one,$todayLY[0],$two,$todayLY[1],
             $one,$thisWeekLY[0],$two,$thisWeekLY[1],
             $one,$thisMonthLY[0],$two,$thisMonthLY[1],
+            $one,$current_quarterLY[0],$two,$current_quarterLY[1],
             $one,$tomorrowLY[0],$two,$tomorrowLY[1],
             $one,$nextWeekLY[0],$two,$nextWeekLY[1],
             $one,$nextMonthLY[0],$two,$nextMonthLY[1],
-            $one,$lastWeekLY[0],$two,$lastWeekLY[1]
+            $one,$next_quarterLY[0],$two,$next_quarterLY[1],
+            $one,$lastWeekLY[0],$two,$lastWeekLY[1],
+            $one,$last_quarterLY[0],$two,$last_quarterLY[1],
         );
 
         return $extra_opts;
