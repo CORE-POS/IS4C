@@ -792,9 +792,9 @@ class OrderViewPage extends FannieRESTfulPage
             WHERE p.specialpricemethod <> 7
                 AND p.batchID > 0
                 AND p.upc=?");
-            $batch = $this->connection->getValue($batchP, array($item['upc']));
             if (strstr($batch, 'Co-op Deals A') || strstr($batch, 'Co-op Deals B')) {
                 $casePrice *= 0.9;
+                $unitPrice *= 0.9;
             }
         }
 
