@@ -75,7 +75,9 @@ class WfcSmartSigns88UpP extends \COREPOS\Fannie\API\item\signage\Compact16UpP
 
             $pdf->Image($this->getTopImage($item), ($left-2) + ($width*$column), ($top-17) + ($row*$height), $width-6);
             $bottomImg = $this->getBottomImage($item);
-            if ($bottomImg == 'EXTRAS') {
+            if (!isset($item['smartType']))
+                $item['smartType'] = null;
+            if ($bottomImg == 'EXTRAS' || $item['smartType'] == 'CoopDeals') {
                 $pdf->SetXY(($left-2)+($width*$column), $top + ($height*$row) + ($height-$top-2));
                 $pdf->SetFillColor(0xFB, 0xAA, 0x28);
                 $pdf->SetTextColor(0xff, 0xff, 0xff);
