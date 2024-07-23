@@ -99,9 +99,9 @@ JAVASCRIPT;
             array('Compact12UpL.png', 'Compact 12 Up', 'Compact12UpL'),
             array('Compact16UpL.png', 'Compact 16 Up', 'Compact16UpP'),
 
-            array('Smart12Up.png', 'WFC Smart Signs 12 up', 'WfcSmartSigns99upP'),
-            array('Smart16Up.png', 'WFC Smart Signs 16 up', 'WfcSmartSigns88UpP'),
-            array('Smart4Up.png', 'WFC Smart Signs 4 up', 'WfcSmartSigns77UpP'),
+            array('Smart12Up.png', 'WFC Smart Signs 12 up', 'WfcSmartSigns12UpP'),
+            array('Smart16Up.png', 'WFC Smart Signs 16 up', 'WfcSmartSigns16UpP'),
+            array('Smart4Up.png', 'WFC Smart Signs 4 up', 'WfcSmartSigns4UpP'),
             array('Smart2Up.png', 'WFC Smart Signs 2Up', 'WfcSmartSigns2UpP'),
             array('Signage12.png', 'Signage 12Up', 'Signage12UpL'),
             array('Signage16Up.png', 'Signage 16Up', 'Signage16UpP'),
