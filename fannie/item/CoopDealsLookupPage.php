@@ -64,6 +64,7 @@ class CoopDealsLookupPage extends FannieRESTfulPage
         $upc = FormLib::get('upc');
         $salePrice = FormLib::get('salePrice');
         $alertType = null;
+        $month = FormLib::get("curmo");
 
         $prep = $dbc->prepare('SELECT * FROM batchList WHERE batchID = ? AND upc = ?');
         $res = $dbc->execute($prep, array($batchID, $upc));
@@ -98,27 +99,19 @@ class CoopDealsLookupPage extends FannieRESTfulPage
                 }
             }
         }
-        
-        $this->addOnloadCommand('window.history.back();');
 
+        $view = $this->get_month_upc_view($month);
+        
         return <<<HTML
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
         <div class="alert alert-$alertType">$msg</div>
     </div>
+    <div class="col-lg-4"></div>
 </div>
-<div class="row">
-    <div class="col-md-2">
-        <div class="form-group">
-            <a class="btn btn-default form-control" onclick="window.history.back(); return false;">Back</a>
-        </div>
-    </div>
-    <div class="col-md-2">
-        <div class="form-group">
-            <a class="btn btn-default form-control" href="CoopDealsLookupPage.php">Start Over</a>
-        </div>
-    </div>
-</div>
+<div>$view</div>
+
 HTML;
 
     }
@@ -140,7 +133,7 @@ HTML;
         }
     }
 
-    public function get_month_upc_view()
+    public function get_month_upc_view($month=false)
     {
         global $FANNIE_OP_DB;
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -163,8 +156,9 @@ HTML;
             $heading .= "<div class='alert alert-danger' align='center'>Product does not exist in POS</div>";
         }
 
-        //$month = $this->session->month;
-        $month = FormLib::get('month');
+        if ($month == false) {
+            $month = FormLib::get('month');
+        }
         $args = array($upc, $month);
         $prep = $dbc->prepare('
             SELECT
@@ -351,8 +345,8 @@ HTML;
 
         return <<<HTML
 <div class="row">
-    <div class="col-lg-3"></div>
-    <div class="col-lg-6">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
         <form id="upc-form" action="{$_SERVER['PHP_SELF']}"  method="get" name="upc-form">
             {$this->monthOptions()}
             {$this->upcInput()}
@@ -367,18 +361,8 @@ HTML;
             <input type="hidden" name="salePrice" value="$srp">
             <input type="hidden" name="batchID" id="batchID" >
             <input type="hidden" name="upc" value="$upc">
+            <input type="hidden" name="curmo" value="$month">
         </form>
-    </div>
-    <div class="col-lg-3"></div>
-</div>
-<div class="row">
-    <div class="col-lg-4"></div>
-    <div class="col-lg-4">
-        <div class="row">
-            <div class="col-lg-3"></div>
-            <div class="col-lg-3">{$this->navBtns()}</div>
-            <div class="col-lg-3"></div>
-        </div>
     </div>
     <div class="col-lg-4"></div>
 </div>
@@ -406,19 +390,6 @@ HTML;
                 <input type="submit" class="btn btn-default" value="Submit UPC">
             </div>
         </form>
-    </div>
-    <div class="col-lg-4"></div>
-</div>
-<div class="row">
-    <div class="col-lg-4"></div>
-    <div class="col-lg-4">
-        <div class="row">
-            <div class="col-lg-3"></div>
-            <div class="col-lg-3">
-                {$this->navBtns()}
-            </div>
-            <div class="col-lg-3"></div>
-        </div>
     </div>
     <div class="col-lg-4"></div>
 </div>
@@ -491,34 +462,10 @@ HTML;
     </div>
     <div class="col-lg-4"></div>
 </div>
-<div class="row">
-    <div class="col-lg-4"></div>
-    <div class="col-lg-4">
-        <div class="row">
-            <div class="col-lg-3"></div>
-            <div class="col-lg-3">{$this->navBtns()}</div>
-            <div class="col-lg-3"></div>
-        </div>
-    </div>
-    <div class="col-lg-4"></div>
-</div>
 HTML;
 
     }
 
-    private function navBtns()
-    {
-        $ret = '';
-        $ret .= '
-            <div class="row"><div class="col-md-2">
-                <table class="table"><tbody>
-                    <tr><td><a class="btn btn-default btn-xs wide" href="../../../../Scannie/content/Scanning/BatchCheck/SCS.php">Batch Check</a></td></tr>
-                    <tr><td><a class="btn btn-default btn-xs wide" href="../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Menu</a></td></tr>
-                </tbody></table>
-            </div></div>
-        ';
-        return $ret;
-    }
 
     public function javascript_content()
     {
