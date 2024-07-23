@@ -109,15 +109,15 @@ class ItemList4UpL extends \COREPOS\Fannie\API\item\FannieSignage
                 if ($item['startDate'] != '' && $item['endDate'] != '') {
                     // intl would be nice
                     $datestr = $this->getDateString($item['startDate'], $item['endDate']);
-                    $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
+                    $pdf->SetXY($this->left + ($this->width*$column) + 16, $this->top + ($this->height*$row) + ($this->height - $this->top - 20) - 5);
                     $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
                     $pdf->Cell($effective_width, 20, $datestr, 0, 1, 'R');
                 }
             }
             $pdf->SetFont($this->font, '', $this->MED_FONT);
-            $pdf->SetXY($this->left + ($this->width*$column) + ($column*5), (($sign % $itemsPerSign)*6)+$this->top + 10 + ($this->height*$row));
+            $pdf->SetXY($this->left + ($this->width*$column) + ($column*5), (($sign % $itemsPerSign)*6)+$this->top + 10 + ($this->height*$row) - 2);
             $pdf->Cell($effective_width, 6, $item['description'] . ' ' . $item['size'], 0, 0, 'L');
-            $pdf->SetXY($this->left + ($this->width*$column) + ($column*5), (($sign % $itemsPerSign)*6)+$this->top + 10 + ($this->height*$row));
+            $pdf->SetXY($this->left + ($this->width*$column) + ($column*5), (($sign % $itemsPerSign)*6)+$this->top + 10 + ($this->height*$row) - 2);
             $pdf->Cell($effective_width, 6, $this->printablePrice($item), 0, 0, 'R');
 
             $sign++;

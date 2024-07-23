@@ -223,7 +223,8 @@ function generateMirrorNewMeatTag($x, $y, $guide, $width, $height, $pdf, $row, $
 function generateNewMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo)
 {
     $upc = $row['upc'];
-    $brand = strToUpper($row['brand']);
+    //$brand = strToUpper($row['brand']);
+    $brand = $row['brand'];
     $price = $row['normal_price'];
     $descFontSize = 20;
     if (!defined('FPDF_FONTPATH')) {
@@ -277,7 +278,8 @@ function generateNewMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $d
     */
     $pdf->SetFont('Gill','', 14);
     $strlen = (strlen($brand));
-    $pdf->SetXY($x,$y+15);
+    //$pdf->SetXY($x,$y+15);
+    $pdf->SetXY($x,$y+6);
     $pdf->Cell($width, 8, $brand, 0, 1, 'C', true);
 
     /*
@@ -294,7 +296,8 @@ function generateNewMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $d
         $descFontSize = 14;
     }
     $pdf->SetFont('Gill','B', $descFontSize);
-    $pdf->SetXY($x,$y+6);
+    //$pdf->SetXY($x,$y+6);
+    $pdf->SetXY($x,$y+15);
     $pdf->Cell($width, 5, $desc, 0, 1, 'C', true);
     $pdf->SetFont('Gill','B', 16);
 
@@ -316,10 +319,11 @@ function generateNewMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $d
         Add UPC Barcode
     */
     if (class_exists('Image_Barcode2')) {
-        $img = Image_Barcode2::draw($upc."0", 'code128', 'png', false, 3.5, 1, false);
+        $img = Image_Barcode2::draw($upc."0", 'code128', 'png', false, 0.5, 1, false);
         $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
         imagepng($img, $file);
-        $pdf->Image($file, $x, $y+25);
+        //$pdf->Image($file, $x, $y+25);
+        $pdf->Image($file, $x, $y+1);
     }
 
     /*
@@ -344,8 +348,8 @@ function generateNewMeat_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $d
 
     // Print Local Logo (if local)
     if ($item['local']) {
-        $localX = 121;
-        $localY = 1;
+        $localX = 0;
+        $localY = 18;
         //$pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY, 15, 9);
         $pdf->Image(__DIR__ . '/noauto/LocalBug3.jpg', $x+$localX, $y+$localY+1, 14, 8);
         $pdf->SetDrawColor(243, 115, 34);

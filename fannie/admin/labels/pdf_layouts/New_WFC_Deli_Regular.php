@@ -16,7 +16,7 @@ class New_WFC_Deli_Regular_PDF extends FpdfWithBarcode
 
     public function barcodeText($x, $y, $h, $barcode, $len)
     {
-        $this->SetFont('Arial','',8);
+        $this->SetFont('Gill','',8);
         $this->Text($x,$y-$h+(17/$this->k),substr($barcode,-$len).' '.$this->tagdate);
     }
 
@@ -202,6 +202,7 @@ function generateNewDeliRegularMirrorTag($x, $y, $guide, $width, $height, $pdf, 
     $pdf->SetXY($x, $y+$height); 
     $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
 
+
     $pdf->SetFillColor(255, 255, 255);
 
     return $pdf;
@@ -230,11 +231,18 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
     $desc = $row['description'];
     $numflag = $row['numflag'];
 
+    $scaleP = $dbc->prepare("SELECT * FROM scaleItems WHERE plu = ?"); 
+    $scaleR = $dbc->execute($scaleP, $args);
+    $scaleW = $dbc->fetchRow($scaleR);
+    $randoWeight = ($scaleW['bycount'] == 0) ? true : false;
+    $lb = ($randoWeight) ? '/lb' : '';
+
     $MdescKey = array_search($upc, $updateUpcs);
     $Mdesc = $manualDescs[$MdescKey];
     $Mbrand = $manualBrand[$MdescKey];
     $desc = $Mdesc;
     $brand = $Mbrand;
+    $brand = strtoupper($brand);
 
     // get local info
     $localP = $dbc->prepare("SELECT 'true' FROM products WHERE local > 0 AND upc = ?");
@@ -259,14 +267,14 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
         Add Brand Text
     */
     $strlen = (strlen($brand));
-    if ($strlen >= 30) {
+    if ($strlen >= 25) {
         $pdf->SetFont('Gill','B', 9);
-    } elseif ($strlen > 20 && $strlen < 30) {
+    } elseif ($strlen > 19 && $strlen < 25) {
         $pdf->SetFont('Gill','B', 12);
     } else {
-        $pdf->SetFont('Gill','B', 16);
+        $pdf->SetFont('Gill','B', 14);
     }
-    $pdf->SetXY($x,$y+4);
+    $pdf->SetXY($x,$y+5);
     $pdf->Cell($width, 8, $brand, 0, 1, 'C', true); 
 
     /*
@@ -277,21 +285,35 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
         $strlen = strlen($lines[1]);
     }
     if ($strlen >= 30) {
-        $pdf->SetFont('Gill','B', 9);
-    } elseif ($strlen > 20 && $strlen < 30) {
-        $pdf->SetFont('Gill','B', 12);
+        $pdf->SetFont('Gill','', 7);
+    } elseif ($strlen > 26 && $strlen < 36) {
+        $pdf->SetFont('Gill','', 10);
     } else {
-        $pdf->SetFont('Gill','B', 16);
+        $pdf->SetFont('Gill','', 14);
     }
     if (count($lines) > 1) {
         $pdf->SetXY($x,$y+13);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
-        $pdf->SetXY($x, $y+20);
+        $pdf->SetXY($x, $y+19);
         $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
     } else {
-        $pdf->SetXY($x,$y+15);
+        $pdf->SetXY($x,$y+16.5);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
     }
+
+    /*
+        Add UPC Barcode 
+    */
+
+    /* UPC / PLU Barcode */
+    $pdf->SetFillColor(0,0,0);
+    //$pdf->EAN13($x+42, $y-1, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
+    $pdf->UPC_A($x+12, $y-1, $upc+"0", 5, 0.5);  //generate barcode and place on label
+    $pdf->SetFillColor(255,255,255);
+
+    // cover up 2
+    $pdf->SetFillColor(255,255,255);
+    $pdf->Rect($x+11, $y-2, 50, 3, 'F');
 
 
     /*
@@ -300,8 +322,7 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
     $pdf->SetFont('Gill','B', 19);  //Set the font 
     $pdf->SetXY($x,$y+27);
     if ($showPrice == 1 ) 
-        //$pdf->Cell($width, 5, "$".$price, 0, 1, 'C', true); 
-        $pdf->Cell($width, 5, "$".$price, 0, 1, 'C', true); 
+        $pdf->Cell($width, 5, "$".$price.$lb, 0, 1, 'C', true); 
 
     /* 
         Print Local Star & Text
@@ -309,8 +330,7 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
     if ($item['local']) {
         $localX = 1;
         $localY = 23.5;
-        //$pdf->Image(__DIR__ . '/noauto/local_small.jpg', $x+$localX, $y+$localY+1, 14, 8);
-        $pdf->Image(__DIR__ . '/noauto/LocalBug3.jpg', $x+$localX, $y+$localY+1, 14, 8);
+        $pdf->Image(__DIR__ . '/noauto/localST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
         $pdf->SetDrawColor(243, 115, 34);
         //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
         $pdf->SetDrawColor(0, 0, 0);
@@ -322,9 +342,8 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
     if ($numflag & (1<<2)) {
         $localX = 53;
         $localY = 23.5;
-        $pdf->Image(__DIR__ . '/noauto/VeganBug2.jpg', $x+$localX, $y+$localY+1, 14, 8);
+        $pdf->Image(__DIR__ . '/noauto/veganST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
         $pdf->SetDrawColor(243, 115, 34);
-        //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
         $pdf->SetDrawColor(0, 0, 0);
     }
 
@@ -345,6 +364,22 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
 
     $pdf->SetXY($x, $y+$height); 
     $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    // inset left-hand border
+    if ($x < 10) {
+        $pdf->SetXY($x, $y);
+        $pdf->Cell(1, $height+1, '', 0, 1, 'C', true);
+    }
+    // inset right-hand border
+    if ($x > 150) {
+        $pdf->SetXY($x+$width-1.5, $y);
+        $pdf->Cell(1, $height, '', 0, 1, 'C', true);
+    }
+    // inset top border
+    if ($y < 10) {
+        $pdf->SetXY($x, $y);
+        $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
+    }
 
     $pdf->SetFillColor(255, 255, 255);
 

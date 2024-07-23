@@ -25,7 +25,7 @@ namespace COREPOS\Fannie\Plugin\CoopDealsSigns;
 use \FannieDB;
 use \FannieConfig;
 
-class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL 
+class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Compact12UpL 
 {
     protected $BIG_FONT = 40;
     protected $MED_FONT = 14;
@@ -82,12 +82,27 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             $item['local'] = $dbc->getValue($localP, $item['upc']);
 
             $pdf->Image($this->getTopImage($item), ($left-1) + ($width*$column), ($top-19) + ($row*$height), 62.67);
-            $pdf->Image($this->getBottomImage($item), ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-4), 62.67);
+            $bottomImg = $this->getBottomImage($item);
+            if (!isset($item['smartType']))
+                $item['smartType'] = null;
+            if ($bottomImg != 'EXTRAS' && $item['smartType'] != 'CoopDeals') {
+                $pdf->Image($bottomImg, ($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-4) - 8, 62.67);
+            } else {
+                $pdf->SetFillColor(0xFB, 0xAA, 0x28);
+                $pdf->Rect(($left-1)+($width*$column), $top + ($height*$row) + ($height-$top-10), 62.5, 10, 'F');
+                $pdf->SetTextColor(0xff, 0xff, 0xff);
+                $pdf->SetFont($this->font, '', $this->MED_FONT);
+                $pdf->SetXY(($left+1)+($width*$column), $top + ($height*$row) + ($height-$top-8));
+                $pdf->Cell(32, 6, 'owners save an ', 0, 0);
+                $pdf->SetFont($this->font, 'B', $this->MED_FONT);
+                $pdf->Cell(15, 6, 'extra 10%', 0, 0);
+                $pdf->SetTextColor(0, 0, 0);
+            }
 
             // if sale is new NCG BOGO
             if (strstr($item['batchName'], 'Co-op Deals') && $item['signMultiplier'] == -3) {
                 $bogoImg = __DIR__ . '/noauto/images/bogo-circle.png';
-                $pdf->Image($bogoImg,  ($left) + ($width*$column) + 48, ($top-10) + ($row*$height), 12, 12);
+                $pdf->Image($bogoImg,  ($left) + ($width*$column) + 48, ($top-10) + ($row*$height) - 2, 12, 12);
             }
 
             $count++;
@@ -150,7 +165,9 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Signage12UpL
             return __DIR__ . '/noauto/images/organic_bottom_12.png';
         }
 
-        if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR')) {
+        if (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR') && $item['signMultiplier'] != -3) {
+            return 'EXTRAS';
+        } elseif (strstr($item['batchName'], 'Co-op Deals') && !strstr($item['batchName'], 'TPR') && $item['signMultiplier'] == -3) {
             return __DIR__ . '/cd_line_16.png';
         } elseif (isset($item['batchName']) && strstr(strtoupper($item['batchName']), 'FRESH DEALS')) {
             return __DIR__ . '/noauto/images/freshdeals_bottom_4.png';
