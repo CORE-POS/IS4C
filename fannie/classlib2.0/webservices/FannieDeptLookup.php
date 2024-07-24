@@ -137,7 +137,7 @@ class FannieDeptLookup extends FannieWebService
                         $query .= ' ORDER BY s.subdept_no';
                 } else {
                     $dDef = $dbc->tableDefinition('departments');
-                    $active = isset($dDef['active']) ? ' active=1 ' : ' 1=1 ';
+                    $active = isset($dDef['active']) && !property_exists($args, 'all') ? ' active=1 ' : ' 1=1 ';
                     $query = '
                         SELECT d.dept_no AS id,
                             d.dept_name AS name
