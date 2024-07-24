@@ -140,6 +140,9 @@ function chainSuperDepartment(ws_url, super_id, params)
             'superID' : super_id
         }
     };
+    if ('all' in params) {
+        req['params']['all'] = 1;
+    }
 
     $.ajax({
         url: ws_url,
