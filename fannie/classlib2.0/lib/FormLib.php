@@ -543,7 +543,7 @@ class FormLib extends \COREPOS\common\FormLib
         */
         $url = FannieConfig::config('URL');
         $chainsubs = "chainSubDepartments('{$url}ws/', {super_id:'#super-id', dept_start:'#dept-start-txt', dept_end:'#dept-end-txt', sub_multiple:'#subdepts'})";
-        $onchange = "chainSuperDepartment('{$url}ws/', this.value, {dept_multiple:'#departments',dept_start:'#dept-start',dept_end:'#dept-end',dept_start_id:'#dept-start-txt',dept_end_id:'#dept-end-txt',callback:function(){ $chainsubs; }})";
+        $onchange = "chainSuperDepartment('{$url}ws/', this.value, {dept_multiple:'#departments',dept_start:'#dept-start',dept_end:'#dept-end',dept_start_id:'#dept-start-txt',dept_end_id:'#dept-end-txt',callback:function(){ $chainsubs; },all:1})";
 
         /**
           The rest of this method uses HEREDOC style strings with
