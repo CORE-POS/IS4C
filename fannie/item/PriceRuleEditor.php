@@ -83,7 +83,11 @@ HTML;
             $model->reviewDate(Date('Y-m-d h:m:s'));
             $prid = $model->save();
             if ($saved !== false) {
-                $res = $dbc->execute($prep, array($row['prt'], $upc));
+                if ($row['prt'] != 0) {
+                    $res = $dbc->execute($prep, array($prid, $upc));
+                } else {
+                    $res = $dbc->execute($prep, array(0, $upc));
+                }
             }
         }
 
@@ -364,12 +368,9 @@ $('.price-rule-select').on('change', function(){
 
 $('.price-rule-select-all').on('change', function(){
     var text = $(this).find(':selected').text();
-    var c = confirm('Change all Price Rule Types to *'+text+'* ?');
-    if (c == true) {
-        $(".price-rule-select option").filter(function() {
-            return $(this).text() == text;
-        }).prop('selected', true);
-    }
+    $(".price-rule-select option").filter(function() {
+        return $(this).text() == text;
+    }).prop('selected', true);
 });
 
 $('.edit-details-all').on('keydown', function(e){
@@ -420,7 +421,12 @@ var save = function()
             url: 'PriceRuleEditor.php',
             dataType: 'json',
             success: function(resp) {
-                alert('success!');
+                let alertSuccess = document.createElement('div');
+                alertSuccess.classList.add('alert');
+                alertSuccess.classList.add('alert-success');
+                alertSuccess.innerHTML = 'Save successful!';
+
+                $('#fannie-main-content').append(alertSuccess);
                 console.log(resp);
             },
             error: function(resp) {
