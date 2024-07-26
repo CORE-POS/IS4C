@@ -69,7 +69,6 @@ HTML;
 
         $testVal = '';
         $model = new PriceRulesModel($dbc);
-        $prodModel = new ProductsModel($dbc);
         $saved = 'yep!';
 
         $prep = $dbc->prepare("UPDATE products SET price_rule_id = ? WHERE upc = ?");
@@ -84,7 +83,7 @@ HTML;
             $model->reviewDate(Date('Y-m-d h:m:s'));
             $prid = $model->save();
             if ($saved !== false) {
-                $res = $dbc->execute($prep, array($prid, $upc));
+                $res = $dbc->execute($prep, array($row['prt'], $upc));
             }
         }
 
