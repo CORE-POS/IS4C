@@ -51,6 +51,7 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $date = $date2;
         }
         $trans_num = FormLib::get('trans_num','');
+        $trans_no = FormLib::get('trans_no','');
         if (substr($trans_num, 0, 2) == 'CP' && is_numeric(substr($trans_num, 2))) {
             $pos = 2;
             $year = '20' . substr($trans_num, $pos, 2);
@@ -73,7 +74,6 @@ class ReprintReceiptPage extends \COREPOS\Fannie\API\FannieReadOnlyPage
         $trans_subtype = FormLib::get('trans_subtype','');
         $tenderTotal = FormLib::get('tenderTotal','');
         $department = FormLib::get('department','');
-        $trans_no="";
 
         if ($trans_num !== "") {
             $temp = explode("-",$trans_num);
