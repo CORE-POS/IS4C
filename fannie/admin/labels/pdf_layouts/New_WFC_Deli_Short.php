@@ -156,7 +156,7 @@ function generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $r
         Add Brand & Description Text
     */
     $pdf->SetXY($x,$y+3);
-    $pdf->Cell($width, 5, $brand, 1, 1, 'C', true); 
+    $pdf->Cell($width, 5, $brand, 0, 1, 'C', true); 
     $pdf->SetXY($x,$y+9);
     $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
 
@@ -182,7 +182,6 @@ function generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $r
 
     /*
         Create Guide-Lines
-    */ 
     $pdf->SetFillColor(155, 155, 155);
     // vertical 
     $pdf->SetXY($width+$x, $y);
@@ -197,6 +196,7 @@ function generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $r
 
     $pdf->SetXY($x, $y+$height); 
     $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+    */ 
 
 
     $pdf->SetFillColor(255, 255, 255);

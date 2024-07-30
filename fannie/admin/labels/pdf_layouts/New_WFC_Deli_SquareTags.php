@@ -151,7 +151,7 @@ function generateMirrorTagSquareTags12($x, $y, $guide, $width, $height, $pdf, $r
 
     $ingr = strtolower($ingr);
     $ingr = explode('contains', $ingr);
-    // Get string after the last occurance of 'Contains'
+    // Get string after the last occurrence of 'Contains'
     $index = count($ingr) - 1;
     $allergens = (isset($ingr[$index])) ? ucfirst($ingr[$index]) : '';
     $allergens = str_replace("\r\n", "", $allergens);
@@ -219,7 +219,7 @@ function generateMirrorTagSquareTags12($x, $y, $guide, $width, $height, $pdf, $r
 
     /*
         Create Guide-Lines
-    */ 
+
     $pdf->SetFillColor(155, 155, 155);
     // vertical 
     $pdf->SetXY($width+$x, $y);
@@ -236,6 +236,7 @@ function generateMirrorTagSquareTags12($x, $y, $guide, $width, $height, $pdf, $r
     $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
 
     $pdf->SetFillColor(255, 255, 255);
+    */ 
 
     return $pdf;
 
@@ -366,6 +367,22 @@ function generateSquareTagsTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
 
     $pdf->SetXY($x, $y+$height); 
     $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
+
+    // inset left-hand border
+    if ($x < 10) {
+        $pdf->SetXY($x, $y);
+        $pdf->Cell(1, $height+1, '', 0, 1, 'C', true);
+    }
+    // inset right-hand border
+    if ($x > 150) {
+        $pdf->SetXY($x+$width-1.5, $y);
+        $pdf->Cell(1, $height, '', 0, 1, 'C', true);
+    }
+    // inset top border
+    if ($y < 10) {
+        $pdf->SetXY($x, $y);
+        $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
+    }
 
     $pdf->SetFillColor(255, 255, 255);
 
