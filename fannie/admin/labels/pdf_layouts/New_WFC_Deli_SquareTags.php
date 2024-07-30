@@ -151,7 +151,9 @@ function generateMirrorTagSquareTags12($x, $y, $guide, $width, $height, $pdf, $r
 
     $ingr = strtolower($ingr);
     $ingr = explode('contains', $ingr);
-    $allergens = (isset($ingr[1])) ? ucfirst($ingr[1]) : '';
+    // Get string after the last occurance of 'Contains'
+    $index = count($ingr) - 1;
+    $allergens = (isset($ingr[$index])) ? ucfirst($ingr[$index]) : '';
     $allergens = str_replace("\r\n", "", $allergens);
     $allergens = str_replace("\r", "", $allergens);
     $allergens = str_replace("\n", "", $allergens);
