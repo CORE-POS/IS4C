@@ -157,7 +157,7 @@ HTML;
         }
 
         if ($month == false) {
-            $month = FormLib::get('month');
+            $month = FormLib::get('month', false);
         }
         $args = array($upc, $month);
         $prep = $dbc->prepare('
@@ -415,6 +415,9 @@ HTML;
         $opts = '';
         foreach ($options as $option) {
             $sel = (FormLib::get('month') == $option) ? 'selected' : '';
+            if ($sel == '') {
+                $sel = (FormLib::get('curmo') == $option) ? 'selected' : '';
+            }
             $opts .= "<option value='$option' $sel>$option</option>";
         }
 
