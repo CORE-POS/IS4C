@@ -92,6 +92,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
                 'PRODUCE' => $url,
                 'DELI' => $url,
                 'WELLNESS' => $url,
+                'BOGO' => $url,
             ),
             '12TPR' => array(
                 'MERCH' => $url,
@@ -112,6 +113,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
                 'PRODUCE' => $url,
                 'DELI' => $url,
                 'WELLNESS' => $url,
+                'BOGO' => $url,
             ),
         );
         while ($row = $dbc->fetchRow($res)) {
@@ -127,9 +129,17 @@ class CoopDealsSignsPage extends FannieRESTfulPage
                     }
                 } else {
                     if ($owner == 'PRODUCE') {
-                        $batchLists['16CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                        if (strpos($batchName,'BOGO')) {
+                            $batchLists['16CD']['BOGO'] .= 'batch[]='.$id.'&';
+                        } else {
+                            $batchLists['16CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                        }
                     } elseif ($owner == 'WELLNESS') {
-                        $batchLists['16CD']['WELLNESS'] .= 'batch[]='.$id.'&';
+                        if (strpos($batchName,'BOGO')) {
+                            $batchLists['16CD']['BOGO'] .= 'batch[]='.$id.'&';
+                        } else {
+                            $batchLists['16CD']['WELLNESS'] .= 'batch[]='.$id.'&';
+                        }
                     }
                 }
             } else {
@@ -137,31 +147,51 @@ class CoopDealsSignsPage extends FannieRESTfulPage
                     if (strpos($batchName,'TPR')) {
                         $batchLists['12TPR']['PRODUCE'] .= 'batch[]='.$id.'&';
                     } else {
-                        $batchLists['12CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                        if (strpos($batchName,'BOGO')) {
+                            $batchLists['12CD']['BOGO'] .= 'batch[]='.$id.'&';
+                        } else {
+                            $batchLists['12CD']['PRODUCE'] .= 'batch[]='.$id.'&';
+                        }
                     }
                 } elseif ($owner == 'DELI') {
                     if (strpos($batchName,'TPR')) {
                         $batchLists['12TPR']['DELI'] .= 'batch[]='.$id.'&';
                     } else {
-                        $batchLists['12CD']['DELI'] .= 'batch[]='.$id.'&';
+                        if (strpos($batchName,'BOGO')) {
+                            $batchLists['12CD']['BOGO'] .= 'batch[]='.$id.'&';
+                        } else {
+                            $batchLists['12CD']['DELI'] .= 'batch[]='.$id.'&';
+                        }
                     }
                 } elseif ($owner == 'REFRIGERATED' || $owner == 'MEAT' || $owner == 'BULK') {
                     if (strpos($batchName,'TPR')) {
                         $batchLists['12TPR']['LAMINATES'] .= 'batch[]='.$id.'&';
                     } else {
-                        $batchLists['12CD']['LAMINATES'] .= 'batch[]='.$id.'&';
+                        if (strpos($batchName,'BOGO')) {
+                            $batchLists['12CD']['BOGO'] .= 'batch[]='.$id.'&';
+                        } else {
+                            $batchLists['12CD']['LAMINATES'] .= 'batch[]='.$id.'&';
+                        }
                     }
                 } elseif ($owner == 'GROCERY' || $owner == 'BREAD') {
                     if (strpos($batchName,'TPR')) {
                         $batchLists['12TPR']['GROCERY'] .= 'batch[]='.$id.'&';
                     } else {
-                        $batchLists['12CD']['GROCERY'] .= 'batch[]='.$id.'&';
+                        if (strpos($batchName,'BOGO')) {
+                            $batchLists['12CD']['BOGO'] .= 'batch[]='.$id.'&';
+                        } else {
+                            $batchLists['12CD']['GROCERY'] .= 'batch[]='.$id.'&';
+                        }
                     }
                 } else {
                     if (strpos($batchName,'TPR')) {
                         $batchLists['12TPR']['MERCH'] .= 'batch[]='.$id.'&';
                     } else {
-                        $batchLists['12CD']['MERCH'] .= 'batch[]='.$id.'&';
+                        if (strpos($batchName,'BOGO')) {
+                            $batchLists['12CD']['BOGO'] .= 'batch[]='.$id.'&';
+                        } else {
+                            $batchLists['12CD']['MERCH'] .= 'batch[]='.$id.'&';
+                        }
                     }
                 }
             }
@@ -179,6 +209,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
             window.open('{$batchLists["12CD"]["DELI"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
             window.open('{$batchLists["12CD"]["LAMINATES"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
             window.open('{$batchLists["12CD"]["GROCERY"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
+            window.open('{$batchLists["12CD"]["BOGO"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact12UpL');
             return false;
             "
             id="a1" target="_blank">12UP <b>{$cycle}</b></a>
@@ -187,6 +218,7 @@ class CoopDealsSignsPage extends FannieRESTfulPage
         <a class="btn btn-success" onclick="
             window.open('{$batchLists["16CD"]["WELLNESS"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact16UpP');
             window.open('{$batchLists["16CD"]["PRODUCE"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact16UpP');
+            window.open('{$batchLists["16CD"]["BOGO"]}&signmod=COREPOS\\\Fannie\\\API\\\item\\\signage\\\Compact16UpP');
             return false;
             "
             id="a2" target="_blank">16UP <b>{$cycle}</b></a>
