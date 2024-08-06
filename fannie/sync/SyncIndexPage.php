@@ -67,12 +67,15 @@ class SyncIndexPage extends FanniePage
             <option value="memberCards">Membership Cards</option>
             <option value="employees">{$cashiers}</option>
             <option value="departments">Departments</option>
+            <option value="subdepts">Subdepartments</option>
             <option value="tenders">Tenders</option>
+            <option value="taxrates">Tax Rates</option>
             <option value="houseCoupons">House Coupons</option>
             <option value="houseVirtualCoupons">House Virtual Coupons</option>
             <option value="houseCouponItems">House Coupon Items</option>
             <option value="memtype">Member Types</option>
             <option value="CustomerNotifications">CustomerNotifications</option>
+            <option value="customReceipt">Custom Receipt Lines</option>
             <option value="IgnoredBarcodes">IgnoredBarcodes</option>
             </select><br /><br />
 
