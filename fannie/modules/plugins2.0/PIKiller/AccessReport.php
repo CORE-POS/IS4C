@@ -11,13 +11,13 @@ class AccessReport extends FannieReportPage
     protected $title = 'Access Expiration Report';
     protected $required_fields = array('date1', 'date2');
 
-    protected $report_headers = array('Expires', '#', 'Last Name', 'First Name', 'Phone', 'Email');
+    protected $report_headers = array('Expires', '#', 'Last Name', 'First Name', 'Phone', 'Email', 'Contact Preference');
     protected $new_tablesorter = true;
 
     public function fetch_report_data()
     {
         $prep = $this->connection->prepare("
-SELECT a.expires, a.cardNo, c.LastName, c.FirstName, m.phone, m.email_1
+SELECT a.expires, a.cardNo, c.LastName, c.FirstName, m.phone, m.email_1, a.contactMethod
 FROM AccessDiscounts AS a
     LEFT JOIN custdata AS c ON a.cardNo=c.CardNo AND c.personNum=1
     LEFT JOIN meminfo AS m ON a.cardNo=m.card_no
@@ -32,6 +32,7 @@ WHERE a.expires BETWEEN ? AND ?");
                 $row['FirstName'],
                 $row['phone'],
                 $row['email_1'],
+                $row['contactMethod'],
             );
         }
 

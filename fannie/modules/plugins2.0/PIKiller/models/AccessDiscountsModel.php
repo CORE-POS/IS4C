@@ -38,6 +38,7 @@ class AccessDiscountsModel extends BasicModel
     'programID' => array('type'=>'INT'),
     'userID' => array('type'=>'INT'),
     'renewerName' => array('type'=>'VARCHAR(255)'),
+    'contactMethod' => array('type'=>'VARCHAR(255)'),
     'notes' => array('type'=>'TEXT'),
     );
 

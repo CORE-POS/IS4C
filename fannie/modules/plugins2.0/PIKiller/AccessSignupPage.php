@@ -101,6 +101,7 @@ class AccessSignupPage extends FannieRESTfulPage
         $model->expires(date('Y-m-d', mktime(0,0,0,date('n')+2,date('j'),date('Y')+1)));
         $model->userID(FannieAuth::getUID($this->current_user));
         $model->programID($numflag);
+        $model->contactMethod(FormLib::get('contact'));
         $model->renewerName(FormLib::get('name'));
         $model->notes(FormLib::get('notes'));
         $model->save();
@@ -140,8 +141,16 @@ class AccessSignupPage extends FannieRESTfulPage
     </select>
 </div>
 <div class="form-group">
+    <label>Contact Preference</label>
+    <select name="contact" class="form-control" required>
+        <option value="call">Phone Call</option>
+        <option value="text">Text</option>
+        <option value="email">Email</option>
+    </select>
+</div>
+<div class="form-group">
     <label>Your Name</label>
-    <input type="text" name="name" class="form-control" />
+    <input type="text" name="name" class="form-control" required />
 </div>
 <div class="form-group">
     <textarea rows="4" class="form-control" name="notes"></textarea>
