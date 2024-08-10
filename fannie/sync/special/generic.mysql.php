@@ -59,6 +59,7 @@ $cmd = 'mysqldump'
     . (empty($FANNIE_SERVER_PW) ? '' : ' -p' . escapeshellarg($FANNIE_SERVER_PW))
     . ' -h ' . escapeshellarg($host)
     . ' -P ' . escapeshellarg($port)
+    . ' --skip-triggers'
     . ' ' . escapeshellarg($FANNIE_OP_DB)
     . ' ' . escapeshellarg($table)
     . ' > ' . escapeshellarg($tempfile)
@@ -68,6 +69,7 @@ $cmd_obfusc = 'mysqldump'
     . ' -p' . str_repeat('*', 8)
     . ' -h ' . escapeshellarg($host)
     . ' -P ' . escapeshellarg($port)
+    . ' --skip-triggers'
     . ' ' . escapeshellarg($FANNIE_OP_DB)
     . ' ' . escapeshellarg($table)
     . ' > ' . escapeshellarg($tempfile);
