@@ -362,6 +362,7 @@ HTML;
             <input type="hidden" name="batchID" id="batchID" >
             <input type="hidden" name="upc" value="$upc">
             <input type="hidden" name="curmo" value="$month">
+            <input type="hidden" name="cycle" value="$cycle">
         </form>
     </div>
     <div class="col-lg-4"></div>
