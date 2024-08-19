@@ -58,6 +58,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Compact12UpL
         $top = 22;
         $left = 6.0;
         foreach ($data as $item) {
+            $item = $this->getLikeCodeBatchName($this->source_id, $item);
             if ($count % 12 == 0) {
                 if ($count != 0) {
                     // draw tick marks again

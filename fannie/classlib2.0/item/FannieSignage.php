@@ -1316,5 +1316,51 @@ ORDER BY SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), sub.SubSectio
         return rand();
     }
 
+    public function getLikeCodeBatchName($source_id, $item)
+    {
+        $dbc = $this->getDB();
+
+        $query = "SELECT
+            u.likeCode,
+            u.upc,
+            CASE
+                WHEN t.datedSigns=0 AND t.typeDesc LIKE '%DISCO%' THEN 'Discontinued'
+                WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE '%DISCO%' THEN 'While supplies last'
+                ELSE b.startDate
+            END AS startDate,
+            CASE
+                WHEN t.datedSigns=0 AND t.typeDesc LIKE '%DISCO%' THEN 'Discontinued'
+                WHEN t.datedSigns=0 AND t.typeDesc NOT LIKE '%DISCO%' THEN 'While supplies last'
+                ELSE b.endDate
+            END AS endDate,
+            l.salePrice,
+            b.batchName
+        FROM upcLike AS u
+            LEFT JOIN batchList AS l ON l.upc=CONCAT('LC', u.likeCode)
+            LEFT JOIN batches AS b ON b.batchID=l.batchID
+            LEFT JOIN batchType AS t ON b.batchType=t.batchTypeID
+            INNER JOIN StoreBatchMap m ON m.batchID=b.batchID AND m.storeID=?
+        WHERE u.upc=?";
+
+        if ($source_id == 2) {
+            $query .= "AND b.startDate <= DATE(NOW()) AND b.endDate >= DATE(NOW())";
+        }
+        if ($source_id == 3) {
+            $query .= "AND b.startDate >= DATE(NOW()) AND b.endDate >= DATE(NOW())";
+        }
+
+        $lcSaleCheckP = $dbc->prepare($query);
+
+            if ($source_id == 2) {
+                $lcSaleCheckR = $dbc->execute($lcSaleCheckP, array($this->store, $item['upc']));
+                $lcSaleCheckW = $dbc->fetchRow($lcSaleCheckR);
+                if (isset($lcSaleCheckW['batchName'])) {
+                    $item['batchName'] = $lcSaleCheckW['batchName'];
+                }
+            }
+
+            return $item;
+    }
+
 }
 

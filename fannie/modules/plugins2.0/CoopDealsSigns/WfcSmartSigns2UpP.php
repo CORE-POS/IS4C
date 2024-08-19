@@ -47,6 +47,7 @@ class WfcSmartSigns2UpP extends \COREPOS\Fannie\API\item\signage\Signage2UpP
             $data[$k]['size'] = null;
         }
         foreach ($data as $item) {
+            $item = $this->getLikeCodeBatchName($this->source_id, $item);
             if ($count % 2 == 0) {
                 $pdf->AddPage();
                 $sign = 0;

@@ -45,6 +45,7 @@ class WfcSmartSigns16UpP extends \COREPOS\Fannie\API\item\signage\Compact16UpP
         $pdf->SetDrawColor(0, 0, 0);
         $pdf->SetLineWidth(0.2);
         foreach ($data as $item) {
+            $item = $this->getLikeCodeBatchName($this->source_id, $item);
             if ($count % 16 == 0) {
                 $pdf->AddPage();
                 // draw tick marks for cutting

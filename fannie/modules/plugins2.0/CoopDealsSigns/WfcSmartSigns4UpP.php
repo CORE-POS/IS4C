@@ -49,7 +49,7 @@ class WfcSmartSigns4UpP extends \COREPOS\Fannie\API\item\signage\Compact4UpP
         $top = 23;
         $left = 6;
         foreach ($data as $item) {
-
+            $item = $this->getLikeCodeBatchName($this->source_id, $item);
             if ($count % 4 == 0) {
                 if ($count != 0) {
                     // draw tick marks again
