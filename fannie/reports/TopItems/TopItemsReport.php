@@ -84,7 +84,7 @@ class TopItemsReport extends FannieReportPage
         return $data;
     }
 
-    private function rowToRecord($row, $dbc, $daysP)
+    private function rowToRecord($row)
     {
 
         return array(
