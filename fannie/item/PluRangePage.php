@@ -126,7 +126,7 @@ class PluRangePage extends FannieRESTfulPage
 
             $range_start = $this->findOpenRange($dbc, $min, $max);
             if ($range_start === false) {
-                throw new Exception('No range found');
+                $range_start = $this->findReuseBulkPlu();
             } 
 
             $this->start_plu = $range_start;
@@ -135,6 +135,41 @@ class PluRangePage extends FannieRESTfulPage
             echo $ex->getMessage();
             return false;
         }
+    }
+
+    private function findReuseBulkPlu()
+    {
+        $dbc = FannieDB::get($this->config->get('OP_DB'));
+
+        $data = array();
+        $prep = $dbc->prepare("
+            SELECT p.upc, p.brand, p.description,
+            DATE(p.last_sold) AS last_sold_hil,
+            DATE(p2.last_sold) AS last_sold_den,
+            DATE(p.created) AS created,
+            DATE(p.modified) AS modified
+            FROM products AS p
+                    INNER JOIN products AS p2 ON p2.upc=p.upc AND p2.store_id=2
+                LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
+            WHERE p.upc > 99
+                    AND p.store_id=1
+                AND p.upc < 1000
+                AND m.super_name = 'BULK'
+                AND DATEDIFF(NOW(), p.last_sold) > 182
+                AND DATEDIFF(NOW(), p2.last_sold) > 182
+                AND DATEDIFF(NOW(), p.modified) > 90
+                AND p.last_sold IS NOT NULL
+                AND p2.last_sold IS NOT NULL
+            ORDER BY p.last_sold, p2.last_sold, p.modified
+            LIMIT 1
+        ");
+        $res = $dbc->execute($prep);
+        $table = "";
+        while ($row = $dbc->fetchRow($res)) {
+            $upc = $row['upc'];
+        }
+
+        return $upc;
     }
 
     private function findOpenRange($dbc, $min, $max) 
@@ -183,27 +218,39 @@ class PluRangePage extends FannieRESTfulPage
     public function get_length_number_view()
     {
         global $FANNIE_OP_DB;
-        $ret = '<div class="well">Open range found starting at ' . $this->start_plu . '</div>'; 
-        $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
-        $ret .= '<input type="hidden" name="start" value="' . $this->start_plu . '" />';
-        $ret .= '<input type="hidden" name="number" value="' . $this->number . '" />';
-        $ret .= '<div class="form-group">
-            <label>Placeholder Desc.</label>
-            <input type="text" name="description" class="form-control" required />
-            </div>';
-        $ret .= '<div class="form-group">
-            <label>Department</label>
-            <select name="department" class="form-control">';
-        $depts = new DepartmentsModel(FannieDB::get($FANNIE_OP_DB));
-        foreach ($depts->find('dept_no') as $dept) {
-            $ret .= sprintf('<option value="%d">%d %s</option>',
-                                $dept->dept_no(),
-                                $dept->dept_no(),
-                                $dept->dept_name());
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $prodP = $dbc->prepare("SELECT upc FROM products WHERE upc = ?");
+        $prodR = $dbc->execute($prodP, array($this->start_plu));
+        $rows = $dbc->numRows($prodR);
+        
+        if ($rows > 0) {
+            $link = '<a class="upc" href="ItemEditorPage.php?searchupc='.$this->start_plu.
+                '&ntype=UPC&searchBtn=" target="_blank" style="color: purple; font-weight: bold">'.$this->start_plu.'</a>';
+            $ret = '<div class="well">No open range found.<br/>Longest abandoned PLU to reuse: ' . $link . '</div>'; 
+        } else {
+            $ret = '<div class="well">Open range found starting at ' . $this->start_plu . '</div>'; 
+            $ret .= '<form action="' . filter_input(INPUT_SERVER, 'PHP_SELF') . '" method="post">';
+            $ret .= '<input type="hidden" name="start" value="' . $this->start_plu . '" />';
+            $ret .= '<input type="hidden" name="number" value="' . $this->number . '" />';
+            $ret .= '<div class="form-group">
+                <label>Placeholder Desc.</label>
+                <input type="text" name="description" class="form-control" required />
+                </div>';
+            $ret .= '<div class="form-group">
+                <label>Department</label>
+                <select name="department" class="form-control">';
+            $depts = new DepartmentsModel(FannieDB::get($FANNIE_OP_DB));
+            foreach ($depts->find('dept_no') as $dept) {
+                $ret .= sprintf('<option value="%d">%d %s</option>',
+                                    $dept->dept_no(),
+                                    $dept->dept_no(),
+                                    $dept->dept_name());
+            }
+            $ret .= '</select></div>';
+            $ret .= '<p><button type="submit" class="btn btn-default">Reserve PLUs</button></p>';
+            $ret .= '</form>';
         }
-        $ret .= '</select></div>';
-        $ret .= '<p><button type="submit" class="btn btn-default">Reserve PLUs</button></p>';
-        $ret .= '</form>';
 
         return $ret;
     }
