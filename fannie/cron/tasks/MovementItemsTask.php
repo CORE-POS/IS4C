@@ -53,7 +53,7 @@ class MovementItemsTask extends FannieTask
                 SELECT upc
                 FROM products AS p 
                     LEFT JOIN MasterSuperDepts AS m ON p.department=m.dept_ID
-                WHERE m.superID IN (1, 4, 5, 8, 9, 13, 17, 18) 
+                WHERE m.superID IN (1, 4, 5, 6, 8, 9, 13, 17, 18) 
                     AND upc NOT IN (SELECT upc FROM MovementTags WHERE storeID = ?)
                     AND p.store_id = ? 
                 GROUP by p.upc;
