@@ -406,6 +406,7 @@ HTML;
         $max = count($items) > 32 ? count($items) : 32;
         $ret = '';
         for ($i=0; $i<$max; $i++) {
+            $upc = $items[$i]['upc'];
             $brand = isset($items[$i]) ? $items[$i]['brand'] : '';
             $desc = isset($items[$i]) ? $items[$i]['description'] : '';
             $size = isset($items[$i]) ? $items[$i]['size'] : '';
@@ -416,7 +417,8 @@ HTML;
             $end = isset($items[$i]) ? $items[$i]['endDate'] : '';
             $ret .= <<<HTML
 <tr class="item-row">
-    <td><input type="text" name="brand[]" class="form-control input-sm input-brand" value="{$brand}" /></td>
+    <td><input type="hidden" name="upc[]" class="upc" value="{$upc}"/>
+        <input type="text" name="brand[]" class="form-control input-sm input-brand" value="{$brand}" /></td>
     <td style="min-width: 300px"><input type="text" name="description[]" class="form-control input-sm input-description" value="{$desc}" /></td>
     <td><input type="text" name="price[]" class="form-control input-sm input-price price-field" value="{$price}" /></td>
     <td><select name="scale[]" class="form-control input-sm input-scale">
