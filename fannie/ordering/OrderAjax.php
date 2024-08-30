@@ -48,7 +48,8 @@ class OrderAjax extends FannieRESTfulPage
             'post<id><store>',
             'post<id><close>',
             'post<id><testNotify>',
-            'post<id><nodupe>'
+            'post<id><nodupe>',
+            'post<upc><discounttype>',
         );
 
         return parent::preprocess();
@@ -57,6 +58,12 @@ class OrderAjax extends FannieRESTfulPage
     private function tdb()
     {
         $this->connection->selectDB($this->config->get('TRANS_DB'));
+        return $this->connection;
+    }
+
+    private function odb()
+    {
+        $this->connection->selectDB($this->config->get('OP_DB'));
         return $this->connection;
     }
 
@@ -267,6 +274,94 @@ class OrderAjax extends FannieRESTfulPage
         $dbc->execute($audit, array($this->id, FannieAuth::getUID(), date('Y-m-d H:i:s'), 'Changed Duplication', ($this->nodupe ? 'Off' : 'On'), $myStore));
 
         echo 'Done';
+
+        return false;
+    }
+
+    public function post_upc_discounttype_handler()
+    {
+        $discountType = FormLib::get('discounttype');
+        $isMember = FormLib::get('isMember');
+        $id = FormLib::get('orderid');
+        $srp = FormLib::get('srp');
+        $qty = FormLib::get('qty');
+        $upc = FormLib::get('upc');
+        $upc = BarcodeLib::padUPC($upc);
+        $newPrice;
+        $dbc = $this->tdb();
+
+        $discTypeP = $dbc->prepare('UPDATE PendingSpecialOrder SET discounttype=? WHERE order_id=? AND upc=?');
+        $discTypeR = $dbc->execute($discTypeP, array($discountType, $id, $upc));
+
+        if ($discountType == 1) {
+            $dbc = $this->odb();
+
+            $spP = $dbc->prepare("SELECT p.special_price, b.batchName
+                FROM products p
+                    LEFT JOIN batches b ON b.batchID=p.batchID
+                WHERE p.upc = ? LIMIT 1");
+            $spR = $dbc->execute($spP, array($upc));
+            $spW = $dbc->fetchRow($spR);
+            if (isset($spW['special_price'])) {
+                $batchName = $spW['batchName'];
+                $specialPrice = $spW['special_price'] * $qty;
+                $newPrice = $specialPrice;
+                if (strpos($batchName, 'Co-op Deals') !== false && strpos($batchName, 'TPR') == false && strpos($batchName, 'BOGO') == false) {
+                    // then item is Coop Deal, gets extra 10% 
+                    if ($isMember == 'PC') {
+                        $newPrice = $specialPrice * 0.9;
+                    }
+                } else if (strpos($batchName, 'Co-op Deals') !== false && strpos($batchName, 'TPR') == false && strpos($batchName, 'BOGO') == true) {
+                    $newPrice = $srp - (floor($qty/2) * ($srp / $qty));
+                }
+            } else {
+                $curSetP = $dbc->prepare("
+                    SELECT i.dealSet,
+                    b.batchName,
+                    SUBSTRING(b.batchName, LOCATE(i.dealSet, b.batchName)-2, 1) as CurCycle
+                      FROM batches b
+                    INNER JOIN CoopDealsItems i ON INSTR(b.batchName, i.dealSet)
+                    WHERE b.startDate <= DATE(NOW()) AND b.endDate >= DATE(NOW()) LIMIT 1
+                ");
+                $curSetR = $dbc->execute($curSetP);
+                $curSetW = $dbc->fetchRow($curSetR);
+                $curDealSet = $curSetW['dealSet'];
+                $curCycleChr = $curSetW['CurCycle'];
+
+                $cdiA = array($upc, $curDealSet);
+                $cdiP = $dbc->prepare("SELECT price, abtpr FROM CoopDealsItems WHERE upc = ? AND dealSet = ?");
+                $cdiR = $dbc->execute($cdiP, $cdiA);
+                $cdiW = $dbc->fetchRow($cdiR);
+                $abtpr = $cdiW['abtpr'];
+                $newPrice = $cdiW['price'] * $qty;
+                if (str_contains($abtpr, $curCycleChr)) {
+                    // then item is Coop Deal, gets extra 10% 
+                    if ($isMember == 'PC') {
+                        $newPrice = $newPrice * 0.9;
+                    }
+                }
+
+            }
+
+
+        } else {
+            if ($isMember == 'PC') {
+                $newPrice = $srp * 0.85;
+            } else {
+                $newPrice = $srp;
+            }
+        }
+        $newPrice = round($newPrice, 2, PHP_ROUND_HALF_UP);
+        $newPercent = (1 - ($newPrice / $srp)) * 100;
+        $newPercent = round($newPercent, 0);
+
+        $json = array(
+            'newPrice' => $newPrice,
+            'newPercent' => $newPercent,
+            'dealSet' => isset($curDealSet) ? $curDealSet : '',
+            'test' => isset($test) ? $test : '',
+        );
+        echo json_encode($json);
 
         return false;
     }

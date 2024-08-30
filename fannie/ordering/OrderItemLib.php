@@ -170,7 +170,7 @@ class OrderItemLib
                 LEFT JOIN vendors AS n ON p.default_vendor_id=n.vendorID
                 LEFT JOIN PriceRules AS r ON p.price_rule_id=r.priceRuleID
             WHERE v.sku LIKE ?
-                AND p.inUse=1
+                AND (p.inUse=1 OR p.discounttype=1)
         ');
         $prodR = $dbc->execute($prodP, array('%' . $sku));
         if ($prodR && $dbc->numRows($prodR) > 0) {

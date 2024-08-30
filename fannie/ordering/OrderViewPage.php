@@ -786,15 +786,70 @@ class OrderViewPage extends FannieRESTfulPage
             $item['discounttype'] = 0;
         }
 
+        $batch = false;
         if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $item['discounttype'] == 1 && $mempricing['isMember']) {
             $batchP = $this->connection->prepare("SELECT batchName FROM products as p
                 LEFT JOIN batches AS b ON p.batchID=b.batchID
             WHERE p.specialpricemethod <> 7
                 AND p.batchID > 0
                 AND p.upc=?");
+            $batch = $this->connection->getValue($batchP, array($item['upc']));
             if (strstr($batch, 'Co-op Deals A') || strstr($batch, 'Co-op Deals B')) {
                 $casePrice *= 0.9;
                 $unitPrice *= 0.9;
+            }
+        }
+
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $mempricing['isMember']) {
+            if ($batch == false) {
+                $isBOGO = false;
+                $batchP = $this->connection->prepare("SELECT batchName FROM products as p
+                    LEFT JOIN batches AS b ON p.batchID=b.batchID
+                WHERE  p.specialpricemethod = 7
+                    AND p.batchID > 0
+                    AND p.upc=?");
+                $isBOGO = $this->connection->getValue($batchP, array($item['upc']));
+                $isBOGO = (strstr($isBOGO, 'BOGO')) ? true : false;
+
+                // check CoopDealsItems for items that don't exist
+                $curSetP = $this->connection->prepare("SELECT i.dealSet,
+                    b.batchName,
+                    SUBSTRING(b.batchName, LOCATE(i.dealSet, b.batchName)-2, 1) as CurCycle
+                    FROM batches b
+                        INNER JOIN CoopDealsItems i ON INSTR(b.batchName, i.dealSet)
+                    WHERE b.startDate <= DATE(NOW()) AND b.endDate >= DATE(NOW()) LIMIT 1");
+                $curSetR = $this->connection->execute($curSetP);
+                $curSetW = $this->connection->fetchRow($curSetR);
+                $curDealSet = $curSetW['dealSet'];
+                $curCycleChr = $curSetW['CurCycle'];
+
+                $cdiA = array($item['upc'], $curDealSet);
+                $cdiP = $dbc->prepare("SELECT i.price, i.abtpr, v.units
+                    FROM CoopDealsItems i
+                        INNER JOIN vendorItems v ON v.upc=i.upc
+                    WHERE i.upc = ? AND i.dealSet = ?");
+                $cdiR = $dbc->execute($cdiP, $cdiA);
+                $cdiW = $dbc->fetchRow($cdiR);
+                $abtpr = $cdiW['abtpr'];
+                $units = $cdiW['units'];
+                $newPrice = $cdiW['price'];
+                if ($newPrice > 0 && str_contains($abtpr, $curCycleChr)) {
+                    // item is in Coop Deals for current cycle but does not exist in POS
+                    $casePrice = $newPrice * $units;
+                    $unitPrice = $units;
+                    $item['discounttype'] = 1;
+                    if (str_contains($abtpr, $curCycleChr)) {
+                        if ($isBOGO == false) {
+                            // item is Coop Deal, gets extra 10% 
+                            $casePrice *= 0.9;
+                            $unitPrice *= 0.9;
+                        }
+                    }
+                }
+            }
+            if ($isBOGO) {
+                $deal = floor($item['caseSize']/2) / $item['caseSize']; 
+                $casePrice = $casePrice * (1-$deal); 
             }
         }
 
@@ -1411,6 +1466,55 @@ HTML;
         if (FannieAuth::validateUserQuiet('ordering_edit')) {
             $this->addOnloadCommand('orderView.forceUPC(false);');
         }
+
+        $toggleDiscountType = <<<JAVASCRIPT
+$('.disc-percent').each(function() {
+    //if ($(this).text() != 'Never' && $('#isMember').val() == 'PC') {
+    if ($(this).text() != 'Never') {
+        $(this).css('cursor', 'pointer');
+    }
+});
+$('body').on('click', '.disc-percent', function() {
+    //if ($(this).text() != 'Never' && $('#isMember').val() == 'PC') {
+    if ($(this).text() != 'Never') {
+        let mainTarget = $(this);
+        let upc = $(this).attr('id').substring(11);
+        let srp = $(this).parent().parent().find('input.price-field[name="srp"]').val();
+        let act = $(this).parent().parent().find('input.price-field[name="actual"]').val();
+        let actTarget = $(this).parent().parent().find('input.price-field[name="actual"]');
+        let qty = $(this).parent().parent().find('input.price-field[name="qty"]').val();
+        let percent = 1 - (act / srp);
+        percent = parseFloat(percent);
+        percent = percent * 100;
+        percent = Math.round(percent);
+        let text = $(this).text();
+        let verb = (text.indexOf('Sale') == -1) ? "Sale" : '% Discount';
+        let discountType = (text.indexOf('Sale') == -1) ? 1 : 0;
+        let isMember = $('#isMember').val();
+        let c = confirm("Change from " + text + " to " + verb + "?");
+        if (c == true) {
+            let orderID = $('#orderID').val();
+            $.ajax({
+                url: 'OrderAjax.php',
+                type: 'post',
+                dataType: 'json',
+                data: 'upc='+upc+'&discounttype='+discountType+'&orderid='+orderID+'&srp='+srp+'&qty='+qty+'&isMember='+isMember,
+                success: function(resp) {
+                    actTarget.val(resp.newPrice).trigger('change');
+                    if (discountType == 0) {
+                        mainTarget.text(resp.newPercent + '%');
+                    }
+                },
+            }).done(function(resp){
+            });
+
+            let newverb = (text == 'Sale') ? percent+'%' : "Sale";
+            $(this).text(newverb);
+        }
+    }
+});
+JAVASCRIPT;
+        $this->addOnloadCommand("$toggleDiscountType");
 
         return $ret;
     }
