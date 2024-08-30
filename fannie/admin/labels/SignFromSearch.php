@@ -381,30 +381,40 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $ret .= '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="altViewCheckbox" id="altViewCheckbox" value="1" /> Show Extended Info </label>';
         }
 
-        $darkExtendOnly = '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="showPrice" value="1" checked />Show Price</label>';
+        $ShowPriceToggleHTML = '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="showPrice" value="1" checked />Show Price</label>';
+        $ShowBarcodeToggleHTML = '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="showBarcode" value="1" checked />Show Barcode</label>';
         $signmod = FormLib::get('signmod');
         if (FormLib::get('signmod') == 'Legacy:WFC Dark Extended 24UP') 
-            $ret .= $darkExtendOnly;
+            $ret .= $ShowPriceToggleHTML;
         if (FormLib::get('signmod') == 'Legacy:WFC MEAT 14UP') 
-            $ret .= $darkExtendOnly;
+            $ret .= $ShowPriceToggleHTML;
         if (FormLib::get('signmod') == 'Legacy:WFC New MEAT 14UP') 
-            $ret .= $darkExtendOnly;
+            $ret .= $ShowPriceToggleHTML;
         if (FormLib::get('signmod') == 'Legacy:WFC MEAT SN 14UP') 
-            $ret .= $darkExtendOnly;
+            $ret .= $ShowPriceToggleHTML;
         if (FormLib::get('signmod') == 'Legacy:WFC Dark ServiceCase 12UP') 
-            $ret .= $darkExtendOnly;
+            $ret .= $ShowPriceToggleHTML;
         if (FormLib::get('signmod') == 'Legacy:WFC Deli Narrow 24UP') 
-            $ret .= $darkExtendOnly;
+            $ret .= $ShowPriceToggleHTML;
         if (FormLib::get('signmod') == 'Legacy:WFC Deli Short 24UP') 
-            $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:New WFC Deli Regular') 
-            $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:New WFC Deli Narrow') 
-            $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:New WFC Deli Short') 
-            $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:New WFC Deli SquareTags') 
-            $ret .= $darkExtendOnly;
+            $ret .= $ShowPriceToggleHTML;
+        if (FormLib::get('signmod') == 'Legacy:New WFC Deli Regular')  {
+            $ret .= $ShowPriceToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'Legacy:New WFC Deli Narrow') {
+            $ret .= $ShowPriceToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'Legacy:New WFC Deli Short') {
+            $ret .= $ShowPriceToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'Legacy:New WFC Deli SquareTags') {
+            $ret .= $ShowPriceToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
         $ret .= '</div>';
         $ret .= '<hr />';
 

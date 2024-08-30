@@ -49,11 +49,6 @@ function New_WFC_Deli_SquareTags ($data,$offset=0)
     $pdf->SetFillColor(255, 255, 255);
     $pdf->SetTextColor(0, 0, 0);
 
-    //define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
-    //$pdf->AddFont('ArialMT', '', 'Arial.php');
-    //$pdf->AddFont('ArialMT', 'B', 'ArialBold.php');
-    //$pdf->SetFont('ArialMT','', 16);
-
     define('FPDF_FONTPATH', __DIR__. '/../../../modules/plugins2.0/CoopDealsSigns/noauto/fonts/');
     $pdf->AddFont('Gill', '', 'GillSansMTPro-Medium.php');
     $pdf->AddFont('Gill', 'B', 'GillSansMTPro-Heavy.php');
@@ -62,7 +57,7 @@ function New_WFC_Deli_SquareTags ($data,$offset=0)
     $width = 68;
     $height = 68;
     $left = 3;  
-    $top = 3;
+    $top = 5;
     $guide = 0.3;
 
     $x = $left+$guide; $y = $top+$guide;
@@ -72,13 +67,22 @@ function New_WFC_Deli_SquareTags ($data,$offset=0)
     $pdf->SetRightMargin($left);
     $pdf->SetAutoPageBreak(False);
 
+    $mirrorData = arrayMirrorRowsSquareTags($data, 4);
+
     $i = 0;
+    $page = 0;
     foreach($data as $k => $row){
         if ($i % 12 == 0 && $i != 0) {
+
+            $start = 12 * $page;
+            $tagData = array_slice($mirrorData, $start, 12);
+            prepNewDeliSquareMirrorTags($start, $tagData, $pdf, $width, $height, $left, $top, $guide, $dbc);
+
             $pdf->AddPage('L');
             $x = $left;
             $y = $top;
             $i = 0;
+            $page += 1;
         }
         if ($i == 0) {
             $pdf = generateSquareTagsTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
@@ -92,6 +96,17 @@ function New_WFC_Deli_SquareTags ($data,$offset=0)
         $i++;
     }
 
+    $start = 12 * $page;
+    $tagData = array_slice($mirrorData, $start, 12);
+    $end = count($mirrorData);
+    prepNewDeliSquareMirrorTags($start, $tagData, $pdf, $width, $height, $left, $top, $guide, $dbc);
+
+
+    $pdf = $pdf->Output();
+}
+
+function prepNewDeliSquareMirrorTags($start, $data, $pdf, $width, $height, $left, $top, $guide, $dbc)
+{
     /*
         Print additional mirror images for back side of tags
     */
@@ -99,17 +114,14 @@ function New_WFC_Deli_SquareTags ($data,$offset=0)
     $x = $left+$guide; $y = $top+$guide;
     if (count($data) % 4 != 0) {
         for ($j=count($data) % 4; $j<4; $j++) {
-            $data[] = '';
+            $q = count($data) % 4;
+            array_splice($data, -$q, 0, array(''));
         }
     }
-    $data = arrayMirrorRowsSquareTags($data, 4);
     $pdf->AddPage('L');
     foreach($data as $k => $row){
         if ($i % 12 == 0 && $i != 0) {
-            $pdf->AddPage('L');
-            $x = $left;
-            $y = $top;
-            $i = 0;
+            return false;
         }
         if ($i == 0) {
             $pdf = generateMirrorTagSquareTags12($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
@@ -122,8 +134,6 @@ function New_WFC_Deli_SquareTags ($data,$offset=0)
         $pdf = generateMirrorTagSquareTags12($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         $i++;
     }
-
-    $pdf = $pdf->Output();
 }
 
 function generateMirrorTagSquareTags12($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
@@ -263,8 +273,8 @@ function generateSquareTagsTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
     $scaleP = $dbc->prepare("SELECT * FROM scaleItems WHERE plu = ?"); 
     $scaleR = $dbc->execute($scaleP, $args);
     $scaleW = $dbc->fetchRow($scaleR);
-    $randoWeight = ($scaleW['bycount'] == 0) ? true : false;
-    $lb = ($randoWeight) ? '/lb' : '';
+    $randoWeight = ($scaleW['weight'] == 0) ? true : false;
+    $lb = ($randoWeight && substr($upc, 0, 3) == '002') ? '/lb' : '';
 
     $updateUpcs = FormLib::get('update_upc');
     $manualDescs = FormLib::get('update_desc');
@@ -379,10 +389,10 @@ function generateSquareTagsTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc
         $pdf->Cell(1, $height, '', 0, 1, 'C', true);
     }
     // inset top border
-    if ($y < 10) {
-        $pdf->SetXY($x, $y);
-        $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
-    }
+    //if ($y < 10) {
+    //    $pdf->SetXY($x, $y);
+    //    $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
+    //}
 
     $pdf->SetFillColor(255, 255, 255);
 

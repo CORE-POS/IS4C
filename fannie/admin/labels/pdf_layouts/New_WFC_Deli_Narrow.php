@@ -22,7 +22,7 @@ class New_WFC_Deli_Narrow_PDF extends FpdfWithBarcode
 
 }
 
-function New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0)
+function New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0,$showBarcode=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
     $pdf = new New_WFC_Deli_Narrow_PDF('L','mm','Letter');
@@ -37,8 +37,8 @@ function New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0)
 
     $width = 68 * 0.75;
     $height = 34;
-    $left = 3;  
-    $top = 3;
+    $left = 12;  
+    $top = 5;
     $guide = 0.3;
 
     $x = $left+$guide; $y = $top+$guide;
@@ -48,45 +48,60 @@ function New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0)
     $pdf->SetRightMargin($left);
     $pdf->SetAutoPageBreak(False);
 
+    $mirrorData = arrayMirrorRowsNewDeliNarrow_24UP($data, 5);
+
     $i = 0;
+    $page = 0;
     foreach($data as $k => $row){
         $upc = $row['upc'];
         if ($i % 30 == 0 && $i != 0) {
+
+            $start = 30 * $page;
+            $tagData = array_slice($mirrorData, $start, 30);
+            prepNewDeliNarrowMirrorTags($start, $tagData, $pdf, $width, $height, $left, $top, $guide, $dbc);
+
             $pdf->AddPage('L');
             $x = $left;
             $y = $top;
             $i = 0;
+            $page += 1;
         }
         if ($i == 0) {
-            $pdf = generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
+            $pdf = generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode, $offset);
         } else if ($i % 5 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
+        $pdf = generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode, $offset);
         $i++;
     }
 
+    $start = 30 * $page;
+    $tagData = array_slice($mirrorData, $start, 30);
+    $end = count($mirrorData);
+    prepNewDeliNarrowMirrorTags($start, $tagData, $pdf, $width, $height, $left, $top, $guide, $dbc);
+
+    $pdf = $pdf->Output();
+}
+
+function prepNewDeliNarrowMirrorTags($start, $data, $pdf, $width, $height, $left, $top, $guide, $dbc)
+{
     /*
         Print additional mirror images for back side of tags
     */
     $i = 0;
     $x = $left+$guide; $y = $top+$guide;
-    if (count($data) % 4 != 0) {
-        for ($j=count($data) % 4; $j<4; $j++) {
-            $data[] = '';
+    if (count($data) % 5 != 0) {
+        for ($j=count($data) % 5; $j<5; $j++) {
+            $q = count($data) % 5;
+            array_splice($data, -$q, 0, array(''));
         }
     }
-    $data = arrayMirrorRowsNewDeliNarrow_24UP($data, 4);
     $pdf->AddPage('L');
     foreach($data as $k => $row){
         if ($i % 30 == 0 && $i != 0) {
-            $pdf->AddPage('L');
-            $x = $left;
-            $y = $top;
-            $i = 0;
         }
         if ($i == 0) {
             $pdf = generateNewDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
@@ -99,10 +114,7 @@ function New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0)
         $pdf = generateNewDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         $i++;
     }
-
-    $pdf = $pdf->Output();
 }
-
 
 function generateNewDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc)
 {
@@ -139,20 +151,20 @@ function generateNewDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $
     /*
         Add UPC Text
     */
-    $pdf->SetXY($x,$y);
+    $pdf->SetXY($x+3,$y+3);
     $pdf->Cell(15, 8, $upc, 0, 1, 'L', true); 
 
     /*
         Add Date Text 
     */
-    $pdf->SetXY($x+38,$y);
+    $pdf->SetXY($x+35,$y+3);
     $pdf->Cell(10, 4, $today, 0, 1, 'R', true); 
 
     /*
         Add PAR Text 
     */
     if ($storeID != 0) {
-        $pdf->SetXY($x+58,$y+4);
+        $pdf->SetXY($x+35,$y+7);
         $pdf->Cell(10, 4, 'PAR '.$par, 0, 1, 'R', true); 
     }
 
@@ -167,20 +179,20 @@ function generateNewDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $
     /*
         Add Vendor SKU 
     */
-    $pdf->SetXY($x,$y+23);
+    $pdf->SetXY($x+3,$y+23);
     $pdf->Cell($width, 5, "SKU ".$sku, 0, 1, 'L', true); 
 
     /*
         Add Vendor Text
     */
-    $pdf->SetXY($x,$y+27);
+    $pdf->SetXY($x+3,$y+27);
     $pdf->Cell($width, 5, $vendor, 0, 1, 'L', true); 
 
     /*
         Add Size Text
     */
     if ($size > 0) {
-        $pdf->SetXY($x+32,$y+27);
+        $pdf->SetXY($x+29,$y+27);
         $pdf->Cell('15', 5, $size, 0, 1, 'R', true); 
     }
 
@@ -209,7 +221,7 @@ function generateNewDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $
 
 }
 
-function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset)
+function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode, $offset)
 {
     $upc = $row['upc'];
     $desc = $row['description'];
@@ -234,8 +246,8 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
     $scaleP = $dbc->prepare("SELECT * FROM scaleItems WHERE plu = ?"); 
     $scaleR = $dbc->execute($scaleP, $args);
     $scaleW = $dbc->fetchRow($scaleR);
-    $randoWeight = ($scaleW['bycount'] == 0) ? true : false;
-    $lb = ($randoWeight) ? '/lb' : '';
+    $randoWeight = ($scaleW['weight'] == 0) ? true : false;
+    $lb = ($randoWeight && substr($upc, 0, 3) == '002') ? '/lb' : '';
 
     $MdescKey = array_search($upc, $updateUpcs);
     $Mdesc = $manualDescs[$MdescKey];
@@ -305,15 +317,17 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
         Add UPC Barcode 
     */
 
-    /* UPC / PLU Barcode */
-    $pdf->SetFillColor(0,0,0);
-    //$pdf->EAN13($x+42, $y-1, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
-    $pdf->UPC_A($x+1, $y-1, $upc+"0", 5, 0.5);  //generate barcode and place on label
-    $pdf->SetFillColor(255,255,255);
+    if ($showBarcode == 1 )  {
+        /* UPC / PLU Barcode */
+        $pdf->SetFillColor(0,0,0);
+        //$pdf->EAN13($x+42, $y-1, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
+        $pdf->UPC_A($x+1, $y-1, $upc+"0", 5, 0.5);  //generate barcode and place on label
+        $pdf->SetFillColor(255,255,255);
 
-    // cover up 2
-    $pdf->SetFillColor(255,255,255);
-    $pdf->Rect($x+1, $y-2, 50, 3, 'F');
+        // cover up 2
+        $pdf->SetFillColor(255,255,255);
+        $pdf->Rect($x+1, $y-2, 50, 3, 'F');
+    }
 
 
     /*
@@ -359,11 +373,13 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
         Add dollar sign using Write() becaus Cell() 
         will cover Local & Vegan bugs with white background 
     */
-    $pdf->SetFont('Gill','B', 13);  //Set the font 
-    $mod = 0;
-    $mod += (4 - strlen($price)) * 1;
-    $pdf->SetXY($x+14.5+$mod,$y+26);
-    $pdf->Write(5, "$", ''); 
+    if ($showPrice == 1) {
+        $pdf->SetFont('Gill','B', 13);  //Set the font 
+        $mod = 0;
+        $mod += (4 - strlen($price)) * 1;
+        $pdf->SetXY($x+14.5+$mod,$y+26);
+        $pdf->Write(5, "$", ''); 
+    }
 
     /*
         Add /lb String
@@ -393,21 +409,22 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
     $pdf->SetXY($x, $y+$height); 
     $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
 
-    // inset left-hand border
-    if ($x < 10) {
-        $pdf->SetXY($x, $y);
-        $pdf->Cell(1, $height+1, '', 0, 1, 'C', true);
-    }
-    // inset right-hand border
-    if ($x > 175) {
-        $pdf->SetXY($x+$width-1.5, $y);
-        $pdf->Cell(1, $height, '', 0, 1, 'C', true);
-    }
-    // inset top border
-    if ($y < 10) {
-        $pdf->SetXY($x, $y);
-        $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
-    }
+    // not sure these are necessary after moving top and left
+    //// inset left-hand border
+    //if ($x < 10) {
+    //    $pdf->SetXY($x, $y);
+    //    $pdf->Cell(1, $height+1, '', 0, 1, 'C', true);
+    //}
+    //// inset right-hand border
+    //if ($x > 175) {
+    //    $pdf->SetXY($x+$width-1.5, $y);
+    //    $pdf->Cell(1, $height, '', 0, 1, 'C', true);
+    //}
+    //// inset top border
+    //if ($y < 10) {
+    //    $pdf->SetXY($x, $y);
+    //    $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
+    //}
 
     $pdf->SetFillColor(255, 255, 255);
 

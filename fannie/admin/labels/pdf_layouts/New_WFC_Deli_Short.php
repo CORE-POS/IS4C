@@ -18,7 +18,7 @@ class New_WFC_Deli_Short_PDF extends FpdfWithBarcode {
     }
 }
 
-function New_WFC_Deli_Short($data,$offset=0,$showPrice=0)
+function New_WFC_Deli_Short($data,$offset=0,$showPrice=0,$showBarcode=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
     $pdf = new New_WFC_Deli_Short_PDF('L','mm','Letter');
@@ -34,7 +34,7 @@ function New_WFC_Deli_Short($data,$offset=0,$showPrice=0)
     $width = 68;
     $height = 34 - 5;
     $left = 3;  
-    $top = 3;
+    $top = 5;
     $guide = 0.3;
 
     $x = $left+$guide; $y = $top+$guide;
@@ -44,59 +44,70 @@ function New_WFC_Deli_Short($data,$offset=0,$showPrice=0)
     $pdf->SetRightMargin($left);
     $pdf->SetAutoPageBreak(False);
 
+    $mirrorData = arrayMirrorRowsNewDeliShort_24UP($data, 4);
+
     $i = 0;
     foreach($data as $k => $row){
         $upc = $row['upc'];
         if ($i % 24 == 0 && $i != 0) {
+
+            $start = 24 * $page;
+            $tagData = array_slice($mirrorData, $start, 24);
+            prepNewDeliShortMirrorTags($start, $tagData, $pdf, $width, $height, $left, $top, $guide, $dbc);
+
             $pdf->AddPage('L');
             $x = $left;
             $y = $top;
             $i = 0;
+            $page += 1;
         }
         if ($i == 0) {
-            $pdf = generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
+            $pdf = generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode, $offset);
         } else if ($i % 4 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide+5;
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
+        $pdf = generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode,  $offset);
         $i++;
     }
 
-    /*
-        Print additional mirror images for back side of tags
-    */
+    $start = 24 * $page;
+    $tagData = array_slice($mirrorData, $start, 24);
+    $end = count($mirrorData);
+    prepNewDeliShortMirrorTags($start, $tagData, $pdf, $width, $height, $left, $top, $guide, $dbc);
+
+    $pdf = $pdf->Output();
+}
+
+
+function prepNewDeliShortMirrorTags($start, $data, $pdf, $width, $height, $left, $top, $guide, $dbc)
+{
     $i = 0;
     $x = $left+$guide; $y = $top+$guide;
     if (count($data) % 4 != 0) {
         for ($j=count($data) % 4; $j<4; $j++) {
-            $data[] = '';
+            $q = count($data) % 4;
+            array_splice($data, -$q, 0, array(''));
         }
     }
-    $data = arrayMirrorRowsNewDeliShort_24UP($data, 4);
     $pdf->AddPage('L');
     foreach($data as $k => $row){
         if ($i % 24 == 0 && $i != 0) {
-            $pdf->AddPage('L');
-            $x = $left;
-            $y = $top;
-            $i = 0;
+            return false;
         }
         if ($i == 0) {
             $pdf = generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         } else if ($i % 4 == 0 && $i != 0) {
             $x = $left+$guide;
-            $y += $height+$guide;
+            $y += $height+$guide+5;
         } else {
             $x += $width+$guide;
         }
         $pdf = generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc);
         $i++;
     }
-
-    $pdf = $pdf->Output();
 }
 
 
@@ -135,20 +146,20 @@ function generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $r
     /*
         Add UPC Text
     */
-    $pdf->SetXY($x,$y+13);
+    $pdf->SetXY($x+3,$y+13);
     $pdf->Cell(15, 8, $upc, 0, 1, 'L', true); 
 
     /*
         Add Date Text 
     */
-    $pdf->SetXY($x+58,$y);
+    $pdf->SetXY($x+55,$y+12);
     $pdf->Cell(10, 4, $today, 0, 1, 'R', true); 
 
     /*
         Add PAR Text 
     */
     if ($storeID != 0) {
-        $pdf->SetXY($x+58,$y+4);
+        $pdf->SetXY($x+55,$y+7);
         $pdf->Cell(10, 4, 'PAR '.$par, 0, 1, 'R', true); 
     }
 
@@ -156,27 +167,27 @@ function generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $r
         Add Brand & Description Text
     */
     $pdf->SetXY($x,$y+3);
-    $pdf->Cell($width, 5, $brand, 0, 1, 'C', true); 
+    $pdf->Cell($width, 2, $brand, 0, 1, 'C', true); 
     $pdf->SetXY($x,$y+9);
-    $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
+    $pdf->Cell($width, 2, $desc, 0, 1, 'C', true); 
 
     /*
         Add Vendor SKU 
     */
-    $pdf->SetXY($x,$y+19);
+    $pdf->SetXY($x+3,$y+19);
     $pdf->Cell($width, 5, "SKU ".$sku, 0, 1, 'L', true); 
 
     /*
         Add Vendor Text
     */
-    $pdf->SetXY($x,$y+23);
+    $pdf->SetXY($x+3,$y+23);
     $pdf->Cell($width, 5, $vendor, 0, 1, 'L', true); 
 
     /*
         Add Size Text
     */
     if ($size > 0) {
-        $pdf->SetXY($x+52,$y+23);
+        $pdf->SetXY($x+49,$y+23);
         $pdf->Cell('15', 5, $size, 0, 1, 'R', true); 
     }
 
@@ -205,7 +216,7 @@ function generateNewDeliShortMirrorTag($x, $y, $guide, $width, $height, $pdf, $r
 
 }
 
-function generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset)
+function generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode,  $offset)
 {
     $upc = $row['upc'];
     $desc = $row['description'];
@@ -230,8 +241,8 @@ function generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $ro
     $scaleP = $dbc->prepare("SELECT * FROM scaleItems WHERE plu = ?"); 
     $scaleR = $dbc->execute($scaleP, $args);
     $scaleW = $dbc->fetchRow($scaleR);
-    $randoWeight = ($scaleW['bycount'] == 0) ? true : false;
-    $lb = ($randoWeight) ? '/lb' : '';
+    $randoWeight = ($scaleW['weight'] == 0) ? true : false;
+    $lb = ($randoWeight && substr($upc, 0, 3) == '002') ? '/lb' : '';
 
     $MdescKey = array_search($upc, $updateUpcs);
     $Mdesc = $manualDescs[$MdescKey];
@@ -307,15 +318,17 @@ function generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $ro
         Add UPC Barcode 
     */
 
-    /* UPC / PLU Barcode */
-    $pdf->SetFillColor(0,0,0);
-    //$pdf->EAN13($x+42, $y-1, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
-    $pdf->UPC_A($x+12, $y-2.5, $upc+"0", 5, 0.5);  //generate barcode and place on label
-    $pdf->SetFillColor(255,255,255);
+    if ($showBarcode == 1) {
+        /* UPC / PLU Barcode */
+        $pdf->SetFillColor(0,0,0);
+        //$pdf->EAN13($x+42, $y-1, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
+        $pdf->UPC_A($x+12, $y-2.5, $upc+"0", 5, 0.5);  //generate barcode and place on label
+        $pdf->SetFillColor(255,255,255);
 
-    // cover up 2
-    $pdf->SetFillColor(255,255,255);
-    $pdf->Rect($x+12, $y-3.5, 50, 3, 'F');
+        // cover up 2
+        $pdf->SetFillColor(255,255,255);
+        $pdf->Rect($x+12, $y-3.5, 50, 3, 'F');
+    }
 
 
     /*
@@ -378,10 +391,10 @@ function generateNewDeliShort_24UPTag($x, $y, $guide, $width, $height, $pdf, $ro
         $pdf->Cell(1, $height, '', 0, 1, 'C', true);
     }
     // inset top border
-    if ($y < 10) {
-        $pdf->SetXY($x, $y);
-        $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
-    }
+    //if ($y < 10) {
+    //    $pdf->SetXY($x, $y);
+    //    $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
+    //}
 
     $pdf->SetFillColor(255, 255, 255);
 
