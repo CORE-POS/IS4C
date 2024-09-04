@@ -1483,8 +1483,9 @@ HTML;
             }
         }
         $ret .= "</table>";
+        $rows = substr_count($model->notes(), "\n") + 4;
         $ret .= "<input type=hidden id=currentBatchID value=$id />";
-        $ret .= '<label>Notes</label><textarea name="batchNotes" id="batchNotes" class="form-control" rows="4"
+        $ret .= '<label>Notes</label><textarea name="batchNotes" id="batchNotes" class="form-control" rows="'.$rows.'"
             onchange="batchEdit.saveNotes(' . $id . ');" onkeyup="batchEdit.noteTyped(' . $id . ');">'
             . $model->notes() . '</textarea>';
         if ($dbc->numRows($fetchR) > 0) {
