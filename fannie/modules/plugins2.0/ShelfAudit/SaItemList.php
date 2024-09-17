@@ -82,6 +82,7 @@ class SaItemList extends SaHandheldPage
         $uid = FannieAuth::getUID($this->current_user);
         $this->section = FormLib::get('section', 1);
         $this->addRoute('get<dateID>');
+        $this->addRoute('post<clearitem>');
 
         if (FormLib::get('clear') === '1') {
             $set = FormLib::get('set', false);
@@ -106,6 +107,34 @@ class SaItemList extends SaHandheldPage
         return parent::preprocess();
     } 
 
+    public function post_clearitem_handler()
+    {
+        $dbc = $this->connection;
+        $settings = $this->config->get('PLUGIN_SETTINGS');
+        $uid = FannieAuth::getUID($this->current_user);
+        $set = FormLib::get('set', 1);
+        $upc = FormLib::get('upc', false);
+        $table = $settings['ShelfAuditDB'] . $dbc->sep() . 'SaList';
+        $query = 'UPDATE ' . $table . '
+            SET clear=1
+            WHERE uid=?
+                AND upc=?
+                AND section=?';
+        $args = array($uid, $upc, $set);
+        $prep = $dbc->prepare($query);
+        $dbc->execute($prep, $args);
+
+        $query = 'SELECT upc, section, clear FROM '.$table.'
+            WHERE uid=? AND upc=? AND section=? AND clear = 0';
+        $args = array($uid, $upc, $set);
+        $prep = $dbc->prepare($query);
+        $res = $dbc->execute($prep, $args);
+        $row = $dbc->fetchRow($res);
+
+        echo $dbc->error();
+        return false;
+    }
+
     protected function get_id_handler()
     {
         $dbc = $this->connection;
@@ -113,6 +142,8 @@ class SaItemList extends SaHandheldPage
         $uid = FannieAuth::getUID($this->current_user);
         if ($this->id !== '') {
             $upc = BarcodeLib::padUPC($this->id);
+            $fp = fopen('/tmp/wtf.log','a');
+            fwrite($fp, $upc . "\n");
             if (substr($upc, 0, 3) == '002') {
                 $upc = substr($upc, 0, 7) . '000000';
             }
@@ -275,7 +306,7 @@ HTML;
             </a>
             </p>';
 
-        $this->addScript('js/handheld.js');
+        $this->addScript('js/handheld.js?cache=false');
         return ob_get_clean();
     }
 
@@ -333,6 +364,7 @@ HTML;
                     <th class="hidden-xs">Brand</th>
                     <th>Description</th>
                     <th class="hidden-xs">Size</th>
+                    <th class="hidden-xs"> </th>
                 </tr>';
             $upcs = array();
             while ($row = $this->connection->fetchRow($res)) {
@@ -348,6 +380,8 @@ HTML;
                     <td class="hidden-xs">%s</td>
                     <td>%s</td>
                     <td class="hidden-xs">%s</td>
+                    <td><span class="glyphicon glyphicon-trash btn btn-xs btn-danger" title="Delete this item" style="cursor: pointer;"
+                        onclick="handheld.clearItem(this); return false;"></span></td>
                     </tr>',
                     $row['upc'], $row['upc'],
                     $date,
