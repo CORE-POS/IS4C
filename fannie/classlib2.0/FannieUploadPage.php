@@ -588,8 +588,10 @@ class FannieUploadPage extends \FanniePage
         $ret .= sprintf('<form action="%s" method="post">',$_SERVER['PHP_SELF']);
         $ret .= $this->preview_content();
         if ($this->themed) {
+            $ret .= '<div class="table-responsive">';
             $ret .= '<table class="table">';
         } else {
+            $ret .= '<div class="table-responsive">';
             $ret .= '<table cellpadding="4" cellspacing="0" border="1">';
         }
 
@@ -639,6 +641,7 @@ class FannieUploadPage extends \FanniePage
         }
         $ret .= '</tr>';
         $ret .= $table . '</table>';
+        $ret .= '</div>';
         $ret .= sprintf('<input type="hidden" name="upload_file_name" value="%s" />',
                 $this->upload_file_name);
         $ret .= sprintf('<input type="hidden" name="original_file_name" value="%s" />',
