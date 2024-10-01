@@ -41,8 +41,6 @@ CSS;
         }
 
         $sales = $this->salesTable($store, $ts);
-        $greens = $this->greensTable($store);
-        $preps = $this->prepsTable($store);
         $stock = $this->stockFirst($store);
         $sale = $this->onSale($store);
         $today = date('l, F jS');
@@ -76,10 +74,18 @@ CSS;
 
         $pdf->SetXY(5, 85);
         $pdf->Cell(120, 7, 'On Shift Today / Samples', 1, 1, 'C');
-        for ($i=0; $i<8; $i++) {
-            $pdf->SetX(5);
-            $pdf->Cell(120, 7, '', 1, 1, 'C');
-        }
+        $pdf->SetX(5);
+        $pdf->Cell(120, 130, '', 1, 1, 'C');
+
+        $pdf->SetX(5);
+        $pdf->SetFont('Arial', 'B', 9);
+        $pdf->Cell(120, 7, 'Check Floral Plants:', 1, 0, 'L');
+        $pdf->SetX(40);
+        $pdf->SetFont('Arial', '', 9);
+        $pdf->Cell(12, 7, 'am', 0, 0);
+        $pdf->Cell(12, 7, 'pm', 0, 0);
+
+        $pdf->Ln();
         $pdf->SetX(5);
         $pdf->SetFont('Arial', 'B', 9);
         $pdf->Cell(120, 7, 'Front and Face:', 1, 0, 'L');
@@ -98,25 +104,6 @@ CSS;
         $pdf->Cell(12, 8, '_________', 0, 0);
         $pdf->Ln();
 
-        $preps = DataConvert::htmlToArray($preps);
-        $pdf->SetXY(5, 164);
-        foreach ($preps as $row) {
-            $pdf->SetX(5);
-            if (!empty($row[0])) {
-                $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
-                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 1, 'L');
-            }
-        }
-
-        $greens = DataConvert::htmlToArray($greens);
-        $pdf->SetXY(83, 164);
-        foreach ($greens as $row) {
-            $pdf->SetX(83);
-            if (!empty($row[0])) {
-                $pdf->Cell(50, 7, str_replace('bold', '', $row[0]), 1, 0, 'L');
-                $pdf->Cell(13, 7, str_replace('bold', '', $row[1]), 1, 1, 'L');
-            }
-        }
 
         $stock = str_replace('&', '&amp;', $stock);
         $stock = DataConvert::htmlToArray($stock);
@@ -195,8 +182,7 @@ CSS;
         }
 
         $sales = $this->salesTable($store, $ts);
-        $greens = $this->greensTable($store);
-        $preps = $this->prepsTable($store);
+        $greens = '';
         $stock = $this->stockFirst($store);
         $sale = $this->onSale($store);
         $today = date('l, F jS');
@@ -224,10 +210,15 @@ CSS;
         <div class="row=">
             <table class="table table-bordered">
                 <tr><th style="text-align: center;" align="center">On Shift Today / Samples</th></tr>
-                <tr><td>&nbsp;</td></tr>
-                <tr><td>&nbsp;</td></tr>
-                <tr><td>&nbsp;</td></tr>
-                <tr><td>&nbsp;</td></tr>
+                <tr style="height: 600px"><td>&nbsp;</td></tr>
+                <tr><td><b>Check Floral Plants</b>:
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    am
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    pm
+                </td></tr>
                 <tr><td><b>Front and Face</b>:
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -322,138 +313,6 @@ HTML;
 
         return $ret;
     } 
-
-    private function greensTable($store)
-    {
-        $res = $this->connection->query("
-            SELECT *
-            FROM RpGreens AS g
-                INNER JOIN likeCodes AS l ON l.likeCode=g.likeCode");
-        $retailP = $this->connection->prepare("SELECT
-            AVG(CASE WHEN discounttype=1 THEN special_price ELSE normal_price END)
-            FROM upcLike AS u
-                INNER JOIN products AS p ON u.upc=p.upc
-            WHERE u.likeCode=?
-                AND p.store_id=?");
-        $infoP = $this->connection->prepare("SELECT *
-            FROM RpOrderItems AS i
-                LEFT JOIN " . FannieDB::fqn('Smoothed', 'plugin:WarehouseDatabase') . " AS w
-                    ON i.upc=w.upc AND i.storeID=w.storeID
-            WHERE i.upc=?
-                AND i.storeID=?");
-        $data = array();
-        while ($row = $this->connection->fetchRow($res)) {
-            $record = array('name' => $row['likeCodeDesc']);
-            $record['retail'] = $this->connection->getValue($retailP, array($row['likeCode'], $store));
-            $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode'], $store));
-            if (!is_array($info)) {
-                $info = array(
-                    'movement' => 0,
-                    'caseSize' => 1,
-                );
-            }
-            $record['smoothed'] = $info['movement'];
-            $record['caseSize'] = $info['caseSize'];
-            $record['total'] = $record['retail'] * $info['movement'];
-            $cases = sprintf('%.1f', Op::div($info['movement'], $info['caseSize']));
-            $last = substr($cases, -1);
-            if ($last > 5) {
-                $cases = ceil($cases);
-            } elseif ($last > 0) {
-                $cases = floor($cases) + 0.5;
-            }
-            if ($cases == 0) {
-                $cases = 0.5;
-            }
-            $record['cases'] = $cases;
-            $data[$row['likeCode']] = $record;
-        }
-
-        uasort($data, function($a, $b) {
-            if ($a['total'] < $b['total']) {
-                return 1;
-            } elseif ($a['total'] > $b['total']) {
-                return -1;
-            }
-
-            return 0;
-        });
-
-        $ret = '<table class="table table-bordered table-striped">
-            <tr><th><a href="RpGreensPreps.php">Greens</a></th><th>Cases</th></tr>';
-        foreach ($data as $row) {
-            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><tr>',
-                $row['name'], $row['cases']);
-        }
-
-        return $ret . '</table>';
-    }
-
-    private function prepsTable($store)
-    {
-        $res = $this->connection->query("
-            SELECT *
-            FROM RpPreps AS g
-                INNER JOIN likeCodes AS l ON l.likeCode=g.likeCode");
-        $retailP = $this->connection->prepare("SELECT
-            AVG(CASE WHEN discounttype=1 THEN special_price ELSE normal_price END)
-            FROM upcLike AS u
-                INNER JOIN products AS p ON u.upc=p.upc
-            WHERE u.likeCode=?
-                AND p.store_id=?");
-        $infoP = $this->connection->prepare("SELECT *
-            FROM RpOrderItems AS i
-                LEFT JOIN " . FannieDB::fqn('Smoothed', 'plugin:WarehouseDatabase') . " AS w
-                    ON i.upc=w.upc AND i.storeID=w.storeID
-            WHERE i.upc=?
-                AND i.storeID=?");
-        $data = array();
-        while ($row = $this->connection->fetchRow($res)) {
-            $record = array('name' => $row['likeCodeDesc']);
-            $record['retail'] = $this->connection->getValue($retailP, array($row['likeCode'], $store));
-            $info = $this->connection->getRow($infoP, array('LC' . $row['likeCode'], $store));
-            if (!is_array($info)) {
-                $info = array(
-                    'movement' => 0,
-                    'caseSize' => 1,
-                );
-            }
-            $record['smoothed'] = $info['movement'];
-            $record['caseSize'] = $info['caseSize'];
-            $record['total'] = $record['retail'] * $info['movement'];
-            $cases = sprintf('%.1f', Op::div($info['movement'], $info['caseSize']));
-            $last = substr($cases, -1);
-            if ($last > 5) {
-                $cases = ceil($cases);
-            } elseif ($last > 0) {
-                $cases = floor($cases) + 0.5;
-            }
-            if ($cases == 0) {
-                $cases = 0.5;
-            }
-            $record['cases'] = $cases;
-            $data[$row['likeCode']] = $record;
-        }
-
-        uasort($data, function($a, $b) {
-            if ($a['total'] < $b['total']) {
-                return 1;
-            } elseif ($a['total'] > $b['total']) {
-                return -1;
-            }
-
-            return 0;
-        });
-
-        $ret = '<table class="table table-bordered table-striped">
-            <tr><th><a href="RpGreensPreps.php">Repack</a></th><th>Cases</th></tr>';
-        foreach ($data as $row) {
-            $ret .= sprintf('<tr><td>%s</td><td>%.1f</td><tr>',
-                $row['name'], $row['cases']);
-        }
-
-        return $ret . '</table>';
-    }
 
     protected function stockFirst($store)
     {
