@@ -90,6 +90,8 @@ class EdlpBatchPage extends FannieRESTfulPage
         $bu->batchID($batchID);
         $bu->logUpdate($bu::UPDATE_CREATE);
 
+        $vendorItems = new VendorItemsModel($dbc);
+
         $list = new BatchListModel($dbc);
         $list->batchID($batchID);
         while ($itemW = $dbc->fetchRow($itemR)) {
@@ -103,6 +105,11 @@ class EdlpBatchPage extends FannieRESTfulPage
                 $bu->batchID($batchID);
                 $bu->upc($itemW['upc']);
                 $bu->logUpdate($bu::UPDATE_ADDED);
+
+                $vendorItems->upc($itemW['upc']);
+                $vendorItems->vendorID($products->default_vendor_id());
+                $vendorItems->srp($itemW['maxPrice']);
+                $vendorItems->save();
             }
 
         }
