@@ -268,7 +268,7 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
     $lines = array();
     if (strstr($desc, "\r\n")) {
         $lines = explode ("\r\n", $desc);
-    } elseif (strlen($desc) > 20) {
+    } elseif (strlen($desc) > 24) {
         $wrp = wordwrap($desc, strlen($desc)/1.5, "*", false);
         $lines = explode('*', $wrp);
     } else {
@@ -384,7 +384,7 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
     /*
         Add /lb String
     */
-    if ($lb != '') {
+    if ($lb != '' && $showPrice == 1) {
         $pdf->SetFont('Gill','B', 10);  //Set the font 
         $pdf->SetXY($x+31+(($mod*-1)*2),$y+27.8);
         $pdf->Write(5, "/lb", ''); 

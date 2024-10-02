@@ -267,7 +267,7 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
     $lines = array();
     if (strstr($desc, "\r\n")) {
         $lines = explode ("\r\n", $desc);
-    } elseif (strlen($desc) > 20) {
+    } elseif (strlen($desc) > 24) {
         $wrp = wordwrap($desc, strlen($desc)/1.5, "*", false);
         $lines = explode('*', $wrp);
     } else {
