@@ -406,7 +406,7 @@ HTML;
         $max = count($items) > 32 ? count($items) : 32;
         $ret = '';
         for ($i=0; $i<$max; $i++) {
-            $upc = $items[$i]['upc'];
+            $upc = isset($items[$i]) ? $items[$i]['upc'] : '';
             $brand = isset($items[$i]) ? $items[$i]['brand'] : '';
             $desc = isset($items[$i]) ? $items[$i]['description'] : '';
             $size = isset($items[$i]) ? $items[$i]['size'] : '';
