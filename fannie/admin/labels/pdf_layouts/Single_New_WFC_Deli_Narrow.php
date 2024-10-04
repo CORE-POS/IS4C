@@ -22,10 +22,9 @@ class Single_New_WFC_Deli_Narrow_PDF extends FpdfWithBarcode
 
 }
 
-function Single_New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0)
+function Single_New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0,$showBarcode=0)
 {
     $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
-    //$pdf = new Single_New_WFC_Deli_Narrow_PDF('L','mm','Letter');
     $pdf = new Single_New_WFC_Deli_Narrow_PDF('L', 'mm', array(105, 148));
     $pdf->AddPage("L", "A6");
     $pdf->SetFillColor(255, 255, 255);
@@ -38,9 +37,7 @@ function Single_New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0)
 
     $width = 68 * 0.75;
     $height = 34;
-    //$left = 3;  
     $left = 8;  
-    //$top = 3;
     $top = 9;
     $guide = 0.3;
 
@@ -70,14 +67,14 @@ function Single_New_WFC_Deli_Narrow($data,$offset=0,$showPrice=0)
             $page += 1;
         }
         if ($i == 0) {
-            $pdf = generateSingleNewDeliNarrow_24UPTag($x+5, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
+            $pdf = generateSingleNewDeliNarrow_24UPTag($x+5, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode, $offset);
         } else if ($i % 2 == 0 && $i != 0) {
             $x = $left+$guide;
             $y += $height+$guide;
         } else {
             $x += $width+$guide;
         }
-        $pdf = generateSingleNewDeliNarrow_24UPTag($x+5, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset);
+        $pdf = generateSingleNewDeliNarrow_24UPTag($x+5, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode, $offset);
         $i++;
     }
 
@@ -200,24 +197,6 @@ function generateNewDeliSingleNarrowMirrorTag($x, $y, $guide, $width, $height, $
         $pdf->Cell('15', 5, $size, 0, 1, 'R', true); 
     }
 
-    /*
-        Create Guide-Lines
-    $pdf->SetFillColor(155, 155, 155);
-    // vertical 
-    $pdf->SetXY($width+$x, $y);
-    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
-
-    $pdf->SetXY($x-$guide, $y-$guide); 
-    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
-
-    // horizontal
-    $pdf->SetXY($x, $y-$guide); 
-    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
-
-    $pdf->SetXY($x, $y+$height); 
-    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
-    */ 
-
 
     $pdf->SetFillColor(255, 255, 255);
 
@@ -225,7 +204,7 @@ function generateNewDeliSingleNarrowMirrorTag($x, $y, $guide, $width, $height, $
 
 }
 
-function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset)
+function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $showBarcode, $offset)
 {
     $upc = $row['upc'];
     $desc = $row['description'];
@@ -251,7 +230,7 @@ function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $p
     $scaleR = $dbc->execute($scaleP, $args);
     $scaleW = $dbc->fetchRow($scaleR);
     $randoWeight = ($scaleW['weight'] == 0) ? true : false;
-    $lb = ($randoWeight) ? '/lb' : '';
+    $lb = ($randoWeight && substr($upc, 0, 3) == '002') ? '/lb' : '';
 
     $MdescKey = array_search($upc, $updateUpcs);
     $Mdesc = $manualDescs[$MdescKey];
@@ -272,8 +251,8 @@ function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $p
     $lines = array();
     if (strstr($desc, "\r\n")) {
         $lines = explode ("\r\n", $desc);
-    } elseif (strlen($desc) > 20) {
-        $wrp = wordwrap($desc, strlen($desc)/1.5, "*", false);
+    } elseif (strlen($desc) > 24) {
+        $wrp = wordwrap($desc, strlen($desc)/1.75, "*", false);
         $lines = explode('*', $wrp);
     } else {
         $lines[0] = $desc;
@@ -282,31 +261,44 @@ function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $p
     /*
         Add Brand Text
     */
-    $strlen = (strlen($brand));
-    if ($strlen >= 25) {
-        $pdf->SetFont('Gill','B', 9);
-    } elseif ($strlen > 19 && $strlen < 25) {
-        $pdf->SetFont('Gill','B', 12);
-    } else {
-        $pdf->SetFont('Gill','B', 14);
-    }
+    $textWidth = SignsLib::getStrWidthGillSans($brand);
+    $tmpFontSize = 14;
+    if ($textWidth > 13)
+        $tmpFontSize = 13;
+    if ($textWidth > 18)
+        $tmpFontSize = 12;
+    if ($textWidth > 24)
+        $tmpFontSize = 11;
+    if ($textWidth > 33)
+        $tmpFontSize = 9;
+    if ($textWidth > 39)
+        $tmpFontSize = 8.5;
+    if ($textWidth > 46)
+        $tmpFontSize = 7;
+
+    $pdf->SetFont('Gill','B', $tmpFontSize);
     $pdf->SetXY($x,$y+5);
     $pdf->Cell($width, 8, $brand, 0, 1, 'C', true); 
 
     /*
         Add Description Text
     */
-    $strlen = strlen($lines[0]);
-    if (isset($lines[1]) && strlen($lines[1]) > $strlen) {
-        $strlen = strlen($lines[1]);
+    $descWidth = SignsLib::getStrWidthGillSans($lines[0]);
+    $descFontSize = 14;
+    if (isset($lines[1]) && SignsLib::getStrWidthGillSans($lines[1]) > $descWidth) {
+        $descWidth = SignsLib::getStrWidthGillSans($lines[1]);
     }
-    if ($strlen >= 30) {
-        $pdf->SetFont('Gill','', 7);
-    } elseif ($strlen > 26 && $strlen < 36) {
-        $pdf->SetFont('Gill','', 10);
-    } else {
-        $pdf->SetFont('Gill','', 14);
+    if ($descWidth > 38) {
+        $descFontSize = 13.5;
     }
+    if ($descWidth > 44) {
+        $descFontSize = 12;
+    }
+    if ($descWidth > 50) {
+        $descFontSize = 11;
+    }
+    $pdf->SetFont('Gill','', $descFontSize);
+
     if (count($lines) > 1) {
         $pdf->SetXY($x,$y+13);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
@@ -321,15 +313,17 @@ function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $p
         Add UPC Barcode 
     */
 
-    /* UPC / PLU Barcode */
-    $pdf->SetFillColor(0,0,0);
-    //$pdf->EAN13($x+42, $y-1, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
-    $pdf->UPC_A($x+2, $y-1, $upc+"0", 5, 0.5);  //generate barcode and place on label
-    $pdf->SetFillColor(255,255,255);
+    if ($showBarcode == 1 )  {
+        /* UPC / PLU Barcode */
+        $pdf->SetFillColor(0,0,0);
+        //$pdf->EAN13($x+42, $y-1, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
+        $pdf->UPC_A($x+2, $y-1, $upc+"0", 5, 0.5);  //generate barcode and place on label
+        $pdf->SetFillColor(255,255,255);
 
-    // cover up 2
-    $pdf->SetFillColor(255,255,255);
-    $pdf->Rect($x+1, $y-2, 50, 3, 'F');
+        // cover up 2
+        $pdf->SetFillColor(255,255,255);
+        $pdf->Rect($x+1, $y-2, 50, 3, 'F');
+    }
 
 
     /*
@@ -338,14 +332,14 @@ function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $p
     $pdf->SetFont('Gill','B', 19);  //Set the font 
     $pdf->SetXY($x,$y+27);
     if ($showPrice == 1 ) 
-        $pdf->Cell($width, 5, "$".$price.$lb, 0, 1, 'C', true); 
+        $pdf->Cell($width, 5, $price, 0, 1, 'C', true); 
 
     /* 
         Print Local Star & Text
     */
     if ($item['local']) {
-        $localX = 1;
-        $localY = 23.5;
+        $localX = 2;
+        $localY = 22.5;
         $pdf->Image(__DIR__ . '/noauto/localST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
         $pdf->SetDrawColor(243, 115, 34);
         //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
@@ -356,11 +350,36 @@ function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $p
         Print Vegan
     */
     if ($numflag & (1<<2)) {
-        $localX = 37;
-        $localY = 23.5;
+        $localX = 36;
+        $localY = 22.5;
+        if ($lb != '' && $showPrice == 1) {
+            $localY -= 2;
+        }
         $pdf->Image(__DIR__ . '/noauto/veganST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
         $pdf->SetDrawColor(243, 115, 34);
         $pdf->SetDrawColor(0, 0, 0);
+    }
+
+    /*
+        Add dollar sign using Write() becaus Cell() 
+        will cover Local & Vegan bugs with white background 
+    */
+    if ($showPrice == 1) {
+        $pdf->SetFont('Gill','B', 13);  //Set the font 
+        $mod = 0;
+        $mod += (4 - strlen($price)) * 1;
+        $pdf->SetXY($x+14.5+$mod,$y+26);
+        $pdf->Write(5, "$", ''); 
+    }
+
+    /*
+        Add /lb String
+    */
+    if ($lb != '' && $showPrice == 1) {
+        $pdf->SetFont('Gill','B', 10);  //Set the font 
+        $pdf->SetXY($x+31+(($mod*-1)*2),$y+27.8);
+        $pdf->Write(5, "/lb", ''); 
+        $pdf->SetFont('Gill','B', 19);  //Set the font 
     }
 
     /*
@@ -386,11 +405,6 @@ function generateSingleNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $p
         $pdf->SetXY($x, $y);
         $pdf->Cell(1, $height+1, '', 0, 1, 'C', true);
     }
-    // inset right-hand border
-    //if ($x > 60) {
-    //    $pdf->SetXY($x+$width-1.5, $y);
-    //    $pdf->Cell(1, $height, '', 0, 1, 'C', true);
-    //}
     // inset top border
     if ($y < 10) {
         $pdf->SetXY($x, $y);

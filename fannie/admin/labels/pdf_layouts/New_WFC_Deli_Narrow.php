@@ -196,25 +196,6 @@ function generateNewDeliNarrowMirrorTag($x, $y, $guide, $width, $height, $pdf, $
         $pdf->Cell('15', 5, $size, 0, 1, 'R', true); 
     }
 
-    /*
-        Create Guide-Lines
-    $pdf->SetFillColor(155, 155, 155);
-    // vertical 
-    $pdf->SetXY($width+$x, $y);
-    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
-
-    $pdf->SetXY($x-$guide, $y-$guide); 
-    $pdf->Cell($guide, $height+$guide, '', 0, 1, 'C', true);
-
-    // horizontal
-    $pdf->SetXY($x, $y-$guide); 
-    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
-
-    $pdf->SetXY($x, $y+$height); 
-    $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
-    */ 
-
-
     $pdf->SetFillColor(255, 255, 255);
 
     return $pdf;
@@ -269,7 +250,7 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
     if (strstr($desc, "\r\n")) {
         $lines = explode ("\r\n", $desc);
     } elseif (strlen($desc) > 24) {
-        $wrp = wordwrap($desc, strlen($desc)/1.5, "*", false);
+        $wrp = wordwrap($desc, strlen($desc)/1.75, "*", false);
         $lines = explode('*', $wrp);
     } else {
         $lines[0] = $desc;
@@ -278,31 +259,44 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
     /*
         Add Brand Text
     */
-    $strlen = (strlen($brand));
-    if ($strlen >= 24) {
-        $pdf->SetFont('Gill','B', 8);
-    } elseif ($strlen > 12 && $strlen < 24) {
-        $pdf->SetFont('Gill','B', 10);
-    } else {
-        $pdf->SetFont('Gill','B', 14);
-    }
+    $textWidth = SignsLib::getStrWidthGillSans($brand);
+    $tmpFontSize = 14;
+    if ($textWidth > 13)
+        $tmpFontSize = 13;
+    if ($textWidth > 18)
+        $tmpFontSize = 12;
+    if ($textWidth > 24)
+        $tmpFontSize = 11;
+    if ($textWidth > 33)
+        $tmpFontSize = 9;
+    if ($textWidth > 39)
+        $tmpFontSize = 8.5;
+    if ($textWidth > 46)
+        $tmpFontSize = 7;
+
+    $pdf->SetFont('Gill','B', $tmpFontSize);
     $pdf->SetXY($x,$y+5);
     $pdf->Cell($width, 8, $brand, 0, 1, 'C', true); 
 
     /*
         Add Description Text
     */
-    $strlen = strlen($lines[0]);
-    if (isset($lines[1]) && strlen($lines[1]) > $strlen) {
-        $strlen = strlen($lines[1]);
+    $descWidth = SignsLib::getStrWidthGillSans($lines[0]);
+    $descFontSize = 14;
+    if (isset($lines[1]) && SignsLib::getStrWidthGillSans($lines[1]) > $descWidth) {
+        $descWidth = SignsLib::getStrWidthGillSans($lines[1]);
     }
-    if ($strlen >= 30) {
-        $pdf->SetFont('Gill','', 7);
-    } elseif ($strlen > 26 && $strlen < 36) {
-        $pdf->SetFont('Gill','', 10);
-    } else {
-        $pdf->SetFont('Gill','', 14);
+    if ($descWidth > 38) {
+        $descFontSize = 13.5;
     }
+    if ($descWidth > 44) {
+        $descFontSize = 12;
+    }
+    if ($descWidth > 50) {
+        $descFontSize = 11;
+    }
+    $pdf->SetFont('Gill','', $descFontSize);
+
     if (count($lines) > 1) {
         $pdf->SetXY($x,$y+13);
         $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
@@ -336,13 +330,6 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
     $pdf->SetFont('Gill','B', 19);  //Set the font 
     $pdf->SetXY($x,$y+27);
     if ($showPrice == 1 )  {
-        //if (strlen($price) == 6) {
-        //    $pdf->SetFont('Gill','B', 14);  //Set the font 
-        //}
-        //if (strlen($price) == 6) {
-        //    $pdf->SetFont('Gill','B', 14);  //Set the font 
-        //}
-        //$pdf->Cell($width, 5, "$".$price.$lb, 0, 1, 'C', true); 
         $pdf->Cell($width, 5, $price, 0, 1, 'C', true); 
     }
 
@@ -350,8 +337,8 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
         Print Local Star & Text
     */
     if ($item['local']) {
-        $localX = 1;
-        $localY = 23.5;
+        $localX = 2;
+        $localY = 22.5;
         $pdf->Image(__DIR__ . '/noauto/localST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
         $pdf->SetDrawColor(243, 115, 34);
         //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
@@ -362,8 +349,8 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
         Print Vegan
     */
     if ($numflag & (1<<2)) {
-        $localX = 37;
-        $localY = 23.5;
+        $localX = 36;
+        $localY = 22.5;
         $pdf->Image(__DIR__ . '/noauto/veganST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
         $pdf->SetDrawColor(243, 115, 34);
         $pdf->SetDrawColor(0, 0, 0);
@@ -408,23 +395,6 @@ function generateNewDeliNarrow_24UPTag($x, $y, $guide, $width, $height, $pdf, $r
 
     $pdf->SetXY($x, $y+$height); 
     $pdf->Cell($width+$guide, $guide, '', 0, 1, 'C', true);
-
-    // not sure these are necessary after moving top and left
-    //// inset left-hand border
-    //if ($x < 10) {
-    //    $pdf->SetXY($x, $y);
-    //    $pdf->Cell(1, $height+1, '', 0, 1, 'C', true);
-    //}
-    //// inset right-hand border
-    //if ($x > 175) {
-    //    $pdf->SetXY($x+$width-1.5, $y);
-    //    $pdf->Cell(1, $height, '', 0, 1, 'C', true);
-    //}
-    //// inset top border
-    //if ($y < 10) {
-    //    $pdf->SetXY($x, $y);
-    //    $pdf->Cell($width+1, 1, '', 0, 1, 'C', true);
-    //}
 
     $pdf->SetFillColor(255, 255, 255);
 
