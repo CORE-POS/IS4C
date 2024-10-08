@@ -316,7 +316,7 @@ HTML;
                     $add = "# ";
                 }
                 if (strpos(strtolower($row['batchName']), strtolower($superName)) !== false) {
-                    if (strpos($row['batchName'], " $batchCycle ") !== false) {
+                    if (strpos($row['batchName'], " $batchCycle ") && strpos($row['batchName'], " BOGO ") == false) {
                         if ($sel == "") {
                             $sel = "selected";
                         } else {
