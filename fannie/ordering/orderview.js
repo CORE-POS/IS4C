@@ -209,10 +209,12 @@ var orderView = (function($) {
         });
         $('.itemChkA').change(function () {
             var checked = $(this).is(':checked');
-            if (checked && confirm('Are you sure this item arrived?')) {
+            var verbiage = (checked) ? 'Are you sure this item has arrived?' : 'Change item to not yet arrived?';
+            var c = confirm(verbiage);
+            if (c == true) {
                 mod.toggleA($(this).data('order'), $(this).data('trans'), checked);
             } else {
-                $(this).prop('checked', false);
+                $(this).prop('checked', !checked);
             }
         });
         $('.add-po-btn').click(function(ev) {
