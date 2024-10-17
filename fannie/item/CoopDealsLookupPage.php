@@ -169,7 +169,8 @@ HTML;
                 p.description,
                 c.price AS srp,
                 m.super_name,
-                p.normal_price
+                p.normal_price,
+                c.multiplier
             FROM CoopDealsItems AS c
                 LEFT JOIN products AS p ON c.upc=p.upc
                 LEFT JOIN vendorItems AS v ON p.default_vendor_id=v.vendorID
@@ -206,6 +207,7 @@ HTML;
             $sku = $row['sku'];
             $srp = $row['srp'];
             $normal_price = $row['normal_price'];
+            $multiplier = $row['multiplier'];
             $superName = $row['super_name'];
             $ret .=  '<tr><td><b>upc</td><td>' . $row['upc'] . '</tr>';
             $ret .=  '<td><b>Desc</b></td><td>' . $row['description'] . '</tr>';
@@ -214,8 +216,13 @@ HTML;
             $ret .=  '<td><b>Sku</b></td><td>' . $row['sku'] . '</tr>';
             $srp = $row['srp'];
             $pBogo = ($srp == 0.0) ? '<i>possible BOGO deal</i>' : '';
-            $ret .= '<td><b>Normal Price / Sale Price</b></td><td>$' . $normal_price . ' > ' . 
-                 '<b>$'.$srp . '</b> '.$pBogo.'</td></tr>';
+            if ($multiplier == 1) {
+                $ret .= '<td><b>Normal Price / Sale Price</b></td><td>$' . $normal_price . ' > ' . 
+                     '<b>$'.$srp . '</b> '.$pBogo.'</td></tr>';
+            } else if ($multiplier == -3) {
+                $ret .= '<td><b>Normal Price: </b></td><td>$' . $normal_price . ' > ' . 
+                     '<b>BOGO</td></tr>';
+            }
             $ret .=  '<td><b>Department</b></td><td>' . $superName .'</td></tr>';
             $check = $row['upc'];
         }
@@ -343,6 +350,9 @@ HTML;
             ';
         }
 
+        $addItemBtn = ($multiplier != -3) ? "<input type=\"submit\" class=\"btn btn-danger form-control\" value=\"Add this item to batch\">"
+            : "<div class=\"well\" align=\"center\">Please add <strong>BOGO</strong> item to batch manually</div>";
+
         return <<<HTML
 <div class="row">
     <div class="col-lg-4"></div>
@@ -355,7 +365,7 @@ HTML;
         </form>
         <form id="insert-form" action="{$_SERVER['PHP_SELF']}"  method="get" name="insert-form">
             <div class="form-group">
-                <input type="submit" class="btn btn-danger form-control" value="Add this item to batch">
+                $addItemBtn
             </div>
             <input type="hidden" name="insert" value="1">
             <input type="hidden" name="salePrice" value="$srp">
