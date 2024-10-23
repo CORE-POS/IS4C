@@ -113,7 +113,7 @@ class ManualSignsPage extends FannieRESTfulPage
                     if ($row['normal_price'] > $row['price']) {
                         $row['origin'] .= '/' . $row['normal_price'];
                     }
-                    if (!$row['signText'] && $lcRow['likeCodeDesc']) {
+                    if (!$row['signText'] && is_array($lcRow) && $lcRow['likeCodeDesc']) {
                         $row['description'] = $lcRow['likeCodeDesc'];
                     }
                     $row['brand'] = is_array($lcRow) && $lcRow['organic'] ? 'ORGANIC' : '';
