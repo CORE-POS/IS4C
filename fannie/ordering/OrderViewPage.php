@@ -801,8 +801,8 @@ class OrderViewPage extends FannieRESTfulPage
         }
 
         if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $mempricing['isMember']) {
+            $isBOGO = false;
             if ($batch == false) {
-                $isBOGO = false;
                 $batchP = $this->connection->prepare("SELECT batchName FROM products as p
                     LEFT JOIN batches AS b ON p.batchID=b.batchID
                 WHERE  p.specialpricemethod = 7
