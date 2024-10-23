@@ -131,9 +131,11 @@ HTML;
         if ($searchType == 'UPCS') {
             $tmp = '';
             foreach ($searchValue as $k => $upc) {
-                $tmp .= "$upc";
-                if (array_key_exists($k+1, $searchValue)) {
-                    $tmp .= ", ";
+                if (strlen($upc) > 1) {
+                    $tmp .= "$upc";
+                    if (array_key_exists($k+1, $searchValue) && strlen($searchValue[$k+1]) > 1) {
+                        $tmp .= ", ";
+                    }
                 }
             }
             $args = array();
