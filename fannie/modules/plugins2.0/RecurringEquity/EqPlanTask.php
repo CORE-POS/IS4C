@@ -39,13 +39,13 @@ class EqPlanTask extends FannieTask
                 AND department=992
                 AND store_id=50");
         $res = $dbc->execute($prep, array($yesterday));
-        $chkP = $dbc->prepare("SELECT total FROM {$dlog} WHERE tdate BETWEEN ? AND ? and department=991 AND trans_num=?");
+        $chkP = $dbc->prepare("SELECT total FROM {$dlog} WHERE tdate BETWEEN ? AND ? and department=991 AND card_no=?");
         while ($row = $dbc->fetchRow($res)) {
             if ($this->hasPlan($dbc, $row['card_no'])) {
                 continue;
             }
             $date = date('Y-m-d', strtotime($row['tdate']));
-            $chk = $dbc->getValue($chkP, array($date . ' 00:00:00', $date . ' 23:59:59', $row['trans_num']));
+            $chk = $dbc->getValue($chkP, array($date . ' 00:00:00', $date . ' 23:59:59', $row['card_no']));
             if ($chk === false) {
                 $this->createPlan($dbc, $row['card_no'], 3);
             }
