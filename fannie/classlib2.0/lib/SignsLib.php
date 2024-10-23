@@ -168,5 +168,35 @@ HTML;
 HTML;
     }
 
+    /*
+        getStrWidthGills takes a string and 
+        returns an approximate text width 
+        in Gill Sans
+    */
+    static function getStrWidthGillSans($str)
+    {
+        $table = array(
+            '3' => array('Q', 'm', 'w'),
+            '2.7' => array('C','D','G','H','K','O','M','N','U','V','W','X','Z'),
+            '2.6' => array('A','B','E','F','L','P','R','S','T','Y'),
+            '1.75' => array('b','d','k','o','p','q','u','v','x','1','2','3','4','5','6','7','8','9','0'),
+            '1.35' => array('a','c','e','g','h','n','r','s','t','y','z'),
+            '0.6' => array('I','J','i','j',' ')
+        );
+
+        $width = 0;
+        $chars = str_split($str);
+        foreach ($chars as $char) {
+            $char = strtoupper($char);
+            foreach ($table as $v => $row) {
+                if (in_array($char, $row)) {
+                    $width += $v;
+                }
+            }
+        }
+
+        return $width;
+    }
+
 }
 
