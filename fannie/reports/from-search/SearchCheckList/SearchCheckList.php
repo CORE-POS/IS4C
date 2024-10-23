@@ -47,15 +47,19 @@ class SearchCheckList extends FannieReportPage
         $upcs = FormLib::get('u', array());
         list($in, $args) = $dbc->safeInClause($upcs);
         $prep = $dbc->prepare("SELECT
-                p.upc, p.brand, p.description, f.sections
+                p.upc, p.brand, p.description, CONCAT(f.name, ' ', s.subSection) AS sections
             FROM products AS p
-                LEFT JOIN FloorSectionsListView AS f ON p.upc=f.upc AND p.store_id=f.storeID
+                LEFT JOIN FloorSectionProductMap AS m ON p.upc=m.upc
+                LEFT JOIN FloorSections AS f ON m.floorSectionID=f.floorSectionID and p.store_id=f.storeID
+                LEFT JOIN FloorSubSections as s ON p.upc=s.upc AND m.floorSectionID=s.floorSectionID
             WHERE p.upc IN ({$in})
                 AND p.store_id=?
-            ORDER BY f.sections,
+                AND (f.storeID=? OR m.upc IS NULL)
+            ORDER BY CONCAT(f.name, ' ', s.subSection),
                 p.brand,
                 p.description");
         $store = Store::getIdByIp();
+        $args[] = $store;
         $args[] = $store;
         $res = $dbc->execute($prep, $args);
         $data = array();
