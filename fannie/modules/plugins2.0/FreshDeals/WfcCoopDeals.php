@@ -89,11 +89,27 @@ class WfcCoopDeals extends FannieReportPage
         return $this->dekey_array($data);
     }
 
+    public function calculate_footers($data)
+    {
+        $ret = array('Average', 0, 0, 0, 0, 0, 0);
+        foreach ($data as $row) {
+            for ($i=1;$i<7;$i++) {
+                $ret[$i] += $row[$i];
+            }
+        }
+        for ($i=1;$i<7;$i++) {
+            $ret[$i] = sprintf('%.2f', $ret[$i] / count($data));
+        }
+
+        return $ret;
+    }
+
     public function form_content()
     {
         $batchR = $this->connection->query("SELECT batchID, batchName
             FROM batches
-            WHERE batchName LIKE '%Co-op Deals A%' OR batchName LIKE '%Co-op Deals B%'
+            WHERE (batchName LIKE '%Co-op Deals A%' OR batchName LIKE '%Co-op Deals B%')
+                AND batchName NOT LIKE '%GEN MERCH%'
             ORDER BY batchID DESC");
         $bOpts = '';
         $seen = array();
