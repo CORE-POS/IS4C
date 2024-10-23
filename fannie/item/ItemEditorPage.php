@@ -900,35 +900,35 @@ $(document).ready(function(){
             }
         });
 
-
+        // hide all sync checkboxes with Hobart scales
         $(".scale-sync-checkbox").each(function(){
             let name = $(this).parent().find("span.label-text").text();
             let checked = $(this).is(":checked");
-            if (name != 'Kitchen' && name != 'Prepack' && name != 'DProduce') {
+            //if (name != 'Kitchen' && name != 'Prepack' && name != 'DProduce') {
                 $(this).parent().css('display', 'none');
-            } else {
-                if (name == 'Kitchen') {
-                    let newtext = 'Deli Scales';
-                    $(this).parent().find("span.label-text").text(newtext);
-                    if (del == true && checked == false) {
-                        $(this).trigger('click');
-                    }
-                }
-                if (name == 'Prepack') {
-                    let newtext = 'Prepack Scales';
-                    $(this).parent().find("span.label-text").text(newtext);
-                    if (pre == true && checked == false) {
-                        $(this).prop('checked', true);
-                    }
-                }
-                if (name == 'DProduce') {
-                    let newtext = 'Produce Scales';
-                    $(this).parent().find("span.label-text").text(newtext);
-                    if (pro == true && checked == false) {
-                        $(this).trigger('click');
-                    }
-                }
-            }
+            //} else {
+            //    if (name == 'Kitchen') {
+            //        let newtext = 'Deli Scales';
+            //        $(this).parent().find("span.label-text").text(newtext);
+            //        if (del == true && checked == false) {
+            //            $(this).trigger('click');
+            //        }
+            //    }
+            //    if (name == 'Prepack') {
+            //        let newtext = 'Prepack Scales';
+            //        $(this).parent().find("span.label-text").text(newtext);
+            //        if (pre == true && checked == false) {
+            //            $(this).prop('checked', true);
+            //        }
+            //    }
+            //    if (name == 'DProduce') {
+            //        let newtext = 'Produce Scales';
+            //        $(this).parent().find("span.label-text").text(newtext);
+            //        if (pro == true && checked == false) {
+            //            $(this).trigger('click');
+            //        }
+            //    }
+            //}
         });
 
     }
