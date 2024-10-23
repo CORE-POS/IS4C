@@ -127,7 +127,7 @@ class Compact12UpL extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 20, $item['upc'], 0, 1, 'L');
         } 
         
-        if (isset($item['locAbbr']) && $item['transLimit'] == 0) {
+        if (isset($item['locAbbr']) && (!isset($item['transLimit']) || $item['transLimit'] == 0)) {
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $pdf->SetXY($this->left + ($this->width*$column) + 14, $this->top + ($this->height*$row) + ($this->height - 42));
             $pdf->Cell($effective_width, 20, " ".$item['locAbbr'], 0, 1, 'L');
