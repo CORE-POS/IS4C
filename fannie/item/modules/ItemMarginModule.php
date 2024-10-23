@@ -93,7 +93,7 @@ JAVASCRIPT;
                     <select name="price_rule_id" class="form-control input-sm"
                         onchange="'.$onChange.'">
                         <option value="0" ' . ($product->price_rule_id() == 0 ? 'selected' : '') . '>Normal</option>
-                        <option value="1" ' . ($product->price_rule_id() == 1 ? 'selected' : '') . '>Variable</option>
+                        <!--<option value="1" ' . ($product->price_rule_id() == 1 ? 'selected' : '') . '>Variable</option>-->
                         <option value="-1" ' . ($product->price_rule_id() > 1 ? 'selected' : '') . '>Custom</option>
                     </select>
                     <input type="hidden" name="current_price_rule_id" value="' . $product->price_rule_id() . '" />
