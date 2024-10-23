@@ -55,6 +55,16 @@ class WfcPoExport extends DefaultCsvPoExport
         $notes->load();
         $noteContent = trim($notes->notes());
 
+        if ($noteContent != '') {
+            echo "<div style=\"background: pink;\">Notes:</div>";
+            echo "<div style=\"border: 1px solid pink;\">{$noteContent}</div>";
+        }
+
+        //if ($noteContent != '') {
+        //    echo "Notes:\r\n";
+        //    echo "\"{$noteContent}\"\r\n";
+        //}
+
         echo "\r\n";
         if ($auto->accountID() != '') {
             echo "Account# " . $auto->accountID() . "\r\n";
@@ -70,11 +80,6 @@ class WfcPoExport extends DefaultCsvPoExport
             echo "4426 Grand Ave\r\n";
             echo "\"Duluth, MN 55807\"\r\n";
             echo "(218) 336-0279\r\n";
-        }
-
-        if ($noteContent != '') {
-            echo "Notes:\r\n";
-            echo "\"{$noteContent}\"\r\n";
         }
 
         parent::export_order($id);
