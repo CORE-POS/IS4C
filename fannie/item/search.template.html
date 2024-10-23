@@ -160,8 +160,10 @@ return <<<HTML
                     </label>
                     <select class="form-control input-sm" id="in_use" name="in_use">
                         <option value="1">Here</option>
-                        <option value="2">Anywhere</option>
-                        <option value="0">All</option>
+                        <option value="2">At Least One Store</option>
+                        <option value="0">Show All Items Regardless of InUse</option>
+                        <option value="3">Not Here</option>
+                        <option value="4">Not Anywhere</option>
                     </select>
                 </span>
             </td>
@@ -308,8 +310,8 @@ return <<<HTML
                 onclick="goToPage('../modules/plugins2.0/HouseCoupon/HouseCouponEditor.php');">Store Coupons</button></p>
             <p><button class="btn btn-default btn-xs" type="submit" 
                 onclick="goToPage('hobartcsv/SyncFromSearch.php');">Scale Sync</button></p>
-            <div class="showOnAdmin" style="display: none;"><p><button class="btn btn-primary btn-xs" type="submit" 
-                onclick="goToPage('../admin/labels/FpdfEditorPage.php');">FPDF Layout Editor</button></p></div>
+            <p><button class="btn btn-default btn-xs" type="submit" 
+                onclick="goToPage('../admin/labels/LessSignFromSearch.php');">1/4 Page Tags/Signs</button></p>
         </div>
     </div>
     <div class="panel panel-default">
