@@ -16,8 +16,8 @@ if (!class_exists('IncidentCommentsModel')) {
 if (!class_exists('Gohanman\\Otto\\Otto')) {
     include(__DIR__ . '/../Otto/noauto/Otto.php');
 }
-if (!class_exists('Gohanman\\Otto\\Message')) {
-    include(__DIR__ . '/../Otto/noauto/Message.php');
+if (!class_exists('Gohanman\\Otto\\MessageV2')) {
+    include(__DIR__ . '/../Otto/noauto/MessageV2.php');
 }
 
 class AlertIncident extends FannieRESTfulPage
@@ -236,9 +236,8 @@ class AlertIncident extends FannieRESTfulPage
                             break;
                         case 'teams':
                             $otto = new Gohanman\Otto\Otto($row['address']);
-                            $msg = new Gohanman\Otto\Message();
-                            $msg->title = 'Alert #' . $id;
-                            $body = "**Date**: {$incident['tdate']}\n\n"
+                            $body = 'Alert #' . $id . "\n\n";
+                            $body .= "**Date**: {$incident['tdate']}\n\n"
                                 . "**Type**: {$incident['incidentSubType']}\n\n"
                                 . "**Store**: {$incident['storeName']}\n\n"
                                 . "**Location**: {$incident['incidentLocation']}\n\n"
@@ -255,7 +254,7 @@ class AlertIncident extends FannieRESTfulPage
                                         . $c['comment'] . "\n\n";
                                 }
                             }
-                            $msg->body($body);
+                            $msg = new Gohanman\Otto\MessageV2($body);
                             $ottoResult = $otto->post($msg);
                             break;
                     }
@@ -353,9 +352,8 @@ class AlertIncident extends FannieRESTfulPage
                             break;
                         case 'teams':
                             $otto = new Gohanman\Otto\Otto($row['address']);
-                            $msg = new Gohanman\Otto\Message();
-                            $msg->title = 'Alert #' . $id;
-                            $body = "**Date**: {$incident['tdate']}\n\n"
+                            $body = 'Alert #' . $id . "\n\n";
+                            $body .= "**Date**: {$incident['tdate']}\n\n"
                                 . "**Type**: {$incident['incidentSubType']}\n\n"
                                 . "**Store**: {$incident['storeName']}\n\n"
                                 . "**Location**: {$incident['incidentLocation']}\n\n"
@@ -364,7 +362,7 @@ class AlertIncident extends FannieRESTfulPage
                                 . "**Requested Trespass**: {$incident['trespass']}\n\n"
                                 . "**Details**:\n\n"
                                 . $incident['details'];
-                            $msg->body($body);
+                            $msg = new Gohanman\Otto\MessageV2($body);
                             $ottoResult = $otto->post($msg);
                             break;
                     }
