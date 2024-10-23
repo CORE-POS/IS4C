@@ -30,6 +30,12 @@ if (!class_exists('FannieAPI')) {
 if (!class_exists('WFC_Hybrid_PDF')) {
     include(__DIR__ . '/../../admin/labels/pdf_layouts/WFC_Hybrid.php');
 }
+//if (!class_exists('WFC_EssOil')) {
+//    include(__DIR__ . '/../../admin/labels/pdf_layouts/WFC_EssOil.php');
+//}
+if (!class_exists('WFC_EssOil_PDF')) {
+    include(__DIR__ . '/../../admin/labels/pdf_layouts/WFC_EssOil.php');
+}
 
 /*
  *  @class PrintOrderedSigns 
@@ -59,14 +65,18 @@ class PrintOrderedSigns extends FannieRESTfulPage
         $upcs = FormLib::get('upcs');
         $upcs = explode("\n", $upcs);
         $offset = (FormLib::get('offset') == 'on') ? 1 : 0;
+        $itemrows = FormLib::get("itemrows", 13);
+        $spacing = FormLib::get("spacing", 1);
         $upcStr = '';
         foreach($upcs as $k => $upc) {
             $upcs[$k] = BarcodeLib::padUPC($upc); 
             $upcStr .= "\n$upc";
         }
         list($data, $td) = $this->getProdData($dbc, $upcs);
+        $data = array_reverse($data);
 
-        WFC_Hybrid($data, $offset);
+        //WFC_Hybrid($data, $offset);
+        WFC_EssOil_PDF::WFC_EssOil($data, $offset, $itemrows, $spacing);
 
         return false;
     }
@@ -74,6 +84,8 @@ class PrintOrderedSigns extends FannieRESTfulPage
     protected function form($upcs='')
     {
         $offset = (FormLib::get('offset') == 'on') ? 'checked': '';
+        $itemrows = FormLib::get("itemrows", 13);
+        $spacing = FormLib::get("spacing", 1);
 
         return <<<HTML
 <form action="PrintOrderedSigns.php" method="get" name="myform">
@@ -84,13 +96,21 @@ class PrintOrderedSigns extends FannieRESTfulPage
             <textarea id="upcs" name="upcs" class="form-control" rows=6>$upcs</textarea>
         </div>
         <div class="row">
-            <div class="col-lg-4">
+            <div class="col-lg-6">
                 <div class="form-group">
                     <label for="offset">Offset</label>:&nbsp;&nbsp;
                     <input type="checkbox" id="offset" name="offset" $offset />
                 </div>
+                <div class="form-group">
+                    <label for="itemrows">Number of Items in each Row</label>
+                    <input class="form-control" type="text" id="itemrows" name="itemrows" value="$itemrows" />
+                </div>
+                <div class="form-group">
+                    <label for="spacing">Spacing Type (1=AuraCacia | 2=All Others (more space)</label>
+                    <input class="form-control" type="number" id="spacing" name="spacing" value="$spacing" min=1 max=2 />
+                </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-4">
                 <div class="form-group">
                     <button class="btn btn-default" type="submit">Submit</button>
                 </div>
@@ -126,7 +146,8 @@ HTML;
     {
         $td = '';
         $data = array();
-        $i = 0;
+        //$i = 0;
+        $i = count($upcs);
         foreach ($upcs as $k => $upc) {
             $args = array($upc);
             $prep = $dbc->prepare("SELECT *, p.brand AS pbrand, p.description AS pdesc, vendors.vendorName AS vendor,
@@ -157,7 +178,8 @@ HTML;
                 $data[$i]['pricePerUnit'] = $ppu;
                 $td .= "<tr><td>$upc</td><td>$brand</td><td>$desc</td><td>$units</td>
                     <td>$size</td><td>$sku</td><td>$scale</td></tr>";
-                $i++;
+                //$i++;
+                $i--;
                 break; // only need one result per UPC
             }
         }
@@ -169,6 +191,7 @@ HTML;
     {
         $URI = $_SERVER['REQUEST_URI'] . "&print=1";
         $upcs = FormLib::get('upcs');
+        $itemrows = FormLib::get("itemrows", 13);
         $upcs = explode("\n", $upcs);
         $upcStr = '';
         foreach($upcs as $k => $upc) {
@@ -183,7 +206,7 @@ HTML;
         return <<<HTML
 {$this->form($upcStr)} 
 <div class="row">
-    <div class="col-lg-1">
+    <div class="col-lg-2">
         <div class="form-group">
             <button class="btn btn-primary form-control" onclick="window.location.href = '$URI'">Print</button>
         </div>
@@ -206,6 +229,9 @@ HTML;
     {
         return <<<JAVASCRIPT
 $('#offset').change(function(){
+    document.forms['myform'].submit();
+});
+$('#spacing').on('change', function() {
     document.forms['myform'].submit();
 });
 JAVASCRIPT;
