@@ -289,8 +289,24 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $vendor = new VendorsModel($dbc);
         $vendor->vendorID($order->vendorID());
         $vendor->load();
-        if (!filter_var($vendor->email(), FILTER_VALIDATE_EMAIL)) {
-            return $this->unknownRequestHandler();
+        $multipleAddrs = array();
+        if (str_contains($vendor->email(), ",")) {
+            $allValid = true;
+            $emails = explode(",", $vendor->email());
+            foreach ($emails as $email) {
+                $email = str_replace(" ", "", $email);
+                $multipleAddrs[] = $email;
+                if (filter_var($email, FILTER_VALIDATE_EMAIL) == false) {
+                    $allValid = false;
+                }
+            }
+            if ($allValid == false) {
+                return $this->unknownRequestHandler();
+            }
+        } else {
+            if (!filter_var($vendor->email(), FILTER_VALIDATE_EMAIL)) {
+                return $this->unknownRequestHandler();
+            }
         }
 
         $userP = $dbc->prepare("SELECT email, real_name FROM Users WHERE name=?");
@@ -307,7 +323,13 @@ class ViewPurchaseOrders extends FannieRESTfulPage
         $mail->From = $this->config->get('PO_EMAIL');
         $mail->FromName = $this->config->get('PO_EMAIL_NAME');
         $mail->isHTML = true;
-        $mail->addAddress($vendor->email());
+        if (count($multipleAddrs) == 0) {
+            $mail->addAddress($vendor->email());
+        } else {
+            foreach ($multipleAddrs as $email) {
+                $mail->addAddress($email);
+            }
+        }
         if ($this->config->get('COOP_ID') == 'WFC_Duluth' && $order->storeID() == 2) {
             $mail->From = 'dbuyers@wholefoods.coop';
             $mail->FromName = 'Whole Foods Co-op Denfeld';
@@ -782,9 +804,22 @@ HTML;
             $exportOpts .= '<option ' . $selected . ' value="'.$class.'">'.$name.'</option>';
         }
         $exportEmail = '';
-        if (!$orderObj->placed && filter_var($vendor['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!$orderObj->placed && !str_contains($vendor['email'], ",")  && filter_var($vendor['email'], FILTER_VALIDATE_EMAIL)) {
             $exportEmail = '<button type="submit" class="btn btn-default btn-sm" onclick="doSend(' . $this->id . ');
                 return false;" title="Email order to ' . $vendor['email'] . '" >Send via Email</button>';
+        } elseif (!$orderObj->placed && str_contains($vendor['email'], ",")) {
+            $allValid = true;
+            $emails = explode(",", $vendor['email']);
+            foreach ($emails as $email) {
+                $email = str_replace(" ", "", $email);
+                if (filter_var($email, FILTER_VALIDATE_EMAIL) == false) {
+                    $allValid = false;
+                }
+            }
+            if ($allValid) {
+                $exportEmail = '<button type="submit" class="btn btn-default btn-sm" onclick="doSend(' . $this->id . ');
+                    return false;" title="Email order to ' . $vendor['email'] . '" >Send via Email</button>';
+            }
         }
         $uname = FannieAuth::getName($order->userID());
         if (!$uname) {
