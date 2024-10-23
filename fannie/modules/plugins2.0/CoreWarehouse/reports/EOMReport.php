@@ -13,29 +13,26 @@ class EOMReport extends FannieReportPage
     protected $title = 'EOM Report';
     public $description = '[End of Month Report] is a summary of financial activity for a month';
     public $report_set = 'Finance';
-    protected $required_fields = array('month', 'year', 'store');
+    protected $required_fields = array('start', 'end', 'store');
     protected $multi_report_mode = true;
     protected $report_headers = array(
         array('Dept#', 'Super#', 'Account#', 'Dept Name', 'Sales'),
         array('Super#', 'Sales'),
     );
-    protected $report_cache = 'day';
+    protected $report_cache = 'none';
 
     public function fetch_report_data()
     {
         try {
-            $month = $this->form->month;
-            $year = $this->form->year;
+            $start = $this->form->start;
+            $end = $this->form->end;
             $store = $this->form->store;
         } catch (Exception $ex) {
             return array(array());
         }
 
-        $tstamp = mktime(0,0,0,$month,1,$year);
-        $start = date('Y-m-01', $tstamp);
-        $end = date('Y-m-t', $tstamp);
-        $idStart = date('Ym01', $tstamp);
-        $idEnd = date('Ymt', $tstamp);
+        $idStart = date('Ymd', strtotime($start));
+        $idEnd = date('Ymd', strtotime($end));
         $dlog = DTransactionsModel::selectDLog($start, $end);
         $warehouse = $this->config->get('PLUGIN_SETTINGS');
         $warehouse = $warehouse['WarehouseDatabase'];
@@ -70,8 +67,8 @@ class EOMReport extends FannieReportPage
         $misc = array();
         while ($row = $this->connection->fetchRow($res)) {
             $code = StandardAccounting::extend($row['salesCode'], $row['store_id']);
-            $dLink = sprintf('<a href="EOMLayers/EOMDeptLayer.php?month=%d&year=%d&store=%d&dept=%d">%s</a>',
-                $month, $year, $store, $row['department'], $row['dept_name']);
+            $dLink = sprintf('<a href="EOMLayers/EOMDeptLayer.php?start=%s&end=%s&store=%d&dept=%d">%s</a>',
+                $start, $end, $store, $row['department'], $row['dept_name']);
             if ($row['superID'] == 0) {
                 $misc[] = array(
                     $row['department'],
@@ -90,14 +87,14 @@ class EOMReport extends FannieReportPage
                 sprintf('%.2f', $row['ttl']),
             );
             if (!isset($supers[$row['superID']])) {
-                $sLink = sprintf('<a href="EOMLayers/EOMSuperLayer.php?month=%d&year=%d&store=%d&super=%d">%s</a>',
-                    $month, $year, $store, $row['superID'], $row['super_name']);
+                $sLink = sprintf('<a href="EOMLayers/EOMSuperLayer.php?start=%s&end=%s&store=%d&super=%d">%s</a>',
+                    $start, $end, $store, $row['superID'], $row['super_name']);
                 $supers[$row['superID']] = array($row['superID'], $sLink, 0);
             }
             $supers[$row['superID']][2] += $row['ttl'];
             if (!isset($pcodes[$code])) {
-                $link = sprintf('<a href="EOMLayers/EOMPCodeLayer.php?month=%d&year=%d&store=%d&pcode=%s">%s</a>',
-                    $month, $year, $store, $row['salesCode'], $code);
+                $link = sprintf('<a href="EOMLayers/EOMPCodeLayer.php?start=%s&end=%s&store=%d&pcode=%s">%s</a>',
+                    $start, $end, $store, $row['salesCode'], $code);
                 $pcodes[$code] = array($link, $row['superID'], 0);
             }
             $pcodes[$code][2] += $row['ttl'];
@@ -121,8 +118,8 @@ class EOMReport extends FannieReportPage
         $res = $this->connection->execute($prep, array($idStart, $idEnd, $store));
         $tenders = array();
         while ($row = $this->connection->fetchRow($res)) {
-            $link = sprintf('<a href="EOMLayers/EOMTenderLayer.php?month=%d&year=%d&store=%d&tender=%s">%s</a>',
-                $month, $year, $store, $row['trans_subtype'], $row['TenderName']);
+            $link = sprintf('<a href="EOMLayers/EOMTenderLayer.php?start=%s&end=%s&store=%d&tender=%s">%s</a>',
+                $start, $end, $store, $row['trans_subtype'], $row['TenderName']);
             $tenders[] = array(
                 $link,
                 sprintf('%.2f', $row['total']),
@@ -151,8 +148,8 @@ class EOMReport extends FannieReportPage
         $prep = $this->connection->prepare($queryStoreCoupons);
         $res = $this->connection->execute($prep, array($start . ' 00:00:00', $end . ' 23:59:59', $store));
         while ($row = $this->connection->fetchRow($res)) {
-            $link = sprintf('<a href="EOMLayers/EOMCouponLayer.php?month=%d&year=%d&store=%d&coupon=%d">%s</a>',
-                $month, $year, $store, $row['coupID'], 'Store coupon: ' . $row['TenderName']);
+            $link = sprintf('<a href="EOMLayers/EOMCouponLayer.php?start=%s&end=%s&store=%d&coupon=%d">%s</a>',
+                $start, $end, $store, $row['coupID'], 'Store coupon: ' . $row['TenderName']);
             $tenders[] = array(
                 $link,
                 sprintf('%.2f', $row['total']),
@@ -176,8 +173,8 @@ class EOMReport extends FannieReportPage
         $discounts = array();
         while ($row = $this->connection->fetchRow($res)) {
             $discounts[] = array(
-                sprintf('<a href="EOMLayers/EOMDiscountLayer.php?month=%d&year=%d&store=%d&type=%d">%s</a>',
-                    $month, $year, $store, $row['memType'], $row['memDesc']),
+                sprintf('<a href="EOMLayers/EOMDiscountLayer.php?start=%s&end=%s&store=%d&type=%d">%s</a>',
+                    $start, $end, $store, $row['memType'], $row['memDesc']),
                 sprintf('%.2f', $row['Discount']),
             );
         }
@@ -194,8 +191,8 @@ class EOMReport extends FannieReportPage
         $memSales = array();
         while ($row = $this->connection->fetchRow($res)) {
             $memSales[] = array(
-                sprintf('<a href="EOMLayers/EOMCountLayer.php?month=%d&year=%d&store=%d&type=%d">%s</a>',
-                    $month, $year, $store, $row['memType'], $row['memDesc']),
+                sprintf('<a href="EOMLayers/EOMCountLayer.php?start=%s&end=%s&store=%d&type=%d">%s</a>',
+                    $start, $end, $store, $row['memType'], $row['memDesc']),
                 sprintf('%.2f', $row['ttl']),
             );
         }
@@ -213,8 +210,8 @@ class EOMReport extends FannieReportPage
         $transactions = array();
         while ($row = $this->connection->fetchRow($res)) {
             $transactions[] = array(
-                sprintf('<a href="EOMLayers/EOMCountLayer.php?month=%d&year=%d&store=%d&type=%d">%s</a>',
-                    $month, $year, $store, $row['memType'], $row['memDesc']),
+                sprintf('<a href="EOMLayers/EOMCountLayer.php?start=%s&end=%s&store=%d&type=%d">%s</a>',
+                    $start, $end, $store, $row['memType'], $row['memDesc']),
                 $row['qty'],
             );
         }
@@ -367,14 +364,12 @@ class EOMReport extends FannieReportPage
         return <<<HTML
 <form method="get">
     <div class="form-group">
-        <label>Month</label>
-        <select name="month" class="form-control">
-            {$opts}
-        </select>
+        <label>Start</label>
+        <input type="text" name="start" class="form-control date-field" />
     </div>
     <div class="form-group">
-        <label>Year</label>
-        <input type="text" name="year" class="form-control" value="{$year}" />
+        <label>End</label>
+        <input type="text" name="end" class="form-control date-field"  />
     </div>
     <div class="form-group">
         <label>Store</label>
