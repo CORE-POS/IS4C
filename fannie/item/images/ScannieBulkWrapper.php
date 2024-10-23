@@ -159,6 +159,7 @@ HTML;
         <ul>
             <li><a href= "NutriFactEntry.php">Enter Nutrition Facts</a></li>
             <li><a href= "IngredientSOPFormatter.php">Ingredients SOP Formatter</a></li>
+            <li><a href= "DynamicScannieBulkWrapper.php">[IT] Smart Bulk Labels</a></li>
         </ul>
     </div>
     <form method="post" action="ScannieBulkWrapper.php">
