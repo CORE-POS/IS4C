@@ -70,8 +70,9 @@ class LikeCodeModule extends \COREPOS\Fannie\API\item\ItemModule
         $lcm = new LikeCodesModel($dbc);
         $ret .= $lcm->toOptions($myLC);
         $ret .= "</select>";
-        $ret .= " <label><input type=checkbox name=LikeCodeNoUpdate value='noupdate'>Check to not update like code items</label>";
+        $ret .= " <label><input type=checkbox name=LikeCodeNoUpdate value='noupdate'> Check to <u>not</u> update like code items</label>";
         $ret .= ' <span id="LikeCodeHistoryLink">' . $this->HistoryLink($myLC) . '</span>';
+        $ret .= " <span style=\"color: purple; cursor: pointer; font-weight: bold;\" onclick=\"$('#likeCodeSelect_chosen').find('span').text('(none)'); $('#likeCodeSelect').val(-1);\">Unset Like Code</span> ";
         $ret .= '</div>';
 
         $ret .= '<div id="LikeCodeItemList">';
