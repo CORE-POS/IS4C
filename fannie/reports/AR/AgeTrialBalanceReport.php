@@ -176,7 +176,7 @@ class AgeTrialBalanceReport extends FannieReportPage
         $res = $this->connection->query("SELECT * FROM Periods ORDER BY periodID");
         $opts = '';
         $selected = 1;
-        $now = mktime();
+        $now = time();
         while ($row = $this->connection->fetchRow($res)) {
             $opts .= sprintf('<option value="%d">%s (%s to %s)</option>',
                 $row['periodID'],
