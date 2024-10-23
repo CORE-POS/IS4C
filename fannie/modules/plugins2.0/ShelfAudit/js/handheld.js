@@ -96,6 +96,34 @@ var handheld = (function($) {
         }
     };
 
+    mod.clearItem = function(elm) {
+        let upc = $(elm).closest('tr').find('td:eq(0)').text();
+        console.log(upc);
+        let section = $('.active').find('a').attr('aria-controls');
+        section = section.at(-1);
+        console.log(section);
+
+        let c = confirm("Remove item from list?");
+        if (c == true) {
+            $.ajax({
+                type: 'post',
+                data: 'clearitem=1&upc='+upc+'&set='+section,
+                success: function(r){
+                    console.log('success: ' + r);
+                    $('.tab-pane.active tr').each(function() {
+                        let curUpc = $(this).find('td:eq(0)').text();
+                        if (upc == curUpc) {
+                            $(this).hide();
+                        }
+                    });
+                },
+                error: function(r){
+                    console.log('error: ' + r);
+                },
+            });
+        }
+    }
+
     return mod;
 
 }(jQuery));
