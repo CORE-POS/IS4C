@@ -17,6 +17,8 @@ $_SERVER['REQUEST_URI'] = str_replace("index.php","",$_SERVER['REQUEST_URI']);
 } else {
     $storeInfo = FormLib::storePicker();
     echo '<form action="index.php" method="get">'
+        . '<input type="date" name="start" />'
+        . '<input type="date" name="end" />'
         . $storeInfo['html'] . 
         '<input type="submit" value="Change" />
         </form>';
@@ -50,7 +52,13 @@ $month = date('n');
 $stamp = mktime(0,0,0,$month-1,1,$year);
 $dlog = "is4c_trans.dlog_90_view";
 $start = date("Y-m-01",$stamp);
+if (FormLib::get('start') != '') {
+    $start = FormLib::get('start');
+}
 $end = date("Y-m-t",$stamp);
+if (FormLib::get('end') != '') {
+    $end = FormLib::get('end');
+}
 $args = array($start.' 00:00:00',$end.' 23:59:59', $store);
 
 $output = \COREPOS\Fannie\API\data\DataCache::getFile("monthly");
@@ -61,9 +69,7 @@ if (!$output || isset($_REQUEST['recache'])){
     }
     ob_start();
 
-    $date = substr($start,0,strpos($start,":")-3);
-    $date1 = substr($end,0,strpos($end,":")-3);
-    echo ' for period <br>from: <b>'. $date . '</b> to: <b>' . $date1 . '</b><br>';
+    echo ' for period <br>from: <b>'. $start . '</b> to: <b>' . $end . '</b><br>';
 
     $query1="select t.department,
     s.superID,

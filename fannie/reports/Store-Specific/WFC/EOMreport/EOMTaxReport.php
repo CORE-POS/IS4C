@@ -110,6 +110,7 @@ class EOMTaxReport extends FannieReportPage
         $city = 0.015;
         $deli = 0.0225;
         $county = 0.005;
+        $canna = 0.10;
         $startDT = new DateTime($start);
         $noCounty = new DateTime('2017-10-01');
         if ($startDT >= $noCounty) {
@@ -188,6 +189,14 @@ class EOMTaxReport extends FannieReportPage
             sprintf('%.2f', $deliTax),
             'Deli Taxable Sales',
             sprintf('%.2f', $deliTax / $deli),
+            '',
+        );
+        
+        $data[] = array(
+            'Tax Collected on Cannabis rate items',
+            sprintf('%.2f', $collected[3]),
+            'Cannabis Taxable Sales',
+            sprintf('%.2f', $collected[3]/$canna),
             '',
         );
 
