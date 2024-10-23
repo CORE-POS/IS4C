@@ -98,11 +98,11 @@ class Compact4UpP extends \COREPOS\Fannie\API\item\FannieSignage
         } else {
             // Deal is BOGO
             $pdf->SetTextColor(244, 116, 30);
-            $pdf->SetXY($this->left + ($this->width*$column) + 16, $this->top + ($row*$this->height) + 27);
+            $pdf->SetXY($this->left + ($this->width*$column) + 16, $this->top + ($row*$this->height) + 27 - 2);
             $pdf->SetFont($this->font, 'B', $this->BOGO_MED_FONT);
             $pdf->Cell($effective_width, 6, "Buy One, Get One", 0, 'C');
 
-            $pdf->SetXY($this->left + ($this->width*$column) + 1, $this->top + ($row*$this->height) + 45);
+            $pdf->SetXY($this->left + ($this->width*$column) + 1, $this->top + ($row*$this->height) + 45 - 2);
             $pdf->SetFont($this->font, 'B', $this->BOGO_BIG_FONT);
             $pdf->Cell($effective_width, 6, 'FREE', 0, 1, 'C');
 

@@ -112,11 +112,11 @@ class Compact16UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
                 $pdf->SetTextColor(244, 116, 30);
 
-                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 45));
+                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 45) - 3);
                 $pdf->SetFont($this->font, 'B', 12);
                 $pdf->Cell($this->width, 12, 'Buy One, Get One', 0, 1, 'C');
 
-                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 36));
+                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 36) - 3);
                 $pdf->SetFont($this->font, 'B', $this->BIG_FONT);
                 $pdf->Cell($this->width, 12, 'FREE', 0, 1, 'C');
 
@@ -125,7 +125,7 @@ class Compact16UpP extends \COREPOS\Fannie\API\item\FannieSignage
             // BOGO limit
             if ($item['transLimit'] > 0) {
                 $pdf->SetFont($this->font, 'B', $this->SMALLEST_FONT);
-                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 31));
+                $pdf->SetXY($this->left + ($this->width*$column) - 3, $this->top + ($this->height*$row) + ($this->height - 31) + 1.5);
                 $pdf->Cell($this->width, 12, 'Limit ' . $item['transLimit'] / 2 . ' per customer', 0, 1, 'C');
                 $pdf->SetFont($this->font, '', $this->SMALLEST_FONT);
             }
