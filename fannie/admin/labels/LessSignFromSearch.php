@@ -396,6 +396,7 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         }
 
         $darkExtendOnly = '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="showPrice" value="1" checked />Show Price</label>';
+        $ShowBarcodeToggleHTML = '&nbsp;&nbsp;&nbsp;<label title="If supported"><input type="checkbox" name="showBarcode" value="1" checked />Show Barcode</label>';        
         $signmod = FormLib::get('signmod');
         //if (FormLib::get('signmod') == 'Legacy:WFC Dark Extended 24UP') 
         //    $ret .= $darkExtendOnly;
@@ -411,16 +412,22 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         //    $ret .= $darkExtendOnly;
         //if (FormLib::get('signmod') == 'Legacy:WFC Deli Short 24UP') 
         //    $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Regular') 
+        if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Regular') {
             $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Narrow') 
+            $ret .= $ShowBarcodeToggleHTML;
+        } else if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Narrow') {
             $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Short') 
+            $ret .= $ShowBarcodeToggleHTML;
+        } else if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Short') {
             $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli SquareTags') 
+            $ret .= $ShowBarcodeToggleHTML;
+        } else if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli SquareTags') {
             $ret .= $darkExtendOnly;
-        if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Regular') 
+            $ret .= $ShowBarcodeToggleHTML;
+        } else if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Regular') {
             $ret .= $darkExtendOnly;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
         $ret .= '</div>';
         $ret .= '<hr />';
 
