@@ -349,9 +349,9 @@ class LikeCodeAjax extends FannieRESTfulPage
         $newVal = $this->toggleStoreField($this->storeID, $this->id, 'inUse');
         if ($this->connection->tableExists('RpOrderItems')) {
             if ($newVal == 0) {
-                $prep = $this->connection->prepare("UPDATE RpOrderItems SET deleted=1 WHERE
+                $prep = $this->connection->prepare("UPDATE RpOrderItems SET deleted=1, addedBy=? WHERE
                     upc=? AND storeID=?");
-                $this->connection->execute($prep, array('LC' . $this->id, $this->storeID));
+                $this->connection->execute($prep, array(FannieAuth::getUID(), 'LC' . $this->id, $this->storeID));
             } elseif ($newVal == 1) {
                 $upc = 'LC' . $this->id;
                 $checkP = $this->connection->prepare("SELECT upc FROM RpOrderItems WHERE upc=? AND storeID=?");
@@ -374,11 +374,12 @@ class LikeCodeAjax extends FannieRESTfulPage
                     $info = $this->connection->getRow($infoP, array($this->id)); 
                     $insP = $this->connection->prepare("INSERT INTO RpOrderItems
                         (upc, storeID, categoryID, addedBy, caseSize, vendorID, vendorSKU, vendorItem, cost, backupID)
-                        VALUES (?, ?, ?, 1, ?, ?, ?, ?, ?, 0)");
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)");
                     $this->connection->execute($insP, array(
                         $upc,
                         $this->storeID,
                         $info['rpOrderCategoryID'],
+                        FannieAuth::getUID(),
                         $info['units'],
                         $info['preferredVendorID'],
                         $info['sku'],
