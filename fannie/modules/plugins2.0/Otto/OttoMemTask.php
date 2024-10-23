@@ -19,7 +19,7 @@ class OttoMemTask extends FannieTask
 
         $dbc = FannieDB::get($this->config->get('TRANS_DB'));
         $prep = $dbc->prepare("SELECT card_no, store_id FROM dlog WHERE tdate BETWEEN ? AND ?
-            AND department=992 AND store_id IN (1,2) GROUP BY card_no, store_id HAVING SUM(total) >= 20");
+            AND department=992 GROUP BY card_no, store_id HAVING SUM(total) >= 20");
         $res = $dbc->execute($prep, array($stamp1, $stamp2));
         while ($row = $dbc->fetchRow($res)) {
             $source = $row['store_id'] == 1 ? 'Hillside' : 'Denfeld';
