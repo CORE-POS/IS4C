@@ -774,6 +774,12 @@ HTML;
 </form>
 <div>$shipping</div>
 $vdepts
+<div class="form-group">
+    <span class="btn btn-default" onclick="$('tr').each(function() { $(this).show(); });">Show All</span>
+</div>
+<div class="form-group">
+    <span class="btn btn-default" onclick="let date = new Date(); let month = date.getMonth() + 1; let today = date.getFullYear() + '-' + month.toString().padStart(2, '0') + '-' + date.getDate().toString().padStart(2, '0'); $('tbody tr').each(function() { let text = $(this).find('td:eq(3)').text(); if (text != today) { console.log(today+ ', ' + text); $(this).hide(); } });">Show Only Today</span>
+</div>
 <form class="form-inline" id="review-form" name="review-form" method="get">
     {$table}
     <input type="hidden" name="vendor" value="1" />
