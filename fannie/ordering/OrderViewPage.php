@@ -830,9 +830,9 @@ class OrderViewPage extends FannieRESTfulPage
                     WHERE i.upc = ? AND i.dealSet = ?");
                 $cdiR = $dbc->execute($cdiP, $cdiA);
                 $cdiW = $dbc->fetchRow($cdiR);
-                $abtpr = $cdiW['abtpr'];
-                $units = $cdiW['units'];
-                $newPrice = $cdiW['price'];
+                $abtpr = is_array($cdiW) ? $cdiW['abtpr'] : '';
+                $units = is_array($cdiW) ? $cdiW['units'] : '';
+                $newPrice = is_array($cdiW) ? $cdiW['price'] : '';
                 if ($newPrice > 0 && str_contains($abtpr, $curCycleChr)) {
                     // item is in Coop Deals for current cycle but does not exist in POS
                     $casePrice = $newPrice * $units;
@@ -1459,7 +1459,7 @@ HTML;
 <input type=hidden value="{$orderID}" id="init_oid" />
 HTML;
 
-        $this->addScript('orderview.js?date=20240627');
+        $this->addScript('orderview.js?date='.uniqid());
         $this->addScript('../item/autocomplete.js');
         $this->addScript('../src/javascript/chosen/chosen.jquery.min.js');
         $this->addCssFile('../src/javascript/chosen/bootstrap-chosen.css');
