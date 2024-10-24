@@ -227,7 +227,7 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
     $scaleP = $dbc->prepare("SELECT * FROM scaleItems WHERE plu = ?"); 
     $scaleR = $dbc->execute($scaleP, $args);
     $scaleW = $dbc->fetchRow($scaleR);
-    $randoWeight = ($scaleW['weight'] == 0) ? true : false;
+    $randoWeight = (is_array($scaleW) && $scaleW['weight'] == 0) ? true : false;
     $lb = ($randoWeight && substr($upc, 0, 3) == '002') ? '/lb' : '';
 
     $MdescKey = array_search($upc, $updateUpcs);
