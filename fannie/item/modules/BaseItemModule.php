@@ -750,9 +750,11 @@ HTML;
     </td>
     <th class="small text-right sku-label" ondblclick="baseItem.toggleSkuOverride();">SKU</th>
     <td colspan="2">
-        <input type="text" name="vendorSKU" value="{$rowItem['sku']}" 
+        <input type="text" maxlength="13" name="vendorSKU" value="{$rowItem['sku']}" 
             class="form-control input-sm sku-field syncable-input"
-            onchange="$('#vsku{$jsVendorID}').val(this.value);" 
+            onchange="$('#vsku{$jsVendorID}').val(this.value);"
+            onkeydown="if ($(this).val().length == 13) { $(this).css('border', '2px solid orange'); } else { $(this).css('border', '1px solid lightgrey'); };" 
+            onfocusout="$(this).css('border', '1px solid lightgrey');"
             {$vFieldsDisabled} {$aliasDisabled} />
         <input type="hidden" name="isAlias" value="{$rowItem['isAlias']}" />
         <input type="hidden" name="origSKU" value="{$rowItem['sku']}" {$vFieldsDisabled} />
