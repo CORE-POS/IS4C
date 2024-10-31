@@ -53,10 +53,7 @@ class LbmxFuelProrate extends COREPOS\Fannie\API\FannieUploadPage
             if ($coding === '') {
                 break;
             }
-            if (substr($coding, 0, 5) == '51800') {
-                $fuel = $amount;
-                $fuelcode = $coding;
-            } elseif (substr($coding, 0, 5) == '51900') {
+            if (substr($coding, 0, 5) == '59100') {
                 $fuel = $amount;
                 $fuelcode = $coding;
             } else {
