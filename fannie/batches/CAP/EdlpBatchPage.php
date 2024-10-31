@@ -108,7 +108,6 @@ class EdlpBatchPage extends FannieRESTfulPage
 
                 $vendorItems->upc($itemW['upc']);
                 $vendorItems->vendorID($products->default_vendor_id());
-                $vendorItems->srp($itemW['maxPrice']);
                 $vendorItems->save();
             }
 
