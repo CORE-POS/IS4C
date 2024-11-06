@@ -27,7 +27,7 @@
         "datto/json-rpc-http": "^3.1",
         "ircmaxell/password-compat": "^1.0",
         "predis/predis": "^1.0",
-        "symfony/http-foundation": "^2.6",
+        "symfony/http-foundation": "^5.4",
         "domisys/image_barcode2": "^3.0",
         "twig/twig": "^1.25",
         "automattic/woocommerce": "^1.1",
