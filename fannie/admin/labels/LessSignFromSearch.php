@@ -306,9 +306,9 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         //$enabled = $this->config->get('ENABLED_SIGNAGE');
         $enabled = array(
             'COREPOS-Fannie-Plugin-CoopDealsSigns-SingleWfcSmartSigns12UpL',
-            'COREPOS-Fannie-API-item-signage-SingleCompact12UpL',
+            //'COREPOS-Fannie-API-item-signage-SingleCompact12UpL',
             'COREPOS-Fannie-Plugin-CoopDealsSigns-SingleWfcSmartSigns16UpL',
-            'COREPOS-Fannie-API-item-signage-SingleCompact16UpL',
+            //'COREPOS-Fannie-API-item-signage-SingleCompact16UpL',
             'COREPOS-Fannie-API-item-signage-SingleCompact4UpL',
         );
         if (count($enabled) > 0) {
@@ -320,10 +320,13 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         //$tagEnabled = $this->config->get('ENABLED_TAGS');
         $tagEnabled = array(
             'WFC SingleHybrid',
+            'WFC Hybrid Guidelines',
             'Single New WFC Deli Regular',
             'Single New WFC Deli Narrow',
             'Single New WFC Deli Short',
             'Single New WFC Deli SquareTags',
+            'Single WFC Produce SmartSigns',
+            'Single WFC Produce',
         );
         foreach (COREPOS\Fannie\API\item\signage\LegacyWrapper::getLayouts() as $l) {
             if (in_array($l, $tagEnabled) && count($tagEnabled) > 0) {
