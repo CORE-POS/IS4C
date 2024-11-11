@@ -293,6 +293,13 @@ class OrderAjax extends FannieRESTfulPage
         $discTypeP = $dbc->prepare('UPDATE PendingSpecialOrder SET discounttype=? WHERE order_id=? AND upc=?');
         $discTypeR = $dbc->execute($discTypeP, array($discountType, $id, $upc));
 
+        $casesA = array($id, $upc);
+        $casesP = $dbc->prepare("SELECT ItemQtty FROM PendingSpecialOrder WHERE order_id=? AND upc=? AND deleted = 0");
+        $casesR = $dbc->execute($casesP, $casesA);
+        while ($row = $dbc->fetchRow($casesR)) {
+            $cases = $row['ItemQtty'];
+        }
+
         if ($discountType == 1) {
             $dbc = $this->odb();
 
@@ -304,7 +311,7 @@ class OrderAjax extends FannieRESTfulPage
             $spW = $dbc->fetchRow($spR);
             if (isset($spW['special_price'])) {
                 $batchName = $spW['batchName'];
-                $specialPrice = $spW['special_price'] * $qty;
+                $specialPrice = $spW['special_price'] * $qty * $cases;
                 $newPrice = $specialPrice;
                 if (strpos($batchName, 'Co-op Deals') !== false && strpos($batchName, 'TPR') == false && strpos($batchName, 'BOGO') == false) {
                     // then item is Coop Deal, gets extra 10% 
