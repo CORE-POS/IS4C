@@ -133,6 +133,7 @@ class ShrinkEditor extends FannieRESTfulPage
         $prep = $dbc->prepare($query);
         $result = $dbc->execute($prep, array($store));
         $ret = '<form action="' . $_SERVER['PHP_SELF'] . '" method="post">';
+        $ret .= '<div class="table-responsive">';
         $ret .= '<table class="table">';
         $ret .= '<tr><th>UPC</th><th>Description</th><th>Qty</th><th>Unit Price</th><th>Total</th>
                  <th>Reason</th><th>Loss</th></tr>';
@@ -156,7 +157,7 @@ class ShrinkEditor extends FannieRESTfulPage
                         $row['quantity'],
                         $row['unitPrice'],
                         $row['total']);
-            $ret .= '<td><select name="reason[]" class="form-control">';
+            $ret .= '<td style="min-width: 160px"><select name="reason[]" class="form-control">';
             foreach ($reasons as $id => $label) {
                 $ret .= sprintf('<option %s value="%d">%s</option>',
                         ($id == $row['numflag'] ? 'selected' : ''),
@@ -164,7 +165,7 @@ class ShrinkEditor extends FannieRESTfulPage
             }
             $ret .= '</select></td>';
             $ret .= '<td>
-                        <select name="loss[]" class="form-control">
+                        <select name="loss[]" class="form-control" style="min-width: 100px">
                             <option value="L">Loss</option> 
                             <option value="C" ' . ($row['charflag'] == 'C' ? 'selected' : '') . '>Contribute</option>
                         </select>
@@ -172,12 +173,26 @@ class ShrinkEditor extends FannieRESTfulPage
                      </tr>';
         }
         $ret .= '</table>';
+        $ret .= '</div>';
         $ret .= '<p>
             <button type="submit" class="btn btn-default">Update Quantities</button>
             |
             <a href="ShrinkTool.php" class="btn btn-default">Enter More Items</a>
             </p>';
         $ret .= '</form>';
+
+        $this->addOnloadCommand("
+let width = window.innerWidth;
+if (width < 400) {
+    $('#fannie-outer-margin')
+        .css('margin-left', '0px')
+        .css('margin-right', '0px');
+    $('#fannie-main-content')
+        .css('border', 'none')
+        .css('padding', 'none')
+        .css('margin', 'none')
+}
+");
 
         return $ret;
     }
