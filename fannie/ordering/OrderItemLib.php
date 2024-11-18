@@ -228,7 +228,7 @@ class OrderItemLib
         }
 
         if (FannieConfig::config('COOP_ID') === 'WFC_Duluth' 
-            && ($prodW['priceRuleTypeID'] == 6 || $prodW['priceRuleTypeID'] == 7 || $prodW['priceRuleTypeID'] == 8)) {
+            && ($prodW['priceRuleTypeID'] == 7 || $prodW['priceRuleTypeID'] == 8)) {
             $ret['discountable'] = 0;
         }
 
