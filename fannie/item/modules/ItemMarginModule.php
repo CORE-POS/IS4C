@@ -108,15 +108,22 @@ JAVASCRIPT;
         }
         $disabled = $product->price_rule_id() <= 1 ? 'disabled' : '';
         $ret .= '<div id="custom-pricing-fields" class="form-group form-inline">
-                    <label>Custom</label>
-                    <select ' . $disabled . ' name="price_rule_type" class="form-control input-sm">
-                        <option value="null">NONE</option>
-                    {{RULE_TYPES}}
-                    </select>
-                    <input type="text" class="form-control date-field input-sm" name="rule_review_date"
-                        ' . $disabled . ' placeholder="Review Date" title="Review Date" value="{{REVIEW_DATE}}" />
-                    <input type="text" class="form-control input-sm" name="rule_details"
-                        ' . $disabled . ' placeholder="Details" title="Details" value="{{RULE_DETAILS}}" />
+                    <table class="table table-bordered">
+                        <tr><td>Custom</td>
+                        <td><select ' . $disabled . ' name="price_rule_type" class="form-control input-sm">
+                            <option value="null">NONE</option>
+                        {{RULE_TYPES}}</td>
+                        </select>
+                        <td>
+                        <input type="text" class="form-control date-field input-sm" name="rule_review_date"
+                            ' . $disabled . ' placeholder="Review Date" title="Review Date" value="{{REVIEW_DATE}}" />
+                        </td></tr>
+                        <tr><td colspan=3>
+                            <label>Price Rule Details</label>
+                            <input type="text" class="form-control input-sm" name="rule_details" style="width: 100%"
+                                ' . $disabled . ' placeholder="Details" title="Details" value="{{RULE_DETAILS}}" />
+                        </td></tr>
+                    </table>
                  </div>';
          $ret .= $futureCostHTML;
         $types = new PriceRuleTypesModel($db);
