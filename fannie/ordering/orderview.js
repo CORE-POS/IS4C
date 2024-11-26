@@ -239,6 +239,7 @@ var orderView = (function($) {
         $('.btn-search').click(mod.searchWindow);
         bindAutoComplete('input.input-vendor', '../ws/', 'vendor');
         $('select.chosen').chosen();
+        orderView.getTagNotesHTML();
     };
 
     mod.addUPC = function()
@@ -246,6 +247,7 @@ var orderView = (function($) {
         var oid = $('#orderID').val();
         var cardno = $('#memNum').val();
         var upc = $('#newupc').val();
+        upc = upc.trim();
         var qty = $('#newcases').val();
         if (/^\d+$/.test(upc.trim()) || !forceUPC) {
             $.ajax({
@@ -459,6 +461,71 @@ var orderView = (function($) {
             }
         });
     };
+
+    mod.createTagNote = function(elm) {
+        let orderID = $('#orderID').val();
+        let description = $(elm).text();
+        description = encodeURIComponent(description);
+        description = description.trim();
+        $.ajax({
+            type: 'post',
+            data: 'tagNote=1&add=1&orderID='+orderID+'&description='+description,
+        }).done(function(resp) {
+            console.log(resp);
+            orderView.getTagNotesHTML();
+        });
+
+        return false;
+    }
+
+    mod.removeTagNote = function(elm) {
+        let orderID = $('#orderID').val();
+        let description = $(elm).closest('div').find('span.input-group-addon').text();
+        description = encodeURIComponent(description);
+        description = description.trim();
+        $.ajax({
+            type: 'post',
+            data: 'tagNote=1&remove=1&orderID='+orderID+'&description='+description,
+        }).done(function(resp) {
+            console.log(resp);
+            //alert(resp);
+            //window.location.reload();
+            orderView.getTagNotesHTML();
+        });
+
+        return false;
+    }
+
+    mod.updateTagNote = function(elm) {
+        let orderID = $('#orderID').val();
+        let description = $(elm).closest('div').find('span.input-group-addon').text();
+        description = encodeURIComponent(description);
+        description = description.trim();
+        let text = $(elm).val();
+        text = encodeURIComponent(text);
+        text = text.trim();
+        $.ajax({
+            type: 'post',
+            data: 'tagNote=1&update=1&orderID='+orderID+'&description='+description+'&text='+text,
+        }).done(function(resp) {
+            console.log(resp);
+            //alert(resp);
+            //window.location.reload();
+            orderView.getTagNotesHTML();
+        });
+
+        return false;
+    }
+
+    mod.getTagNotesHTML = function() {
+        $.ajax({
+            type: 'post',
+            data: 'tagHTML=1&orderID='+orderID,
+        }).done(function(resp) {
+            console.log(resp);
+            $('#tagNotesContainer').html(resp);
+        });
+    }
 
     return mod;
 

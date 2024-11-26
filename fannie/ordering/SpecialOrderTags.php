@@ -68,7 +68,8 @@ class SpecialOrderTags extends FannieRESTfulPage
             CASE WHEN p.card_no=0 THEN o.firstName ELSE c.FirstName END as fname,
             CASE WHEN o.phone is NULL THEN m.phone ELSE o.phone END as phone,
             discounttype,quantity,o.sendEmails,
-            p.mixMatch AS vendorName
+            p.mixMatch AS vendorName,
+            o.tagNotes
             FROM {$TRANS}PendingSpecialOrder AS p
             LEFT JOIN custdata AS c ON p.card_no=c.CardNo AND personNum=p.voided
             LEFT JOIN meminfo AS m ON c.CardNo=m.card_no
@@ -96,6 +97,15 @@ class SpecialOrderTags extends FannieRESTfulPage
             $oid = $tmp[1];
 
             $row = $dbc->getRow($infoP, array($tid, $oid));
+
+            $tagNotes = $row['tagNotes'];
+            $tagObj = json_decode($tagNotes);
+            $note = null;
+            foreach ($tagObj as $item => $notes) {
+                if ($row['description'] == $item) {
+                    $note = $notes;
+                }
+            }
 
             // flag item as "printed"
             $res2 = $dbc->execute($flagP, array($tid, $oid));
@@ -144,10 +154,10 @@ class SpecialOrderTags extends FannieRESTfulPage
             }
             $pdf->Cell(100,6,"Tag Date: ".$date,0,1,'C');
             $pdf->SetX($posX);
-            $pdf->Cell(50,6,"Dept #".$row['department'],0,0,'R');
+            $pdf->Cell(100,6,"Dept #".$row['department'].' - '.$row['vendorName'],0,0,'C');
             $pdf->SetFont('Arial','B','12');
             $pdf->SetX($posX+50);
-            $pdf->Cell(50,6,$row['vendorName'],0,1,'L');
+            $pdf->Cell(50,6,' ',0,1,'L');
             $pdf->SetFont('Arial','','12');
             $pdf->SetX($posX);
             $contactType = 'Ph';
@@ -158,7 +168,22 @@ class SpecialOrderTags extends FannieRESTfulPage
             }
             $pdf->Cell(100,6,$contactType.": ".$row['phone'],0,1,'C');
             $pdf->SetXY($posX,$posY+85);
-            $pdf->Cell(160,10,"Notes: _________________________________");  
+            if ($note == null) {
+                $pdf->Cell(160,10,"Notes: _________________________________");  
+            } elseif (strlen($note) < 45) {
+                // if we need 2 lines
+                $pdf->SetXY($posX,$posY+80);
+                $pdf->Cell(160,10,"Notes: ".$note);  
+            } else {
+                // split notes into 2 str
+                $wrap = wordwrap($note, 45);
+                $lines = explode("\n", $wrap);
+
+                $pdf->SetXY($posX,$posY+80);
+                $pdf->Cell(160,10,"Notes: ".$lines[0]);  
+                $pdf->SetXY($posX,$posY+85);
+                $pdf->Cell(160,10,$lines[1]);  
+            }
             $pdf->SetX($posX);
             
             $upc = "454".str_pad($oid,6,'0',STR_PAD_LEFT).str_pad($tid,2,'0',STR_PAD_LEFT);
@@ -227,7 +252,7 @@ class SpecialOrderTags extends FannieRESTfulPage
             'discountType' => 0,
             'orderCount' => 1,
             'partCount' => 1,
-            'upc' => FormLib::get('upc'),
+            'upc' => FormLib::get('upc')
         );
         list($first,$rest) = explode(' ', FormLib::get('name'), 2);
         if ($rest == '') {
@@ -451,7 +476,8 @@ HTML;
         $oids = $this->getQueuedIDs($oids);
         $infoP = $dbc->prepare("SELECT min(datetime) as orderDate,sum(total) as value,
             count(*)-1 as items,
-            CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name
+            CASE WHEN MAX(p.card_no)=0 THEN MAX(o.lastName) ELSE MAX(c.LastName) END as name,
+            o.tagNotes
             FROM {$TRANS}PendingSpecialOrder AS p
             LEFT JOIN custdata AS c ON c.CardNo=p.card_no AND personNum=p.voided
             LEFT JOIN {$TRANS}SpecialOrders AS o ON o.specialOrderID=p.order_id 
@@ -464,6 +490,8 @@ HTML;
                 printf('<tr><td colspan="2">Order #%d (%s, %s)</td><td>Amt: $%.2f</td>
                     <td>Items: %d</td><td>&nbsp;</td></tr>',
                     $oid,$row['orderDate'],$row['name'],$row['value'],$row['items']);
+
+                echo "<input type=\"hidden\" name=\"tagNotes\" value=\"{$row['tagNotes']}\" />";
             }
 
             $res = $dbc->execute($itemP, array($oid));
