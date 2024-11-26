@@ -43,7 +43,7 @@ class ProdReviewModule extends \COREPOS\Fannie\API\item\ItemModule
         }
         $newItem = ($exists === false && count($reviews) == 0) ? 'checked' : '';
         if (empty($reviews)) {
-            $reviews[] = array('upc'=>$upc, 'user'=>'n/a', 'reviewed'=>'never', 'comment'=>'+', 'vendorID'=>$defaultID, 'vendorName'=>$defaultID);
+            $reviews[] = array('upc'=>$upc, 'user'=>'n/a', 'reviewed'=>'never', 'comment'=>'', 'vendorID'=>$defaultID, 'vendorName'=>$defaultID);
         }
         $reviewRet = '';
         foreach ($reviews as $row) {
@@ -54,14 +54,19 @@ class ProdReviewModule extends \COREPOS\Fannie\API\item\ItemModule
             $comment = $row['comment'];
 
             $reviewRet .= "<div class=\"panel panel-info\" style=\"width: 500px;\">";
-            $reviewRet .= "<div class=\"panel-heading\">$vendorName</div>";
+            $reviewRet .= "<div class=\"panel-heading\" style=\"height: 40px\">";
+            $reviewRet .= "<div style=\"float: left;\">$vendorName</div><div style=\"float: right; \">
+                <span class=\"fas fa-trash\" title=\"Delete\">&nbsp;<input type=\"checkbox\" class=\"prodReviewDelete\" name=\"delete\" value=\"1\"/
+                    onclick=\"let checked = $(this).is(':checked'); if (checked == true) { $(this).closest('.panel').find('.reviewCheckboxLabel').text('Delete this review'); } else {  $(this).closest('.panel').find('.reviewCheckboxLabel').text('Mark as reviewed today '); };\"></span>
+                </div>";
+            $reviewRet .= "</div>";
             $reviewRet .= "<div class=\"panel-body\">";
             $reviewRet .= "<div><strong>Last Reviewed</strong> $reviewed by $user</div>";
             $reviewRet .= "<div><strong>Comments</strong></div><div><textarea name=\"prodReviewComment[$vendorID]\" class=\"form-control\">$comment</textarea></div>";
             $reviewRet .= "<div>
-                <label>Mark as reviewed today 
-                    <input type=\"checkbox\" name=\"prodReviewCheck[$vendorID]\" value=\"1\" {$newItem} />
-                </label></div>";
+                <label class=\"reviewCheckboxLabel\">Mark as reviewed today </label>
+                <input type=\"checkbox\" name=\"prodReviewCheck[$vendorID]\" value=\"1\" {$newItem} />
+                </div>";
             $reviewRet .= "</div>";
             $reviewRet .= "</div>";
         }
@@ -85,24 +90,37 @@ HTML;
         $dbc = $this->db();
         $data = FormLib::get('prodReviewCheck', array());
         $comments = FormLib::get('prodReviewComment');
+        $delete = FormLib::get('delete', false);
         $user = FannieAuth::getUID();
 
         $existsP = $dbc->prepare("SELECT reviewed FROM prodReview WHERE upc = ? AND vendorID = ?");
 
         foreach ($data as $vendorID => $checked) {
+
+            if ($delete == 1) {
+                $args = array($upc, $vendorID);
+                $prep = $dbc->prepare("DELETE FROM prodReview
+                    WHERE upc = ?  AND vendorID = ?");
+                $dbc->execute($prep, $args);
+
+                return false;
+            }
+
             if ($checked == 1) {
                 $comment = (isset($comments[$vendorID])) ? $comments[$vendorID] : null;
 
                 $exists = $dbc->getValue($existsP, array($upc, $vendorID));
                 if ($exists) {
-                    $args = array($comment, $user, $upc, $vendorID);
-                    $prep = $dbc->prepare("UPDATE prodReview
-                        SET comment = ?,
-                            reviewed = DATE(NOW()),
-                            user = ?
-                        WHERE upc = ?
-                            AND vendorID = ? ");
-                    $dbc->execute($prep, $args);
+                    if ($delete == false) {
+                        $args = array($comment, $user, $upc, $vendorID);
+                        $prep = $dbc->prepare("UPDATE prodReview
+                            SET comment = ?,
+                                reviewed = DATE(NOW()),
+                                user = ?
+                            WHERE upc = ?
+                                AND vendorID = ? ");
+                        $dbc->execute($prep, $args);
+                    }
                 } else {
                     $args = array($comment, $upc, $vendorID, $user);
                     $prep = $dbc->prepare("INSERT INTO prodReview (comment, reviewed, upc, vendorID, user)
