@@ -79,6 +79,10 @@ class ItemList4UpL extends \COREPOS\Fannie\API\item\FannieSignage
 
         $data = $this->loadItems();
         usort($data, function($a, $b) {
+            $a['description'] = str_replace('Organic', '', $a['description']);
+            $a['description'] = trim($a['description']);
+            $b['description'] = str_replace('Organic', '', $b['description']);
+            $b['description'] = trim($b['description']);
             if ($a['description'] < $b['description']) {
                 return -1;
             } elseif ($a['description'] > $b['description']) {
