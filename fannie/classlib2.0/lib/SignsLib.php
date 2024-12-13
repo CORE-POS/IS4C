@@ -65,7 +65,7 @@ $('a.layoutHeading').click(function(){
             // submit form if called from SignFromSearch
             let page = window.location.pathname;
             let pageName = page.split("/").pop();
-            if (pageName == 'SignFromSearch.php') {
+            if (pageName == 'SignFromSearch.php' || pageName == 'LessSignFromSearch.php') {
                 document.forms['signform'].submit();
             }
         }
@@ -86,7 +86,7 @@ $('#close-visualSelect').click(function(){
 JAVASCRIPT;
     }
 
-    public static function visualSignSelectHTML()
+    public static function visualSignSelectHTML($less=false)
     {
         $data = array(
             // array( file name, shown name, class name )
@@ -117,11 +117,34 @@ JAVASCRIPT;
             array('DeliNarrow.png', 'Deli Narrow Tags (less wide)', 'Legacy:New WFC Deli Narrow'),
             array('DeliShort.png', 'Deli Short Tags (less high)', 'Legacy:New WFC Deli Short'),
             array('DeliSquare.png', 'Deli HFM Tags', 'Legacy:New WFC Deli SquareTags'),
+
+            array('NewDeliSoup4UpL.png', 'Deli Soup', 'Legacy:New Deli Soup 4UpL'),
+
             array('LegacyWFCHerbNspiceFlat2.png', 'Herb & Spice (xs)', 'Legacy:WFC HerbNspice Flat'),
             array('Giganto4UpSingle.png', 'Single Giganto (4UP)', 'Giganto4UpSingle'),
             array('WFC_Produce_SmartSigns.png', 'Produce Smart Signs', 'Legacy:WFC Produce SmartSigns'),
         );
         $dummySelect = "";
+
+        $lessData = array(
+            array('LessLegacyWFCHybrid.png', 'Shelf Tags Hybrid (Standard Shelf Tag)', 'Legacy:WFC SingleHybrid'),
+            array('LessLegacyWFCHybridGuidelines.png', 'Shelf Tags with Guidelines', 'Legacy:WFC Hybrid Guidelines'),
+
+            array('LessLegacyWFCProduce.png', 'Shelf Tags (Produce)', 'Legacy:Single WFC Produce'),
+            array('LessWFC_Produce_SmartSigns.png', 'Produce Smart Signs', 'Legacy:Single WFC Produce SmartSigns'),
+
+            array('LessSmart4Up.png', 'Single 4Up (use pre-printed)', 'SingleCompact4UpL'),
+            array('LessSmart12Up.png', 'Smart 12Up', 'SingleWfcSmartSigns12UpL'),
+            array('LessSmart16Up.png', 'Smart 16Up', 'SingleWfcSmartSigns16UpL'),
+
+            array('LessDeliRegular.png', 'Deli Regular Tags', 'Legacy:Single New WFC Deli Regular'),
+            array('LessDeliNarrow.png', 'Deli Narrow Tags (less wide)', 'Legacy:Single New WFC Deli Narrow'),
+            array('LessDeliShort.png', 'Deli Short Tags (less high)', 'Legacy:Single New WFC Deli Short'),
+            array('LessDeliSquare.png', 'Deli HFM Tags', 'Legacy:Single New WFC Deli SquareTags'),
+        );
+
+        if ($less === true) 
+            $data = $lessData;
 
         $i = 0;
         $output = "<div class=\"row\">";
