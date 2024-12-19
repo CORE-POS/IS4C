@@ -303,15 +303,19 @@ class OrderAjax extends FannieRESTfulPage
         if ($discountType == 1) {
             $dbc = $this->odb();
 
-            $spP = $dbc->prepare("SELECT p.special_price, b.batchName
-                FROM products p
-                    LEFT JOIN batches b ON b.batchID=p.batchID
-                WHERE p.upc = ? LIMIT 1");
+            $spP = $dbc->prepare("SELECT bl.salePrice, b.batchName
+                FROM batchList bl
+                    LEFT JOIN batches b ON b.batchID=bl.batchID
+                WHERE bl.upc = ? 
+                    AND b.batchType = 1
+                    AND b.startDate <= NOW()
+                    AND b.endDate >= NOW()
+                LIMIT 1");
             $spR = $dbc->execute($spP, array($upc));
             $spW = $dbc->fetchRow($spR);
-            if (isset($spW['special_price'])) {
+            if (isset($spW['salePrice'])) {
                 $batchName = $spW['batchName'];
-                $specialPrice = $spW['special_price'] * $qty * $cases;
+                $specialPrice = $spW['salePrice'] * $qty * $cases;
                 $newPrice = $specialPrice;
                 if (strpos($batchName, 'Co-op Deals') !== false && strpos($batchName, 'TPR') == false && strpos($batchName, 'BOGO') == false) {
                     // then item is Coop Deal, gets extra 10% 
