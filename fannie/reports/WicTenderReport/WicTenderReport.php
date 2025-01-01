@@ -84,7 +84,7 @@ class WicTenderReport extends FannieReportPage
                 MONTH(tdate) AS month,
                 DAY(tdate) AS day,
                 trans_num,
-                SUM(CASE WHEN d.description=\'WIC\' THEN 1 ELSE 0 END) as usedWic
+                SUM(CASE WHEN d.description=\'eWIC\' THEN 1 ELSE 0 END) as usedWic
             FROM dlog_90_view AS d
                 LEFT JOIN ' . $this->config->get('OP_DB') . $dbc->sep() . 'products AS p ON p.upc=d.upc AND p.store_id=d.store_id
             WHERE d.tdate BETWEEN \'' . $date1 . ' 00:00:00\'
