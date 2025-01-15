@@ -463,6 +463,27 @@ function toggleAll(elem, selector) {
 function updateAll(val, selector) {
     $(selector).val(val);
 }
+
+$(".taxSelect").each(function() {
+    let value = $(this).val();
+    let elm = $(this);
+    console.log('value: '+value);
+    switch (value) {
+        case '0':
+            break;
+        case '1':
+            elm.addClass('alert-warning');
+            break;
+        case '2':
+            elm.addClass('alert-info');
+            break;
+        case '3':
+            elm.addClass('alert-success');
+            break;
+        default:
+            break;
+    }
+});
         <?php
         return ob_get_clean();
     }
