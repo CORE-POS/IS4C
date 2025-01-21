@@ -125,49 +125,50 @@ SQL;
                 } else {
                     $sets['12Bogo'][] = $upcLn;
                 }
-            }
-
-            if ($owner == 'PRODUCE') {
-                if ($isTPR) {
-                    $sets['16TprPro'][] = $upcLn;
-                } else {
-                    $sets['16CdPro'][] = $upcLn;
-                }
-            }
-
-            if ($owner == 'DELI') {
-                if ($isTPR) {
-                    $sets['12TprDel'][] = $upcLn;
-                } else {
-                    $sets['12CdDel'][] = $upcLn;
-                }
-            }
-
-            if ($owner == 'WELLNESS') {
-                if ($isTPR) {
-                    $sets['16TprWell'][] = $upcLn;
-                } else {
-                    $sets['16CdWell'][] = $upcLn;
-                }
-            }
-
-            if (!in_array($owner, array('WELLNESS', 'PRODUCE', 'DELI'))) {
-                foreach ($sectionsArr as $section) {
+            } else {
+                if ($owner == 'PRODUCE') {
                     if ($isTPR) {
-                        if ($narrow == 1 || strpos($section, 'Bev') !== false) {
-                            $sets['16TprMer'][] = $upcLn;
-                        } else {
-                            $sets['12TprMer'][] = $upcLn;
-                        }
+                        $sets['16TprPro'][] = $upcLn;
                     } else {
-                        if ($narrow == 1 || strpos($section, 'Bev') !== false) {
-                            $sets['16CdMer'][] = $upcLn;
+                        $sets['16CdPro'][] = $upcLn;
+                    }
+                }
+
+                if ($owner == 'DELI') {
+                    if ($isTPR) {
+                        $sets['12TprDel'][] = $upcLn;
+                    } else {
+                        $sets['12CdDel'][] = $upcLn;
+                    }
+                }
+
+                if ($owner == 'WELLNESS') {
+                    if ($isTPR) {
+                        $sets['16TprWell'][] = $upcLn;
+                    } else {
+                        $sets['16CdWell'][] = $upcLn;
+                    }
+                }
+
+                if (!in_array($owner, array('WELLNESS', 'PRODUCE', 'DELI'))) {
+                    foreach ($sectionsArr as $section) {
+                        if ($isTPR) {
+                            if ($narrow == 1 || strpos($section, 'Bev') !== false) {
+                                $sets['16TprMer'][] = $upcLn;
+                            } else {
+                                $sets['12TprMer'][] = $upcLn;
+                            }
                         } else {
-                            $sets['12CdMer'][] = $upcLn;
+                            if ($narrow == 1 || strpos($section, 'Bev') !== false) {
+                                $sets['16CdMer'][] = $upcLn;
+                            } else {
+                                $sets['12CdMer'][] = $upcLn;
+                            }
                         }
                     }
                 }
             }
+
 
         }
         echo $dbc->error();
