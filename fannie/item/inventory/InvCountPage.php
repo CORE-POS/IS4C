@@ -283,6 +283,12 @@ class InvCountPage extends FannieRESTfulPage
                 $query .= ' AND s.superID=? ';
             }
         } catch (Exception $ex){}
+        try {
+            if ($this->form->brand !== '') {
+                $args[] = $this->form->brand;
+                $query .= ' AND p.brand=? ';
+            }
+        } catch (Exception $ex){}
         $query .= ' ORDER BY p.upc';
         $prep = $this->connection->prepare($query);
         $ret = '<form method="post">
@@ -545,6 +551,10 @@ class InvCountPage extends FannieRESTfulPage
                         <option value="">Optional</option>
                     ' . $supers->toOptions(-999) . '
                     </select>
+                </div>
+                <div class="form-group">
+                    <label>Brand</label>
+                    <input type="text" name="brand" class="form-control" placeholder="Optional">
                 </div>
                 <div class="form-group">
                     <label>Store</label>
