@@ -40,6 +40,10 @@ class SaItemList extends SaHandheldPage
         $settings = $this->config->get('PLUGIN_SETTINGS');
         $this->connection->selectDB($this->config->get('OP_DB'));
         $uid = FannieAuth::getUID($this->current_user);
+        $showUser = FormLib::get('showUser', false);
+        if ($showUser) {
+            $uid = $showUser;
+        }
         $prep = $this->connection->prepare('
             SELECT s.upc,
                 p.brand,
@@ -280,6 +284,11 @@ HTML;
 
     public function get_view()
     {
+        $showUser = FormLib::get("showUser", false);
+        $uidUrl = '';
+        if ($showUser) {
+            $uidUrl = '&showUser='.$showUser;
+        }
         $elem = '#upc_in';
         if (isset($this->current_item_data['upc']) && isset($this->current_item_data['desc'])) $elem = '#cur_qty';
         $this->addOnloadCommand('$(\'#upc_in\').focus();');
@@ -301,7 +310,7 @@ HTML;
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             |
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <a href="?export=1&set=' . $this->section . '" id="exportLink" class="btn btn-default btn-info">
+            <a href="?export=1&set=' . $this->section . $uidUrl . '" id="exportLink" class="btn btn-default btn-info">
                 Export List
             </a>
             </p>';
@@ -410,7 +419,7 @@ HTML;
                 AND s.quantity <> 0
             GROUP BY s.uid, u.name
             ORDER BY u.name');
-        $ret .= '<select class="form-control" onchange="window.location=\'?showUser=\'+this.value;">';
+        $ret .= '<select class="form-control" name="showUser" onchange="window.location=\'?showUser=\'+this.value;">';
         $found = false;
         if ($itemCount == 0) {
             $found = true;
