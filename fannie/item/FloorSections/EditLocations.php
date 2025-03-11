@@ -322,7 +322,7 @@ class EditLocations extends FannieRESTfulPage
                             {$storePicker['html']}
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-default btn-xs xs form-control">Submit</button>
+                            <button class="btn btn-default btn-xs xs form-control" id="thesubmitbtn">Submit</button>
                         </div>
                     </div>
                 </div>
