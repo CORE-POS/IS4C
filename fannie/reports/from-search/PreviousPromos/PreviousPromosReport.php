@@ -53,6 +53,7 @@ class PreviousPromosReport extends FannieReportPage
                 AND b.batchType IN (1,2)
                 AND b.discountType > 0
                 AND b.endDate < " . $dbc->curdate() . "
+                AND l.signMultiplier <> -3
             ORDER BY b.endDate DESC
         ");
 
