@@ -37,6 +37,8 @@ class EditLocations extends FannieRESTfulPage
 
     public function preprocess()
     {
+        $this->addRoute('post<quickset>');
+        $this->addRoute('post<addsession>');
         $this->addRoute('post<newSubSection>');
         $this->addRoute('post<section>');
         $this->addRoute('post<removesection>');
@@ -44,6 +46,69 @@ class EditLocations extends FannieRESTfulPage
         $this->addRoute('get<upc>');
 
         return parent::preprocess();
+    }
+
+    public function post_quickset_handler()
+    {
+        $section = FormLib::get("sect", false);
+        $subsection = FormLib::get("subs", false);
+        $upc = FormLib::get("upc", false);
+        $storeID = FormLib::get("storeID", false);
+        $mode = FormLib::get("mode", false);
+
+        $dbc = $this->connection;
+        $dbc->selectDB($this->config->get('OP_DB'));
+
+        if ($mode == 'reset') {
+            // 1. delete all FSPM rows for item (for storeID)
+            $ids = array();
+            $getA = array($upc, $storeID);
+            $getP = $dbc->prepare("SELECT
+                floorSectionProductMapID
+                FROM FloorSectionProductMap m
+                    INNER JOIN FloorSections s ON s.floorSectionID=m.floorSectionID
+                WHERE upc = ? 
+                    AND s.storeID = ?");
+            $getR = $dbc->execute($getP, $getA);
+            while ($row = $dbc->fetchRow($getR)) {
+                $ids[] = $row['floorSectionProductMapID'];
+            }
+
+            $delP = $dbc->prepare("DELETE from FloorSectionProductMap
+                WHERE floorSectionProductMapID = ?");
+            foreach ($ids as $id) {
+                $delA = array($id);
+                $delR = $dbc->execute($delP, $delA);
+            }
+        }
+
+        // 2. insert into FSPM
+        $insertA = array($upc, $section);
+        $insertP = $dbc->prepare("INSERT INTO
+            FloorSectionProductMap (upc, floorSectionID)
+                VALUES (?, ?)");
+        $insertR = $dbc->execute($insertP, $insertA);
+        // 3. insert into FSS
+        $fssA = array($upc, $section, $subsection);
+        $fssP = $dbc->prepare("INSERT INTO FloorSubSections (upc, floorSectionID, subSection) VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE subSection=VALUES(subSection)");
+        $fssR = $dbc->execute($fssP, $fssA);
+
+        return false;
+    }
+
+    public function post_addsession_handler()
+    {
+        $section = FormLib::get("sect", false);
+        $subsection = FormLib::get("subs", false);
+        $unsub = FormLib::get("unsub", false);
+        if ($unsub === 'true') {
+            unset($_SESSION['EditLocationDefault']);
+        } else { 
+            $_SESSION['EditLocationDefault'] = "$section,$subsection";
+        }
+
+        return false;
     }
 
     public function post_newSubSection_handler()
@@ -186,6 +251,12 @@ class EditLocations extends FannieRESTfulPage
         $dbc = $this->connection;
         $dbc->selectDB($this->config->get('OP_DB'));
 
+        if (isset($_SESSION['EditLocationDefault'])) {
+            echo "<input type=\"hidden\" name=\"EditLocationDefault\" value=\"{$_SESSION['EditLocationDefault']}\" />";
+        }
+
+        $sessionDefault = FormLib::get('EditLocationDefault', false);
+
         $storeID = FormLib::get('storeID');
         $storePicker = FormLib::storePicker('storeID');
 
@@ -280,6 +351,26 @@ class EditLocations extends FannieRESTfulPage
             'orange',
             $upc, 0, 0, $storeID
         );
+        if (isset($_SESSION['EditLocationDefault'])) {
+            //$sectiontext = str_replace($_SESSION['EditLocationDefault'], ",", ' = ');
+
+            //$subSections[$row['floorSectionID']][] = $row['subSection'];
+            $info = explode(",", $_SESSION['EditLocationDefault']);
+            $dsection = $sections[$info[0]];
+
+            $td .= "<tr style=\"background-color: plum; height: 30px;\"><td>
+                <div style=\"height: 24px;\"></div>
+                <div><span class='btn btn-default btn-sm' onclick='setQuickLocation(\"{$info[0]}\", \"{$info[1]}\", \"reset\"); return false;'>ReSet to<b> $dsection - {$info[1]} </b></span></div>
+                <div style=\"height: 24px;\"></div>
+                <div><span class='btn btn-default btn-sm' onclick='setQuickLocation(\"{$info[0]}\", \"{$info[1]}\", \"add\"); return false;'>Add Loc.<b> $dsection - {$info[1]}</b> </span></div>
+                <div style=\"height: 24px;\"></div>
+                <div><span class='btn btn-default btn-sm' style='background: tomato; color: white; text-shadow: 1px 1px crimson;' onclick='setDefaultLocation(1, 1, \"true\")'>Unset Default</span></div>
+                </td></tr></td></tr>";
+
+        } else {
+            $td .= "<tr style=\"background-color: plum; height: 30px;\" id=\"set-default-location-session\"><td><div>
+                        <b>Press</b> to REM cur location</div> </td></tr></td></tr>";
+        }
         echo $dbc->error();
         $this->addOnloadCommand('$(\'#upc\').focus();');
         $this->addOnloadCommand("enableLinea('#upc');\n");
@@ -338,20 +429,21 @@ class EditLocations extends FannieRESTfulPage
             <form class="form-inline" id="table-update">
             <div class="table-responsive"><table class="table table-bordered table-sm small" id="handheldtable"><thead>$th</thead><tbody>$td</tbody></table></div>
             </form>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php?list=">Edit List</a>
-            </div>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php?remove=">Remove List</a>
-            </div>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../item/FloorSections/EditLocations.php">Edit Sub-Locations</a>
-            </div>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/SMS/scan/ScannerSMS.php">SMS List Builder</a>
-            </div>
-            <div class="form-group" align="center">
-                <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Mobile Menu</a>
+            <div align="center" style="margin-bottom: 10px;"><i>Related Pages</i></div>
+            <div style="padding: 26px; border: 1px solid lightgrey; ">
+                <div class="form-group" align="center">
+                    <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php?list=">Edit List</a>
+                </div>
+                <div class="form-group" align="center">
+                    <a class="btn btn-default menu-btn" href="../../item/ProdLocationEditor.php?remove=">Remove List</a>
+                </div>
+                <div class="form-group" align="center">
+                    <a class="btn btn-default menu-btn" href="../../item/FloorSections/EditLocations.php">Edit Sub-Locations</a>
+                </div>
+                <div style="border-bottom: 1px solid lightgrey; margin: 15px;"></div>
+                <div class="form-group" align="center">
+                    <a class="btn btn-default menu-btn" href="../../modules/plugins2.0/ShelfAudit/SaMenuPage.php">Mobile Menu</a>
+                </div>
             </div>
         </div>
         <div class="col-lg-4"></div>
@@ -741,6 +833,66 @@ $('.filter-checkbox').on('click', function() {
         //$('#section-filters').append('false');
     }
 });
+
+const setDefaultLocation = function(section, subsection, unsub=false) {
+    console.log('yesss, honey');
+    $.ajax({
+        type: 'post',
+        data: 'addsession=true&sect='+section+'&subs='+subsection+'&unsub='+unsub,
+        url: 'EditLocations.php',
+        success: function(response) {
+            console.log('success, apparently');
+            if (unsub='true')
+                window.location.reload();
+        },
+        error: function(response) {
+            console.log('Something went wrong: ' + response);
+        },
+    });
+}
+
+const setQuickLocation = function(sect, subs, mode) {
+    let storeID = $('select[name="storeID"] option:selected').val();
+    let upc = $('#upc').val();
+    $.ajax({
+        type: 'post',
+        data: 'quickset=true&upc='+upc+'&storeID='+storeID+'&sect='+sect+'&subs='+subs+'&mode='+mode,
+        url: 'EditLocations.php',
+        success: function(response) {
+            window.location.reload();
+        },
+        error: function(response) {
+            console.log('Something went wrong: ' + response);
+        },
+    });
+}
+
+$('#set-default-location-session').on('click', function() {
+    let storeID = $('select[name="storeID"] option:selected').val();
+    let upc = $('#upc').val();
+    let count = $('.edit-floorSection').length;
+    if (count > 2) {
+        alert('In order to set default location, item must have only one location set'); 
+
+        return false;
+    }
+    let sect = $('.edit-floorSection:first option:selected'); 
+    let sectno = sect.val();
+    let subs = $('.edit-subsection:first option:selected'); 
+    let subsno = subs.val();
+    let info = sectno + ',' + subsno;
+    let text = sect.text() + " - " + subs.text();
+    setDefaultLocation(sectno, subsno);
+    //let newHTML = "<div><b>Default</b>: " + text + "</div>";
+    //let newHTML = "<div style='height: 24px;'></div>";
+    //newHTML += "<div><button class='btn btn-default btn-sm' return false;'>ReSet to<b> "+text+"</b></button></div>";
+    //newHTML += "<div style='height: 24px;'></div>";
+    //newHTML += "<div><button class='btn btn-default btn-sm'>Add Loc.<b>"+text+"</b> </button></div>";
+    //newHTML += "<div style='height: 24px;'></div>";
+    //newHTML += "<div><button class='btn btn-default btn-sm' style='background: tomato; color: white; text-shadow: 1px 1px crimson;' onclick='setDefaultLocation(1, 1, 'true')'>Unset Default</button></div>";
+    //$(this).html(newHTML);
+});
+
 JAVASCRIPT;
     }
 
