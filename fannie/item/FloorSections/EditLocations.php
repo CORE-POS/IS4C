@@ -628,7 +628,10 @@ HTML;
     public function javascriptContent()
     {
         return <<<JAVASCRIPT
-$('head').append('<meta name = "viewport" content = "width=device-width, minimum-scale=1.0, maximum-scale = 1.0, user-scalable = no">');
+let userAgent = navigator.userAgent;
+if (!userAgent.includes("TC52X")) {
+    $('head').append('<meta name = "viewport" content = "width=device-width, minimum-scale=1.0, maximum-scale = 1.0, user-scalable = no">');
+}
 
 $('#upc').focus(function(){
     $(this).select();

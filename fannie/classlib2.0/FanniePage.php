@@ -168,10 +168,16 @@ class FanniePage extends \COREPOS\common\ui\CorePage
             if (file_exists(__DIR__ . '/../src/javascript/ebapi-modules.js')) {
                 $this->addScript($url . 'src/javascript/ebapi-modules.js');
             }
-            if (strpos($_SERVER['HTTP_USER_AGENT'], 'Linux; Android 10; K') !== false) {
-                // call Zebra TC52X script(s)
-                $this->addScript($url . 'src/javascript/TC52X/core.js');
-            }
+        }
+
+        if (strpos($_SERVER['HTTP_USER_AGENT'], 'TC52X') !== false) {
+            // call Zebra TC52X script(s)
+            //$this->addScript($url . 'src/javascript/TC52X/core.js');
+            $this->addScript($url . 'src/javascript/TC52X/resizescreen.js');
+        }
+
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $this->addScript($url . 'src/javascript/matomo.js?date=20241107');
         }
 
         echo $this->getMessages();
