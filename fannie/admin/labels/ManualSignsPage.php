@@ -448,6 +448,43 @@ $visualSelectCSS
 HTML;
     }
 
+    public function javascript_content()
+    {
+        return <<<JAVASCRIPT
+var lastChecked = null;
+/*
+    Shift Click Checkboxes
+*/
+var i = 0;
+$('.exc').each(function(){
+    $(this).attr('data-index', i);
+    i++;
+});
+$('.exc').on("click", function(e){
+    if(lastChecked && e.shiftKey) {
+        var i = parseInt(lastChecked.attr('data-index'));
+        var j = parseInt($(this).attr('data-index'));
+        var checked = $(this).is(":checked");
+
+        var low = i;
+        var high = j;
+        if (i>j){
+            var low = j;
+            var high = i;
+        }
+
+        for(var c = low; c < high; c++) {
+            if (c != low && c!= high) {
+                var check = checked ? true : false;
+                $('input[data-index="'+c+'"').trigger('click');
+            }
+        }
+    }
+    lastChecked = $(this);
+});
+JAVASCRIPT;
+    }
+
     public function helpContent()
     {
         return '
