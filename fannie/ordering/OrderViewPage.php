@@ -441,7 +441,7 @@ class OrderViewPage extends FannieRESTfulPage
             }
         }
 
-        $soModel = new SpecialOrderModel($dbc);
+        $soModel = new SpecialOrdersModel($dbc);
         $soModel->specialOrderID($this->orderID);
         $soModel->load();
         $soModel->tagNotes = json_encode($tags);
@@ -1199,14 +1199,28 @@ HTML;
             $depts[$deptW['dept_no']] = $deptW['dept_name'];
         }
 
+        $supers = array();
+        $superBkgs = array(
+            "PRODUCE" => "#D4EDDA",
+            "DELI" => "#FFF3CD",
+        );
+        $superP = $dbc->prepare("SELECT dept_ID,super_name FROM MasterSuperDepts order by dept_ID");
+        $superR = $dbc->execute($superP);
+        $supers = array(0=>'Unassigned');
+        while($superW = $dbc->fetch_row($superR)) {
+            $supers[$superW['dept_ID']] = $superW['super_name'];
+        }
+
         $ret = '<table class="table table-bordered table-striped">';
         $ret .= '<tr><th>UPC</th><th>SKU</th><th>Description</th><th>Cases</th><th>SRP</th><th>Actual</th><th>Qty</th><th>Dept</th><th>&nbsp;</th></tr>';
-        $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,department,
+        $prep = $dbc->prepare("SELECT o.upc,o.description,total,quantity,o.department,
             v.sku,ItemQtty,regPrice,o.discounttype,o.charflag,o.mixMatch,
-            o.trans_id,o.unitPrice,o.memType,o.staff,o.trans_status,o.discountable
+            o.trans_id,o.unitPrice,o.memType,o.staff,o.trans_status,o.discountable,
+            m.super_name
             FROM {$TRANS}PendingSpecialOrder as o
                 LEFT JOIN vendors AS n ON LEFT(n.vendorName, LENGTH(o.mixMatch)) = o.mixMatch
                 LEFT JOIN vendorItems as v on o.upc=v.upc AND n.vendorID=v.vendorID
+                LEFT JOIN MasterSuperDepts AS m ON m.dept_ID=o.department
             WHERE order_id=? AND trans_type='I' AND o.deleted=0
             ORDER BY trans_id DESC, v.sku DESC");
         $res = $dbc->execute($prep, array($orderID));
@@ -1242,7 +1256,8 @@ HTML;
                         value="%.2f" name="qty" />
                         <input type="hidden"  value="%d" class="item-field" name="discounttype" /></td>
                     <td><select class="form-control input-sm editDept item-field"
-                        name="dept">',
+                        name="dept" style="background: %s"
+                        onChange="let newbkg = $(this).find(\'option:selected\').css(\'background\'); $(this).css(\'background\', newbkg);"; return false;">',
                     $row['upc'],
                     (!empty($row['sku'])?$row['sku']:'&nbsp;'),
                     $row['description'],
@@ -1250,10 +1265,12 @@ HTML;
                     $row['trans_id'],$row['regPrice'],
                     $row['trans_id'],$row['total'],
                     $row['trans_id'], $row['quantity'],
-                    $row['discounttype']
+                    $row['discounttype'],
+                    (array_key_exists($supers[$row['department']], $superBkgs)) ? $superBkgs[$supers[$row['department']]] : "white",
                 );
             foreach($depts as $id=>$name) {
-                $ret .= sprintf('<option value="%d" %s>%d %s</option>',
+                $ret .= sprintf('<option style="background: %s" value="%d" %s>%d %s</option>',
+                    (array_key_exists($supers[$id], $superBkgs)) ? $superBkgs[$supers[$id]] : "white",
                     $id,
                     ($id==$row['department']?'selected':''),
                     $id,$name);
