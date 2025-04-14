@@ -44,7 +44,7 @@ class ManufacturerMovementReport extends FannieReportPage
         return parent::preprocess();
     }
 
-    private function upcQuery($dlog, $type_condition, $store)
+    private function upcQuery($dlog, $type_condition, $store, $ignoreMemType)
     {
         return "
             SELECT t.upc,
@@ -62,6 +62,7 @@ class ManufacturerMovementReport extends FannieReportPage
             WHERE $type_condition
                 AND t.tdate BETWEEN ? AND ?
                 AND " . DTrans::isStoreID($store, 't') . "
+                AND t.memType NOT IN $ignoreMemType
             GROUP BY t.upc,
                 p.brand,
                 p.description,
@@ -71,7 +72,7 @@ class ManufacturerMovementReport extends FannieReportPage
             ORDER BY SUM(t.total) DESC";
     }
 
-    private function dateQuery($dlog, $type_condition, $store)
+    private function dateQuery($dlog, $type_condition, $store, $ignoreMemType)
     {
         return "
             SELECT YEAR(t.tdate) AS year,
@@ -84,6 +85,7 @@ class ManufacturerMovementReport extends FannieReportPage
             WHERE $type_condition
                 AND t.tdate BETWEEN ? AND ?
                 AND " . DTrans::isStoreID($store, 't') . "
+                AND t.memType NOT IN $ignoreMemType
             GROUP BY YEAR(t.tdate),
                 MONTH(t.tdate),
                 DAY(t.tdate)
@@ -92,7 +94,7 @@ class ManufacturerMovementReport extends FannieReportPage
                 DAY(t.tdate)";
     }
 
-    private function deptQuery($dlog, $type_condition, $store)
+    private function deptQuery($dlog, $type_condition, $store, $ignoreMemType)
     {
         return "
             SELECT d.dept_no,
@@ -107,6 +109,7 @@ class ManufacturerMovementReport extends FannieReportPage
             WHERE $type_condition
                 AND t.tdate BETWEEN ? AND ?
                 AND " . DTrans::isStoreID($store, 't') . "
+                AND t.memType NOT IN $ignoreMemType
             GROUP BY d.dept_no,
                 d.dept_name,
                 s.superID
@@ -137,18 +140,19 @@ class ManufacturerMovementReport extends FannieReportPage
         $type_condition = "t.upc IN ({$inStr})";
 
         $query = "";
+        $ignoreMemType = DTrans::memTypeIgnore($dbc);
         $args[] = $date1.' 00:00:00';
         $args[] = $date2.' 23:59:59';
         $args[] = $store;
         switch ($groupby) {
             case 'upc':
-                $query = $this->upcQuery($dlog, $type_condition, $store);
+                $query = $this->upcQuery($dlog, $type_condition, $store, $ignoreMemType);
                 break;
             case 'date':
-                $query = $this->dateQuery($dlog, $type_condition, $store);
+                $query = $this->dateQuery($dlog, $type_condition, $store, $ignoreMemType);
                 break;
             case 'dept':
-                $query = $this->deptQuery($dlog, $type_condition, $store);
+                $query = $this->deptQuery($dlog, $type_condition, $store, $ignoreMemType);
                 break;
         }
 
