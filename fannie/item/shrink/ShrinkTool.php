@@ -217,6 +217,7 @@ class ShrinkTool extends FannieRESTfulPage
         }
         list($choose,$loss,$contrib) = $this->getLossContribute($dbc);
         $this->addOnloadCommand("\$(document).keyup(keyToType);");
+        $readonly = ($this->upc == "0000000001960" || $this->upc == "0000000001961") ? " readonly " : "";
 
         $ret = <<<HTML
 <script type="text/javascript">
@@ -249,7 +250,7 @@ function keyToType(e) {
                     <div class="input-group">
                         <span class="input-group-addon">$</span>
                         <input type="number" name="cost" class="form-control" value="{{cost}}"
-                            min="0" max="9999" step="0.001" />
+                            min="0" max="9999" step="0.001" $readonly />
                     </div> 
                 </div> 
             </div> 
