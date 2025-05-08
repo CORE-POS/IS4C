@@ -52,6 +52,7 @@ function WFC_Produce_SmartSigns($data,$offset=0,$showPrice=0)
 
     $i = 0;
     $tagNo = 0;
+    $lastUniq = uniqid();
     foreach($data as $k => $row){
         $lc = false;
         $upc = $row['upc'];
@@ -71,9 +72,13 @@ function WFC_Produce_SmartSigns($data,$offset=0,$showPrice=0)
         } else {
             $x += $width+$guide-15;
         }
-        $pdf = generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo, $lc);
         $i++;
+        if ($row['uniqid'] == $lastUniq) {
+            $tagNo--;
+        }
+        $pdf = generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $pdf, $row, $dbc, $showPrice, $offset, $tagNo, $lc);
         $tagNo++;
+        $lastUniq = $row['uniqid'];
     }
 
     $pdf = $pdf->Output();
@@ -92,6 +97,8 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
     $descFontSize = 26;
     $descFontSizeBig = 24;
     $rgb = array();
+
+    $uniqid = $row['uniqid'];
 
     /*
     $lc = false;
@@ -329,6 +336,7 @@ function generateWFC_Produce_SmartSigns_label($x, $y, $guide, $width, $height, $
         $pdf->SetXY($x+1, $y+$j);
         $pdf->Cell($width-22, 5, $line, 0, 1, 'C', true);
     }
+
 
 
     $pdf->SetFont('Gill','B', 16);

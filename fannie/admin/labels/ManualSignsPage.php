@@ -169,6 +169,8 @@ class ManualSignsPage extends FannieRESTfulPage
                 'originName' => $origins[$i],
                 'originShortName' => $origins[$i],
                 'smartType' => is_array($smartType) ? $smartType[$i] : '',
+                'uniqid' => uniqid(),
+                'mult' => $mult[$i],
             );
             if (strstr($origins[$i], '/')) {
                 list($origin, $regPrice) = explode('/', $origins[$i], 2);
@@ -177,6 +179,7 @@ class ManualSignsPage extends FannieRESTfulPage
                 $item['nonSalePrice'] = trim($regPrice);
             }
             for ($j=0; $j<$mult[$i]; $j++) {
+
                 $items[] = $item;
             }
         }
@@ -259,15 +262,29 @@ $('tr.item-row').each(function(){
 });
 JAVASCRIPT;
         $ret .= ' | <label><a id="clone-trs" onclick="'.$jsCloneBtn.'">Duplicate Rows</a></label>';
-        $ret .= ' | <label>Smart Signs Override</label>:&nbsp; <input type="checkbox" class="smartOverride" name="CoopDeals" id="smartCoopDealOverr" value=1> <label for="smartCoopDealOverr">Coop Deals</label> |';
+        $ret .= ' | <label>Signs Override</label>:&nbsp; <input type="checkbox" class="smartOverride" name="CoopDeals" id="smartCoopDealOverr" value=1> <label for="smartCoopDealOverr">Coop Deals</label> |';
         $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="ChaChing" id="smartChaChingOverr" > <label for="smartChaChingOverr" value=1>Cha-Ching!</label> |';
-        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="FreshDeals" id="smartFreshDealOverr" > <label for="smartFreshDealOverr" value=1>Fresh Deals<label>&nbsp;|';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="FreshDeals" id="smartFreshDealOverr" > <label for="smartFreshDealOverr" value=1>Fresh Deals</label>&nbsp;|';
 
-        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="Regular" id="smartRegularOverr" > <label for="smartRegularOverr" value=1>Regular<label>&nbsp;|';
-        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="RegularLocal" id="smartRegularLocalOverr" > <label for="smartRegularLocalOverr" value=1>Regular Local<label>&nbsp;|';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="Regular" id="smartRegularOverr" > <label for="smartRegularOverr" value=1>Regular</label>&nbsp;|';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="RegularLocal" id="smartRegularLocalOverr" > <label for="smartRegularLocalOverr" value=1>Regular Local</label>&nbsp;|';
 
-        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="Organic" id="smartOrganicOverr" > <label for="smartOrganicOverr" value=1>Organic<label>&nbsp;|';
-        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="OrganicLocal" id="smartOrganicLocalOverr" > <label for="smartOrganicLocalOverr" value=1>Organic Local<label>';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="Organic" id="smartOrganicOverr" > <label for="smartOrganicOverr" value=1>Organic</label>&nbsp;|';
+        $ret .= '&nbsp; <input type="checkbox" class="smartOverride" name="OrganicLocal" id="smartOrganicLocalOverr" > <label for="smartOrganicLocalOverr" value=1>Organic Local</label>';
+
+
+        if ($this->config->get('COOP_ID') == 'WFC_Duluth') {
+            $ret .= '<span>';
+            $ret .= '<div><label style="cursor: pointer;" data-toggle="collapse" data-target="#thc-js-methods">Get & Set Price Functions</label></div>';
+            $ret .= '<div class="collapse" id="thc-js-methods">';
+            $ret .= '<p>Fil in the blanks with Lane-Side POS prices (will use future sale price if set)</p>';
+            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-sale-single-price" /> <label for="thc-sale-single-price">Get Lane Sale (Single) Prices</label></div>';
+            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-sale-pkg-price" /> <label for="thc-sale-pkg-price">Get Lane Sale (PKG) Prices</labe></div>';
+            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-normal-pkg-price" /> <label for="thc-normal-pkg-price">Get Lane Normal PKG Prices</labe></div>';
+            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-normal-price" /> <label for="thc-normal-price">Get Lane Normal Prices</labe></div>';
+            $ret .= '</div>';
+            $ret .= '</span>';
+        }
 
         $ret .= $clearBtn;
         $ret .= '</div>';
@@ -290,6 +307,7 @@ $('.exc').on('change', function(){
         $(this).closest('tr').find('.input-origin').attr('disabled', true);
         $(this).closest('tr').find('.input-start').attr('disabled', true);
         $(this).closest('tr').find('.input-end').attr('disabled', true);
+        $(this).closest('tr').find('.mult').attr('disabled', true);
     } else {
         $(this).closest('tr').find('.input-description').attr('disabled', false);
         $(this).closest('tr').find('.input-brand').attr('disabled', false);
@@ -299,6 +317,7 @@ $('.exc').on('change', function(){
         $(this).closest('tr').find('.input-origin').attr('disabled', false);
         $(this).closest('tr').find('.input-start').attr('disabled', false);
         $(this).closest('tr').find('.input-end').attr('disabled', false);
+        $(this).closest('tr').find('.mult').attr('disabled', false);
     }
 });
 JAVASCRIPT;
@@ -481,6 +500,183 @@ $('.exc').on("click", function(e){
         }
     }
     lastChecked = $(this);
+});
+
+$('#thc-sale-pkg-price').on('click', function() {
+    $('.upc').each(function() {
+        let upc = $(this).val();
+        let target = $(this).closest('tr');;
+        $.ajax({
+            type: 'post',
+            data: 'upc='+upc,
+            dataType: 'json',
+            url: '../../modules/plugins2.0/SMS/scan/AllAjaxFannie.php',
+            success: function(response) {
+                console.log(response);
+                let price = null;
+                let regprice = response.reg;
+                let pkgSize = response.pkgSizeA;
+                pkgSize = pkgSize.replace(".0", "-Pack");
+                /*  
+                    Get Sale Package price
+                */
+                price = response.salepkg;
+
+
+                // update page
+                target.find('.input-price').val(price);
+                target.find('.input-start').val(response.start);
+                target.find('.input-end').val(response.end);
+                target.find('.input-size').val(pkgSize);
+            },
+            error: function(response) {
+                console.log('Something went wrong (ajax error)');
+                console.log(response);
+            },
+            complete: function() {
+                $('.lanePriceFx').each(function(){
+                    $(this).prop("checked", false);
+                });
+            }
+        });
+    });
+});
+$('#thc-sale-single-price').on('click', function() {
+    $('.upc').each(function() {
+        let upc = $(this).val();
+        let target = $(this).closest('tr');;
+        $.ajax({
+            type: 'post',
+            data: 'upc='+upc,
+            dataType: 'json',
+            url: '../../modules/plugins2.0/SMS/scan/AllAjaxFannie.php',
+            success: function(response) {
+                console.log(response);
+                let price = null;
+                let regprice = response.reg;
+                let unitSize = response.unitSize;
+
+                /*  
+                    Get Sale price only
+                    and show regular price, of course
+                */
+                price = response.sale;
+                //target.find('.input-origin').val("Regular Price: "+regprice);
+
+
+                // update page
+                target.find('.input-price').val(price);
+                target.find('.input-start').val(response.start);
+                target.find('.input-end').val(response.end);
+                //target.find('.input-origin').val(response.upc);
+                target.find('.input-size').val(unitSize);
+            },
+            error: function(response) {
+                console.log('Something went wrong (ajax error)');
+                console.log(response);
+            },
+            complete: function() {
+                $('.lanePriceFx').each(function(){
+                    $(this).prop("checked", false);
+                });
+            }
+        });
+    });
+});
+$('#thc-normal-pkg-price').on('click', function() {
+    $('.upc').each(function() {
+        let upc = $(this).val();
+        let target = $(this).closest('tr');;
+        $.ajax({
+            type: 'post',
+            data: 'upc='+upc,
+            dataType: 'json',
+            url: '../../modules/plugins2.0/SMS/scan/AllAjaxFannie.php',
+            success: function(response) {
+                console.log(response);
+                let price = null;
+                let regprice = response.reg;
+                let pkgSize = response.pkgSizeA;
+                pkgSize = pkgSize.replace(".0", "-Pack");
+
+                /*  
+                    Get  normal pkg price
+                */
+                price = response.regpkg;
+
+                // update page
+                target.find('.input-price').val(price);
+                target.find('.input-start').val('');
+                target.find('.input-end').val('');
+                //target.find('.input-origin').val(response.upc);
+                target.find('.input-size').val(pkgSize);
+            },
+            error: function(response) {
+                console.log('Something went wrong (ajax error)');
+                console.log(response);
+            },
+            complete: function() {
+                $('.lanePriceFx').each(function(){
+                    $(this).prop("checked", false);
+                });
+            }
+        });
+    });
+});
+$('#thc-normal-price').on('click', function() {
+    $('.upc').each(function() {
+        let upc = $(this).val();
+        let target = $(this).closest('tr');;
+        $.ajax({
+            type: 'post',
+            data: 'upc='+upc,
+            dataType: 'json',
+            url: '../../modules/plugins2.0/SMS/scan/AllAjaxFannie.php',
+            success: function(response) {
+                console.log(response);
+                let price = null;
+                let regprice = response.reg;
+                let unitSize = response.unitSize;
+
+                /*  
+                    Get Normal Price
+                */
+                price = response.reg;
+
+                // update page
+                target.find('.input-price').val(price);
+                target.find('.input-start').val('');
+                target.find('.input-end').val('');
+                //target.find('.input-origin').val(response.upc);
+                target.find('.input-size').val(unitSize);
+            },
+            error: function(response) {
+                console.log('Something went wrong (ajax error)');
+                console.log(response);
+            },
+            complete: function() {
+                $('.lanePriceFx').each(function(){
+                    $(this).prop("checked", false);
+                });
+            }
+        });
+    });
+});
+
+$('.mult').on('change', function() {
+    //console.log("changed");
+    let v = $(this).val();
+    if (v == 0) {
+        let checked = $(this).parent().parent().find('.exc').is(":checked");
+        if (checked == false) {
+            $(this).parent().parent().find('.exc').trigger('click');
+        }
+    } else {
+        let checked = $(this).parent().parent().find('.exc').is(":checked");
+        if (checked == true) {
+            $(this).parent().parent().find('.exc').trigger('click');
+        }
+    }
 });
 JAVASCRIPT;
     }
