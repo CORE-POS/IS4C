@@ -8,7 +8,7 @@ return <<<HTML
             <td class="text-right">
                 <label class="small control-label">
                     <a href="" class="btn btn-default btn-xs"
-                    onclick="$('.upc-in').toggle(); return false;">+</a>
+                    onclick="$('.upc-in').toggle(); $('.upc-in').each(function() { $(this).val(null); }); return false;">+</a>
                     UPC
                 </label>
             </td>
