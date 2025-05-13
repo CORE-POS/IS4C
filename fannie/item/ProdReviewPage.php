@@ -534,15 +534,9 @@ HTML;
                 $curDiscr = ' <a href="#" class="btn btn-xs btn-danger showDiscrFound" title="'.$title.'"><span class="fas fa-exclamation-circle"></span></a>';
             }
 
-            $curScaleWarn = '';
-            if (array_key_exists($curBid, $scaleOnSale)) {
-                $title = '<div>Contains scale item(s) on sale:</div>';
-                foreach ($scaleOnSale[$curBid] as $upc) {
-                    $title .= <<<HTML
-<div>$upc</div>
-HTML;
-                }
-                $curScaleWarn = ' <a href="#" class="btn btn-xs btn-warning showScaleSaleFound" title="'.$title.'"><span class="fas fa-exclamation-circle"></span></a>';
+            $curDeliWarn = '';
+            if (in_array('DELI', $batches[$curBid]) && count($batches[$curBid]) > 1 ) {
+                $curDeliWarn = ' <a href="#" class="btn btn-xs btn-info" title="Batch contains both DELI and MERCH dept. items"><span class="fas fa-exclamation-circle"></span></a>';
             }
 
             $curBidLn = "../batches/newbatch/EditBatchPage.php?id=".$curBid;
@@ -550,7 +544,7 @@ HTML;
                 $bids .= ",".$curBid;
                 $tableA .= "<tr>";
                 $tableA .= "<td><input type='checkbox' id='check$curBid' class='upcCheckBox'></td>";
-                $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a>$curDiscr &nbsp; $curScaleWarn</td>";
+                $tableA .= "<td class='biduf'><a href=\"{$curBidLn}\" target=\"_blank\">{$curBid}</a>$curDiscr &nbsp; $curDeliWarn</td>";
                 $batchName = $row['batchName'];
                 $tableA .= "<td>{$batchName}</td>";
                 $tableA .= "<td class=\"super-depts\">$superDepts</td>";
