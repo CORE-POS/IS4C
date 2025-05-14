@@ -360,16 +360,16 @@ class EditLocations extends FannieRESTfulPage
 
             $td .= "<tr style=\"background-color: plum; height: 30px;\"><td>
                 <div style=\"height: 24px;\"></div>
-                <div><span class='btn btn-default btn-sm' onclick='setQuickLocation(\"{$info[0]}\", \"{$info[1]}\", \"reset\"); return false;'>ReSet to<b> $dsection - {$info[1]} </b></span></div>
+                <div><span class='btn btn-default btn-sm' onclick='setQuickLocation(\"{$info[0]}\", \"{$info[1]}\", \"reset\"); return false;'>Set to <b> $dsection - {$info[1]} </b></span></div>
                 <div style=\"height: 24px;\"></div>
-                <div><span class='btn btn-default btn-sm' onclick='setQuickLocation(\"{$info[0]}\", \"{$info[1]}\", \"add\"); return false;'>Add Loc.<b> $dsection - {$info[1]}</b> </span></div>
+                <div><span class='btn btn-default btn-sm' onclick='setQuickLocation(\"{$info[0]}\", \"{$info[1]}\", \"add\"); return false;'>Add <b> $dsection - {$info[1]}</b></span></div>
                 <div style=\"height: 24px;\"></div>
-                <div><span class='btn btn-default btn-sm' style='background: tomato; color: white; text-shadow: 1px 1px crimson;' onclick='setDefaultLocation(1, 1, \"true\")'>Unset Default</span></div>
+                <div><span class='btn btn-default btn-sm' style='background: tomato; color: white; text-shadow: 1px 1px crimson;' onclick='setDefaultLocation(1, 1, \"true\")'>Unset Remember Location</span></div>
                 </td></tr></td></tr>";
 
         } else {
             $td .= "<tr style=\"background-color: plum; height: 30px;\" id=\"set-default-location-session\"><td><div>
-                        <b>Press</b> to REM cur location</div> </td></tr></td></tr>";
+                        <b>Press</b> to remember current location</div> </td></tr></td></tr>";
         }
         echo $dbc->error();
         $this->addOnloadCommand('$(\'#upc\').focus();');
