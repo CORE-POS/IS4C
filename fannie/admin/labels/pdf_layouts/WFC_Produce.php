@@ -115,7 +115,7 @@ while ($row = $dbc->fetchRow($res)) {
 }
 
 //cycle through result array of query
-foreach($data as $row) {
+foreach($data as $rowIndex => $row) {
     // extract & format data
 
     $price = $row['normal_price'];
@@ -183,7 +183,9 @@ foreach($data as $row) {
     // otherwise if it's the end of a line,
     // reset x and move y down by tag height
     if ($num % 32 == 0){
-    $pdf->AddPage();
+       if (isset($data[$rowIndex+1])) {
+            $pdf->AddPage();
+       }
         // full size
         $full_x = $left;
         $full_y = $top;
