@@ -214,7 +214,7 @@ $baseX = 6;  // baseline X location of label
 $down = 31.0;
 
 //cycle through result array of query
-foreach($data as $row) {
+foreach($data as $rowIndex => $row) {
    // extract & format data
 
    if ($row['full']) {
@@ -525,7 +525,9 @@ foreach($data as $row) {
    // reset x and move y down by tag height
    $modTagsPerPage = ($offset == 0) ? 32 : 24;
    if ($num % $modTagsPerPage == 0){
-    $pdf->AddPage();
+       if (isset($data[$rowIndex+1])) {
+        $pdf->AddPage();
+       }
     // full size
     $full_x = $left;
     $full_y = $top;

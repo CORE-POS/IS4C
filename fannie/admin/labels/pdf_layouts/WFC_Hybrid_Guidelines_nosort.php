@@ -29,7 +29,7 @@ if (!class_exists('FpdfLib')) {
 
     Name matching is important
 */
-class WFC_Hybrid_Guidelines_PDF extends FpdfWithBarcode
+class WFC_Hybrid_Guidelines_nosort_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     function setTagDate($str){
@@ -85,9 +85,9 @@ class WFC_Hybrid_Guidelines_PDF extends FpdfWithBarcode
     }
 }
 
-function WFC_Hybrid_Guidelines($data,$offset=0){
+function WFC_Hybrid_Guidelines_nosort($data,$offset=0){
 
-$pdf=new WFC_Hybrid_Guidelines_PDF('P','mm','Letter'); //start new instance of PDF
+$pdf=new WFC_Hybrid_Guidelines_nosort_PDF('P','mm','Letter'); //start new instance of PDF
 $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
@@ -175,8 +175,8 @@ foreach ($data as $k => $row) {
 }
 
 
-$full= FpdfLib::sortProductsByPhysicalLocation($dbc, $full, $store);
-$half= FpdfLib::sortProductsByPhysicalLocation($dbc, $half, $store);
+//$full= FpdfLib::sortProductsByPhysicalLocation($dbc, $full, $store);
+//$half= FpdfLib::sortProductsByPhysicalLocation($dbc, $half, $store);
 $data = array_merge($full, $half);
 
 
@@ -540,7 +540,7 @@ foreach($data as $rowIndex => $row) {
    $modTagsPerPage = ($offset == 0) ? 32 : 24;
    if ($num % $modTagsPerPage == 0){
        if (isset($data[$rowIndex+1])) {
-            $pdf->AddPage();
+        $pdf->AddPage();
        }
     // full size
     $full_x = $left;

@@ -183,8 +183,8 @@ $data = array_merge($full, $half);
 
 $width = 52; // tag width in mm
 $height = 31; // tag height in mm
-$left = 15; // left margin
-$top = 15; // top margin
+$left = 15-3; // left margin
+$top = 8; // top margin
 $bTopOff = 0;
 
 // undo margin if offset is true
@@ -210,12 +210,12 @@ $upcY = $top; //y locaton of barcode
 $priceY = 14 + $top; //y location of size and price on label
 $priceX = 18; //x location of date and price on label
 $count = 0;  //number of labels created
-$baseY = 31 + $bTopOff; // baseline Y location of label
+$baseY = 23 + $bTopOff; // baseline Y location of label
 $baseX = 16;  // baseline X location of label
 $down = 31.0;
 
 //cycle through result array of query
-foreach($data as $row) {
+foreach($data as $rowIndex => $row) {
    // extract & format data
 
    if ($row['full']) {
@@ -430,7 +430,7 @@ foreach($data as $row) {
             }
         }
         $pdf->SetFont('Arial','',8);
-        $pdf->SetXY($baseX, $baseY);
+        $pdf->SetXY($baseX, $baseY-7.5);
         $pdf->MultiCell(100, 3, $curStr);
         $pdf->SetX($baseX);
         $pdf->Cell(0, 3, $tagdate);
@@ -527,7 +527,9 @@ foreach($data as $row) {
    $modTagsPerPage = ($offset == 0) ? 32 : 24;
    $modTagsPerPage = 6;
    if ($num % $modTagsPerPage == 0){
-    $pdf->AddPage();
+       if (isset($data[$rowIndex+1])) {
+        $pdf->AddPage();
+       }
     // full size
     $full_x = $left;
     $full_y = $top;
@@ -535,7 +537,7 @@ foreach($data as $row) {
     // half size
     $upcX = 17;  //x location of barcode
     $upcY = $top; //y locaton of barcode
-    $priceY = 29 + $bTopOff; //y location of size and price on label
+    $priceY = 29 - 7 + $bTopOff; //y location of size and price on label
     $priceX = 18; //x location of date and price on label
     $count = 0;  //number of labels created
     $baseY = 31 + $bTopOff; // baseline Y location of label

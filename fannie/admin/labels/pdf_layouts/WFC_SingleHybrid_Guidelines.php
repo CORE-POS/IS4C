@@ -29,7 +29,7 @@ if (!class_exists('FpdfLib')) {
 
     Name matching is important
 */
-class WFC_Hybrid_Guidelines_PDF extends FpdfWithBarcode
+class WFC_SingleHybrid_Guidelines_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     function setTagDate($str){
@@ -85,9 +85,10 @@ class WFC_Hybrid_Guidelines_PDF extends FpdfWithBarcode
     }
 }
 
-function WFC_Hybrid_Guidelines($data,$offset=0){
+function WFC_SingleHybrid_Guidelines($data,$offset=0){
 
-$pdf=new WFC_Hybrid_Guidelines_PDF('P','mm','Letter'); //start new instance of PDF
+//$pdf=new WFC_SingleHybrid_Guidelines_PDF('P','mm','Letter'); //start new instance of PDF
+$pdf = new WFC_SingleHybrid_Guidelines_PDF('L', 'mm', array(105, 148));
 $pdf->Open(); //open new PDF Document
 $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
@@ -182,8 +183,8 @@ $data = array_merge($full, $half);
 
 $width = 52; // tag width in mm
 $height = 31; // tag height in mm
-$left = 5; // left margin
-$top = 15; // top margin
+$left = 15; // left margin
+$top = 8; // top margin -5
 $bTopOff = 0;
 
 // undo margin if offset is true
@@ -196,7 +197,7 @@ $pdf->SetTopMargin($top);  //Set top margin of the page
 $pdf->SetLeftMargin($left);  //Set left margin of the page
 $pdf->SetRightMargin($left);  //Set the right margin of the page
 $pdf->SetAutoPageBreak(False); // manage page breaks yourself
-$pdf->AddPage();  //Add page #1
+$pdf->AddPage("L", "A6");  //Add page #1
 
 $num = 1; // count tags
 // full size tag settings
@@ -204,13 +205,13 @@ $full_x = $left;
 $full_y = $top;
 
 // half size tag settings
-$upcX = 7;  //x location of barcode
+$upcX = 17;  //x location of barcode
 $upcY = $top; //y locaton of barcode
 $priceY = 14 + $top; //y location of size and price on label
-$priceX = 8; //x location of date and price on label
+$priceX = 18; //x location of date and price on label
 $count = 0;  //number of labels created
 $baseY = 31 + $bTopOff; // baseline Y location of label
-$baseX = 6;  // baseline X location of label
+$baseX = 16;  // baseline X location of label
 $down = 31.0;
 
 //cycle through result array of query
@@ -253,13 +254,6 @@ foreach($data as $rowIndex => $row) {
         }
 
         $pdf->SetXY($full_x+38, $full_y+8);
-
-        // Draw Guidelines
-        $pdf->SetDrawColor(0x9F,0x9F,0x9F);
-        $mod = ($num % 4 == 0) ?  2 : 0;
-        $pdf->Rect($full_x, $full_y-2, $width-$mod, $height, 'D');
-        $pdf->SetDrawColor(0xFF,0xFF,0xFF);
-
         $pdf->Cell(9, 4, isset($locations[$upc]) ? current($locations[$upc]) : '', 0, 1, 'C');
         if (isset($locations[$upc])) {
             $key = key($locations[$upc]);
@@ -412,15 +406,9 @@ foreach($data as $rowIndex => $row) {
         $pdf->TEXT($priceX,$priceY,$price);  //add price
 
         // print narrow tag cut guide line
-        //$pdf->SetDrawColor(200,200,200);
-        //$pdf->Line($priceX+29, $priceY-14, $priceX+29, $priceY+16);
-        //$pdf->SetDrawColor(0,0,0);
-
-        // Draw Guidelines 
-        $pdf->SetDrawColor(0x9F,0x9F,0x9F);
-        $mod = ($num % 4 == 0) ?  2 : 0;
-        $pdf->Rect($full_x, $full_y-2, $width-20, $height, 'D');
-        $pdf->SetDrawColor(0xFF,0xFF,0xFF);
+        $pdf->SetDrawColor(200,200,200);
+        $pdf->Line($priceX+29, $priceY-14, $priceX+29, $priceY+16);
+        $pdf->SetDrawColor(0,0,0);
 
         $words = preg_split('/[\s,-]+/',$desc);
         $limit = 13;
@@ -442,7 +430,7 @@ foreach($data as $rowIndex => $row) {
             }
         }
         $pdf->SetFont('Arial','',8);
-        $pdf->SetXY($baseX, $baseY);
+        $pdf->SetXY($baseX, $baseY-7.5);
         $pdf->MultiCell(100, 3, $curStr);
         $pdf->SetX($baseX);
         $pdf->Cell(0, 3, $tagdate);
@@ -482,7 +470,6 @@ foreach($data as $rowIndex => $row) {
         //$pdf->Cell(0, 3, "'".$printbrand."'");
         $pdf->Cell(0, 3, $printbrand);
         $pdf->SetX($baseX + 18);
-        $vendor = substr($vendor, 0, 5);
         $pdf->Cell(0, 3, strtoupper($vendor));
 
         // add a blue dot to items in REFRIGERATED department
@@ -538,60 +525,60 @@ foreach($data as $rowIndex => $row) {
    // otherwise if it's the end of a line,
    // reset x and move y down by tag height
    $modTagsPerPage = ($offset == 0) ? 32 : 24;
+   $modTagsPerPage = 6;
    if ($num % $modTagsPerPage == 0){
        if (isset($data[$rowIndex+1])) {
-            $pdf->AddPage();
+        $pdf->AddPage();
        }
     // full size
     $full_x = $left;
     $full_y = $top;
 
     // half size
-    $upcX = 7;  //x location of barcode
+    $upcX = 17;  //x location of barcode
     $upcY = $top; //y locaton of barcode
-    $priceY = 29 + $bTopOff; //y location of size and price on label
-    $priceX = 8; //x location of date and price on label
+    $priceY = 29 - 7 + $bTopOff; //y location of size and price on label
+    $priceX = 18; //x location of date and price on label
     $count = 0;  //number of labels created
     $baseY = 31 + $bTopOff; // baseline Y location of label
-    $baseX = 6;  // baseline X location of label
+    $baseX = 16;  // baseline X location of label
    }
-   else if ($num % 4 == 0){
+   else if ($num % 2 == 0){
        // full size
     $full_x = $left;
     $full_y += $height;
 
       // half size
-      $upcX = 7;
+      $upcX = 17;
       $upcY = $upcY + $down;
-      $priceX = 8;
+      $priceX = 18;
       $priceY = $priceY + $down;
       $baseY = $baseY + $down;
-      $baseX = 6;
+      $baseX = 16;
    }
 
     /*
         Create Guidelines
     */
-    $pdf->SetDrawColor(155,155,155);
+    $pdf->SetDrawColor(0x9B,0x9B,0x9B);
     // print top and left guide lines only once
     $y = $full_y;
     $x = $full_x;
 
-    //$pdf->Rect(4, 13, $width, $height, 'D');
+    // Horizontal 
+    $pdf->Rect(0, 6, 200, 0.01, 'DF'); // full line
+    $pdf->Rect(0, 6+31, 200, 0.01, 'DF'); // full line
+    $pdf->Rect(0, 6+(31*2), 200, 0.01, 'DF'); // full line
+    $pdf->Rect(0, 6+(31*3), 200, 0.01, 'DF'); // full line
 
-    //  // Horizontal 
-    //  //$pdf->Rect(0, $y-2, $width*5, 0.01, 'DF'); // full line
-    //  if ($full_y > 100) {
-    //      // Bottom Horizontal 
-    //      $pdf->Rect(0, $y+$height-2, $width*5, 0.01, 'DF'); // full line
-    //  }
+    // Vertical 
+    //$pdf->Rect($x-3.3+3.2, 0, 0.01, $height*9, 'DF'); // full line
+    $pdf->Rect(14.6, 0, 0.01, 200, 'DF'); // full line
+    $pdf->Rect(14.6+52, 0, 0.01, 200, 'DF'); // full line
+    $pdf->Rect(14.6+(52*2), 0, 0.01, 200, 'DF'); // full line
+    //$pdf->Rect($x+55-3.2, 0, 0.01, $height*9, 'DF'); // full line
 
-    //  // Vertical 
-    //  $pdf->Rect($x-3.3+3, 0, 0.01, $height*9, 'DF'); // full line
-    //      if ($x > ($width*3)) {
-    //          $pdf->Rect($x+55-5, 0, 0.01, $height*9, 'DF'); // full line
-    //      }
-    //  $pdf->SetDrawColor(0xff, 0xff, 0xff);
+    $pdf->SetDrawColor(0, 0, 0);
 
    $num++;
 }
