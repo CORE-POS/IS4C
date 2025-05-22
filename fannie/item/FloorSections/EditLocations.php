@@ -352,9 +352,6 @@ class EditLocations extends FannieRESTfulPage
             $upc, 0, 0, $storeID
         );
         if (isset($_SESSION['EditLocationDefault'])) {
-            //$sectiontext = str_replace($_SESSION['EditLocationDefault'], ",", ' = ');
-
-            //$subSections[$row['floorSectionID']][] = $row['subSection'];
             $info = explode(",", $_SESSION['EditLocationDefault']);
             $dsection = $sections[$info[0]];
 
@@ -366,6 +363,8 @@ class EditLocations extends FannieRESTfulPage
                 <div style=\"height: 24px;\"></div>
                 <div><span class='btn btn-default btn-sm' style='background: tomato; color: white; text-shadow: 1px 1px crimson;' onclick='setDefaultLocation(1, 1, \"true\")'>Unset Remember Location</span></div>
                 </td></tr></td></tr>";
+            $td .= "<tr style=\"background-color: plum; height: 30px;\" id=\"set-default-location-session\"><td><div>
+                        <b>Press</b> to remember current location</div> </td></tr></td></tr>";
 
         } else {
             $td .= "<tr style=\"background-color: plum; height: 30px;\" id=\"set-default-location-session\"><td><div>
@@ -831,9 +830,7 @@ $('.filter-checkbox').on('click', function() {
                 $(this).hide();
             }
         });
-        //$('#section-filters').append(checked);
     } else {
-        //$('#section-filters').append('false');
     }
 });
 
@@ -886,14 +883,6 @@ $('#set-default-location-session').on('click', function() {
     let info = sectno + ',' + subsno;
     let text = sect.text() + " - " + subs.text();
     setDefaultLocation(sectno, subsno);
-    //let newHTML = "<div><b>Default</b>: " + text + "</div>";
-    //let newHTML = "<div style='height: 24px;'></div>";
-    //newHTML += "<div><button class='btn btn-default btn-sm' return false;'>ReSet to<b> "+text+"</b></button></div>";
-    //newHTML += "<div style='height: 24px;'></div>";
-    //newHTML += "<div><button class='btn btn-default btn-sm'>Add Loc.<b>"+text+"</b> </button></div>";
-    //newHTML += "<div style='height: 24px;'></div>";
-    //newHTML += "<div><button class='btn btn-default btn-sm' style='background: tomato; color: white; text-shadow: 1px 1px crimson;' onclick='setDefaultLocation(1, 1, 'true')'>Unset Default</button></div>";
-    //$(this).html(newHTML);
 });
 
 JAVASCRIPT;
