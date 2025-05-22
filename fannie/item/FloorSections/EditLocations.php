@@ -459,6 +459,7 @@ HTML;
         $onChange = "document.forms['upcs'].submit();";
         $storePicker = FormLib::storePicker('storeID', true, $onChange);
         $storeID = FormLib::get('storeID');
+        $floorSectionID = FormLib::get('floorSectionID');
 
         $upcsStr = FormLib::get('upcs', false);
         $upcs = explode("\r\n",$upcsStr);
@@ -469,12 +470,18 @@ HTML;
         }
         $upcs = $tmp;
 
+        echo "HO HIOH";
+
         $sections = array();
         $prep = $dbc->prepare("SELECT * FROM FloorSections WHERE storeID = ? ORDER BY name");
         $res = $dbc->execute($prep, array($storeID));
+        $fsOptions = '';
         $sections = array();
         while ($row = $dbc->fetchRow($res)) {
             $sections[$row['floorSectionID']] = $row['name'];
+            $sel = ($row['floorSectionID'] == $floorSectionID) ? ' selected ' : '';
+            //echo $row['floorSectionID'] . " = " . $floorSectionID .  "<br/>";
+            $fsOptions .= "<option value=\"{$row['floorSectionID']}\" $sel>{$row['name']}</option>";
         }
 
         $prep = $dbc->prepare("select floorSectionID, subSection from FloorSubSections group by floorSectionID, subSection;");
@@ -486,6 +493,7 @@ HTML;
 
         list($inStr, $args) = $dbc->safeInClause($upcs);
         $args[] = $storeID;
+        $args[] = $floorSectionID;
 
         $prep = $dbc->prepare("
             SELECT * 
@@ -493,6 +501,7 @@ HTML;
                 RIGHT JOIN FloorSections as fs ON map.floorSectionID=fs.floorSectionID
             WHERE upc IN ($inStr)
                 AND fs.storeID = ?
+                AND map.floorSectionID = ?
         ");
         $res = $dbc->execute($prep, $args);
 
@@ -592,6 +601,11 @@ HTML;
                 {$storePicker['html']}
             </div>
             <div class="form-group">
+                <select name="floorSectionID" class="form-control" onchange="$onChange">
+                    $fsOptions
+                </select>
+            </div>
+            <div class="form-group">
                 <input type="submit" class="form-control">
             </div>
         </form>
@@ -604,10 +618,6 @@ HTML;
                 <select name="editAllSubs" id="editAllSubs" class="form-control">$options</select>
                 <textarea class="hidden" name="upcs">$upcsStr</textarea>
                 <textarea class="hidden" name="floorSections">$floorSectionsForm</textarea>
-            </div>
-            <div class="form-group">
-                <label>Filter Sections</label> (check to exclude section)
-                <div id="section-filters"></div>
             </div>
         </form>
     </div>
@@ -796,41 +806,6 @@ $('#editAllSubs').change(function(){
                 $(this).val(value).trigger('change');
             }
         });
-    }
-});
-
-var filterSections = []
-$('tr').each(function(){
-    let section = $(this).find('select.edit-floorSection').find(':selected').text();
-    if (!filterSections.includes(section)) {
-        filterSections.push(section)
-    }
-});
-for (let i=0; i<filterSections.length; i++) {
-    if (filterSections[i].length > 0) {
-        let html = "<input type='checkbox' class='filter-checkbox' name='" + filterSections[i] + "'/>" + filterSections[i] + ", ";
-        $('#section-filters').append(html);
-    }
-}
-
-$('.filter-checkbox').on('click', function() {
-    $('tr').each(function(){
-        $(this).show();
-        $(this).find('select.edit-floorSection').attr('disabled', false);
-        $(this).find('select.edit-subsection').attr('disabled', false);
-    });
-    let checked = $(this).is(":checked");
-    let checkedSection = $(this).attr('name');
-    if (checked) {
-        $('tr').each(function(){
-            let section = $(this).find('select.edit-floorSection').find(':selected').text();
-            if (section == checkedSection) {
-                $(this).find('select.edit-floorSection').attr('disabled', 'true');
-                $(this).find('select.edit-subsection').attr('disabled', 'true');
-                $(this).hide();
-            }
-        });
-    } else {
     }
 });
 
