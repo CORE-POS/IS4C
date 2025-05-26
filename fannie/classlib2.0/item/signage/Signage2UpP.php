@@ -69,7 +69,11 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->Cell($this->width, 10, $item['description'], 0, 1, 'C');
         $pdf->SetX($this->left);
         $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
-        $item['size'] = $this->formatSize($item['size'], $item);
+        if ($item['super_name'] != 'PRODUCE') {
+            $item['size'] = $this->formatSize($item['size'], $item);
+        } else {
+            $item['size'] = '';
+        }
         $pdf->Cell($this->width, 10, $item['size'], 0, 1, 'C');
         $pdf->SetX($this->left);
         $pdf->SetFont($this->font, '', $this->BIG_FONT);
@@ -106,6 +110,9 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
         } else {
             $pdf->Cell($this->width, 40, $price, 0, 1, 'C');
         }
+
+        //$pdf->SetFont($this->font, '', $this->SMALL_FONT);
+        //$pdf->Cell($this->width, 40, $item['department'], 0, 1, 'C');
 
         if ($item['startDate'] != '' && $item['endDate'] != '') {
             $datestr = $this->getDateString($item['startDate'], $item['endDate']);
