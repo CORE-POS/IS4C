@@ -106,6 +106,13 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Compact12UpL
                 $pdf->Image($bogoImg,  ($left) + ($width*$column) + 48, ($top-10) + ($row*$height) - 2, 12, 12);
             }
 
+            // white out dates on Basics Signs
+            if ($item['basic'] && empty($item['batchName'])) {
+                $pdf->SetXY(($left+45)+($width*$column), $top + ($height*$row) + ($height-$top-18));
+                $pdf->SetFillColor(255,255,255);
+                $pdf->Cell(18, 4, ' ', 0, 0, 'L', 1);
+            }
+
             $count++;
             $sign++;
         }
@@ -121,7 +128,7 @@ class WfcSmartSigns12UpP extends \COREPOS\Fannie\API\item\signage\Compact12UpL
         } else if (isset($item['smartType']) && $item['smartType'] == 'ChaChing') {
             return __DIR__ . '/noauto/images/chaching_top_12.png';
         } else if (isset($item['smartType']) && $item['smartType'] == 'FreshDeals') {
-            return __DIR__ . '/noauto/images/freshdeals_top_4.png';
+            return __DIR__ . '/noauto/images/freshdeals_top_2_300x2dpi.png';
         } else if (isset($item['smartType']) && $item['smartType'] == 'Regular') {
             return __DIR__ . '/noauto/images/standard_top_12.png';
         } else if (isset($item['smartType']) && $item['smartType'] == 'RegularLocal') {
