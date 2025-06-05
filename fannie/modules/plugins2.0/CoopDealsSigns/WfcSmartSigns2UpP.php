@@ -102,7 +102,7 @@ class WfcSmartSigns2UpP extends \COREPOS\Fannie\API\item\signage\Signage2UpP
         } else if (isset($item['smartType']) && $item['smartType'] == 'ChaChing') {
             return __DIR__ . '/noauto/images/chaching_top_2.png';
         } else if (isset($item['smartType']) && $item['smartType'] == 'FreshDeals') {
-            return __DIR__ . '/noauto/images/freshdeals_top_4.png';
+            return __DIR__ . '/noauto/images/freshdeals_top_2_300x2dpi.png';
         } else if (isset($item['smartType']) && $item['smartType'] == 'Regular') {
             return __DIR__ . '/noauto/images/standard_top_12.png';
         } else if (isset($item['smartType']) && $item['smartType'] == 'RegularLocal') {
