@@ -291,6 +291,33 @@ class InvCountPage extends FannieRESTfulPage
         } catch (Exception $ex){}
         $query .= ' ORDER BY p.upc';
         $prep = $this->connection->prepare($query);
+
+
+        $addJs = <<<JAVASCRIPT
+if (checked) {
+    let now = new Date();
+    $('#countTable tr').each(function() {
+        let date = $(this).find('td:eq(4)').text();
+        if (date == 'n/a') {
+            $(this).hide();
+        } else {
+            let then = new Date(date);
+            let days = (now - then) / (1000 * 60 * 60 * 24);
+            days = Math.round(days);
+            if (days > 364) {
+                $(this).hide();
+                console.log( $(this).find('td:eq(4)').text() );
+                console.log(days);
+            }
+        }
+    });
+} else {
+    $('#countTable tr').each(function() {
+        $(this).show();
+    });
+}
+JAVASCRIPT;
+
         $ret = '<form method="post">
             <a href="../vendors/VendorIndexPage.php?vid=' . $this->vendor . '">' . $vname . '</a>
             |
@@ -298,6 +325,8 @@ class InvCountPage extends FannieRESTfulPage
             |
             <a href="InvHistoryPage.php?vendor=' . $this->vendor . '&store=' . $store . '">Count History</a>
             | <label><input type="checkbox" onclick="(this.checked) ? $(\'tr.warning\').hide() : $(\'tr.warning\').show();" />
+                Hide new items</label>
+            | <label title="hide all items with Last Counted > 365 days ago, or \'n/a\'" ><input type="checkbox" onclick="'.$addJs.'" />
                 Hide uncounted items</label>
             <p>
                 <button type="submit" class="btn btn-default">Save</button>
