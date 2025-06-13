@@ -276,6 +276,11 @@ class BatchFromSearch extends FannieRESTfulPage
         $qOpts = $queues->toOptions();
 
         $ret = <<<HTML
+<style type="text/css">
+.ui-datepicker {
+    z-index: 999 !important;
+}
+</style>
 <form action="BatchFromSearch.php" method="post">
 <div class="form-group form-inline">
     <select name="batchType" id="batchType" class="form-control" onchange="discountTypeFixup()">
