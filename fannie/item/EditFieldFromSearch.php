@@ -48,19 +48,20 @@ class EditFieldFromSearch extends FannieRESTfulPage
 
     protected function post_upc_signField_signValue_handler()
     {
-        $model = new SignPropertiesModel($this->connection);
-        $columns = $model->getColumns();
-        if (!isset($columns[$this->signField])) {
-            echo 'Invalid field';
-            return false;
-        }
+        $tables = array(
+            'narrow' => 'SignProperties',
+            'signCount' => 'SignProperties',
+            'inUse' => 'products'
+        );
+        $table = $tables[$this->signField];
+        $storeID = ($table == 'products') ? 'store_id' : 'storeID';
 
         $args = array($this->signValue);
         list($inStr, $args) = $this->connection->safeInClause($this->upc, $args);
         $args[] = COREPOS\Fannie\API\lib\Store::getIdByIp();
-        $query = "UPDATE SignProperties SET " 
-            . $this->connection->identifierEscape($this->signField) . "=? 
-            WHERE upc IN ({$inStr}) AND storeID = ?";
+        $query = "UPDATE $table
+            SET {$this->signField} = ?
+            WHERE upc IN ($inStr) AND $storeID = ?";
         $prep = $this->connection->prepare($query);
         $res = $this->connection->execute($prep, $args);
 
@@ -69,21 +70,31 @@ class EditFieldFromSearch extends FannieRESTfulPage
 
     protected function post_upc_field_value_handler()
     {
-        $model = new ProductsModel($this->connection);
-        $columns = $model->getColumns();
-        if (!isset($columns[$this->field])) {
-            echo 'Invalid field';
-            return false;
-        }
+        if ($this->field != 'narrow') {
+            $model = new ProductsModel($this->connection);
+            $columns = $model->getColumns();
+            if (!isset($columns[$this->field])) {
+                echo 'Invalid field';
+                return false;
+            }
 
-        $args = array($this->value);
-        list($inStr, $args) = $this->connection->safeInClause($this->upc, $args);
-        $query = "UPDATE products SET " 
-            . $this->connection->identifierEscape($this->field) . "=?,
-                modified=" . $this->connection->now() . "
-            WHERE upc IN ({$inStr})";
-        $prep = $this->connection->prepare($query);
-        $res = $this->connection->execute($prep, $args);
+            $args = array($this->value);
+            list($inStr, $args) = $this->connection->safeInClause($this->upc, $args);
+            $query = "UPDATE products SET " 
+                . $this->connection->identifierEscape($this->field) . "=?,
+                    modified=" . $this->connection->now() . "
+                WHERE upc IN ({$inStr})";
+            $prep = $this->connection->prepare($query);
+            $res = $this->connection->execute($prep, $args);
+        } else {
+            $args = array($this->value);
+            list($inStr, $args) = $this->connection->safeInClause($this->upc, $args);
+            $query = "UPDATE SignProperties SET
+                narrow =?
+                WHERE upc IN ({$inStr})";
+            $prep = $this->connection->prepare($query);
+            $res = $this->connection->execute($prep, $args);
+        }
         if ($res) {
             $update = new ProdUpdateModel($this->connection);
             $update->logManyUpdates($this->upc, 'EDIT');
@@ -125,6 +136,7 @@ class EditFieldFromSearch extends FannieRESTfulPage
                 $opts .= '<option>' . $name . '</option>';
             }
         }
+        $opts .= '<option>narrow</option>';
 
         $s_def = $this->connection->tableExists('SignProperties');
         if ($s_def !== false) {
@@ -137,6 +149,7 @@ class EditFieldFromSearch extends FannieRESTfulPage
                     $signOpts .= '<option>' . $name . '</option>';
                 }
             }
+            $signOpts .= '<option>inUse</option>';
         }
 
         $items = '<table class="table table-bordered small">';
@@ -155,7 +168,8 @@ class EditFieldFromSearch extends FannieRESTfulPage
 <div class="row">
     <div class="col-lg-4">
         <h3>Product Data</h3>
-        <p>NOT Store Specific</p>
+        <p><u>NOT</u> Store Specific (will update items at every store)</p>
+        <p>&nbsp;</p>
         <form method="post" action="EditFieldFromSearch.php">
             <div class="form-group">
                 <label>Field</label>
@@ -173,7 +187,8 @@ class EditFieldFromSearch extends FannieRESTfulPage
     </div>
     <div class="col-lg-4">
         <h3>Sign Data</h3>
-        <p>Store Specific</p>
+        <p><u>IS</u> Store Specific (will update only current store's items)</p>
+        <p>1 = Yes, 0 = No</p>
         <form method="post" action="EditFieldFromSearch.php">
             <div class="form-group">
                 <label>Field</label>
@@ -189,7 +204,8 @@ class EditFieldFromSearch extends FannieRESTfulPage
             {$items2}
         </form>
     </div>
-    <div class="col-lg-4"></div>
+    <div class="col-lg-4">
+    </div>
 </div>
 <hr />
 {$items}
