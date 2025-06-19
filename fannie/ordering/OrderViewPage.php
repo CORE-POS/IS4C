@@ -1003,7 +1003,7 @@ class OrderViewPage extends FannieRESTfulPage
             }
         }
 
-        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth' && $mempricing['isMember']) {
+        if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
             $isBOGO = false;
             if ($batch == false) {
                 $batchP = $this->connection->prepare("SELECT batchName FROM products as p
