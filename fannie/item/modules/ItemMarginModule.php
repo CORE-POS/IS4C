@@ -69,9 +69,13 @@ if (this.value>=0) {
     let html = '<option>NONE</option>';
     $('#custom-pricing-fields').find('select').prepend(html);
     $('#custom-pricing-fields').find('select').find('option:eq(0)').prop('selected', true);
+    $('input[name=\'rule_review_date\']').val('');
+    $('input[name=\'rule_details\']').val('');
 } else {
     $('#custom-pricing-fields :input').prop('disabled', false);
     $('#custom-pricing-fields').find('select').find('option:eq(0)').remove();
+    $('input[name=\'rule_review_date\']').val('');
+    $('input[name=\'rule_details\']').val('');
 }
 JAVASCRIPT;
 
@@ -229,6 +233,12 @@ JAVASCRIPT;
                         $rule->priceRuleTypeID($this->form->price_rule_type);
                         $rule->maxPrice(preg_replace("/[^0-9.]/", "", $this->form->rule_details));
                     } catch (Exception $ex) {}
+
+
+                    if ($this->form->rule_review_date == '' || $this->form->rule_review_date == "0000-00-00 00:00:00") {
+                        $rule->reviewDate(date('Y-m-d'));
+                    }
+
                     if ($old_rule > 1) {
                         $rule->priceRuleID($old_rule);
                         $prod->price_rule_id($old_rule); // just in case
