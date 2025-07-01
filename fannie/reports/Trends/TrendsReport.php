@@ -139,6 +139,7 @@ class TrendsReport extends FannieReportPage
                 YEAR(t.tdate),
                 MONTH(t.tdate),
                 DAY(t.tdate)";
+        $query = str_replace("LEFT JOIN vendorItems AS i ON p.upc=i.upc AND p.default_vendor_id=i.vendorID", '', $query);
         $prep = $dbc->prepare($query);
         $from_where['args'][] = $store;
         try {
