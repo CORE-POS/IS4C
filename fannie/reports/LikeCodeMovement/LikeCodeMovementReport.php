@@ -71,6 +71,7 @@ class LikeCodeMovementReport extends FannieReportPage
             $inStr = substr($inStr, 0, strlen($inStr)-1);
         }
 
+        $nabs = DTrans::memTypeIgnore($dbc);
         $query = "select
               u.likeCode,l.likeCodeDesc,max(p.department), "
               . DTrans::sumQuantity('t')." as qty,
@@ -84,6 +85,7 @@ class LikeCodeMovementReport extends FannieReportPage
                   AND t.tdate BETWEEN ? AND ?
                   AND t.upc IN ($inStr)
                   AND " . DTrans::isStoreID($store, 't') . "
+                  AND t.memType NOT IN {$nabs}
               group by u.likeCode,l.likeCodeDesc";
         $args[] = $store;
         $prep = $dbc->prepare($query);
