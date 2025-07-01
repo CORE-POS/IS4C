@@ -39,6 +39,31 @@ class LikeCodeDailyMovementReport extends FannieReportPage
     public $report_set = 'Movement Reports';
     protected $report_headers = array('Date', 'LC#', 'Like Code', 'Qty', '$');
 
+    function preprocess()
+    {
+        $ret = parent::preprocess();
+        // custom: needs graphing JS/CSS
+        if ($this->content_function == 'report_content' && $this->report_format == 'html') {
+            $this->addScript('../../src/javascript/Chart.min.js');
+            $this->addScript('../../src/javascript/CoreChart.js');
+        }
+
+        return $ret;
+    }
+
+    public function report_content() 
+    {
+        $default = parent::report_content();
+
+        if ($this->report_format == 'html') {
+            $default .= '<div class="col-sm-10 col-sm-offset-1"><canvas id="chartCanvas"></canvas></div>';
+
+            $this->addOnloadCommand('showGraph()');
+        }
+
+        return $default;
+    }
+
     /**
       Lots of options on this report.
     */
@@ -130,6 +155,23 @@ class LikeCodeDailyMovementReport extends FannieReportPage
         }
 
         return array('Total', null, null, $sums[0], $sums[1]);
+    }
+
+    public function javascriptContent()
+    {
+        if ($this->report_format != 'html') {
+            return;
+        }
+
+        ob_start();
+        ?>
+function showGraph() {
+    var xLabels = $('td.reportColumn0').toArray().map(x => x.innerHTML.trim());
+    var yData = $('td.reportColumn3').toArray().map(x => Number(x.innerHTML.trim()));
+    CoreChart.lineChart('chartCanvas', xLabels, [yData], ["Daily Qty Sold"]);
+}
+        <?php
+        return ob_get_clean();
     }
 
     function form_content()
