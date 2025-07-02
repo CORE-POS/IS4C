@@ -202,7 +202,8 @@ function printMany(){
                 | <a href="MovementTagTracker.php?id=config">Settings</a>
                 | <a href="MovementTagTracker.php?data=view">Data</a></div>
             <div><a href="../../item/handheld/ItemStatusPage.php">Scan a Single Item</a></div>
-            <div><a href="../../item/vendors/PrintOrderedSigns.php">Print Tags in Order</a></div>
+            <div><a href="../../item/vendors/ShelfTagsInOrder.php">Print Tags in Order</a></div>
+            <div><a href="../../item/vendors/PrintEssentialOilStrips.php">Print Essential Oil Strips</a></div>
         </div>
         <?php
 
