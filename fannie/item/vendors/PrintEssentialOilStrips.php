@@ -38,15 +38,15 @@ if (!class_exists('WFC_EssOil_PDF')) {
 }
 
 /*
- *  @class PrintOrderedSigns 
+ *  @class PrintEssentialOilStrips 
  *
  *  Print a list of tags in list order.
  *
  */
-class PrintOrderedSigns extends FannieRESTfulPage 
+class PrintEssentialOilStrips extends FannieRESTfulPage 
 {
-    protected $title = "Fannie : Print Ordered Tags";
-    protected $header = "Print Ordered Tags";
+    protected $title = "Fannie : Essential Oil Strips";
+    protected $header = "Essential Oil Strips";
 
     public $description = '[Print Ordered Tags] Print a list of shelf tags 
         in the order the tags were entered.';
@@ -88,7 +88,7 @@ class PrintOrderedSigns extends FannieRESTfulPage
         $spacing = FormLib::get("spacing", 1);
 
         return <<<HTML
-<form action="PrintOrderedSigns.php" method="get" name="myform">
+<form action="PrintEssentialOilStrips.php" method="get" name="myform">
 <div class="row">
     <div class="col-lg-4">
         <div class="form-group">
@@ -127,6 +127,7 @@ class PrintOrderedSigns extends FannieRESTfulPage
                 | <a href="../../admin/labels/MovementTagTracker.php?id=config">Settings</a>
                 | <a href="../../admin/labels/MovementTagTracker.php?data=view">Data</a></div>
             <div><a href="../../item/handheld/ItemStatusPage.php">Scan a Single Item</a></div>
+            <div><a href="../../item/vendors/ShelfTagsInOrder.php">Print Tags in Order</a></div>
     </div>
     <div class="col-lg-4">
     </div>
@@ -215,7 +216,7 @@ HTML;
 <div class="row">
     <div class="col-lg-1">
         <div class="form-group">
-            <button class="btn btn-default form-control" onclick="window.location.href= 'http://key/git/fannie/item/vendors/PrintOrderedSigns.php'">Clear</button>
+            <button class="btn btn-default form-control" onclick="window.location.href= 'http://key/git/fannie/item/vendors/PrintEssentialOilStrips.php'">Clear</button>
         </div>
     </div>
 </div>
