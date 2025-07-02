@@ -12,7 +12,7 @@ class BatchExportExcel extends FannieReportPage
     public $discoverable = false;
 
     protected $required_fields = array('id');
-    protected $report_headers = array('ID', 'Name', 'Starts', 'Ends', 'Owner', 'UPC', 'Price', 'Item', 'Store', 'Store');
+    protected $report_headers = array('ID', 'Name', 'Starts', 'Ends', 'Owner', 'UPC', 'Sale Price', 'Regular Price', '% Off', 'Item', 'Store', 'Store');
 
     public function fetch_report_data()
     {
@@ -33,9 +33,11 @@ class BatchExportExcel extends FannieReportPage
                 b.endDate,
                 b.owner,
                 l.upc,
-                l.salePrice
+                l.salePrice,
+                p.normal_price
             FROM batches AS b
                 LEFT JOIN batchList AS l ON b.batchID=l.batchID
+                LEFT JOIN products AS p ON l.upc=p.upc AND p.store_id=1
             WHERE b.batchID=?");
         $data = array();
         $sCache = array();
@@ -49,6 +51,8 @@ class BatchExportExcel extends FannieReportPage
                 $row['owner'],
                 $row['upc'],
                 $row['salePrice'],
+                $row['normal_price'],
+                sprintf('%.2f', ($row['normal_price'] - $row['salePrice']) / $row['normal_price'] * 100),
             );
             if (strstr($row['upc'], 'LC')) {
                 $record[] = $this->connection->getValue($lcP, array(substr($row['upc'], 2)));
