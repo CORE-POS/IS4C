@@ -149,12 +149,12 @@ class OpenRingsReport extends FannieReportPage
         foreach($data as $row) {
             $sum_qty += $row[2];
             $sum_ttl += $row[1];
-            $sum_percents += (is_numeric($row[3]) ? $row[3] : 0);
+            $sum_percents += str_replace('%', '', $row[3]);
         }
 
         $avg = $sum_percents / ((float)count($data));
 
-        return array('Totals', sprintf('%.2f',$sum_qty), sprintf('%.2f',$sum_ttl), sprintf('%.2f%%', $avg));
+        return array('Totals', sprintf('%.2f',$sum_ttl), sprintf('%.2f',$sum_qty), sprintf('%.2f%%', $avg));
     }
 
     public function form_content()
