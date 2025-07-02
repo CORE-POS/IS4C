@@ -513,7 +513,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
         $result = $dbc->execute($prep, $args);
         while($row = $dbc->fetch_row($result)) {
             $ret .= sprintf('<tr class="itemrow" id="row%s">
-                            <td>%s</td>
+                            <td><a href="ItemEditorPage.php?searchupc=%s">%s</a></td>
                             <td>%s</td>
                             <td>%.5f%%</td>
                             <td>%.4f%%</td>
@@ -528,7 +528,7 @@ class MarginToolFromSearch extends FannieRESTfulPage
                             </td>
                             </tr>',
                             $row['upc'],
-                            $row['upc'],
+                            $row['upc'], $row['upc'],
                             $row['description'],
                             $row['percentageStoreSales'] * 100,
                             $row['percentageSuperDeptSales'] * 100,
