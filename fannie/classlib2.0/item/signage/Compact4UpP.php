@@ -146,10 +146,15 @@ class Compact4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 26));
             $pdf->SetFont($this->alt_font, '', $this->MED_FONT);
             $lower = trim(strtolower($item['originShortName']));
-            if (substr($lower, 0, 10) !== 'product of') {
+            if (substr($lower, 0, 10) !== 'product of' && strpos($item['originShortName'], '$') == false) {
                 $item['originShortName'] = 'Product of ' . trim($item['originShortName']);
             }
-            $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'C');
+            if (strpos($item['originShortName'], '$') == false) {
+                $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'C');
+            } else {
+                $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
+                $pdf->Cell($effective_width, 20, $item['originShortName'], 0, 1, 'L');
+            }
         }
 
         return $pdf;
