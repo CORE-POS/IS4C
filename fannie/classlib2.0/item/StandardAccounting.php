@@ -82,10 +82,15 @@ class StandardAccounting extends Accounting
             case '1201':
             case '1205':
             case '1207':
+            case '0330':
+            case '0340':
+            case '0310':
                 return self::perStoreCode($code, $store_id) . '-20';
             case '1300':
             case '1310':
             case '1315':
+            case '0510':
+            case '0520':
                 return self::perStoreCode($code, $store_id) . '-30';
             case '1305':
             case '1400':
@@ -110,6 +115,16 @@ class StandardAccounting extends Accounting
             case '1645':
             case '1700':
             case '1705':
+            case '0110':
+            case '0120':
+            case '0130':
+            case '0140':
+            case '0150':
+            case '0240':
+            case '0410':
+            case '0610':
+            case '0620':
+            case '0630':
                 return self::perStoreCode($code, $store_id) . '-60';
             default:
                 return self::perStoreCode($code, $store_id) . '-00';
