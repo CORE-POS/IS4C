@@ -139,6 +139,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
     {
         if ($form->upcs !== '') {
             $upcs = explode("\n", $form->upcs);
+            $skus = $upcs;
             $upcs = array_map(function($i) {
                 $i = str_replace(' ', '-', $i);
                 if (preg_match('/\d-\d+-\d+-\d/', $i)) {
@@ -153,7 +154,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
                 }
                 return $i;
             }, $upcs);
-            $skus = array_map(function($i){ return trim($i); }, $upcs);
+            $skus = array_map(function($i){ return trim($i); }, $skus);
             $upcs = array_map(function($i){ return BarcodeLib::padUPC(trim($i)); }, $upcs);
             if (!strstr($search->from, 'vendorItems')) {
                 $search->from .= ' LEFT JOIN vendorItems AS v ON p.upc=v.upc AND v.vendorID = p.default_vendor_id ';
