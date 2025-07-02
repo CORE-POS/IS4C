@@ -68,7 +68,24 @@ class OverShortSafecountV3 extends FanniePage {
                 FormLib::get_form_value('notes')
                 );
             break;  
+        case 'crosscheck':
+            echo $this->crossCheck(FormLib::get('ccID'));
+            break;
         }
+    }
+
+    function crossCheck($ccID)
+    {
+        global $FANNIE_PLUGIN_SETTINGS;
+        $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
+        $openP = $dbc->prepare("SELECT SUM(amt) FROM dailyDeposit WHERE dateStr=? AND rowName='openSafeCount'");
+        $open = $dbc->getValue($openP, array($ccID));
+        $extraP = $dbc->prepare("SELECT SUM(amt) FROM dailyDeposit WHERE dateStr=? AND rowName='dropExtra'");
+        $extra = $dbc->getValue($extraP, array($ccID));
+        $chgP = $dbc->prepare("SELECT SUM(amt) FROM dailyDeposit WHERE dateStr=? AND rowName='changeOrder'");
+        $chg = $dbc->getValue($chgP, array($ccID));
+
+        return round($open - $extra + $chg, 2);
     }
 
     function save($dateStr,$store,$type,$changeOrder,$openSafeCount,$buyAmount,$atmAmount,$atmAmount2,$tillCount,$notes){
@@ -197,7 +214,18 @@ class OverShortSafecountV3 extends FanniePage {
         $accountableTotal = 0;
         $buyAmountTotal = 0;
     
-        $ret = "<h3>$dateStr</h3>";
+        $ret = "<h3 style=\"display: inline;\">$dateStr</h3>";
+        $ret .= '<span style="margin-left: 100px; height: 50;">';
+        $ret .= 'Cross Check: <select id="ccID" onchange="crossCheck();">';
+        $res = $dbc->query('SELECT dateStr FROM dailyDeposit WHERE countFormat=2 GROUP BY dateStr ORDER BY dateStr DESC');
+        $ccCount = 0;
+        while($row = $dbc->fetch_row($res)) {
+            if ($ccCount++ > 100) {
+                break;
+            }
+            $ret .= '<option>'.$row['dateStr'].'</option>';
+        }
+        $ret .= '</select><span id="ccAmt" style="margin-left: 10px;"></span></span><br /><br />';
         $ret .= "<table cellspacing=0 border=1 cellpadding=4><tr><td>&nbsp;</td>";
         foreach ($denoms as $d) $ret .= "<th>$d</th>";
         $ret .= "<th>Total</th></tr>";
@@ -500,7 +528,7 @@ class OverShortSafecountV3 extends FanniePage {
     function body_content(){
         global $FANNIE_URL, $FANNIE_PLUGIN_SETTINGS;
         $dbc = FannieDB::get($FANNIE_PLUGIN_SETTINGS['OverShortDatabase']);
-        $this->addScript('js/countV3.js?date=20220927');
+        $this->addScript('js/countV3.js?date=20250321');
         $this->addScript($FANNIE_URL.'src/javascript/jquery.js');
         $this->addScript($FANNIE_URL.'src/javascript/jquery-ui.js');
         $this->addCssFile($FANNIE_URL.'src/style.css');

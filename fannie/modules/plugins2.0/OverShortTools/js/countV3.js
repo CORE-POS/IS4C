@@ -303,3 +303,16 @@ function recalcDropVariance(e) {
     $('#dropVar').html(sum);
 }
 
+function crossCheck() {
+    var ccID = $('#ccID').val();
+    var args = 'action=crosscheck&ccID=' + ccID;
+	$.ajax({
+		url: 'OverShortSafecountV3.php',
+		type: 'post',
+		data: args,
+		success: function(data){
+			$('#ccAmt').html(data);
+		}
+	});
+}
+
