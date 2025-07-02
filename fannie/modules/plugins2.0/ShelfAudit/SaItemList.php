@@ -44,6 +44,9 @@ class SaItemList extends SaHandheldPage
         if ($showUser) {
             $uid = $showUser;
         }
+        $this->connection->query("UPDATE "
+            . $settings['ShelfAuditDB'] . $this->connection->sep() . "SaList
+            SET section=2 WHERE section=127 and clear=0");
         $prep = $this->connection->prepare('
             SELECT s.upc,
                 p.brand,
@@ -63,7 +66,7 @@ class SaItemList extends SaHandheldPage
             ORDER BY s.tdate DESC
         ');
         $res = $this->connection->execute($prep, array($uid, $set));
-        $arr = array(array('UPC', 'SKU', 'Brand', 'Description', 'Vendor'));
+        $arr = array(array('UPC', 'SKU', 'Brand', 'Description', 'Vendor', 'Quantity'));
         while ($row = $this->connection->fetchRow($res)) {
             $arr[] = array(
                 $row['upc'],
@@ -71,6 +74,7 @@ class SaItemList extends SaHandheldPage
                 $row['brand'],
                 $row['description'],
                 $row['vendorName'],
+                $row['qty'],
             );
         }
         $out = COREPOS\Fannie\API\data\DataConvert::arrayToCsv($arr);
@@ -209,8 +213,8 @@ class SaItemList extends SaHandheldPage
             ORDER BY tdate DESC");
         $listID = $dbc->getValue($chkP, array($upc, $this->section, $uid));
         if ($listID) {
-            $upP = $dbc->prepare('UPDATE SaList SET quantity=?, tdate=? WHERE saListID=?');
-            return $dbc->execute($upP, array(1, date('Y-m-d H:i:s'), $listID)) ? true : false;
+            $upP = $dbc->prepare('UPDATE SaList SET quantity=quantity+1, tdate=? WHERE saListID=?');
+            return $dbc->execute($upP, array(date('Y-m-d H:i:s'), $listID)) ? true : false;
         } else {
             $insP = $dbc->prepare('INSERT INTO SaList (tdate, upc, clear, quantity, uid, section)
                 VALUES (?, ?, 0, ?, ?, ?)');
@@ -329,6 +333,9 @@ HTML;
         if ($override) {
             $uid = $override;
         }
+        $this->connection->query("UPDATE "
+            . $settings['ShelfAuditDB'] . $this->connection->sep() . "SaList
+            SET section=2 WHERE section=127 and clear=0");
         $prep = $this->connection->prepare('
             SELECT s.upc,
                 p.brand,
