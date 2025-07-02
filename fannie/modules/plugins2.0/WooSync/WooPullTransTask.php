@@ -89,7 +89,7 @@ class WooPullTransTask extends FannieTask
                 $row['charflag'] = 'SO';
                 $row['quantity'] = $line['quantity'];
                 $row['ItemQtty'] = $line['quantity'];
-                $row['upc'] = substr($line['sku'], 0, strlen($line['sku'])-3);
+                $row['upc'] = BarcodeLib::padUPC(substr($line['sku'], 0, strlen($line['sku'])-3));
                 $row['description'] = substr($line['name'], 0, 30);
                 $row['unitPrice'] = $line['price'];
                 $row['regPrice'] = $line['price'];
