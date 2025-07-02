@@ -126,10 +126,18 @@ class AdvancedMemSearch extends FannieRESTfulPage
         if ($form->tryGet('status') != '') {
             $search->where .= ' AND c.Type=? ';
             $search->args[] = $form->status;
+            if ($form->status == 'INACT' || $form->status == 'TERM') {
+                $search = $this->addTable($search, FannieDB::fqn('suspensions', 'op'), 's', 'cardno');
+            }
         }
         if ($form->tryGet('type') != '') {
-            $search->where .= ' AND c.memType=? ';
+            $search->where .= ' AND (c.memType=? ';
             $search->args[] = $form->type;
+            if ($form->status == 'INACT' || $form->status == 'TERM') {
+                $search->where .= ' OR s.memType1=? ';
+                $search->args[] = $form->type;
+            }
+            $search->where .= ') ';
         }
 
         return $search;
