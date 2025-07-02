@@ -80,6 +80,9 @@ a[type="submit"] {
     href="SaItemList.php" />Quick List</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
+    href="SaItemListKehe.php" />Quick List (Kehe & CPW ed.)</a>
+<hr />
+<a class="btn btn-default btn-lg" type="submit"
     href="../../../item/handheld/ItemStatusPage.php" />Price Check</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
@@ -87,13 +90,7 @@ a[type="submit"] {
 <hr />
 {$wfcTools[0]}
 <a class="btn btn-default btn-lg" type="submit"
-    href="../../../../../Scannie/content/Scanning/BatchCheck/newpage.php" />Batch Check</a>
-<hr />
-<a class="btn btn-default btn-lg" type="submit"
     href="../../../item/CoopDealsLookupPage.php" />C+D Check Sale</a>
-<hr />
-<a class="btn btn-default btn-lg" type="submit"
-    href="../../../../../Scannie/content/Scanning/AuditScanner/Scanner.php" />Audie</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../DeliInventory/DIScanner.php" />Prepared Inventory</a>
@@ -102,10 +99,10 @@ a[type="submit"] {
     href="SaOutOfStock.php" />Out of Stocks</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
-    href="../../../item/FloorSections/EditLocations.php?upc=0" />Physical Product Locations</a>
+    href="../../../item/FloorSections/EditLocations.php?upc=0" />Floor Sections</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
-    href="../../../modules/plugins2.0/SMS/scan/ScannerSMS.php" />Test Scanner Just For Corey</a>
+    href="../../../modules/plugins2.0/SMS/scan/ScannerSMS.php" />Corey's Build List</a>
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../modules/plugins2.0/SMS/scan/BatchCheckScannerSMS.php" />New Batch Check</a>
@@ -115,6 +112,9 @@ a[type="submit"] {
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="http://10.22.22.250:8000/mfloor/index-zebra.html" />mFloor Denfeld</a>
+<hr />
+<a class="btn btn-default btn-lg" type="submit"
+    href="../../../../../Scannie/content/Home/Home.php" />Scannie</a>
 <hr />
 {$wfcTools[1]}
 </p>
