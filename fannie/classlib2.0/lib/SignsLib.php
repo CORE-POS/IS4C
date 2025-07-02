@@ -103,32 +103,36 @@ JAVASCRIPT;
             array('Smart16Up.png', 'WFC Smart Signs 16 up', 'WfcSmartSigns16UpP'),
             array('Smart4Up.png', 'WFC Smart Signs 4 up', 'WfcSmartSigns4UpP'),
             array('Smart2Up.png', 'WFC Smart Signs 2Up', 'WfcSmartSigns2UpP'),
-            array('Signage12.png', 'Signage 12Up', 'Signage12UpL'),
-            array('Signage16Up.png', 'Signage 16Up', 'Signage16UpP'),
+            //array('Signage12.png', 'Signage 12Up', 'Signage12UpL'),
+            //array('Signage16Up.png', 'Signage 16Up', 'Signage16UpP'),
             array('Giganto2Alt.png', 'Giganto 2Up', 'Giganto2UpP'),
-            array('Giganto4Alt.png', 'Giganto 4Up', 'Giganto4UpP'),
+
+            //array('Giganto4Alt.png', 'Giganto 4Up', 'Giganto4UpP'),
+            array('LessSmart4Up.png', 'Use with Pre-Printed Fresh Deals 4Up', 'Giganto4UpCoopBasics'),
+
             array('ItemList4UpL.png', 'Item List 4UP', 'ItemList4UpL'),
             array('ItemList2UpP.png', 'Item List 2UP', 'ItemList2UpP'),
-            array('WFCHerbNSpice3UP.png', 'Herb & Spice Jars', 'Legacy:WFC HerbNspice 3UP'),
-            array('MeatLabel.png', 'Meat 14UP (full length)', 'Legacy:WFC MEAT 14UP'),
-            array('MeatLabelSN.png', 'Meat 14UP (shorter)', 'Legacy:WFC MEAT SN 14UP'),
-            array('WFCLegacyBulkRepack14UP.png', 'Bulk Repack 14UP (no price)', 'Legacy:WFC Bulk Repack 14UP'),
-            array('DeliRegular.png', 'Deli Regular Tags', 'Legacy:New WFC Deli Regular'),
-            array('DeliNarrow.png', 'Deli Narrow Tags (less wide)', 'Legacy:New WFC Deli Narrow'),
-            array('DeliShort.png', 'Deli Short Tags (less high)', 'Legacy:New WFC Deli Short'),
+            array('WFCHerbNSpice3UP.png', 'Herb & Spice Jars', 'Legacy:HerbSpice9UpL'),
+            //array('MeatLabel.png', 'Meat 14UP (full length)', 'Legacy:WFC MEAT 14UP'),
+            //array('MeatLabelSN.png', 'Meat 14UP (shorter)', 'Legacy:WFC MEAT SN 14UP'),
+            //array('WFCLegacyBulkRepack14UP.png', 'Bulk Repack 14UP (no price)', 'Legacy:WFC Bulk Repack 14UP'),
+            array('DeliRegular.png', 'Fancy Regular Tags', 'FancyShelfTags'),
+            array('DeliNarrow.png', 'Fancy Narrow Tags (less wide)', 'FancyShelfTags_Narrow'),
+            array('DeliShort.png', 'MEAT - Fancy Short Tags (less high)', 'FancyShelfTags_Short'),
             array('DeliSquare.png', 'Deli HFM Tags', 'Legacy:New WFC Deli SquareTags'),
 
             array('NewDeliSoup4UpL.png', 'Deli Soup', 'Legacy:New Deli Soup 4UpL'),
 
             array('LegacyWFCHerbNspiceFlat2.png', 'Herb & Spice (xs)', 'Legacy:WFC HerbNspice Flat'),
-            array('Giganto4UpSingle.png', 'Single Giganto (4UP)', 'Giganto4UpSingle'),
+            //array('Giganto4UpSingle.png', 'Single Giganto (4UP)', 'Giganto4UpSingle'),
             array('WFC_Produce_SmartSigns.png', 'Produce Smart Signs', 'Legacy:WFC Produce SmartSigns'),
+            array('LessLegacyWFCHybridGuidelines.png', 'Shelf Tags with Guidelines', 'Legacy:WFC Hybrid Guidelines'),
         );
         $dummySelect = "";
 
         $lessData = array(
             array('LessLegacyWFCHybrid.png', 'Shelf Tags Hybrid (Standard Shelf Tag)', 'Legacy:WFC SingleHybrid'),
-            array('LessLegacyWFCHybridGuidelines.png', 'Shelf Tags with Guidelines', 'Legacy:WFC Hybrid Guidelines'),
+            array('LessLegacyWFCSingleHybridGuidelines.png', 'Shelf Tags Hybrid (Any Paper)', 'Legacy:WFC SingleHybrid Guidelines'),
 
             array('LessLegacyWFCProduce.png', 'Shelf Tags (Produce)', 'Legacy:Single WFC Produce'),
             array('LessWFC_Produce_SmartSigns.png', 'Produce Smart Signs', 'Legacy:Single WFC Produce SmartSigns'),
@@ -137,10 +141,15 @@ JAVASCRIPT;
             array('LessSmart12Up.png', 'Smart 12Up', 'SingleWfcSmartSigns12UpL'),
             array('LessSmart16Up.png', 'Smart 16Up', 'SingleWfcSmartSigns16UpL'),
 
-            array('LessDeliRegular.png', 'Deli Regular Tags', 'Legacy:Single New WFC Deli Regular'),
-            array('LessDeliNarrow.png', 'Deli Narrow Tags (less wide)', 'Legacy:Single New WFC Deli Narrow'),
-            array('LessDeliShort.png', 'Deli Short Tags (less high)', 'Legacy:Single New WFC Deli Short'),
+            array('LessDeliRegular.png', 'Fancy Regular Tags', 'FancyTags_Less'),
+            array('LessDeliNarrow.png', 'Fancy Narrow Tags (less wide)', 'FancyTags_Less_Narrow'),
+            array('LessDeliShort.png', 'MEAT - Fancy Short Tags (less high)', 'FancyTags_Less_Short'),
             array('LessDeliSquare.png', 'Deli HFM Tags', 'Legacy:Single New WFC Deli SquareTags'),
+
+            array('WFC_Herbnspice_single.png', 'Herb & Spice Tags', 'Legacy:WFC HerbNspice Single'),
+            array('WFC_Herbnspice_back.png', 'Herb & Spice Back', 'Legacy:WFC HerbNspice Back'),
+
+            //array('WFC_MEAT_14UP_LESS.png', 'Meat Tags', 'Legacy:WFC MEAT 14UP LESS'),
         );
 
         if ($less === true) 
@@ -182,7 +191,8 @@ HTML;
      border-radius: 5px">
     <div class="container-fluid" id="visualSelect-container">
         <div align="right" style="cursor: pointer; " id="close-visualSelect">
-            <span style="background: white; height: 25px; width: 25px; padding: 5px; box-shadow: 1px 1px lightgrey;">X</span>
+            <span style="background: grey; color: lightgrey; font-family: Consolas; font-size: 14px; height: 25px; width: 54px; padding: 3px;
+                position: absolute; top: 0px; right: 0px; border: 1px solid black">CLOSE</span>
         </div>
         $output
     </div>
