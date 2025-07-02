@@ -174,7 +174,7 @@ while($m < 32){
    $newUPC = $upc . $check;
    //echo $newUPC . "<br>";
       //echo "<br>" . $row['upc'] . "check: " . $check . "new: " . $newUPC;;
-     $pdf->EAN3($i,$j,$upc,7);
+     $pdf->EAN13($i,$j,$upc,7);
    
    $i =$i+ 53;
    $k = $k + 53;
