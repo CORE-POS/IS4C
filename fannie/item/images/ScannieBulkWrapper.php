@@ -71,6 +71,7 @@ Sign file(s):
 <ul>
     {$ret}
 </ul>
+<i>If items are missing in the above link (or if the link is missing), check that all parenthesis and brackets are closed in that/those products ingredients list(s)</i>
 HTML;
     }
 
