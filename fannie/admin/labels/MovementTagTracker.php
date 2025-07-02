@@ -654,6 +654,7 @@ HTML;
             AND p.upc NOT IN (SELECT value FROM MovementTrackerParams WHERE parameter = 'Product')
             AND p.department NOT IN (SELECT value FROM MovementTrackerParams WHERE parameter = 'Dept')
             AND p.brand NOT IN (SELECT value FROM MovementTrackerParams WHERE parameter = 'Brand')
+            AND mast.super_name NOT IN ('PRODUCE', 'MEAT')
         ;");
         $res = $dbc->execute($prep, $args);
         if ($er = $dbc->error())
