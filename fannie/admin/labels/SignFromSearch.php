@@ -413,6 +413,17 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         if (FormLib::get('signmod') == 'Legacy:New WFC Deli SquareTags') {
             $ret .= $ShowPriceToggleHTML;
             $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyShelfTags') {
+            $ret .= $ShowPriceToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyShelfTags_Short') {
+            $ret .= $ShowPriceToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyShelfTags_Narrow') {
+            $ret .= $ShowPriceToggleHTML;
             $ret .= $ShowBarcodeToggleHTML;
         }
         $ret .= '</div>';
