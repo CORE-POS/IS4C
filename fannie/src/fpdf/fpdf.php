@@ -1012,7 +1012,7 @@ function Output($name='',$dest='')
         else
             $dest='F';
     }
-    $name = uniqid().$name;
+    //$name = uniqid().$name;
     switch($dest)
     {
         case 'I':
