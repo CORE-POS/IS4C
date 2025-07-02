@@ -330,7 +330,7 @@ class RpDualPage extends FannieRESTfulPage
         $model = new RpOrderItemsModel($this->connection);
         $model->storeID(FormLib::get('store'));
         $model->categoryID(FormLib::get('catID'));
-        $model->addedBy(1);
+        $model->addedBy(FannieAuth::getUID());
         $model->caseSize(FormLib::get('caseSize'));
         $model->vendorID(FormLib::get('vendor'));
         $model->vendorSKU(FormLib::get('sku'));
@@ -356,6 +356,12 @@ class RpDualPage extends FannieRESTfulPage
             $ret .= '<div class="alert alert-success">Added item</div>';
         } else {
             $ret .= '<div class="alert alert-danger">Error adding item</div>';
+        }
+        if (FormLib::get('bothStores')) {
+            foreach (array(1,2) as $storeID) {
+                $model->storeID($storeID);
+                $model->save();
+            }
         }
 
         return $ret . $this->get_view();
@@ -857,6 +863,9 @@ class RpDualPage extends FannieRESTfulPage
     <div class="form-group input-group">
         <span class="input-group-addon">Category</span>
         <select name="catID" class="form-control input-sm" required>{$catOpts}</select>
+    </div>
+    <div class="form-group input-group">
+        <label><input type="checkbox" value="1" name="bothStores" /> Both Stores</label>
     </div>
     <button type="submit" class="btn btn-default">Add Item</button>
     <button type="reset" class="btn btn-default btn-reset">Clear</button>
