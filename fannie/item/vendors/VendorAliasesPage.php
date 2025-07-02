@@ -183,12 +183,22 @@ class VendorAliasesPage extends FannieRESTfulPage
                 <input type="text" class="form-control input-sm" name="sku" placeholder="SKU" />
                 <label>Primary Alias <input type="checkbox" name="isPrimary" value="1" /></label>
                 <label>Multiplier</label>
-                <input type="number" min="0" max="100" step="0.01" name="multiplier" value="1.0" 
-                    class="form-control input-sm" />
+                <input type="number" name="multiplier" value="1.0" step="0.00000000000000001"
+                    class="form-control input-sm" id="multiplier" />
                 <button type="submit" class="btn btn-submit btn-core">Add/Update</button>
             </div></p>
             </form>
+            ';
+
+        $ret .= "<div style=\"float: right; \">Case Size: ";
+        foreach (array(5, 10, 11, 12, 14, 15, 20, 25, 30, 35, 50) as $v) {
+            $ret  .= "<button class=\"btn btn-default btn-xs\" onclick=\" $('#multiplier').val( 1 / $(this).text()  ); return false;\">$v</button>&nbsp;";
+        }
+        $ret .= "</div>";
+
+        $ret .= '
             </div>';
+
 
         $prep = $dbc->prepare("
             SELECT v.upc,
@@ -236,7 +246,7 @@ class VendorAliasesPage extends FannieRESTfulPage
                 <td>%s</td>
                 <td>%s</td>
                 <td>%s</td>
-                <td>%.2f</td>
+                <td>%.3f</td>
                 <td><a class="btn btn-default btn-xs btn-danger" href="?_method=delete&id=%d&sku=%s&upc=%s">%s</a></td>
                 <td><input type="checkbox" class="printUPCs" name="printUPCs[]" value="%d" /></td>
                 </tr>',
@@ -311,7 +321,51 @@ $('.column-filter').keyup(function(){
     });
 });
 
+/*
+    Add Shift + Click Quick Checkboxes
+*/
+var lastChecked = null;
+var i = 0;
+var indexCheckboxes = function(){
+    // 1. unset all data-index
+    $('.printUPCs').each(function(){
+        $(this).attr('data-index', null);
+    });
+
+    // 2. set data-index if checkbox is visible
+    $('.printUPCs').each(function(){
+        if ($(this).is(":visible")) {
+            $(this).attr('data-index', i);
+            i++;
+        }
+    });
+};
+indexCheckboxes();
+$('.printUPCs').on("click", function(e){
+    if(lastChecked && e.shiftKey) {
+        var i = parseInt(lastChecked.attr('data-index'));
+        var j = parseInt($(this).attr('data-index'));
+        var checked = $(this).is(":checked");
+
+        var low = i;
+        var high = j;
+        if (i>j){
+            var low = j;
+            var high = i;
+        }
+
+        for(var c = low; c < high; c++) {
+            if (c != low && c!= high) {
+                var check = checked ? true : false;
+                $('input[data-index="'+c+'"').prop("checked", check);
+            }
+        }
+    }
+    lastChecked = $(this);
+});
+
 JAVASCRIPT;
+
         $trimInputWhitespace = <<<HTML
 $('input[type="text"]').on('keyup', function(){
     let text = $(this).val();
