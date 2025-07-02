@@ -137,7 +137,7 @@ class EquitySalesReport extends FannieReportPage
             FROM $dlog AS d
             WHERE d.department IN (991,992)
                 AND d.tdate BETWEEN ? AND ?
-                AND d.emp_no <> 1001
+                AND (d.emp_no <> 1001 OR d.store_id=50)
                 $store_selector
             GROUP BY $date_selector,
                 CONCAT(year(tdate), '-', month(tdate), '-', day(tdate))
