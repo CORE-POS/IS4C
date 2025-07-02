@@ -63,9 +63,10 @@ class OverShortTransfers extends FannieReportPage
                     ELSE receivedTotalCost 
                 END)), ttl");
         $res = $this->connection->execute($prep, $args);
-        $stamp = strtotime($this->form->date1);
-        $glID = date('Ym01', $stamp);
-        $endDate = date('n/t/y', $stamp);
+        $stamp1 = strtotime($this->form->date1);
+        $stamp2 = strtotime($this->form->date2);
+        $glID = date('Ymd', $stamp1);
+        $endDate = date('n/d/y', $stamp2);
         $data = array();
         while ($row = $this->connection->fetchRow($res)) {
             $code = $accounting::toPurchaseCode($row['salesCode']);
