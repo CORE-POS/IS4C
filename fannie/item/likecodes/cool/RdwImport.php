@@ -76,7 +76,7 @@ class RdwImport extends FannieRESTfulPage
                 $model->brand($this->data[$sku]);
                 $model->description($desc);
                 $model->internalUPC(BarcodeLib::padUPC($this->fixUPC($item[9])));
-                $model->salesCode(51300);
+                $model->salesCode(50510);
                 $model->save();
             }
         }
