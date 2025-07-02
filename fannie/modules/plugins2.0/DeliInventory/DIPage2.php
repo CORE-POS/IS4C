@@ -17,9 +17,41 @@ class DIPage2 extends FannieRESTfulPage
     {
         $this->addRoute('get<catUp>', 'get<catDown>', 'post<newItem>',
             'post<newCat>', 'delete<catID>', 'post<oldCat><renameCat>',
-            'post<seq><catID>', 'get<print>', 'get<clear>');
+            'post<seq><catID>', 'get<print>', 'get<clear>', 'get<export>');
 
         return parent::preprocess();
+    }
+
+    protected function get_export_handler()
+    {
+        $query = "SELECT category, item, size, units, cases, fraction, price,
+            (price * cases) + (price * (fraction / units)) as total, upc, orderno 
+            FROM deliInventoryCat
+            WHERE storeID=2
+                AND category <> ''
+                AND category IS NOT NULL
+            ORDER BY category, seq"; 
+        $res = $this->connection->query($query);
+        header("Content-type: text/csv");
+        header("Content-Disposition: attachment; filename=DeliPreparedExport.csv");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+        echo "Category,Item,Size,Units/Case,Cases,#/Each,Price/Case,Total,UPC,SKU\r\n";
+        while ($row = $this->connection->fetchRow($res)) {
+            printf('"%s",', $row['category']);
+            printf('"%s",', $row['item']);
+            printf('"%s",', $row['size']);
+            printf('%s,', $row['units']);
+            printf('%s,', $row['cases']);
+            printf('%s,', $row['fraction']);
+            printf('%.2f,', $row['price']);
+            printf('%.2f,', $row['total']);
+            printf('"%s",', $row['upc']);
+            printf('"%s"', $row['orderno']);
+            echo "\r\n";
+        }
+
+        return false;
     }
 
     protected function get_clear_handler()
@@ -347,7 +379,10 @@ HTML;
         $ret = "<h3>{$storeName}</h3>";
         $ret .= '<div class="hidden-print"><a href="" onclick="di.showSourcing(); return false;">Show Sourcing</a>
             |
-            <a href="" onclick="di.hideSourcing(); return false;">Hide Sourcing</a></div>';
+            <a href="" onclick="di.hideSourcing(); return false;">Hide Sourcing</a>
+            |
+            <a href="DIPage2.php?export=1">Export</a>
+            </div>';
         $ret .= '<div class="row hidden-print"><div class="col-sm-4">';
         while ($catW = $this->connection->fetchRow($catR)) {
             $tag = str_replace(' ', '-', strtolower($catW['name']));
