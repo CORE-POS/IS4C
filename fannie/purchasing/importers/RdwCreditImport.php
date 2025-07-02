@@ -54,7 +54,7 @@ class RdwCreditImport extends FannieRESTfulPage
                 $model->brand();
                 $model->description($desc);
                 $model->internalUPC(BarcodeLib::padUPC('0'));
-                $model->salesCode(51300);
+                $model->salesCode(50510);
                 $model->save();
             }
         }
