@@ -204,7 +204,7 @@ HTML;
             end
             as Status,
             datetime, register_no, emp_no, trans_no, card_no as memberID,
-            upc
+            upc, discountable, percentDiscount
             FROM $table 
             WHERE datetime BETWEEN ? AND ? 
                 AND register_no=? AND emp_no=? and trans_no=?
@@ -289,6 +289,11 @@ HTML;
             $ret .= $row["description"] . '</td>'; 
             $ret .= sprintf('<td align="right">%s</td><td align="right">%.2f</td><td align="right">%s</td></tr>',
                         $row['comment'], $row['total'], $row['Status']);
+            if ($row['discountable'] && $row['percentDiscount']) {
+                $ret .= '<tr><td>Customer discount</td>';
+                $ret .= sprintf('<td align="right">%s</td><td align="right">%.2f</td><td align="right">%s</td></tr>',
+                            '', $row['total'] * ($row['percentDiscount'] / 100.00) * -1, '');
+            }
         } 
         
         $ret .= '<tr><td colspan="4">&nbsp;</td></tr>';
