@@ -50,6 +50,7 @@ class SpecialOrdersModel extends BasicModel
     'sendEmails' => array('type'=>'TINYINT', 'default'=>8),
     'onlineID' => array('type'=>'INT'),
     'noDuplicate' => array('type'=>'TINYINT', 'default'=>0),
+    'tagNotes' => array('type'=>'TEXT', 'default'=>'{}'),
     );
 
     public function doc()
