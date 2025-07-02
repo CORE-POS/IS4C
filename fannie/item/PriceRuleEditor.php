@@ -384,10 +384,7 @@ $('.edit-details-all').on('keydown', function(e){
 
 $('.edit-details-all').on('change', function(){
     var value = $(this).val();
-    var c = confirm('Change all Details to *'+value+'* ?');
-    if (c == true) {
-        $('.editable-details').text(value);
-    }
+    $('.editable-details').text(value);
 });
 
 // use this to edit details
