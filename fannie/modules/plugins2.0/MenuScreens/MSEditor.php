@@ -57,7 +57,7 @@ class MSEditor extends FannieRESTfulPage
 </div>
 <div class="form-group">
     <label>Columns</label>
-    <input type="number" class="form-control" min="1" max="5" step="1" name="cols" value="{$ms->columnCount}" />
+    <input type="number" class="form-control" min="1" max="6" step="1" name="cols" value="{$ms->columnCount}" />
 </div>
 <div class="form-group">
     <label>Layout</label>
