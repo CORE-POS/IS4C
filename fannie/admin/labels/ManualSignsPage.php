@@ -166,12 +166,16 @@ class ManualSignsPage extends FannieRESTfulPage
                 'numflag' => 0,
                 'startDate' => $start[$i],
                 'endDate' => $end[$i],
-                'originName' => $origins[$i],
-                'originShortName' => $origins[$i],
                 'smartType' => is_array($smartType) ? $smartType[$i] : '',
                 'uniqid' => uniqid(),
                 'mult' => $mult[$i],
             );
+            if (is_numeric($origins[$i])) {
+                $item['nonSalePrice'] = $origins[$i];
+            } else {
+                $item['originName'] = $origins[$i];
+                $item['originShortName'] = $origins[$i];
+            }
             if (strstr($origins[$i], '/')) {
                 list($origin, $regPrice) = explode('/', $origins[$i], 2);
                 $item['originName'] = trim($origin);
@@ -278,8 +282,8 @@ JAVASCRIPT;
             $ret .= '<div><label style="cursor: pointer;" data-toggle="collapse" data-target="#thc-js-methods">Get & Set Price Functions</label></div>';
             $ret .= '<div class="collapse" id="thc-js-methods">';
             $ret .= '<p>Fil in the blanks with Lane-Side POS prices (will use future sale price if set)</p>';
-            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-sale-single-price" /> <label for="thc-sale-single-price">Get Lane Sale (Single) Prices</label></div>';
-            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-sale-pkg-price" /> <label for="thc-sale-pkg-price">Get Lane Sale (PKG) Prices</labe></div>';
+            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-sale-single-price" /> <label for="thc-sale-single-price">Get Lane <span style="color: green;">Sale</span> (Single) Prices</label></div>';
+            $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-sale-pkg-price" /> <label for="thc-sale-pkg-price">Get Lane  <span style="color: green;">Sale</span> (PKG) Prices</labe></div>';
             $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-normal-pkg-price" /> <label for="thc-normal-pkg-price">Get Lane Normal PKG Prices</labe></div>';
             $ret .= '<div><input class="lanePriceFx" type="checkbox" id="thc-normal-price" /> <label for="thc-normal-price">Get Lane Normal Prices</labe></div>';
             $ret .= '</div>';
