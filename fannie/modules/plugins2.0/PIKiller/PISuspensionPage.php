@@ -64,6 +64,7 @@ class PISuspensionPage extends PIKillerPage {
         $this->__routes[] = 'get<id><edit>';
         $this->__routes[] = 'get<id><fixaddress>';
         $this->__routes[] = 'get<id><fixpaperwork>';
+        $this->__routes[] = 'get<id><fixequity>';
         $this->__routes[] = 'get<id><setpaperwork>';
         return parent::preprocess();
     }
@@ -109,6 +110,23 @@ class PISuspensionPage extends PIKillerPage {
             return False;
         }
         else if ($susp->reasoncode() == 256){
+            // clear suspension for bad address
+            return $this->post_id_handler();
+        }
+        else
+            return $this->unknown_request_handler();
+    }
+
+    protected function get_id_fixequity_handler(){
+        global $FANNIE_OP_DB;
+        $susp = new SuspensionsModel(FannieDB::get($FANNIE_OP_DB));
+        $susp->cardno($this->id);
+        if (!$susp->load()){
+            // not currently suspended
+            header('Location: PIMemberPage.php?id='.$this->id);
+            return False;
+        }
+        else if ($susp->reasoncode() == 4 || $susp->reasoncode() == 2){
             // clear suspension for bad address
             return $this->post_id_handler();
         }

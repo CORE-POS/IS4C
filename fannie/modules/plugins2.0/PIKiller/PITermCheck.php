@@ -194,6 +194,7 @@ class PITermCheck extends FannieRESTfulPage
         $pdf->SetX($left);
         $pdf->Cell($width, $line_height, 'finance@wholefoods.coop', 0, 1);
        
+        $pdf->Output('noauto/docfile/' . $this->id . '/Equity Refund ' . $this->id . '.pdf', 'F');
         $pdf->Output('Equity Refund ' . $this->id . '.pdf', 'I');
 
         return false;
