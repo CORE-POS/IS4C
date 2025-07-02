@@ -4,8 +4,8 @@ jobs:
     tests:
         strategy:
             matrix:
-                operating-system: ['ubuntu-20.04']
-                php-version: ['7.2']
+                operating-system: ['ubuntu-22.04']
+                php-version: ['7.4']
                 DB_DRIVER: ['pdo_mysql', 'mysqli']
         runs-on: ${{ matrix.operating-system }}
         steps:
