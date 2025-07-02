@@ -5,7 +5,7 @@ if (!class_exists('FpdfWithBarcode')) {
 if (!class_exists('FannieAPI')) {
     include(__DIR__ . '/../../classlib2.0/FannieAPI.php');
 }
-class WFC_Aisle_Tags extends FpdfWithBarcode
+class WFC_Aisle_Tags_Full_PDF extends FpdfWithBarcode
 {
     private $tagdate;
     //$dbc->$this->connection;
@@ -56,7 +56,7 @@ while ($row = $dbc->fetchRow($res)) {
 */
 $aisles = array();
 
-$aisles[] = array("Bev", null, "A","F");
+$aisles[] = array("Meat", null, "A","G");
 //$aisles[] = array("Grocery 5", null, "D","D");
 
 $data = array();
@@ -76,14 +76,14 @@ foreach ($aisles as $arr) {
 }
 
 
-function WFC_Aisle_Tags($data,$offset=0){
+function WFC_Aisle_Tags_Full($data,$offset=0){
 
-    $pdf=new WFC_Aisle_Tags('P','mm','Letter'); //start new instance of PDF
+    $pdf=new WFC_Aisle_Tags_Full_PDF('P','mm','Letter'); //start new instance of PDF
     $pdf->Open(); //open new PDF Document
     $pdf->setTagDate(date("m/d/Y"));
 
-    //$width = 52; // tag width in mm 53 = full tag
-    $width = 30; // tag width in mm 30 = narrow tag
+    $width = 52; // tag width in mm 53 = full tag
+    //$width = 30; // tag width in mm 30 = narrow tag
 
     $height = 31; // tag height in mm
     $left = 5; // left margin
@@ -211,8 +211,8 @@ function WFC_Aisle_Tags($data,$offset=0){
         $x = $left;
         $y = $top;
        }
-       else if ($num % 7 == 0){
-       //else if ($num % 4 == 0){
+       //else if ($num % 7 == 0){
+       else if ($num % 4 == 0){
         $x = $left;
         $y += $height;
        }

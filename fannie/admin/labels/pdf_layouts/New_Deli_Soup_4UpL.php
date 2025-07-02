@@ -119,6 +119,16 @@ function generatedDeliSoup4UpLTag($x, $y, $guide, $width, $height, $pdf, $row, $
 
     $Mingr = $manualIngrs[$i];
 
+    $args = array($upc);
+    $prep = $dbc->prepare("
+        SELECT numflag 
+        FROM products 
+        WHERE upc = ?
+        LIMIT 1");
+    $res = $dbc->execute($prep, $args);
+    $tmprow = $dbc->fetchRow($res);
+    $numflag = $tmprow['numflag'];
+
     $args = array($upc, $store);
     $row = array();
     $prep = $dbc->prepare("
@@ -200,16 +210,26 @@ function generatedDeliSoup4UpLTag($x, $y, $guide, $width, $height, $pdf, $row, $
     /*
         Add Top Image Branding
     */
-        $localX = 0;
-        $localY = 0;
-        //$pdf->Image(__DIR__ . '/noauto/VeganBug2.jpg', $x+$localX, $y+$localY+1, 14, 8);
-        //$pdf->Image(__DIR__ . '/noauto/veganST.jpg', $x+$localX, $y+$localY+34, 14, 8.5);
-        //$pdf->Image(__DIR__ . '/noauto/RailDeliTop.jpg', $x-13.5, $y-43.5, $width+2, 35);
-        $pdf->Image(__DIR__ . '/noauto/4UpDeliTop.jpg', $x-8.5, $y-40, $width-6, 28);
-        $pdf->SetDrawColor(243, 115, 34);
-        //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
-        $pdf->SetDrawColor(0, 0, 0);
+    $localX = 0;
+    $localY = 0;
+    //$pdf->Image(__DIR__ . '/noauto/VeganBug2.jpg', $x+$localX, $y+$localY+1, 14, 8);
+    //$pdf->Image(__DIR__ . '/noauto/veganST.jpg', $x+$localX, $y+$localY+34, 14, 8.5);
+    //$pdf->Image(__DIR__ . '/noauto/RailDeliTop.jpg', $x-13.5, $y-43.5, $width+2, 35);
+    $pdf->Image(__DIR__ . '/noauto/4UpDeliTop.jpg', $x-8.5, $y-40, $width-6, 28);
+    $pdf->SetDrawColor(243, 115, 34);
+    //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
+    $pdf->SetDrawColor(0, 0, 0);
 
+    /* 
+        Print Vegan
+    */
+    if ($numflag & (1<<2)) {
+        $localX = 105;
+        $localY = 50;
+        $pdf->Image(__DIR__ . '/noauto/veganST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
+        $pdf->SetDrawColor(243, 115, 34);
+        $pdf->SetDrawColor(0, 0, 0);
+    }
 
     return $pdf;
 }

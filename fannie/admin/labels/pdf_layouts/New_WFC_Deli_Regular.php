@@ -233,8 +233,12 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
     $MdescKey = array_search($upc, $updateUpcs);
     $Mdesc = $manualDescs[$MdescKey];
     $Mbrand = $manualBrand[$MdescKey];
-    $desc = $Mdesc;
-    $brand = $Mbrand;
+    if (strlen($Mdesc) > 0) {
+        $desc = $Mdesc;
+    }
+    if (strlen($Mbrand) > 0) {
+        $brand = $Mbrand;
+    }
     $brand = strtoupper($brand);
 
     // get local info
@@ -315,6 +319,15 @@ function generateNewDeliRegular_24UPTag($x, $y, $guide, $width, $height, $pdf, $
         $pdf->SetFillColor(255,255,255);
         $pdf->Rect($x+11, $y-2, 50, 3, 'F');
     }
+
+    /*
+        Test - using FannieSignage::DrawBarcode()
+    */
+    //$barcode = FannieSignage::drawBarcode($upc, $pdf, $x + 42.5, $y+2, $args);
+    //$upcbits = $this->upcToBitString($upc);
+
+
+
 
 
     /*
