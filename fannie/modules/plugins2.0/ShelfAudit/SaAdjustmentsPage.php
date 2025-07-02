@@ -88,17 +88,18 @@ class SaAdjustmentsPage extends FannieRESTfulPage
         $ret .= '<h3>Service Counts (in dollars, at retail)</h3>';
         $ret .= '<table class="table table-bordered small table-striped">';
         $manualR = $this->connection->query("
-            SELECT upc, description
-            FROM products
+            SELECT upc, description, salesCode
+            FROM products as p
+                LEFT JOIN departments AS d ON p.department=d.dept_no
             WHERE store_id=1
                 AND inUse=0
                 AND description LIKE 'INV SERVICE%'
             ORDER BY upc");
         while ($row = $this->connection->fetchRow($manualR)) {
             $current = $this->connection->getValue($curP, array($store, $row['upc']));
-            $ret .= sprintf('<tr><td>%s<input type="hidden" name="upc[]" value="%s" /></td>
+            $ret .= sprintf('<tr><td>%s (%s)<input type="hidden" name="upc[]" value="%s" /></td>
                                 <td>%s</td><td><input type="text" class="form-control input-sm" name="qty[]" value="%.2f" /></td></tr>',
-                                ltrim($row['upc'], '0'), $row['upc'],
+                                ltrim($row['upc'], '0'), $row['salesCode'], $row['upc'],
                                 $row['description'], $current);
         }
         $ret .= '</table>';
@@ -106,17 +107,18 @@ class SaAdjustmentsPage extends FannieRESTfulPage
         $ret .= '<h3>Invoice Adjustments (in dollars, at cost)</h3>';
         $ret .= '<table class="table table-bordered small table-striped">';
         $manualR = $this->connection->query("
-            SELECT upc, description
-            FROM products
+            SELECT upc, description, salesCode
+            FROM products as p
+                LEFT JOIN departments AS d ON p.department=d.dept_no
             WHERE store_id=1
                 AND inUse=0
                 AND description LIKE '% RECV %'
             ORDER BY upc");
         while ($row = $this->connection->fetchRow($manualR)) {
             $current = $this->connection->getValue($curP, array($store, $row['upc']));
-            $ret .= sprintf('<tr><td>%s<input type="hidden" name="upc[]" value="%s" /></td>
+            $ret .= sprintf('<tr><td>%s (%s)<input type="hidden" name="upc[]" value="%s" /></td>
                                 <td>%s</td><td><input type="text" class="form-control input-sm" name="qty[]" value="%.2f" /></td></tr>',
-                                ltrim($row['upc'], '0'), $row['upc'],
+                                ltrim($row['upc'], '0'), $row['salesCode'], $row['upc'],
                                 $row['description'], $current);
         }
         $ret .= '</table>';
@@ -124,17 +126,18 @@ class SaAdjustmentsPage extends FannieRESTfulPage
         $ret .= '<h3>Sales Adjustments (in dollars, at cost, normally negative)</h3>';
         $ret .= '<table class="table table-bordered small table-striped">';
         $manualR = $this->connection->query("
-            SELECT upc, description
-            FROM products
+            SELECT upc, description, salesCode
+            FROM products AS p
+                LEFT JOIN departments AS d ON p.department=d.dept_no
             WHERE store_id=1
                 AND inUse=0
                 AND description LIKE '% ADJ SALES %'
             ORDER BY upc");
         while ($row = $this->connection->fetchRow($manualR)) {
             $current = $this->connection->getValue($curP, array($store, $row['upc']));
-            $ret .= sprintf('<tr><td>%s<input type="hidden" name="upc[]" value="%s" /></td>
+            $ret .= sprintf('<tr><td>%s (%s)<input type="hidden" name="upc[]" value="%s" /></td>
                                 <td>%s</td><td><input type="text" class="form-control input-sm" name="qty[]" value="%.2f" /></td></tr>',
-                                ltrim($row['upc'], '0'), $row['upc'],
+                                ltrim($row['upc'], '0'), $row['salesCode'], $row['upc'],
                                 $row['description'], $current);
         }
         $ret .= '</table>';
