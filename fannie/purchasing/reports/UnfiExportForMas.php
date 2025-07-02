@@ -162,7 +162,7 @@ class UnfiExportForMas extends FannieReportPage
     {
         if (substr($code, 0, 3) === '512') {
             return $code . '0' . $storeID . '20';
-        } elseif ($code === '51300' || $code === '51310' || $code === '51315') {
+        } elseif ($code === '51300' || $code === '51310' || $code === '51315' || $code == '50510') {
             return $code . '0' . $storeID . '30';
         } elseif (substr($code, 0, 1) == '6') {
             return $code . '0' . $storeID . '00';
