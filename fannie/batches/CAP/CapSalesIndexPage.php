@@ -43,7 +43,7 @@ class CapSalesIndexPage extends FanniePage
             <li><a href="CoopDealsUploadPage.php">Upload Price File</a></li>
             <li><a href="CoopDealsReviewPage.php">Review data &amp; create sales batches</a></li>
             <li><a href="CoopDealsMergePage.php">Merge items into existing batches</a></li>
-            <li><a href="CoopDealsSignsPage.php">Print Sale Signs</a></li>
+            <li><a href="CoopDealsSignsPageNew.php">Print Sale Signs</a></li>
             <li><a href="CoopDealsItemsPage.php">View/Delete Coop Deals Data</a></li>
         </ul></li>
         <li>EDLP<ul>
