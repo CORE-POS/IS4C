@@ -218,6 +218,7 @@ class MercatoIntake
                 case 'PROMO CODE':
                 case 'SALE REFUND':
                 case 'SALE ADJUSTMENT':
+                case 'SALE TIP':
                     $total = $data[$this->COL_AMT];
                     $dtrans['upc'] = $total . 'DP802';
                     $dtrans['description'] = substr($data[$this->COL_ITEM], 0, 30);

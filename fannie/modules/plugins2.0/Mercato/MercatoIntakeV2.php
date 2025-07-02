@@ -7,7 +7,7 @@ class MercatoIntakeV2
     private $COL_ORDER_DATE = 7;
     private $COL_ORDER_FEES = 6;
     private $COL_ORDER_ID = 0;
-    private $COL_AMT = 7;
+    private $COL_AMT = 9;
     private $COL_UPC = 2;
     private $COL_QTY = 5;
     private $COL_ITEM = 3;
@@ -20,7 +20,7 @@ class MercatoIntakeV2
     public function process($filename)
     {
         $fp = fopen($filename, 'r');
-        $currentOrder = array('id' => false, 'total' => 0, 'qty' => 0, 'fees' => 0, 'card_no' => 11, 'tdate' => '', 'items' => array());
+        $currentOrder = array('id' => false, 'total' => 0, 'qty' => 0, 'fees' => 0, 'card_no' => 11, 'memType' => 0, 'tdate' => '', 'items' => array());
         $trans_id = 1;
         $storeID = 1;
         $itemP = $this->dbc->prepare("SELECT description, department, tax, cost, scale FROM products WHERE upc=?");
@@ -57,7 +57,7 @@ class MercatoIntakeV2
             if ($data[0] == '[Finalisers]') {
                 break;
             }
-            $currentOrder['total'] += $data[$this->COL_AMT];
+            $currentOrder['total'] += $data[$this->COL_AMT] * 1.05;
 
             $dtrans = DTrans::defaults();
             $dtrans['store_id'] = $storeID;
@@ -77,14 +77,11 @@ class MercatoIntakeV2
                 $upc = BarcodeLib::padUPC($data[$this->COL_UPC - 1]);
             }
             $qty = $data[$this->COL_QTY];
-            $total = $data[$this->COL_AMT];
+            $total = $data[$this->COL_AMT] * 1.05;
             $item = $this->dbc->getRow($itemP, array($upc));
             if ($item === false) {
                 $upc = '0' . substr($upc, 0, 12);
                 $item = $this->dbc->getRow($itemP, array($upc));
-            }
-            if (isset($item['tax']) && $item['tax']) {
-                $taxable[$item['tax']] += $total;
             }
             $dtrans['upc'] = $upc;
             $dtrans['description'] = isset($item['description']) ? $item['description'] : '';
@@ -93,12 +90,12 @@ class MercatoIntakeV2
             $dtrans['quantity'] = $qty;
             $dtrans['scale'] = isset($item['scale']) ? $item['scale'] : 0;
             $dtrans['cost'] = (isset($item['cost']) ? $item['cost'] : 0) * $qty;
-            $dtrans['unitPrice'] = $total / $qty;
+            $dtrans['unitPrice'] = $qty == 0 ? 0 : $total / $qty;
             $dtrans['total'] = $total;
-            $dtrans['regPrice'] = $total / $qty;
+            $dtrans['regPrice'] = $qty == 0 ? 0 : $total / $qty;
             $dtrans['tax'] = isset($item['tax']) ? $item['tax'] : 0;
             $dtrans['ItemQtty'] = $qty;
-            $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']);
+            $prep = DTrans::parameterize($dtrans, 'datetime', "'" . $currentOrder['tdate'] . "'");
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
             $trans_id++;
@@ -119,7 +116,7 @@ class MercatoIntakeV2
             $dtrans['trans_type'] = 'T';
             $dtrans['trans_subtype'] = 'ME';
             $dtrans['total'] = -1 * $currentOrder['total'];
-            $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']);
+            $prep = DTrans::parameterize($dtrans, 'datetime', "'" . $currentOrder['tdate'] . "'");
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
             $trans_id++;
@@ -136,7 +133,7 @@ class MercatoIntakeV2
             $dtrans['description'] = 'Tax';
             $dtrans['trans_type'] = 'A';
             $dtrans['total'] = 0;
-            $prep = DTrans::parameterize($dtrans, 'datetime', $currentOrder['tdate']->format("'Y-m-d H:i:s'"));
+            $prep = DTrans::parameterize($dtrans, 'datetime', "'" . $currentOrder['tdate'] . "'");
             $insP = $this->dbc->prepare("INSERT INTO " . FannieDB::fqn('dtransactions', 'trans') . " ({$prep['columnString']}) VALUES ({$prep['valueString']})");
             $this->dbc->execute($insP, $prep['arguments']);
             $trans_id++;
