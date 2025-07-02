@@ -49,6 +49,7 @@ class SearchComments extends FannieRESTfulPage
                     LEFT JOIN {$prefix}Responses AS r ON r.commentID=c.commentID
                 WHERE (MATCH(c.comment) AGAINST(?) OR MATCH(r.response) AGAINST(?))
                     AND c.categoryID " . ($cat ? ' = ?' : ' <> -1') . "
+                    AND c.categoryID <> 25
                 ORDER BY c.commentID DESC");
             $args = array($this->id, $this->id);
             if ($cat) {
