@@ -80,25 +80,40 @@ class OverShortMAS extends FannieRESTfulPage {
         '41645' => 'GEN MERC/MAGAZINES',
         '41700' => 'MEAT/POULTRY/SEAFOOD FR',
         '41705' => 'MEAT/POULTRY/SEAFOOD FZ',
+        '40110' => 'Packaged',
+        '40120' => 'Refrigerated',
+        '40130' => 'Frozen',
+        '40140' => 'Bulk',
+        '40150' => 'Vendor Packaged Bread',
+        '40240' => 'THC',
+        '40310' => 'Bakery/Bakehouse',
+        '40330' => 'Cheese & Specialty',
+        '40340' => 'Food Service',
+        '40510' => 'Produce',
+        '40520' => 'Floral & Gardening',
+        '40410' => 'Meat',
+        '40610' => 'Supplements',
+        '40620' => 'Body Care',
+        '40630' => 'Mercantile',
         );
         $codes = array(
-        'CP' => 10740,
-        'GD' => 21205,
-        'SG' => 21206,
-        'SC' => 21200,
-        'MI' => 10710,
-        'IC' => 66600,
-        'MA' => 66600,
+        'CP' => 14100,
+        'GD' => 26910,
+        'SG' => 26200,
+        'SC' => 43100,
+        'MI' => 14200,
+        'IC' => 43100,
+        'MA' => 43100,
         'RR' => 63380,  
-        'OB' => 66600,
-        'AD' => 66600,
-        'SP' => 66600,
+        'OB' => 43100,
+        'AD' => 43100,
+        'SP' => 43100,
         'RB' => 31140,
-        'PP' => 10295,
+        'PP' => 12120,
         'TC' => 10730,
-        'NCGA' => 66600,
-        'Member Discounts' => 66601,
-        'Staff Discounts' => 61170,
+        'NCGA' => 43100,
+        'Member Discounts' => 43400,
+        'Staff Discounts' => 43200,
         );
 
         $dbc = FannieDB::get($FANNIE_OP_DB);
@@ -145,13 +160,13 @@ class OverShortMAS extends FannieRESTfulPage {
                 while ($icW = $dbc->fetchRow($icR)) {
                     $coupID = sprintf('%d', substr($icW['upc'], -5));
                     $coupW = $dbc->getRow($coupP, array($coupID));
-                    $coding = 67715;
+                    $coding = 73990;
                     if (is_array($coupW) && $coupW['salesCode']) {
                         $coding = $coupW['salesCode'];
                     } elseif (!$coupID || $coupW['memberOnly']) {
-                        $coding = 66600;
+                        $coding = 43100;
                     }
-                    //$coding = (!$coupID || $memOnly) ? 66600 : 67715;
+                    //$coding = (!$coupID || $memOnly) ? 43100 : 73990;
                     $credit = $icW['ttl'] < 0 ? -1*$icW['ttl'] : 0;
                     $debit = $icW['ttl'] > 0 ? $icW['ttl'] : 0;
                     $row = array($dateID, $dateStr,
@@ -160,7 +175,7 @@ class OverShortMAS extends FannieRESTfulPage {
                     $records[] = $row;
                 }
             } else {
-                $coding = isset($codes[$w['type']]) ? $codes[$w['type']] : 10120;
+                $coding = isset($codes[$w['type']]) ? $codes[$w['type']] : 12110;
                 $name = isset($names[$w['type']]) ? $names[$w['type']] : $w['name'];
                 $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
                 $debit = $w['amount'] > 0 ? $w['amount'] : 0;
@@ -424,7 +439,7 @@ class OverShortMAS extends FannieRESTfulPage {
         $taxR = $dbc->execute($taxP, $args);
         while ($row = $dbc->fetchRow($taxR)) {
             $taxes = $row[0];
-            $records[] = array($dateID, $dateStr, '211800000', 0, $taxes, 'Sales Tax Collected');
+            $records[] = array($dateID, $dateStr, '241000000', 0, $taxes, 'Sales Tax Collected');
         }
 
         $newGiftQ = "SELECT sum(total) as amount, salesCode,
@@ -478,14 +493,14 @@ class OverShortMAS extends FannieRESTfulPage {
                 $credit = $w['amount'] < 0 ? -1*$w['amount'] : 0;
                 $debit = $w['amount'] > 0 ? $w['amount'] : 0;
                 $row = array($dateID, $dateStr,
-                    str_pad($coding,9,'0',STR_PAD_RIGHT),
+                    str_pad(26910,9,'0',STR_PAD_RIGHT),
                     $credit, $debit, 'WorldPay Gift');    
                 $records[] = $row;
 
                 $credit = (is_array($newGift) && $newGift['amount']) < 0 ? -1*$newGift['amount'] : 0;
                 $debit = (is_array($newGift) && $newGift['amount'] > 0) ? $newGift['amount'] : 0;
                 $row = array($dateID, $dateStr,
-                    str_pad(21206,9,'0',STR_PAD_RIGHT),
+                    str_pad(26200,9,'0',STR_PAD_RIGHT),
                     $credit, $debit, 'SMS Gift');    
                 $records[] = $row;
             } else {
@@ -536,7 +551,7 @@ class OverShortMAS extends FannieRESTfulPage {
             AND trans_subtype='CM' AND datetime BETWEEN ? AND ?
             AND emp_no=? and register_no=? and trans_no=? ORDER BY trans_id");
         while($w = $dbc->fetch_row($miscR)){
-            $coding = 63350;
+            $coding = 71390;
             list($date,$time) = explode(' ',$w['tdate']);
             list($e,$r,$t) = explode('-',$w['trans_num']);
             // lookup comments on the transaction
@@ -571,7 +586,7 @@ class OverShortMAS extends FannieRESTfulPage {
         while($w = $dbc->fetch_row($miscR)) {
             $record = array(
                 $dateID, $dateStr,
-                str_pad(66600,9,'0',STR_PAD_RIGHT),
+                str_pad(43100,9,'0',STR_PAD_RIGHT),
                 sprintf('%.2f', $w['amount']),
                 0.00, 'MISC RECEIPT INSTORE COUPON',
             );
