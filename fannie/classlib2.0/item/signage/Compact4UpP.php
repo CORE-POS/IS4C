@@ -72,7 +72,7 @@ class Compact4UpP extends \COREPOS\Fannie\API\item\FannieSignage
 
         $pdf->SetX($this->left + ($this->width*$column));
         $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
-        if ($item['super_name'] != 'PRODUCE') {
+        if (isset($item['super_name']) && $item['super_name'] != 'PRODUCE') {
             $item['size'] = $this->formatSize($item['size'], $item);
         } else {
             $item['size'] = '';
