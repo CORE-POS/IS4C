@@ -100,6 +100,9 @@ class SpecialOrderTags extends FannieRESTfulPage
 
             $tagNotes = $row['tagNotes'];
             $tagObj = json_decode($tagNotes);
+            if (!is_object($tagObj) && !is_array($tagObj)) {
+                $tagObj = array();
+            }
             $note = null;
             foreach ($tagObj as $item => $notes) {
                 if ($row['description'] == $item) {
