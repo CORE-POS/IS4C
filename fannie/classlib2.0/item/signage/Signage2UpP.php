@@ -69,7 +69,7 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->Cell($this->width, 10, $item['description'], 0, 1, 'C');
         $pdf->SetX($this->left);
         $pdf->SetFont($this->alt_font, '', $this->SMALLER_FONT);
-        if ($item['super_name'] != 'PRODUCE') {
+        if (isset($item['super_name']) && $item['super_name'] != 'PRODUCE') {
             $item['size'] = $this->formatSize($item['size'], $item);
         } else {
             $item['size'] = '';
