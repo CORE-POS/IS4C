@@ -176,7 +176,7 @@ class BaseItemModule extends \COREPOS\Fannie\API\item\ItemModule
                 LEFT JOIN InventoryCache AS i ON p.upc=i.upc AND p.store_id=i.storeID
                 LEFT JOIN InventoryCounts AS c ON p.upc=c.upc AND p.store_id=c.storeID AND c.mostRecent=1
             WHERE p.upc=?
-            ORDER BY v.modified DESC';
+            ORDER BY p.store_id, v.modified DESC';
         $p_def = $dbc->tableDefinition('products');
         if (!isset($p_def['last_sold'])) {
             $itemQ = str_replace('p.last_sold', 'NULL as last_sold', $itemQ);
