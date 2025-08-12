@@ -33,7 +33,8 @@ class SignPropertiesModel extends BasicModel
     'upc' => array('type'=>'VARCHAR(13)', 'primary_key'=>true),
     'storeID' => array('type'=>'TINYINT', 'primary_key'=>true, 'default'=>1),
     'narrow' => array('type'=>'BOOL', 'default'=>0),
-    'signCount' => array('type'=>'INT', 'default'=>1)
+    'signCount' => array('type'=>'INT', 'default'=>1),
+    'fancyType' => array('type'=>'INT', 'default'=>0)
     );
 
     public function doc()
