@@ -661,7 +661,7 @@ HTML;
         $p->default_vendor_id($vid);
         $p->inUse(1);
 
-        $masterDepts = array(1,3,4,5,8,9,13,17,18);
+        $masterDepts = array(1,3,4,5,8,9,13,17,18,25);
         $curDepts = array();
         $m = new MasterSuperDeptsModel($dbc);
         foreach ($masterDepts as $mDept) {
