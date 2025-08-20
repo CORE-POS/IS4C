@@ -35,12 +35,11 @@ class PriceRuleEditor extends FannieRESTfulPage
         set of products.';
 
     protected $thead = <<<HTML
-<th>UPC</th> <th>Brand</th> <th>Description</th> <th>PRT</th> <th>PRT Name</th> <th>PRID</th> <th>Max Price</th> <th>Details</th> <th>MSRP</th>
+<th>UPC</th> <th>Brand</th> <th>Description</th> <th>PRT</th> <th>PRT Name</th> <th>PRID</th> <th>Max Price</th> <th>Details</th> <th>Review Date</th> <th>MSRP</th>
 HTML;
 
     public function preprocess()
     {
-        $this->__routes[] = "get<vendorList>";
         $this->__routes[] = "get<brandList>";
         $this->__routes[] = "get<list>";
         $this->__routes[] = "get<upc>";
@@ -61,10 +60,14 @@ HTML;
         $detailses = FormLib::get('detailses');
         $detailses = explode(",", $detailses);
 
+        $reviewDates = FormLib::get('reviewDates');
+        $reviewDates = explode(",", $reviewDates);
+
         $items = array();
         foreach ($upcs as $k => $upc) {
             $items[$upc]['prt'] = $prts[$k];
             $items[$upc]['details'] = $detailses[$k];
+            $items[$upc]['reviewDate'] = $reviewDates[$k];
         }
 
         $testVal = '';
@@ -76,11 +79,13 @@ HTML;
         foreach ($items as $upc => $row) {
             $priceRuleTypeID = $row['prt'];
             $details = $row['details'];
+            $reviewDate = $row['reviewDate'];
             $maxPrice = (float) filter_var($details, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+
             $model->priceRuleTypeID($priceRuleTypeID);
             $model->details($details);
             $model->maxPrice($maxPrice);
-            $model->reviewDate(Date('Y-m-d h:m:s'));
+            $model->reviewDate($reviewDate);
             $prid = $model->save();
             if ($saved !== false) {
                 if ($row['prt'] != 0) {
@@ -146,7 +151,7 @@ HTML;
 
         $query = "SELECT p.upc, p.brand, p.description, priceRuleID,
             t.priceRuleTypeID, maxPrice, details, t.description AS tdesc,
-            v.srp
+            v.srp, r.reviewDate
             FROM products AS p
                 LEFT JOIN PriceRules AS r ON r.priceRuleID=p.price_rule_id
                 LEFT JOIN PriceRuleTypes AS t ON t.priceRuleTypeID=r.priceRuleTypeID
@@ -165,6 +170,7 @@ HTML;
             $details = $row['details'];
             $tdesc = $row['tdesc'];
             $srp = $row['srp'];
+            $reviewDate = $row['reviewDate'];
             $items[$upc]['brand'] = $brand;
             $items[$upc]['desc'] = $desc;
             $items[$upc]['prtID'] = $prtID;
@@ -172,17 +178,13 @@ HTML;
             $items[$upc]['prID'] = $prID;
             $items[$upc]['maxPrice'] = $maxPrice;
             $items[$upc]['details'] = $details;
+            $items[$upc]['reviewDate'] = $reviewDate;
             $items[$upc]['srp'] = $srp;
         }
 
         echo $dbc->error();
 
         return $items;
-    }
-
-    public function get_vendorList_view()
-    {
-        return $this->get_brandList_view();
     }
 
     public function get_list_view()
@@ -210,9 +212,12 @@ HTML;
 
         $vendorID = FormLib::get('vendorList', false);
         $items = array();
-        $td = "<tr><td colspan=\"4\"></td><td><select class=\"form-control price-rule-select-all alert-notify\">{$this->getPriceRuleOpts($prTypes)}</select></td>
-            <td colspan=\"2\"></td>
-            <td><input class=\"form-control alert-notify edit-details-all\" type=\"text\" /></td></tr>";
+        $td = "<tr><td colspan=\"4\" class=\"grey\"></td><td><select class=\"form-control price-rule-select-all alert-notify\">{$this->getPriceRuleOpts($prTypes)}</select></td>
+            <td colspan=\"2\" class=\"grey\"></td>
+            <td><input class=\"form-control alert-notify edit-details-all\" type=\"text\" /></td>
+            <td><input class=\"form-control alert-notify edit-reviewDate-all date-field\" type=\"text\" /></td>
+            <td class=\"grey\"></td>
+            </tr>";
 
         $items = $this->getTableData($dbc, $SEARCH_TYPE, $SEARCH_REF);
 
@@ -223,6 +228,8 @@ HTML;
                     $td .= "<td><select name=\"\" data-upc=\"$upc\" class=\"form-control price-rule-select\">{$this->getPriceRuleOpts($prTypes, $v)}</select></td>";
                 } elseif ($k == 'details') {
                     $td .= "<td contentEditable=\"true\" data-upc=\"$upc\" class=\"editable-details\"> $v</td>";
+                } elseif ($k == 'reviewDate') {
+                    $td .= "<td contentEditable=\"true\" data-upc=\"$upc\" class=\"editable-reviewDate\"> $v</td>";
                 } else {
                     $td .= "<td> $v</td>";
                 }
@@ -242,32 +249,6 @@ HTML;
         </div>
     </div>
 </div>
-<!-- Deprecated Chunk
-<div class="well">
-    <p><strong>To recalculate MIN/MAX price fields</strong>
-        <ol>
-            <li>Enter desired verbiage into Details for all items, eg - <i>MAP MIN:</i></li>
-            <li>Enter percent to take off of MSRP</li>
-            <li>Click button to calculate MIN/MAX value, this will add the desired MIN/MAX amount to the end of each Details field</li>
-        </ol>
-    </p>
-    <div class="row">
-        <div class="col-lg-8" align="right">
-        </div>
-        <div class="col-lg-2" align="right">
-            <div class="form-group">
-                <input type="text" class="form-control alert-notify" id="modPercent" placeholder="Percent off MSRP"/>
-            </div>
-        </div>
-        <div class="col-lg-2" align="right">
-            <div class="form-group">
-                <a href="#" class="btn btn-default alert-notify" onClick="calcLimit(); return false;">Recalculate Price Min/Max</a>
-            </div>
-        </div>
-    </div>
-    <p><strong>Where does MSRP come from?</strong> This number is pulled from a vendor items table in POS, it will be the last value uploaded as SRP, OR, the WFC value if the SRP recalculation was run in Batch Pricing Tools. To prevent the wrong MAP values being entered, it is encouraged to upload a price sheet with MSRP values before setting MAP values.
-</div>
--->
 <table class="table table-bordered" id="mytable"><thead>{$this->thead}</thead><tbody>$td</tbody></table>
 HTML;
     }
@@ -302,32 +283,10 @@ HTML;
     <div class="col-lg-2"></div>
     <div class="col-lg-8">
         <div class="row">
-            <div class="col-lg-1"></div>
-            <div class="col-lg-3">
+            <div class="col-lg-3"></div>
+            <div class="col-lg-6">
                 <form>
-                    <label>Select Set By Vendor</label>
-                    <div class="form-group">
-                        <select name="vendorList" class="form-control">$vendOpts</select>
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" class="btn btn-default form-control" />
-                    </div>
-                </form>
-            </div>
-            <div class="col-lg-3">
-                <form>
-                    <label>Select Set By Brand</label>
-                    <div class="form-group">
-                        <select name="brandList" class="form-control">$brandOpts</select>
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" class="btn btn-default form-control" />
-                    </div>
-                </form>
-            </div>
-            <div class="col-lg-3">
-                <form>
-                    <label>Paste A Set Of UPCs</label>
+                    <label>Enter UPCs</label>
                     <div class="form-group">
                         <textarea name="list" class="form-control" rows=10>$list</textarea>
                     </div>
@@ -336,7 +295,7 @@ HTML;
                     </div>
                 </form>
             </div>
-            <div class="col-lg-2"></div>
+            <div class="col-lg-3"></div>
         </div>
     </div>
     <div class="col-lg-2"></div>
@@ -382,6 +341,11 @@ $('.edit-details-all').on('keydown', function(e){
     }
 });
 
+$('.edit-reviewDate-all').on('change', function(e){
+    var value = $(this).val();
+    $('.editable-reviewDate').text(value + " 00:00:00");
+});
+
 $('.edit-details-all').on('change', function(){
     var value = $(this).val();
     $('.editable-details').text(value);
@@ -402,30 +366,45 @@ var save = function()
         var upcs = [];
         var prts = [];
         var detailses = [];
+        var rvds = [];
         $('#mytable tr').each(function(){
             var upc = $(this).find('td:eq(0)').text();
             var prt = $(this).find('td:eq(4)').find(":selected").val();
-    $(this).find(":selected").val();
+            $(this).find(":selected").val();
             var details = $(this).find('td:eq(7)').text();
             details = encodeURIComponent(details);
-            items.push([upc, prt, details]);
+            var rvd = $(this).find('td:eq(8)').text();
+            rvd = encodeURIComponent(rvd);
+            items.push([upc, prt, details, rvd]);
 
             upcs.push(upc);
             prts.push(prt);
             detailses.push(details);
+            rvds.push(rvd);
         });
         $.ajax({
             type : 'get',
-            data: 'upc=123'+'&upcs='+upcs+'&prts='+prts+'&detailses='+detailses,
+            data: 'upc=123'+'&upcs='+upcs+'&prts='+prts+'&detailses='+detailses+'&reviewDates='+rvds,
             url: 'PriceRuleEditor.php',
             dataType: 'json',
+            beforeSend: function() {
+                let alertWait = document.createElement('div');
+
+                alertWait.classList.add('well');
+                alertWait.innerHTML = "Processing, please wait";
+                alertWait.id = "alertWaitID";
+
+                $('#primary-content').prepend(alertWait);
+            },
             success: function(resp) {
                 let alertSuccess = document.createElement('div');
+
                 alertSuccess.classList.add('alert');
                 alertSuccess.classList.add('alert-success');
                 alertSuccess.innerHTML = 'Save successful!';
 
-                $('#fannie-main-content').append(alertSuccess);
+                $('#primary-content').prepend(alertSuccess);
+                $('#alertWaitID').remove();
                 console.log(resp);
             },
             error: function(resp) {
@@ -445,6 +424,9 @@ JAVASCRIPT;
 .alert-notify {
     background-color: #F2F2F2;
 }
+.grey {
+    background-color: #F2F2F2;
+}
 HTML;
     }
 
@@ -455,4 +437,4 @@ HTML;
     }
 }
 
-FannieDispatch::conditionalExec();
+FannieDispatch::conditionalExec(); 
