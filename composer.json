@@ -29,7 +29,7 @@
         "predis/predis": "^1.0",
         "symfony/http-foundation": "^2.6",
         "domisys/image_barcode2": "^3.0",
-        "twig/twig": "^1.25",
+        "twig/twig": "^3.11",
         "automattic/woocommerce": "^1.1",
         "itgalaxy/bmp2image": "^2.0",
         "ramsey/uuid": "^3.6",
