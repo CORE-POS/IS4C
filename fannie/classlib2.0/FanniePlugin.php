@@ -148,12 +148,14 @@ class FanniePlugin extends \COREPOS\common\CorePlugin
     private function getFromConfig()
     {
         $config = \FannieConfig::factory();
+        $allSettings = $config->get('PLUGIN_SETTINGS');
         $ret = array();
-        foreach ($this->plugin_settings as $key => $definition) {
+        foreach ($this->plugin_settings as $name => $definition) {
+            $key = $name;
             if (strlen($this->settingsNamespace) > 0) {
                 $key = $this->settingsNamespace . '.' . $key;
             }
-            $ret[$key] = $config->get($key);
+            $ret[$name] = isset($allSettings[$key]) ? $allSettings[$key] : '';
         }
 
         return $ret;
