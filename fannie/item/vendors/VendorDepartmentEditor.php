@@ -153,6 +153,26 @@ class VendorDepartmentEditor extends FanniePage {
 
         $this->addScript('vdepts.js');
 
+        $js = <<<JAVASCRIPT
+        $("#filter-name").on('keyup', function() {
+            let search = $(this).val();
+            $("#mytable tr").each(function() { $(this).show(); });
+            if (search.length > 0) {
+                $("#mytable tr").each(function() {
+                    let name = $(this).find("td:eq(1)").text();
+                    if (!name.toLowerCase().includes(search)) {
+                        if (!$(this).parent().is("thead")) {
+                            $(this).hide();
+                        }
+                    }
+                });
+            } else{
+                $("#mytable tr").each(function() { $(this).show(); });
+            }
+        });
+JAVASCRIPT;
+        $this->addOnloadCommand($js);
+
         return ob_get_clean();
     }
 
@@ -167,9 +187,11 @@ class VendorDepartmentEditor extends FanniePage {
         $name = $v->vendorName();
 
         $ret = "<strong>Subcategories in $name</strong><br />";
-        $ret .= "<table class=\"table\">"; 
-        $ret .= "<tr><th>No.</th><th>Name</th><th>Margin</th><th>POS Dept#</th>
-            <th>&nbsp;</th><th>&nbsp;</th></tr>";
+        $ret .= "<input id=\"filter-name\" style=\"width: 500px; border: 1px solid lightgrey; border-radius: 5px; \" placeholder=\"Filter by Name\" />";
+        $ret .= "<br />";
+        $ret .= "<table class=\"table\" id=\"mytable\">"; 
+        $ret .= "<thead><tr><th>No.</th><th>Name</th><th>Margin</th><th>POS Dept#</th>
+            <th>&nbsp;</th><th>&nbsp;</th></tr></thead><tbody>";
 
         $deptQ = $dbc->prepare("
             SELECT d.vendorID,
@@ -185,7 +207,7 @@ class VendorDepartmentEditor extends FanniePage {
         while ($row = $dbc->fetchRow($deptR)){
             $ret .= $this->rowToTable($id, $row);
         }
-        $ret .= "</table>";
+        $ret .= "</tbody></table>";
 
         $ret .= '<p><a href="VendorIndexPage.php?vid=' . $id . '" class="btn btn-default">Home</a></p>';
 
