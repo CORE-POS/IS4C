@@ -438,6 +438,51 @@ HTML;
         return $found;
     }
 
+    private function getSpecialSale($dbc)
+    {
+        $found = array();
+        $items = array();
+        $upcs = array();
+        $tmp = array();
+        $loggedP = $dbc->prepare("SELECT b.upc, b.salePrice
+            FROM batchReviewLog AS l
+                INNER JOIN batchList AS b ON b.batchID=l.bid
+                INNER JOIN products AS p ON p.upc=b.upc
+            WHERE l.forced = 0
+                AND b.salePrice < p.normal_price
+            GROUP BY b.upc
+        ");
+        $loggedR = $dbc->execute($loggedP);
+        while ($row = $dbc->fetchRow($loggedR)) {
+            $upc = $row['upc'];
+            $salePrice = $row['salePrice'];
+            $batchID = $row['batchID'];
+            $items[$upc]['salePrice'] = $salePrice;
+            $items[$upc]['batchID'] = $batchID;
+            $upcs[] = $upc;
+        }
+
+        list($inClause, $saleA) = $dbc->safeInClause($upcs);
+        $saleP = $dbc->prepare("
+            SELECT p.upc, b.batchID
+            FROM batches AS b 
+                INNER JOIN batchList AS l ON l.batchID=b.batchID
+                INNER JOIN products AS p ON p.upc=l.upc
+            WHERE b.batchType IN (1, 2)
+                AND b.startDate <= DATE(NOW())
+                AND b.endDate >= DATE(NOW())
+                AND l.upc IN ($inClause)
+        ;");
+        $saleR = $dbc->execute($saleP, $saleA);
+        while ($row = $dbc->fetchRow($saleR)) {
+            $upc = $row['upc'];
+            $batchID = $row['batchID'];
+            $found[$batchID] = $upc;
+        }
+
+        return $found;
+    }
+
     private function getBatchScaleItemsOnSale($dbc)
     {
         $found = array();
@@ -508,6 +553,20 @@ HTML;
 
         $discr = $this->getBatchItemDiscrep($dbc);
         $scaleOnSale = $this->getBatchScaleItemsOnSale($dbc);
+        $saItems = $this->getSpecialSale($dbc);
+
+        if (count($saItems) > 0) {
+            $text = "";
+            foreach ($saItems as $batchID => $upc) {
+                $text .= "<div>item: $upc in batch: $batchID</div>";
+            }
+            echo "<div class=\"alert alert-warning\">
+                <div style=\"font-weight: bold\">Warning: there are staged price reductions for items that are currently on sale 
+                    <span onclick=\"$('#warning-rdx-sa').show(); return false;\" style=\"cursor: pointer; \"> ... </span>
+                </div>
+                <div class=\"collapse collapsed\" id=\"warning-rdx-sa\"><br />$text</div>
+            </div>";
+        }
         
         $res = $dbc->execute($prep,$args);
         $curBid = -999;
