@@ -444,7 +444,7 @@ HTML;
         $items = array();
         $upcs = array();
         $tmp = array();
-        $loggedP = $dbc->prepare("SELECT b.upc, b.salePrice
+        $loggedP = $dbc->prepare("SELECT b.upc, b.salePrice, b.batchID
             FROM batchReviewLog AS l
                 INNER JOIN batchList AS b ON b.batchID=l.bid
                 INNER JOIN products AS p ON p.upc=b.upc
@@ -464,7 +464,7 @@ HTML;
 
         list($inClause, $saleA) = $dbc->safeInClause($upcs);
         $saleP = $dbc->prepare("
-            SELECT p.upc, b.batchID
+            SELECT p.upc, b.batchID, l.salePrice
             FROM batches AS b 
                 INNER JOIN batchList AS l ON l.batchID=b.batchID
                 INNER JOIN products AS p ON p.upc=l.upc
@@ -477,7 +477,13 @@ HTML;
         while ($row = $dbc->fetchRow($saleR)) {
             $upc = $row['upc'];
             $batchID = $row['batchID'];
-            $found[$batchID] = $upc;
+            $salePrice = $row['salePrice'];
+            if ($salePrice > $items[$upc]['salePrice']) {
+                $found[$upc]['batches'][] = $batchID;
+                $found[$upc]['batches'][] = $items[$upc]['batchID'];
+                $found[$upc]['salePrice'][] = $salePrice;
+                $found[$upc]['salePrice'][] = $items[$upc]['salePrice'];
+            }
         }
 
         return $found;
@@ -557,8 +563,9 @@ HTML;
 
         if (count($saItems) > 0) {
             $text = "";
-            foreach ($saItems as $batchID => $upc) {
-                $text .= "<div>item: $upc in batch: $batchID</div>";
+            foreach ($saItems as $upc => $batches) {
+                $batchText = "(sale) " . $batches['batches'][0] . " @ $" . $batches['salePrice'][0] . " :: " . "(price change) " . $batches['batches'][1] . " @ $" . $batches['salePrice'][1];
+                $text .= "<div>item: $upc in batch: $batchText</div>";
             }
             echo "<div class=\"alert alert-warning\">
                 <div style=\"font-weight: bold\">Warning: there are staged price reductions for items that are currently on sale 
