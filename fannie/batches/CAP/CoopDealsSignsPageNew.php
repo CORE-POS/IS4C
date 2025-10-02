@@ -183,12 +183,21 @@ SQL;
             }
         }
         foreach ($forms as $set => $form) {
+            //echo "<div>$set</div>";
             $forms[$set] .= "<div class=\"form-group\"><input type=\"submit\" class=\"btn btn-default\" onclick=\"$(this).css('text-decoration', 'line-through'); $(this).parent().find('label').css('text-decoration', 'line-through');\">";
             $forms[$set] .= "&nbsp;<label>{$names[$set]}</label></div>";
-            if (strpos($set, '12') !== false) {
-                $forms[$set] .= "<input type=\"hidden\" name=\"signmod\" value=\"COREPOS\\Fannie\\API\\item\\signage\\Compact12UpL\" />";
+            if (strpos($set, 'Bogo') !== false) {
+                if (strpos($set, '12') !== false) {
+                    $forms[$set] .= "<input type=\"hidden\" name=\"signmod\" value=\"COREPOS\Fannie\Plugin\CoopDealsSigns\WfcSmartSigns12UpP\" />";
+                } else {
+                    $forms[$set] .= "<input type=\"hidden\" name=\"signmod\" value=\"COREPOS\Fannie\Plugin\CoopDealsSigns\WfcSmartSigns16UpP\" />";
+                }
             } else {
-                $forms[$set] .= "<input type=\"hidden\" name=\"signmod\" value=\"COREPOS\\Fannie\\API\\item\\signage\\Compact16UpP\" />";
+                if (strpos($set, '12') !== false) {
+                    $forms[$set] .= "<input type=\"hidden\" name=\"signmod\" value=\"COREPOS\\Fannie\\API\\item\\signage\\Compact12UpL\" />";
+                } else {
+                    $forms[$set] .= "<input type=\"hidden\" name=\"signmod\" value=\"COREPOS\\Fannie\\API\\item\\signage\\Compact16UpP\" />";
+                }
             }
             $forms[$set] .= "<input type=\"hidden\" name=\"store\" value=\"$storeID\" />";
             $forms[$set] .= "<input type=\"hidden\" name=\"item_mode\" value=3 />";
