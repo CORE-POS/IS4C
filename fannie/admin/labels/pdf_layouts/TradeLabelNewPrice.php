@@ -69,93 +69,6 @@ $pdf->setTagDate(date("m/d/Y"));
 $dbc = FannieDB::get(FannieConfig::config('OP_DB'));
 $store = COREPOS\Fannie\API\lib\Store::getIdByIp();
 
-$s_def = $dbc->tableDefinition('SignProperties');
-$narrowTable = (isset($s_def['narrow'])) ? 'SignProperties' : 'productUser';
-
-$narrowQ = "SELECT upc FROM $narrowTable WHERE upc=? AND narrow=1 ";
-if ($narrowTable == 'SignProperties') {
-    $narrowQ .= " AND storeID = ? ";
-}
-
-$narrowP = $dbc->prepare($narrowQ);
-
-$upcs = array();
-$locations = array();
-$locNames = array();
-$dots = array();
-foreach ($data as $k => $row) {
-    $upc = $row['upc'];
-    $upcs[] = $upc;
-}
-list($inStr, $locationA) = $dbc->safeInClause($upcs);
-$locationP = $dbc->prepare("
-SELECT f.upc,
-UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1), '-', sub.SubSection)) AS location,
-UPPER( CONCAT( SUBSTR(name, 1, 1), SUBSTR(name, 2, 1), SUBSTR(name, -1))) AS noSubLocation,
-name AS name
-FROM FloorSectionProductMap AS f
-    LEFT JOIN FloorSections AS s ON f.floorSectionID=s.floorSectionID
-    LEFT JOIN FloorSubSections AS sub ON f.floorSectionID=sub.floorSectionID 
-        AND sub.upc=f.upc
-    WHERE f.upc IN ($inStr)
-        AND s.storeID = ?
-");
-$locationA[count($locationA)] = $store;
-$res = $dbc->execute($locationP, $locationA);
-while ($row = $dbc->fetchRow($res)) {
-    $upc = ltrim($row['upc'],0);
-    $locations[$upc][] = ($row['location'] != null) ? $row['location'] : $row['noSubLocation'];
-    $locNames[$upc][] = $row['name'];
-}
-
-list($superIn, $superA) = $dbc->safeInClause($upcs);
-$superP = $dbc->prepare("
-SELECT p.upc, m.super_name
-FROM products AS p
-    LEFT JOIN MasterSuperDepts AS m ON m.dept_ID=p.department
-WHERE p.upc IN ($superIn)
-AND p.store_id = ?
-");
-$superA[] = $store;
-$superR = $dbc->execute($superP, $superA);
-while ($row = $dbc->fetchRow($superR)) {
-    $upc = ltrim($row['upc'],0);
-    $dots[$upc] = $row['super_name'];
-}
-
-$mtLength = $store == 1 ? 3 : 7;
-$signage = new COREPOS\Fannie\API\item\FannieSignage(array());
-$mtP = $dbc->prepare('SELECT p.auto_par
-    FROM MovementTags AS m 
-        INNER JOIN products AS p ON m.upc=p.upc AND m.storeID=p.store_id
-    WHERE m.upc=? AND m.storeID=?');
-$updateMT = $dbc->prepare('
-    UPDATE MovementTags
-    SET lastPar=?,
-        modified=' . $dbc->now() . '
-    WHERE upc=?
-        AND storeID=?');
-
-$full = array();
-$half = array();
-foreach ($data as $k => $row) {
-    if ($dbc->getValue($narrowP, array($row['upc'], $store))) {
-        $row['full'] = false;
-        $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
-        $half[] = $row;
-    } else {
-        $row['full'] = true;
-        $row['movementTag'] = $dbc->getValue($mtP, array($row['upc'], $store));
-        $full[] = $row;
-    }
-}
-
-
-$full= FpdfLib::sortProductsByPhysicalLocation($dbc, $full, $store);
-$half= FpdfLib::sortProductsByPhysicalLocation($dbc, $half, $store);
-$data = array_merge($full, $half);
-
-
 $width = 52; // tag width in mm
 $height = 31; // tag height in mm
 $left = 5; // left margin
@@ -199,33 +112,6 @@ foreach($data as $rowIndex => $row) {
     $check = $pdf->GetCheckDigit($upc);
     $tagdate = date('m/d/y');
     $vendor = substr(isset($row['vendor']) ? $row['vendor'] : '',0,7);
-    $vfixes = array(
-        'ANCIENT' => 'ANCIEN',
-        'SPROUT' => 'SPROU',
-        'WILD FE' => 'WILDFE',
-        'COUNTRY' => 'COUNTR',
-        'HERB PH' => 'HERBPH',
-        'HERBS E' => 'HERBETC',
-        'UNFI' => '   UNFI',
-        'THRESHO' => 'THRESH',
-        'AMAZING' => 'AMAZNG',
-    );
-    if (array_key_exists($vendor, $vfixes)) {
-        $vendor = $vfixes[$vendor];
-    }
-    $bfixes = array(
-        'Natural Factors ' => 'Natural Fac',
-        'Source Naturals ' => 'Source Nat',
-        'Nordic Naturals ' => 'Nordic Nat',
-        'Amazing Grass ' => 'AmazingGr',
-        'Whole Foods C' => 'WFC',
-        'Oregon\'s Wild H' => 'OWH',
-        'Superior/finnegan\'s ' => 'Finnegan',
-        'Thousand Hills ' => 'ThousHill',
-        'Earth Science ' => 'EarthSci',
-        'Sweet Land F' => 'Sweet Land',
-        'Dr. Bronner\'s ' => 'Dr Bronner',
-    );
 
     //Start laying out a label
     $pdf->SetFont('Arial','',8);  //Set the font
@@ -235,12 +121,7 @@ foreach($data as $rowIndex => $row) {
     $pdf->SetXY($upcX + 18, $upcY + 5);
 
     $pdf->SetXY($full_x+20, $full_y+9);
-    if (isset($locations[$upc])) {
-        $key = key($locations[$upc]);
-        if (isset($locations[$upc][$key+1])) {
-            next($locations[$upc]);
-        }
-    }
+
     /*
     if (strlen($upc) <= 11)
         $pdf->UPC_A($upcX,$upcY,$upc,4,.25);  //generate barcode and place on label
