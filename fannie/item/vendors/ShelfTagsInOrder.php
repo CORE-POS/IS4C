@@ -42,6 +42,9 @@ if (!class_exists('WFC_EssOil_PDF')) {
 if (!class_exists('WFC_EssOil_PDF')) {
     include(__DIR__ . '/../../classlib2.0/item/signage/TagsNoPrice.php');
 }
+if (!class_exists('TradeLabelNewPrice_PDF')) {
+    include(__DIR__ . '/../../admin/labels/pdf_layouts/TradeLabelNewPrice.php');
+}
 
 /*
  *  @class ShelfTagsInOrder 
@@ -88,18 +91,22 @@ class ShelfTagsInOrder extends FannieRESTfulPage
         } else if ($signtype == "hyguide") {
             WFC_Hybrid_Guidelines_nosort($data, $offset);
         } else if ($signtype == "deli1") {
-            $obj = new COREPOS\Fannie\API\item\signageFancyShelfTags($data, 'provided', 0);
+            $obj = new COREPOS\Fannie\API\item\signage\FancyShelfTags($data, 'provided', 0);
             $obj->drawPDF(true, true);
         } else if ($signtype == "deli2") {
             $obj = new COREPOS\Fannie\API\item\signage\FancyShelfTags_Narrow($data, 'provided', 0);
             $obj->drawPDF(true, true);
         } else if ($signtype == "deli3") {
             $obj = new COREPOS\Fannie\API\item\signage\FancyShelfTags_Short($data, 'provided', 0);
+            // drawPDF(show_barcodes, show_price);
             $obj->drawPDF(true, true);
         } else if ($signtype == "tagsnoprice") {
             $obj = new COREPOS\Fannie\API\item\signage\TagsNoPrice($data, 'provided', 0);
             $obj->drawPDF(true, true);
+        } else if ($signtype == "tradelabel") {
+            TradeLabelNewPrice($data,0);
         }
+
 
 
         //WFC_EssOil_PDF::WFC_EssOil($data, $offset, $itemrows, $spacing);
@@ -116,6 +123,7 @@ class ShelfTagsInOrder extends FannieRESTfulPage
         $deli2 = (FormLib::get('signtype') == 'deli2') ? 'checked': '';
         $deli3 = (FormLib::get('signtype') == 'deli3') ? 'checked': '';
         $tagsnoprice = (FormLib::get('signtype') == 'tagsnoprice') ? 'checked': '';
+        $tradelabel = (FormLib::get('signtype') == 'tradelabel') ? 'checked': '';
         $itemrows = FormLib::get("itemrows", 13);
         $spacing = FormLib::get("spacing", 1);
 
@@ -156,6 +164,10 @@ class ShelfTagsInOrder extends FannieRESTfulPage
                 <div class="form-group">
                     <label for="tagsnoprice">Tags No Price (Order Tags)</label>:&nbsp;&nbsp;
                     <input type="radio" id="tagsnoprice" value="tagsnoprice" name="signtype" onclick="document.forms['myform'].submit();" $tagsnoprice />
+                </div>
+                <div class="form-group">
+                    <label for="tradelabel">Trade Label Tabs<label>:&nbsp;&nbsp;
+                    <input type="radio" id="tradelabel" value="tradelabel" name="signtype" onclick="document.forms['myform'].submit();" $tradelabel />
                 </div>
             </div>
             <div class="col-lg-4">
