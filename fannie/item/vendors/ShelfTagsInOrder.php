@@ -78,6 +78,9 @@ class ShelfTagsInOrder extends FannieRESTfulPage
         $offset = (FormLib::get('offset') == 'on') ? 1 : 0;
         $itemrows = FormLib::get("itemrows", 13);
         $spacing = FormLib::get("spacing", 1);
+        $showBarcode = (FormLib::get("showBarcode", false) == false) ? false : true;
+        $showPrice = (FormLib::get("showPrice", false) == false) ? false  : true;
+
         $upcStr = '';
         foreach($upcs as $k => $upc) {
             $upcs[$k] = BarcodeLib::padUPC($upc); 
@@ -92,14 +95,17 @@ class ShelfTagsInOrder extends FannieRESTfulPage
             WFC_Hybrid_Guidelines_nosort($data, $offset);
         } else if ($signtype == "deli1") {
             $obj = new COREPOS\Fannie\API\item\signage\FancyShelfTags($data, 'provided', 0);
-            $obj->drawPDF(true, true);
+            $obj->drawPDF($showBarcode, $showPrice);
         } else if ($signtype == "deli2") {
             $obj = new COREPOS\Fannie\API\item\signage\FancyShelfTags_Narrow($data, 'provided', 0);
-            $obj->drawPDF(true, true);
+            $obj->drawPDF($showBarcode, $showPrice);
         } else if ($signtype == "deli3") {
             $obj = new COREPOS\Fannie\API\item\signage\FancyShelfTags_Short($data, 'provided', 0);
-            // drawPDF(show_barcodes, show_price);
-            $obj->drawPDF(true, true);
+            /*
+                !important help with printing barcodes, prices
+                drawPDF(show_barcodes, show_price);
+            */
+            $obj->drawPDF($showBarcode, $showPrice);
         } else if ($signtype == "tagsnoprice") {
             $obj = new COREPOS\Fannie\API\item\signage\TagsNoPrice($data, 'provided', 0);
             $obj->drawPDF(true, true);
@@ -126,6 +132,8 @@ class ShelfTagsInOrder extends FannieRESTfulPage
         $tradelabel = (FormLib::get('signtype') == 'tradelabel') ? 'checked': '';
         $itemrows = FormLib::get("itemrows", 13);
         $spacing = FormLib::get("spacing", 1);
+        $showBarcode = (FormLib::get("showBarcode", 0) == 0) ? '' : 'checked';
+        $showPrice = (FormLib::get("showPrice", 0) == 0) ? '' : 'checked';
 
         return <<<HTML
 <form action="ShelfTagsInOrder.php" method="get" name="myform">
@@ -141,6 +149,7 @@ class ShelfTagsInOrder extends FannieRESTfulPage
                     <label for="offset">Offset</label>:&nbsp;&nbsp;
                     <input type="checkbox" id="offset" name="offset" $offset />
                 </div>
+                <div style="border-bottom: 1px solid grey; font-style: italic;">Grocery/Merch</div>
                 <div class="form-group">
                     <label for="hybrid">hybrid</label>:&nbsp;&nbsp;
                     <input type="radio" id="hybrid" value="hybrid" name="signtype" onclick="document.forms['myform'].submit();" $hybrid />
@@ -148,6 +157,13 @@ class ShelfTagsInOrder extends FannieRESTfulPage
                 <div class="form-group">
                     <label for="hyguide">hybrid with guidelines</label>:&nbsp;&nbsp;
                     <input type="radio" id="hyguide" value="hyguide" name="signtype" onclick="document.forms['myform'].submit();" $hyguide/>
+                </div>
+                <div style="border-bottom: 1px solid grey; font-style: italic;">Deli/Fancy</div>
+                <div>
+                    <label for="showBarcode"><i>Show Barcode</i></label>
+                    <input name="showBarcode" id="showBarcode" type="checkbox" value="1" $showBarcode/>&nbsp;
+                    <label for="showPrice"><i>Show Price</i></label>
+                    <input name="showPrice" id="showPrice" type="checkbox" value="1" $showPrice/>
                 </div>
                 <div class="form-group">
                     <label for="deli1">Deli Regular</label>:&nbsp;&nbsp;
@@ -165,6 +181,7 @@ class ShelfTagsInOrder extends FannieRESTfulPage
                     <label for="tagsnoprice">Tags No Price (Order Tags)</label>:&nbsp;&nbsp;
                     <input type="radio" id="tagsnoprice" value="tagsnoprice" name="signtype" onclick="document.forms['myform'].submit();" $tagsnoprice />
                 </div>
+                <div style="border-bottom: 1px solid grey; font-style: italic;">Bulk</div>
                 <div class="form-group">
                     <label for="tradelabel">Trade Label Tabs<label>:&nbsp;&nbsp;
                     <input type="radio" id="tradelabel" value="tradelabel" name="signtype" onclick="document.forms['myform'].submit();" $tradelabel />
