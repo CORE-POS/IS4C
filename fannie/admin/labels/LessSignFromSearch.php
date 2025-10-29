@@ -310,6 +310,9 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             'COREPOS-Fannie-Plugin-CoopDealsSigns-SingleWfcSmartSigns16UpL',
             //'COREPOS-Fannie-API-item-signage-SingleCompact16UpL',
             'COREPOS-Fannie-API-item-signage-SingleCompact4UpL',
+            'COREPOS-Fannie-API-item-signage-FancyTags_Less',
+            'COREPOS-Fannie-API-item-signage-FancyTags_Less_Narrow',
+            'COREPOS-Fannie-API-item-signage-FancyTags_Less_Short',
         );
         if (count($enabled) > 0) {
             $mods = array_filter($mods, function ($i) use ($enabled) {
@@ -320,14 +323,21 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         //$tagEnabled = $this->config->get('ENABLED_TAGS');
         $tagEnabled = array(
             'WFC SingleHybrid',
-            'WFC Hybrid Guidelines',
+            'WFC SingleHybrid Guidelines',
             'Single New WFC Deli Regular',
             'Single New WFC Deli Narrow',
             'Single New WFC Deli Short',
             'Single New WFC Deli SquareTags',
             'Single WFC Produce SmartSigns',
             'Single WFC Produce',
+            'WFC Aisle Tags',
+            'WFC Aisle Tags Full',
+            'WFC MEAT 14UP LESS',
+            'WFC HerbNspice Single',
+            'WFC HerbNspice Back',
+            'FancyTags Less',
         );
+
         foreach (COREPOS\Fannie\API\item\signage\LegacyWrapper::getLayouts() as $l) {
             if (in_array($l, $tagEnabled) && count($tagEnabled) > 0) {
                 $mods[] = 'Legacy:' . $l;
@@ -335,14 +345,15 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
         }
 
         if (FannieConfig::config('COOP_ID') == 'WFC_Duluth') {
-            $ret .= SignsLib::visualSignSelectHTML();
-            //$visualSelectJS = SignsLib::visualSignSelectJS();
-            //$this->addOnloadCommand($visualSelectJS);
+            $ret .= SignsLib::visualSignSelectHTML(true);
+            $visualSelectJS = SignsLib::visualSignSelectJS();
+            $this->addOnloadCommand($visualSelectJS);
         }
 
         $ret .= '<div class="form-group form-inline">';
         $ret .= '<label>Layout</label>:
-            <select name="signmod" id="signmod" class="form-control" onchange="$(\'#signform\').submit()">';
+            <select name="signmod" id="signmod" class="form-control" onchange="$(\'#signform\').submit()" required>
+                <option value="" disabled selected>Choose a layout</option>';
         foreach ($mods as $m) {
             $name = $m;
             if (strstr($m, '\\')) {
@@ -428,6 +439,20 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $ret .= $darkExtendOnly;
             $ret .= $ShowBarcodeToggleHTML;
         } else if (FormLib::get('signmod') == 'Legacy:Single New WFC Deli Regular') {
+            $ret .= $darkExtendOnly;
+            $ret .= $ShowBarcodeToggleHTML;
+        } else if (FormLib::get('signmod') == 'Legacy:WFC MEAT 14UP LESS') {
+            $ret .= $darkExtendOnly;
+        }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyTags_Less') {
+            $ret .= $darkExtendOnly;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyTags_Less_Short') {
+            $ret .= $darkExtendOnly;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyTags_Less_Narrow') {
             $ret .= $darkExtendOnly;
             $ret .= $ShowBarcodeToggleHTML;
         }
