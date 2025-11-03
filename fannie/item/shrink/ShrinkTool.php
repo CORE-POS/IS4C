@@ -345,7 +345,7 @@ HTML;
             <div class="form-group">
                 <label>UPC</label>
                 <input type="text" id="upc-field" name="id" class="form-control" 
-                    placeholder="Type UPC or description" />
+                    placeholder="Type UPC or description" pattern="\d*" inputmode="numeric" />
             </div>
             <p>
                 <button type="submit" class="btn btn-default">Continue</button>
