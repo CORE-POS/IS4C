@@ -39,11 +39,13 @@ class OwnerJoinLeaveReport extends FannieReportPage
     protected $new_tablesorter = false;
 
     protected $report_headers = array(
-        array('Ownership Report', null, null, null, null, null),
-        array('Total Equity', null, null, null, null, null),
-        array('Period', null, 'Number of Owners', '', null, null),
-        array('New Owners', null, null, null, null, null),
-        array('Number', 'Date', 'Name', 'Stock', 'Payment Plan', 'Store'),
+        array('Ownership Report', null, null, null, null, null, null),
+        array('Total Equity', null, null, null, null, null, null),
+        array('Period', null, 'Number of Owners', 'Equity', null, null, null),
+        array('New Owners', null, null, null, null, null, null),
+        array('Number', 'Date', 'Name', 'New Equity', 'Matching Funds', 'Payment Plan', 'Store'),
+        array('Per Store', null, null, null, null, null, null),
+        array('', '', 'Store', 'Stock', '', '', ''),
     );
 
     public function fetch_report_data()
@@ -103,7 +105,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $franReqP = false;
         if ($this->config->COOP_ID == 'WFC_Duluth') {
             $franReqP = $dbc->prepare("SELECT note FROM memberNotes
-                WHERE note LIKE '%FUNDS REQ%' AND cardno=?");
+                WHERE (note LIKE '%FUNDS REQ%' OR note like '%0 requested%') AND cardno=?");
         }
 
         $data = array();
@@ -122,6 +124,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
         $totals['new'] = 0;
         $totals['newStock'] = 0.00;
         $newCount = 0;
+        $byStore = array();
         while ($row = $dbc->fetch_row($joinR)) {
             $actual = $dbc->getValue($stockP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
             $initial = $dbc->getValue($initialP, array($row['card_no'], $this->form->date2 . ' 23:59:59'));
@@ -135,17 +138,25 @@ class OwnerJoinLeaveReport extends FannieReportPage
             } elseif ($initial == 50) {
                 $store = 'Website';
             }
-            if ($franReqP && (!$row['name'] || strpos($row['name'], 'FRAN'))) {
-                $frR = $dbc->getValue($franReqP, array($row['card_no']));
-                if ($frR) {
-                    $row['name'] = $frR;
+            $row['matching'] = 0;
+            if ($franReqP) {
+                $frR = $dbc->execute($franReqP, array($row['card_no']));
+                if ($dbc->numRows($frR) > 0) {
+                    $row['matching'] = 80;
+                    $actual = 20;
                 }
             }
+            if (!isset($byStore[$store])) {
+                $byStore[$store] = array('qty'=>0, 'equity'=>0);
+            }
+            $byStore[$store]['qty']++;
+            $byStore[$store]['equity'] += $actual;
             $data[] = array(
                 $row['card_no'],
                 date('Y-m-d', strtotime($row['start_date'])),    
                 $row['FirstName'] . ' ' . $row['LastName'],
                 sprintf('$%.2f', $actual),
+                sprintf('$%.2f', $row['matching']),
                 ($row['name'] ? $row['name'] : ''),
                 $store,
             );
@@ -153,6 +164,22 @@ class OwnerJoinLeaveReport extends FannieReportPage
             $totals['newStock'] += $actual;
             $newCount++;
         }
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#000','meta_foreground'=>'#fff');
+        $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
+            'meta_background'=>'#ccc','meta_foreground'=>'#000');
+        foreach ($byStore as $store => $info) {
+            $data[] = array(
+                "",
+                null,
+                $store . ' (' . $info['qty'] . ')',
+                sprintf('$%.2f', $info['equity']),
+                "",
+                null,
+                null,
+            );
+        }
+
         $this->report_headers[3][0] .= ' (' . $newCount . ')';
 
         $ytdArgs = array(
@@ -160,12 +187,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             $args[1],
         );
         if ($this->config->COOP_ID == 'WFC_Duluth') {
-            $ts = strtotime($args[0]);
-            if (mktime(0, 0, 0, 7, 1, date('Y',$ts)) <= $ts) {
-                $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts));
-            } else {
-                $ts = mktime(0, 0, 0, 7, 1, date('Y', $ts)-1);
-            }
+            $ts = mktime(0, 0, 0, 6, 30, 2025);
             $ytdArgs = array(
                 date('Y-m-d', $ts),
                 $args[1],
@@ -205,6 +227,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             '',
             null,
             null,
+            null,
         ));
 
         $franP = $dbc->prepare('
@@ -225,8 +248,9 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Annual Fran Skinner Goal',
                 null,
-                '100',
+                '105',
                 '',
+                null,
                 null,
                 null,
             ));
@@ -237,6 +261,17 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 '',
                 null,
                 null,
+                null,
+            ));
+            $franR = $dbc->execute($franP, $args);
+            array_unshift($data, array(
+                'Current Time Period Fran Skinner Matches',
+                null,
+                $dbc->numRows($franR),
+                '',
+                null,
+                null,
+                null,
             ));
         }
         
@@ -245,16 +280,27 @@ class OwnerJoinLeaveReport extends FannieReportPage
             array_unshift($data, array(
                 'Monthly New Owner Goal',
                 null,
-                '55',
+                '54',
                 '',
+                null,
+                null,
+                null,
+            ));
+            array_unshift($data, array(
+                'Annual New Equity Goal',
+                null,
+                null,
+                '56,600',
+                null,
                 null,
                 null,
             ));
             array_unshift($data, array(
                 'Annual New Owner Goal',
                 null,
-                '660',
+                '650',
                 '',
+                null,
                 null,
                 null,
             ));
@@ -264,7 +310,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
             'Year to Date: ' . date('Y-m-d', strtotime($ytdArgs[0])) . ' - ' . date('Y-m-d', strtotime($ytdArgs[1])),
             null,
             $ytd['numOwners'],
-            '',
+            number_format($ytd['stock']),
+            null,
             null,
             null,
         ));
@@ -276,6 +323,7 @@ class OwnerJoinLeaveReport extends FannieReportPage
             '',
             null,
             null,
+            null,
         ));
 
         array_unshift($data, array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
@@ -284,8 +332,8 @@ class OwnerJoinLeaveReport extends FannieReportPage
             'meta_background'=>'#000','meta_foreground'=>'#fff'));
 
         if ($this->config->COOP_ID == 'WFC_Duluth') {
-            $this->report_headers[] = array('Term Pending', null, null, null, null, null);
-            $this->report_headers[] = array('Number', 'Date', 'Name', 'Stock', 'Fran', 'Reason');
+            $this->report_headers[] = array('Term Pending', null, null, null, null, null, null);
+            $this->report_headers[] = array('Number', 'Date', 'Name', 'Stock', 'Fran', 'Reason', '');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
                 'meta_background'=>'#000','meta_foreground'=>'#fff');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
@@ -339,13 +387,14 @@ class OwnerJoinLeaveReport extends FannieReportPage
                 } else {
                     $record[] = '?';
                 }
+                $record[] = '';
                 $data[] = $record;
                 $pendingCount++;
             }
-            $this->report_headers[5][0] .= ' (' . $pendingCount . ')';
+            $this->report_headers[7][0] .= ' (' . $pendingCount . ')';
 
-            $this->report_headers[] = array('Fran Allocations', null, null, null, null, null);
-            $this->report_headers[] = array('Number', 'Date', 'Name', 'Stock', null, 'Allocation');
+            $this->report_headers[] = array('Fran Allocations', null, null, null, null, null, null);
+            $this->report_headers[] = array('Number', 'Date', 'Name', 'Stock', null, 'Allocation', '');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
                 'meta_background'=>'#000','meta_foreground'=>'#fff');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
@@ -398,18 +447,19 @@ class OwnerJoinLeaveReport extends FannieReportPage
                         $actual,
                         null,
                         $detailW['note'],
+                        null,
                     );
                     $franCount++;
                 }
             }
-            $this->report_headers[7][0] .= ' (' . $franCount . ')';
+            $this->report_headers[9][0] .= ' (' . $franCount . ')';
 
-            $this->report_headers[] = array('Transfer Requests', null, null, null, null, null);
-            $this->report_headers[] = array('Owner #', 'Date', 'Name', 'Equity', null, 'Request');
+            $this->report_headers[] = array('Transfer Requests', null, null, null, null, null, null);
+            $this->report_headers[] = array('Owner #', 'Date', 'Name', 'Equity', null, 'Request', '');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
                 'meta_background'=>'#000','meta_foreground'=>'#fff');
             $data[] = array('meta'=>FannieReportPage::META_REPEAT_HEADERS | FannieReportPage::META_COLOR, 
-                'meta_background'=>'#000','meta_foreground'=>'#fff');
+                'meta_background'=>'#ccc','meta_foreground'=>'#000');
             $termP = $dbc->prepare('
                 SELECT s.cardno AS card_no,
                     c.FirstName,
@@ -443,12 +493,13 @@ class OwnerJoinLeaveReport extends FannieReportPage
                             sprintf('%.2f', $actual),
                             null,
                             $note,
+                            null,
                         );
                         $termCount++;
                     }
                 }
             }
-            $this->report_headers[9][0] .= ' (' . $termCount . ')';
+            $this->report_headers[11][0] .= ' (' . $termCount . ')';
         }
 
         return $data;
