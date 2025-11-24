@@ -127,6 +127,9 @@ JAVASCRIPT;
             //array('Giganto4UpSingle.png', 'Single Giganto (4UP)', 'Giganto4UpSingle'),
             array('WFC_Produce_SmartSigns.png', 'Produce Smart Signs', 'Legacy:WFC Produce SmartSigns'),
             array('LessLegacyWFCHybridGuidelines.png', 'Shelf Tags with Guidelines', 'Legacy:WFC Hybrid Guidelines'),
+
+            array('TradeLabelNewPrice.png', 'Trade Label New Price Label', 'Legacy:TradeLabelNewPrice'),
+            array('NewLowerPriceExample.png', 'New Lower Price 12UP', 'NewLowerPrice12UpL'),
         );
         $dummySelect = "";
 
@@ -144,6 +147,7 @@ JAVASCRIPT;
             array('LessDeliRegular.png', 'Fancy Regular Tags', 'FancyTags_Less'),
             array('LessDeliNarrow.png', 'Fancy Narrow Tags (less wide)', 'FancyTags_Less_Narrow'),
             array('LessDeliShort.png', 'MEAT - Fancy Short Tags (less high)', 'FancyTags_Less_Short'),
+            array('LessDeliNarrowShort.png', 'Fancy Narrow Short Tags (less wide & high)', 'FancyTags_Less_NarrowShort'),
             array('LessDeliSquare.png', 'Deli HFM Tags', 'Legacy:Single New WFC Deli SquareTags'),
 
             array('WFC_Herbnspice_single.png', 'Herb & Spice Tags', 'Legacy:WFC HerbNspice Single'),

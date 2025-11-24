@@ -312,6 +312,7 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             'COREPOS-Fannie-API-item-signage-SingleCompact4UpL',
             'COREPOS-Fannie-API-item-signage-FancyTags_Less',
             'COREPOS-Fannie-API-item-signage-FancyTags_Less_Narrow',
+            'COREPOS-Fannie-API-item-signage-FancyTags_Less_NarrowShort',
             'COREPOS-Fannie-API-item-signage-FancyTags_Less_Short',
         );
         if (count($enabled) > 0) {
@@ -326,6 +327,7 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             'WFC SingleHybrid Guidelines',
             'Single New WFC Deli Regular',
             'Single New WFC Deli Narrow',
+            'Single New WFC Deli NarrowShort',
             'Single New WFC Deli Short',
             'Single New WFC Deli SquareTags',
             'Single WFC Produce SmartSigns',
@@ -453,6 +455,10 @@ class LessSignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $ret .= $ShowBarcodeToggleHTML;
         }
         if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyTags_Less_Narrow') {
+            $ret .= $darkExtendOnly;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyTags_Less_NarrowShort') {
             $ret .= $darkExtendOnly;
             $ret .= $ShowBarcodeToggleHTML;
         }
