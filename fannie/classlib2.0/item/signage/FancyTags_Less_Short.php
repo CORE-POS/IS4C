@@ -78,7 +78,7 @@ class FancyTags_Less_Short extends \COREPOS\Fannie\API\item\FannieSignage
         */
         $i = 0;
         $x = $left+$guide; $y = $top+$guide;
-        if (count($data) == 3 || count($data) == 1) {
+        if (count($data) == 5 || count($data) == 3 || count($data) == 1) {
             array_splice($data, -1, 0, array(''));
         }
         $pdf->AddPage('L');
