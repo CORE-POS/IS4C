@@ -106,6 +106,9 @@ class ShelfTagsInOrder extends FannieRESTfulPage
                 drawPDF(show_barcodes, show_price);
             */
             $obj->drawPDF($showBarcode, $showPrice);
+        } else if ($signtype == "deli4") {
+            $obj = new COREPOS\Fannie\API\item\signage\FancyShelfTags_NarrowShort($data, 'provided', 0);
+            $obj->drawPDF($showBarcode, $showPrice);
         } else if ($signtype == "tagsnoprice") {
             $obj = new COREPOS\Fannie\API\item\signage\TagsNoPrice($data, 'provided', 0);
             $obj->drawPDF(true, true);
@@ -128,6 +131,7 @@ class ShelfTagsInOrder extends FannieRESTfulPage
         $deli1 = (FormLib::get('signtype') == 'deli1') ? 'checked': '';
         $deli2 = (FormLib::get('signtype') == 'deli2') ? 'checked': '';
         $deli3 = (FormLib::get('signtype') == 'deli3') ? 'checked': '';
+        $deli4 = (FormLib::get('signtype') == 'deli4') ? 'checked': '';
         $tagsnoprice = (FormLib::get('signtype') == 'tagsnoprice') ? 'checked': '';
         $tradelabel = (FormLib::get('signtype') == 'tradelabel') ? 'checked': '';
         $itemrows = FormLib::get("itemrows", 13);
@@ -176,6 +180,10 @@ class ShelfTagsInOrder extends FannieRESTfulPage
                 <div class="form-group">
                     <label for="deli3">Deli Short (& Meat)</label>:&nbsp;&nbsp;
                     <input type="radio" id="deli3" value="deli3" name="signtype" onclick="document.forms['myform'].submit();" $deli3 />
+                </div>
+                <div class="form-group">
+                    <label for="deli4">Deli Narrow & Short</label>:&nbsp;&nbsp;
+                    <input type="radio" id="deli4" value="deli4" name="signtype" onclick="document.forms['myform'].submit();" $deli4 />
                 </div>
                 <div class="form-group">
                     <label for="tagsnoprice">Tags No Price (Order Tags)</label>:&nbsp;&nbsp;
