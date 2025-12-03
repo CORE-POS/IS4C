@@ -142,7 +142,8 @@ class Compact4UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
         }
 
-        if ($item['originShortName'] != '') {
+        if ($item['originShortName'] != '' && 
+                (substr($item['upc'], 0, 2) == "002" || substr($item['upc'], -6) == "000000" || substr($item['upc'], 0, 10) == "0000000000")) {
             $pdf->SetXY($this->left + ($this->width*$column), $this->top + ($this->height*$row) + ($this->height - $this->top - 26));
             $pdf->SetFont($this->alt_font, '', $this->MED_FONT);
             $lower = trim(strtolower($item['originShortName']));
