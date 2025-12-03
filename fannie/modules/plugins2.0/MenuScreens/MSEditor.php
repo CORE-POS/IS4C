@@ -88,7 +88,7 @@ HTML;
             );
         }
         return <<<HTML
-<table class="table">
+<table class="table table-striped">
 {$table}
 </table>
 <p>
