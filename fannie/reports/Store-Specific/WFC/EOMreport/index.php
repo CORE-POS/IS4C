@@ -463,7 +463,7 @@ echo $output;
             $city = 0.015;
             $deli = 0.0225;
             $county = 0.005;
-            $canna = 0.10;
+            $canna = 0.15;
             $startDT = new DateTime($start);
             $noCounty = new DateTime('2017-10-01');
             if ($startDT >= $noCount) {
@@ -595,7 +595,7 @@ echo $output;
     $city = 0.015;
     $deli = 0.0225;
     $county = 0.005;
-    $canna = 0.10;
+    $canna = 0.15;
     $startDT = new DateTime($start);
     $noCounty = new DateTime('2017-10-01');
     if ($startDT >= $noCounty) {
