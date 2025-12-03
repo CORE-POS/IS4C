@@ -124,13 +124,13 @@ class OverShortMAS extends FannieRESTfulPage {
             $accounting = '\COREPOS\Fannie\API\item\Accounting';
         }
 
-        $icP = $dbc->prepare("SELECT upc, description, sum(total) AS ttl
+        $icP = $dbc->prepare("SELECT upc, description, store_id, sum(total) AS ttl
                 FROM {$dlog} AS d
                 WHERE trans_type='T'
                     AND trans_subtype='IC'
                     AND " . DTrans::isStoreID($store, 'd') . "
                     AND tdate BETWEEN ? AND ?
-                GROUP BY upc, description");
+                GROUP BY upc, description, store_id");
         $coupP = $dbc->prepare("SELECT memberOnly, salesCode FROM houseCoupons WHERE coupID=?");
         $tenderQ = "SELECT SUM(total) AS amount,
                 CASE WHEN description='REBATE CHECK' THEN 'RB'
@@ -169,8 +169,13 @@ class OverShortMAS extends FannieRESTfulPage {
                     //$coding = (!$coupID || $memOnly) ? 43100 : 73990;
                     $credit = $icW['ttl'] < 0 ? -1*$icW['ttl'] : 0;
                     $debit = $icW['ttl'] > 0 ? $icW['ttl'] : 0;
+                    if (substr($coding, 1, 1) == "0") {
+                        $coding = str_replace('-', '', $accounting::extend($coding, $icW['store_id']));
+                    } else {
+                        $coding = str_pad($coding,9,'0',STR_PAD_RIGHT);
+                    }
                     $row = array($dateID, $dateStr,
-                        str_pad($coding,9,'0',STR_PAD_RIGHT),
+                        $coding,
                         $credit, $debit, $icW['description']);    
                     $records[] = $row;
                 }
