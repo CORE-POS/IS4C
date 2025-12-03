@@ -17,6 +17,19 @@ class SpoEditsPage extends FannieReportPage
     protected $new_tablesorter = true;
     protected $report_headers = array('Date/Time', 'User', 'Store', 'Action', 'Detail');
 
+    protected $detail_translate = array(
+        "Status #0" => "Ready to Order",
+        "Status #1" => "Called/Waiting",
+        "Status #2" => "Pending",
+        "Status #3" => "Call before Ordering",
+        "Status #4" => "Placed",
+        "Status #5" => "Arrived",
+        "Status #7" => "Completed",
+        "Status #8" => "Canceled",
+        "Status #9" => "Inquiry (i.e., closed as inquiry)",
+       "Status #99" => "Auto-closed"
+    );
+
     public function fetch_report_data()
     {
         $prep = $this->connection->prepare('SELECT s.*, u.name, t.description AS storeName FROM ' . FannieDB::fqn('SpecialOrderEdits', 'trans') .
@@ -31,7 +44,7 @@ class SpoEditsPage extends FannieReportPage
                 $row['name'],
                 $row['storeName'],
                 $row['action'],
-                $row['detail'],
+                (array_key_exists($row['detail'], $this->detail_translate)) ? "[".$row['detail']."]: ".$this->detail_translate[$row['detail']] : $row['detail'],
             );
         }
 
