@@ -484,6 +484,51 @@ $(".taxSelect").each(function() {
             break;
     }
 });
+
+/*
+    Right Click Checkboxes
+    Need to do this for each class of checkboxes (only fs is setup rn)
+*/
+const checkboxClasses = [ "fsCheckBox", "scaleCheckBox", "inUseCheckBox" ]
+
+checkboxClasses.forEach(item => {
+    console.log("item: "+item);
+});
+
+var lastChecked = null;
+var i = 0;
+var indexCheckboxes = function(className){
+    $('.fsCheckBox').each(function(){
+        $(this).attr('data-index', i);
+        i++;
+    });
+};
+indexCheckboxes();
+$('table').click(function(){
+    indexCheckboxes();
+});
+$('.fsCheckBox').on("click", function(e){
+    if(lastChecked && e.shiftKey) {
+        var i = parseInt(lastChecked.attr('data-index'));
+        var j = parseInt($(this).attr('data-index'));
+        var checked = $(this).is(":checked");
+
+        var low = i;
+        var high = j;
+        if (i>j){
+            var low = j;
+            var high = i;
+        }
+
+        for(var c = low; c < high; c++) {
+            if (c != low && c!= high) {
+                var check = checked ? true : false;
+                $('input[data-index="'+c+'"').prop("checked", check);
+            }
+        }
+    }
+    lastChecked = $(this);
+});
         <?php
         return ob_get_clean();
     }
