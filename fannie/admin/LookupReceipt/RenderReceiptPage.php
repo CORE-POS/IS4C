@@ -204,7 +204,7 @@ HTML;
             end
             as Status,
             datetime, register_no, emp_no, trans_no, card_no as memberID,
-            upc, discountable, percentDiscount
+            upc, discountable, percentDiscount, store_id
             FROM $table 
             WHERE datetime BETWEEN ? AND ? 
                 AND register_no=? AND emp_no=? and trans_no=?
@@ -220,7 +220,7 @@ HTML;
         return $this->receipt_to_table($query1,$args,0,'FFFFFF');
     }
 
-    private function receiptHeaderLines()
+    private function receiptHeaderLines($store_id)
     {
         $receiptHeader = "";
         if ($this->config->get('COOP_ID')) { 
@@ -233,7 +233,9 @@ HTML;
                 break;
 
             case "WFC_Duluth":
+                $storeName = ($store_id == 1) ? 'HILLSIDE' : 'DENFELD';
                 $receiptHeader .= ("<tr><td align=center colspan=4>" . "W H O L E &nbsp; F O O D S &nbsp; C O - O P" . "</td></tr>\n");
+                $receiptHeader .= ("<tr><td align=center colspan=4>" . $storeName . "</td></tr>\n");
                 $receiptHeader .= ("<tr><td align=center colspan=4>" . "218-728-0884" . "</td></tr>\n");
                 $receiptHeader .= ("<tr><td align=center colspan=4>" . "MEMBER OWNED SINCE 1970" . "</td></tr>\n");
                 break;
@@ -262,6 +264,7 @@ HTML;
         }
         $emp_no = $row2['emp_no'];  
         $trans_num = $row2['emp_no']."-".$row2['register_no']."-".$row2['trans_no'];
+        $store_id = $row2['store_id'];
 
         if ($this->config->get('COOP_ID') == 'WFC_Duluth') { 
             $typeP = $this->connection->prepare("SELECT memType FROM "
@@ -273,7 +276,7 @@ HTML;
             }
         }
 
-        $receiptHeader = $this->receiptHeaderLines();
+        $receiptHeader = $this->receiptHeaderLines($store_id);
 
         $ret = "<table border=\"$border\" bgcolor=\"$bgcolor\">\n";
         $ret .= "{$receiptHeader}\n";
