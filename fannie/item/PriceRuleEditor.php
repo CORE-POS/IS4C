@@ -35,7 +35,7 @@ class PriceRuleEditor extends FannieRESTfulPage
         set of products.';
 
     protected $thead = <<<HTML
-<th>UPC</th> <th>Brand</th> <th>Description</th> <th>PRT</th> <th>PRT Name</th> <th>PRID</th> <th>Max Price</th> <th>Details</th> <th>Review Date</th> <th>MSRP</th>
+<th>UPC</th> <th>Brand</th> <th>Description</th> <th>PRT</th> <th>PRT Name</th> <th>PRID</th> <th>Max Price</th> <th>Details</th> <th>Review Date</th> 
 HTML;
 
     public function preprocess()
@@ -43,8 +43,44 @@ HTML;
         $this->__routes[] = "get<brandList>";
         $this->__routes[] = "get<list>";
         $this->__routes[] = "get<upc>";
+        $this->__routes[] = "post<setFormerPrice>";
 
         return parent::preprocess();
+    }
+
+    public function post_setFormerPrice_handler()
+    {
+        global $FANNIE_OP_DB;
+        $dbc = FannieDB::get($FANNIE_OP_DB);
+
+        $json = array();
+
+        $upcs = FormLib::get('upcs');
+        $upcs = explode("\n", $upcs);
+        foreach ($upcs as $k => $upc) {
+            $upc = str_replace(",", "", $upc);
+            $upc = str_replace(" ", "", $upc);
+            $upcs[$k] = $upc;
+        }
+
+        list($inStr, $args) = $dbc->safeInClause($upcs);
+
+        $prep = $dbc->prepare("UPDATE products p
+            LEFT JOIN PriceRules r ON r.priceRuleID=p.price_rule_id
+            LEFT JOIN PriceRuleTypes t ON t.priceRuleTypeID=r.priceRuleTypeID
+            SET r.details = CONCAT(\"FORMER PRICE: \", p.normal_price)
+            WHERE p.upc IN ($inStr)");
+        $res = $dbc->execute($prep, $args);
+
+        $er = $dbc->error();
+
+        $json['error'] = $dbc->error();
+        $json['test'] = 'test';
+        $json['args'] = $args;
+        echo json_encode($json);
+
+        return false;
+
     }
 
     public function get_upc_handler()
@@ -151,7 +187,7 @@ HTML;
 
         $query = "SELECT p.upc, p.brand, p.description, priceRuleID,
             t.priceRuleTypeID, maxPrice, details, t.description AS tdesc,
-            v.srp, r.reviewDate
+            v.srp, r.reviewDate, p.normal_price
             FROM products AS p
                 LEFT JOIN PriceRules AS r ON r.priceRuleID=p.price_rule_id
                 LEFT JOIN PriceRuleTypes AS t ON t.priceRuleTypeID=r.priceRuleTypeID
@@ -170,6 +206,7 @@ HTML;
             $details = $row['details'];
             $tdesc = $row['tdesc'];
             $srp = $row['srp'];
+            $normal_price = $row['normal_price'];
             $reviewDate = $row['reviewDate'];
             $items[$upc]['brand'] = $brand;
             $items[$upc]['desc'] = $desc;
@@ -180,6 +217,7 @@ HTML;
             $items[$upc]['details'] = $details;
             $items[$upc]['reviewDate'] = $reviewDate;
             $items[$upc]['srp'] = $srp;
+            $items[$upc]['normal_price'] = $normal_price;
         }
 
         echo $dbc->error();
@@ -216,20 +254,27 @@ HTML;
             <td colspan=\"2\" class=\"grey\"></td>
             <td><input class=\"form-control alert-notify edit-details-all\" type=\"text\" /></td>
             <td><input class=\"form-control alert-notify edit-reviewDate-all date-field\" type=\"text\" /></td>
-            <td class=\"grey\"></td>
             </tr>";
 
         $items = $this->getTableData($dbc, $SEARCH_TYPE, $SEARCH_REF);
 
         foreach ($items as $upc => $row) {
-            $td .= "<tr><td>$upc</td>";
+            $td .= "<tr><td>$upc
+                </td>";
             foreach ($row as $k => $v) {
                 if ($k == 'tdesc') {
-                    $td .= "<td><select name=\"\" data-upc=\"$upc\" class=\"form-control price-rule-select\">{$this->getPriceRuleOpts($prTypes, $v)}</select></td>";
+                    $td .= "<td><select name=\"\" data-upc=\"$upc\" class=\"form-control price-rule-select\">{$this->getPriceRuleOpts($prTypes, $v)}</select>
+                        </td>";
                 } elseif ($k == 'details') {
                     $td .= "<td contentEditable=\"true\" data-upc=\"$upc\" class=\"editable-details\"> $v</td>";
                 } elseif ($k == 'reviewDate') {
                     $td .= "<td contentEditable=\"true\" data-upc=\"$upc\" class=\"editable-reviewDate\"> $v</td>";
+                } else if ($k == 'normal_price' || $k == 'srp') {
+                    // do not add to table 
+                } elseif ($k == 'brand') {
+                    $td .= "<td>$v
+                        <input type=\"hidden\" name=\"normal_price\" class=\"normal_price\" value=\"{$row['normal_price']}\" />
+                        </td>";
                 } else {
                     $td .= "<td> $v</td>";
                 }
@@ -246,6 +291,9 @@ HTML;
     <div class="col-lg-4" align="right">
         <div class="form-group">
             <a href="#" class="btn btn-danger" onClick="save(); return false;">Save Changes</a>
+        </div>
+        <div class="form-group">
+            <div class="btn btn-xs btn-default" id="wfc-ps-detailer">Set <i>Former Price</i> Details</div>
         </div>
     </div>
 </div>
@@ -408,12 +456,70 @@ var save = function()
                 console.log(resp);
             },
             error: function(resp) {
-                alert("error!");
+                let errorText = '[Error] ' + resp.responseText;
+                //alert(errorText);
+                if (errorText.includes('Request-URI Too Large')) {
+                    $('#alertWaitID').text('Too many items in list, try reducing the size of your request.');
+                    $('#alertWaitID').addClass('alert')
+                        .addClass('alert-warning')
+                        .removeClass('well');
+                }
                 console.log(resp);
             }
         });
     }
 }
+
+$('#wfc-ps-detailer').on('click', function() {
+
+    c = confirm('Set FORMER PRICE Details?');
+    if (c == true) {
+        var upcs = [];
+        $('#mytable tr').each(function(){
+            var upc = $(this).find('td:eq(0)').text();
+            upcs.push(upc);
+        });
+        $.ajax({
+            type : 'post',
+            data: 'setFormerPrice=1'+'&upcs='+upcs,
+            url: 'PriceRuleEditor.php',
+            dataType: 'json',
+            beforeSend: function() {
+                let alertWait = document.createElement('div');
+
+                alertWait.classList.add('well');
+                alertWait.innerHTML = "Processing, please wait";
+                alertWait.id = "alertWaitID";
+
+                $('#primary-content').prepend(alertWait);
+            },
+            success: function(resp) {
+                let alertSuccess = document.createElement('div');
+
+                alertSuccess.classList.add('alert');
+                alertSuccess.classList.add('alert-success');
+                alertSuccess.innerHTML = 'Save successful!';
+
+                $('#primary-content').prepend(alertSuccess);
+                $('#alertWaitID').remove();
+                console.log(resp);
+
+                $('#mytable tbody tr').each(function() {
+                    let price = $(this).find('td:eq(1)').find('.normal_price').val();
+                    console.log(price);
+                    $(this).find('td:eq(7)').text("FORMER PRICE: "+price);
+                });
+            },
+            error: function(resp) {
+                alert("error!");
+                console.log(resp.error);
+                console.log(resp.test);
+                console.log(resp.args);
+            }
+        });
+    }
+
+});
 
 JAVASCRIPT;
     }
