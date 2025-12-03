@@ -126,7 +126,8 @@ class Signage2UpP extends \COREPOS\Fannie\API\item\FannieSignage
             $text = sprintf('Regular Price: $%.2f', $item['nonSalePrice']);
             $pdf->Cell($effective_width, 20, $text, 0, 1, 'L');
         }
-        if ($item['originShortName'] != '') {
+        if ($item['originShortName'] != '' && 
+                (substr($item['upc'], 0, 2) == "002" || substr($item['upc'], -6) == "000000" || substr($item['upc'], 0, 10) == "0000000000")) {
             $pdf->SetXY($this->left, $this->top + ($this->height*$row) + ($this->height - $this->top - 20));
             $pdf->SetFont($this->alt_font, '', $this->SMALLEST_FONT);
             $lower = trim(strtolower($item['originShortName']));
