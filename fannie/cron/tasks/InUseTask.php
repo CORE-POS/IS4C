@@ -171,6 +171,7 @@ class InUseTask extends FannieTask
                     AND p.department NOT IN (225,226,228,229,602)
                     AND p.department NOT BETWEEN 60 AND 81
                     AND p.upc NOT IN ('.$inClause.')
+                    AND p.upc != \"0000009999905\"
                 ';
             $updateUnuse = $dbc->prepare($updateQunuse);
             $dbc->execute($updateUnuse,$argsUnuse);
