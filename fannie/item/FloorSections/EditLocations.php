@@ -470,12 +470,10 @@ HTML;
         }
         $upcs = $tmp;
 
-        echo "HO HIOH";
-
         $sections = array();
         $prep = $dbc->prepare("SELECT * FROM FloorSections WHERE storeID = ? ORDER BY name");
         $res = $dbc->execute($prep, array($storeID));
-        $fsOptions = '';
+        $fsOptions = "<option value=\"null\" >Select an Aisle</option>";
         $sections = array();
         while ($row = $dbc->fetchRow($res)) {
             $sections[$row['floorSectionID']] = $row['name'];
@@ -601,12 +599,12 @@ HTML;
                 {$storePicker['html']}
             </div>
             <div class="form-group">
-                <select name="floorSectionID" class="form-control" onchange="$onChange">
+                <select name="floorSectionID" class="form-control alert-warning" onchange="$onChange">
                     $fsOptions
                 </select>
             </div>
             <div class="form-group">
-                <input type="submit" class="form-control">
+                <input type="submit" class="form-control btn btn-default">
             </div>
         </form>
         <input type="hidden" id="storeID" value="$storeID" />
