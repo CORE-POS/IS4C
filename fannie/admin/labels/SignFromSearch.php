@@ -426,6 +426,10 @@ class SignFromSearch extends \COREPOS\Fannie\API\FannieReadOnlyPage
             $ret .= $ShowPriceToggleHTML;
             $ret .= $ShowBarcodeToggleHTML;
         }
+        if (FormLib::get('signmod') == 'COREPOS\Fannie\API\item\signage\FancyShelfTags_NarrowShort') {
+            $ret .= $ShowPriceToggleHTML;
+            $ret .= $ShowBarcodeToggleHTML;
+        }
         $ret .= '</div>';
         $ret .= '<hr />';
 

@@ -37,7 +37,8 @@ function WFC_HerbNspice_Flat($data,$offset=0,$showPrice=0)
     $pdf->SetFont('Gill','B', 16);
 
     $width = 68;
-    $height = 15;
+    //$height = 15;
+    $height = 13;
     $left = 3;  
     $top = 5;
     $guide = 0.3;
@@ -178,34 +179,16 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     $step = 6;
 
     /*
-        Add PLU
-    */
-    $pdf->SetXY($x+34,$y-3+$step);
-    $pdf->Cell(25, 4, 'PLU#', 0, 1, 'L', true);
-
-    $pdf->SetFont('Gill','B', $descFontSizeBig);
-    $pdf->SetXY($x+48,$y+1);
-    $pdf->Cell(8, 8, substr($upc, -3), 0, 1, 'L', true);
-
-    $pdf->SetFont('Gill','B', $descFontSize);
-    /*
         Add Barcodes
     */
     $pdf->SetFillColor(0,0,0);
-    // PLU Barcode
-    //$pdf->EAN13($x+42, $y-8+$step*2, substr($upc, -3),0, 0);  //generate barcode and place on label
-
-    // SKU Barcode
-    //if (is_numeric($sku)) {
-    //    $pdf->EAN13($x+2, $y+$step*2,$sku,4,.25);  //generate barcode and place on label
-    //}
     if (strlen($sku) < 9 && is_numeric($sku)) {
         // if len of str too long, don't print as it will not fit
         if (class_exists('Image_Barcode2')) {
             $img = Image_Barcode2::draw($sku, 'code128', 'png', false, 20, 1, false);
             $file = tempnam(sys_get_temp_dir(), 'img') . '.png';
             imagepng($img, $file);
-            $pdf->Image($file, $x-1, $y-4+$step*2);
+            $pdf->Image($file, $x-1, $y-1+$step*2);
             unlink($file);
         }
     }
@@ -214,29 +197,50 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
 
 
     // cover up 1
-    $pdf->Rect($x+2, $y-1+$step*2, $width-25, 7, 'F');
+    // top
+    //$pdf->SetFillColor(0,255,0);
+    //$pdf->Rect($x+19, $y+-4+$step*2, 10, 2, 'F');
+    // bottom
+    $pdf->SetFillColor(255,255,255);
+    $pdf->Rect($x+2, $y+1+$step*2, $width-25, 7, 'F');
 
     /* UPC / PLU Barcode */
     $pdf->SetFillColor(0,0,0);
-    $pdf->EAN13($x+42, $y-3+$step*2, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
+    $pdf->EAN13($x+42, $y-5+$step*2, substr($upc, -3), 4, 0.25);  //generate barcode and place on label
     $pdf->SetFillColor(255,255,255);
 
     // cover up 2
+    //$pdf->SetFillColor(255,000,000);
     $pdf->SetFillColor(255,255,255);
-    $pdf->Rect($x+42, $y-4+$step*2, 25, 3, 'F');
+    $pdf->Rect($x+42, $y-6+$step*2, 25, 3, 'F');
+    $pdf->SetFillColor(255,255,255);
 
+
+    /*
+        Add PLU
+    */
+    $pdf->SetFont('Gill','', 14);
+    $pdf->SetXY($x+38,$y-3.5+$step);
+    $pdf->Cell(25, 4, 'PLU', 0, 1, 'L', true);
+
+    $pdf->SetFont('Gill','B', $descFontSizeBig);
+    $pdf->SetXY($x+48,$y+1);
+    $pdf->Cell(8, 8, substr($upc, -3), 0, 1, 'L', true);
+
+    $pdf->SetFont('Gill','B', $descFontSize);
 
     /*
         Add Vendor Info
     */
     $pdf->SetFont('Gill','', 8.5);
-    $pdf->SetXY($x+1, $y-6+$step*3);
+    $pdf->SetXY($x+1, $y-10+$step*3);
     $pdf->Cell(18, 2, $vendor, 0, 1, 'L', true);
+
     /*
         Add SKU if numeric
     */
     if (is_numeric($sku)) {
-        $pdf->SetXY($x+18, $y-6+$step*3);
+        $pdf->SetXY($x+18, $y-10+$step*3);
         $pdf->Cell(18, 2, $sku, 0, 1, 'L', true);
     }
     $pdf->SetFont('Gill','B', 16.5);
@@ -248,9 +252,12 @@ function generateHerbNspiceFlatLabel($x, $y, $guide, $width, $height, $pdf, $row
     $pdf->SetXY($x+12, $y-4+$step*1);
     $pdf->Cell(10, 5, $priceText, 0, 1, 'C', true);
 
+    /*
+        Add Auto Par
     $pdf->SetFont('Gill','B', 6);
     $pdf->SetXY($x+67,$y+1.5);
     $pdf->Cell(1, 1, $mtText, 0, 1, 'R', true);
+    */
 
 
     return $pdf;
@@ -289,21 +296,21 @@ function generateHerbFlatMirror($x, $y, $guide, $width, $height, $pdf, $row, $db
     /*
         Add UPC Text
     */
-    $pdf->SetXY($x,$y);
+    $pdf->SetXY($x,$y-1);
     $pdf->Cell(15, 8, $upc, 0, 1, 'L', true); 
 
     /*
         Add Brand & Description Text
     */
-    $pdf->SetXY($x,$y+6);
+    $pdf->SetXY($x,$y+4);
     $pdf->Cell($width, 5, $brand, 0, 1, 'L', true); 
-    $pdf->SetXY($x,$y+10);
+    $pdf->SetXY($x,$y+8);
     $pdf->Cell($width, 5, $desc, 0, 1, 'L', true); 
 
     /*
         Add Vendor Text
     */
-    $pdf->SetXY($x,$y+27);
+    $pdf->SetXY($x,$y+25);
     $pdf->Cell($width, 5, $vendor, 0, 1, 'L', true); 
 
     /*
