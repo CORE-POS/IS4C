@@ -34,6 +34,7 @@ class SaHandheldPage extends FannieRESTfulPage
     private $section=0;
     protected $current_item_data=array();
     private $linea_ios_mode = false;
+    protected $enable_linea = true;
 
     public $page_set = 'Plugin :: Shelf Audit';
     public $description = '[Handheld] is an interface for scanning and entering quantities on
@@ -257,8 +258,8 @@ Device = new ScannerDevice({
             return;
         }
         var upc = data.substring(0,data.length-1);
-        if ($('#upc_in').length > 0){
-            $('#upc_in').val(upc);
+        if ($('#upc').length > 0){
+            $('#upc').val(upc);
             $('#goBtn').click();
         }
     },
@@ -282,7 +283,7 @@ if (typeof WebBarcode != 'undefined') {
             return;
         }
         var upc = data.substring(0,data.length-1);
-        $('#upc_in').val(upc);
+        $('#upc').val(upc);
         $('#goBtn').click();
     });
 }
@@ -292,7 +293,7 @@ document.addEventListener("BarcodeScanned", function (ev) {
         return;
     }
     var upc = data.substring(0,data.length-1);
-    $('#upc_in').val(upc);
+    $('#upc').val(upc);
     $('#goBtn').click();
 }, false);
 
@@ -303,7 +304,7 @@ Object.defineProperty(socketm, "value", {
     get: function() { return this._value; },
     set: function(v) {
         var upc = v.substring(0,v.length-1);
-        $('#upc_in').val(upc);
+        $('#upc').val(upc);
         $('#goBtn').click();
     }
 });
@@ -331,8 +332,8 @@ document.body.appendChild(socketm);
 <div class="form-group form-inline">
     <div class="input-group">
         <label class="input-group-addon">UPC</label>
-        <input type="number" size="10" name="id" id="upc_in" 
-            onfocus="handheld.paintFocus('upc_in');"
+        <input type="number" size="10" name="id" id="upc" 
+            onfocus="handheld.paintFocus('upc');"
             class="focused form-control" tabindex="1"
         />
     </div>
@@ -388,10 +389,15 @@ HTML;
         if (isset($this->hasQty)) {
             $this->addOnloadCommand("\$('#cur_qty').focus();\n");
         } else {
-            $this->addOnloadCommand("\$('#upc_in').focus();\n");
+            $this->addOnloadCommand("\$('#upc').focus();\n");
         }
         $this->upcForm($store);
         $this->addScript('js/handheld.js?date=20230201');
+
+        if (FormLib::get('linea') != 1) {
+            $this->addOnloadCommand("\$('#upc').focus();\n");
+        }
+        $this->addOnloadCommand("enableLinea('#upc', function(){ \$('#upcScanForm').append('<input type=hidden name=linea value=1 />').submit(); });\n");
 
         return ob_get_clean();
     }
