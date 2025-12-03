@@ -115,6 +115,8 @@ a[type="submit"] {
 <hr />
 <a class="btn btn-default btn-lg" type="submit"
     href="../../../../../Scannie/content/Home/Home.php" />Scannie</a>
+<a class="btn btn-default btn-lg" type="submit"
+    href="../../../modules/plugins2.0/ShelfAudit/SaHandheldPageV2.php" />IT Test</a>
 <hr />
 {$wfcTools[1]}
 </p>
