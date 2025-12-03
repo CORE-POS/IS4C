@@ -37,7 +37,7 @@ class FancyShelfTags_Short extends \COREPOS\Fannie\API\item\FannieSignage
     protected $left = 5.5; // left margin
     protected $top = 15; // top margin
 
-    public function drawPDF($sbarcodes=false, $sprices=false)
+    public function drawPDF($sbarcodes=false, $sprices=false, $savefile=false)
     {
         $dbc = \FannieDB::getReadOnly(\FannieConfig::config('OP_DB'));
 
@@ -109,7 +109,13 @@ class FancyShelfTags_Short extends \COREPOS\Fannie\API\item\FannieSignage
         $end = count($mirrorData);
         $this->prepNewDeliRegularMirrorTags($start, $tagData, $pdf, $width, $height, $left, $top, $guide, $dbc);
 
-        $pdf->Output('FancyTags_Short-'.uniqid().'.pdf', 'I');
+        //$pdf->Output('FancyTags_Short-'.uniqid().'.pdf', 'I');
+
+        if ($savefile == false) {
+            $pdf->Output('FancyTags_Short-'.uniqid().'.pdf', 'I');
+        } else {
+            $pdf->Output($savefile.'/FancyTags_Short-'.uniqid().'.pdf', 'F');
+        }
     }
 
     private function prepNewDeliRegularMirrorTags($start, $data, $pdf, $width, $height, $left, $top, $guide, $dbc)

@@ -23,7 +23,7 @@
 
 namespace COREPOS\Fannie\API\item\signage {
 
-class FancyShelftags_Narrow extends \COREPOS\Fannie\API\item\FannieSignage 
+class FancyShelfTags_NarrowShort extends \COREPOS\Fannie\API\item\FannieSignage 
 {
     protected $BIG_FONT = 18;
     protected $MED_FONT = 14;
@@ -61,7 +61,7 @@ class FancyShelftags_Narrow extends \COREPOS\Fannie\API\item\FannieSignage
         }
 
         $width = 68 * 0.75;
-        $height = 34;
+        $height = 34 - 5;
         $left = 12;  
         $top = 5;
         $guide = 0.3;
@@ -178,52 +178,53 @@ class FancyShelftags_Narrow extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetXY($x,$y);
         $pdf->Cell($width, $height, '', 0, 1, 'C', true); 
 
+
+        /*
+            Add Brand & Description Text
+        $pdf->SetXY($x,$y+3);
+        $pdf->Cell($width, 5, $brand, 0, 1, 'C', true); 
+
+        $pdf->SetXY($x,$y+9);
+        $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
+        */
+
         /*
             Add UPC Text
         */
-        $pdf->SetXY($x+3,$y+3);
+        $pdf->SetXY($x+3,$y+5);
         $pdf->Cell(15, 8, $upc, 0, 1, 'L', true); 
 
         /*
             Add Date Text 
         */
-        $pdf->SetXY($x+35,$y+3);
+        $pdf->SetXY($x+35,$y+7);
         $pdf->Cell(10, 4, $today, 0, 1, 'R', true); 
 
         /*
             Add PAR Text 
         */
         if ($storeID != 0) {
-            $pdf->SetXY($x+35,$y+7);
+            $pdf->SetXY($x+35,$y+11);
             $pdf->Cell(10, 4, 'PAR '.$par, 0, 1, 'R', true); 
         }
 
         /*
-            Add Brand & Description Text
-        */
-        $pdf->SetXY($x,$y+12);
-        $pdf->Cell($width, 5, $brand, 0, 1, 'C', true); 
-
-        $pdf->SetXY($x,$y+18);
-        $pdf->Cell($width, 5, $desc, 0, 1, 'C', true); 
-
-        /*
             Add Vendor SKU 
         */
-        $pdf->SetXY($x+3,$y+23);
+        $pdf->SetXY($x+3,$y+18);
         $pdf->Cell($width, 5, "SKU ".$sku, 0, 1, 'L', true); 
 
         /*
             Add Vendor Text
         */
-        $pdf->SetXY($x+3,$y+27);
+        $pdf->SetXY($x+3,$y+22);
         $pdf->Cell($width, 5, $vendor, 0, 1, 'L', true); 
 
         /*
             Add Size Text
         */
         if ($size > 0) {
-            $pdf->SetXY($x+29,$y+27);
+            $pdf->SetXY($x+29,$y+22);
             $pdf->Cell('15', 5, $size, 0, 1, 'R', true); 
         }
 
@@ -323,6 +324,30 @@ class FancyShelftags_Narrow extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetXY($x,$y+5);
         $pdf->Cell($width, 8, $brand, 0, 1, 'C', true); 
 
+        /* 
+            Print Vegan
+        */
+        if ($numflag & (1<<2)) {
+            $localX = 36;
+            $localY = 18.5;
+            $pdf->Image(__DIR__ . '/../../../admin/labels/noauto/veganST.jpg', $x+$localX, $y+$localY+1, 14, 8.5); $pdf->SetDrawColor(243, 115, 34);
+            $pdf->SetDrawColor(0, 0, 0);
+        }
+
+
+        /* 
+            Print Local Star & Text
+        */
+        if ($item['local']) {
+            $localX = 2;
+            $localY = 18.5;
+            $pdf->Image(__DIR__ . '/../../../admin/labels/noauto/localST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
+            $pdf->SetDrawColor(243, 115, 34);
+            //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
+            $pdf->SetDrawColor(0, 0, 0);
+        }
+
+
         /*
             Add Description Text
         */
@@ -343,12 +368,12 @@ class FancyShelftags_Narrow extends \COREPOS\Fannie\API\item\FannieSignage
         $pdf->SetFont('Gill','', $descFontSize);
 
         if (count($lines) > 1) {
-            $pdf->SetXY($x,$y+13);
+            $pdf->SetXY($x,$y+11);
             $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
-            $pdf->SetXY($x, $y+19);
+            $pdf->SetXY($x, $y+16);
             $pdf->Cell($width, 5, $lines[1], 0, 1, 'C', true); 
         } else {
-            $pdf->SetXY($x,$y+16.5);
+            $pdf->SetXY($x,$y+13);
             $pdf->Cell($width, 5, $lines[0], 0, 1, 'C', true); 
         }
 
@@ -356,41 +381,26 @@ class FancyShelftags_Narrow extends \COREPOS\Fannie\API\item\FannieSignage
             Add Price Text
         */
         $pdf->SetFont('Gill','B', 19);  //Set the font 
-        $pdf->SetXY($x,$y+27);
+        $pdf->SetXY($x+20.5,$y+23);
         if ($showPrice == 1 ) 
-            $pdf->Cell($width, 5, $price, 0, 1, 'C', true); 
+            $pdf->Cell(10, 5, $price, 0, 1, 'C', true); 
 
-        /* 
-            Print Local Star & Text
-        */
-        if ($item['local']) {
-            $localX = 2;
-            $localY = 22.5;
-            $pdf->Image(__DIR__ . '/../../../admin/labels/noauto/localST.jpg', $x+$localX, $y+$localY+1, 14, 8.5);
-            $pdf->SetDrawColor(243, 115, 34);
-            //$pdf->Rect($x+$localX, $y+$localY, 15, 9.4, 'D');
-            $pdf->SetDrawColor(0, 0, 0);
-        }
-
-        /* 
-            Print Vegan
-        */
-        if ($numflag & (1<<2)) {
-            $localX = 36;
-            $localY = 22.5;
-            $pdf->Image(__DIR__ . '/../../../admin/labels/noauto/veganST.jpg', $x+$localX, $y+$localY+1, 14, 8.5); $pdf->SetDrawColor(243, 115, 34);
-            $pdf->SetDrawColor(0, 0, 0);
-        }
 
         /*
-            Add dollar sign using Write() becaus Cell() 
+            Add Dollar Sign using Write() becaus Cell() 
             will cover Local & Vegan bugs with white background 
         */
         if ($showPrice == 1) {
             $pdf->SetFont('Gill','B', 13);  //Set the font 
             $mod = 0;
             $mod += (4 - strlen($price)) * 1;
-            $pdf->SetXY($x+14.5+$mod,$y+26);
+            if (strlen($price) == 4) {
+                $pdf->SetXY($x+14.7+$mod,$y+22.4);
+            } else if (strlen($price) == 5) {
+                $pdf->SetXY($x+13.7+$mod,$y+22.4);
+            } else if (strlen($price) == 6) {
+                $pdf->SetXY($x+12.7+$mod,$y+22.4);
+            }
             $pdf->Write(5, "$", ''); 
         }
         /*
@@ -398,7 +408,7 @@ class FancyShelftags_Narrow extends \COREPOS\Fannie\API\item\FannieSignage
         */
         if ($lb != '' && $showPrice == 1) {
             $pdf->SetFont('Gill','B', 10);  //Set the font 
-            $pdf->SetXY($x+31+(($mod*-1)*2),$y+27.8);
+            $pdf->SetXY($x+31+(($mod*-1)*2),$y+24.8);
             $pdf->Write(5, "/lb", ''); 
             $pdf->SetFont('Gill','B', 19);  //Set the font 
         }
