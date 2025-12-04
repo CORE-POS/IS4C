@@ -1,5 +1,7 @@
 <?php
 namespace COREPOS\pos\lib\Tenders;
+use COREPOS\pos\lib\MiscLib;
+use COREPOS\pos\lib\TransRecord;
 use \CoreLocal;
 
 class NickelRoundingTender extends TenderModule
