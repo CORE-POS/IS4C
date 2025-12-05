@@ -49,14 +49,14 @@ class NickelRoundingTender extends TenderModule
                 break;
         }
 
-        if ($this->amount - (CoreLocal::get("amtdue") + $adjustment) > 0) {
+        if (abs($this->amount - (CoreLocal::get("amtdue") + $adjustment)) > 0.005) {
             CoreLocal::set("change",$this->amount - (CoreLocal::get("amtdue") + $adjustment));
             CoreLocal::set("ChangeType", $this->change_type);
             TransRecord::addRecord(array(
                 'description' => 'NICKEL ROUND',
                 'trans_type' => 'T',
                 'trans_subtype' => 'NR',
-                'total' => -1 * $adjustment,
+                'total' => $adjustment,
             ));
             CoreLocal::set('amtdue', CoreLocal::get('amtdue') + $adjustment);
         } else {
