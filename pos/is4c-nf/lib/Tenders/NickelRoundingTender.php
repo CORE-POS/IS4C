@@ -29,7 +29,7 @@ class NickelRoundingTender extends TenderModule
         }
 
         $adjustment = 0;
-        $lastDigit = (int)substr(CoreLocal::get('amtdue'), -1);
+        $lastDigit = (int)substr(number_format(CoreLocal::get('amtdue'),2), -1);
         switch ($lastDigit) {
             case 1:
             case 6:
@@ -49,7 +49,19 @@ class NickelRoundingTender extends TenderModule
                 break;
         }
 
-        if (abs($this->amount - (CoreLocal::get("amtdue") + $adjustment)) > 0.005) {
+         /* For a Refund reverse the adjustment. */
+        if ($adjustment != 0 && CoreLocal::get('amtdue') < 0) {
+            $adjustment = ($adjustment * -1);
+        }
+
+        /* If there is an adjustment to make, make it.
+         * Allow for the case of the amount tendered being within the amount-of-adjustment
+         *  of the amount due.
+         */
+        if ((abs($this->amount - (CoreLocal::get("amtdue") + $adjustment)) > 0.005) ||
+            (($this->amount == (CoreLocal::get('amtdue') + $adjustment)) && ($adjustment != 0))
+           )
+        {
             CoreLocal::set("change",$this->amount - (CoreLocal::get("amtdue") + $adjustment));
             CoreLocal::set("ChangeType", $this->change_type);
             TransRecord::addRecord(array(
