@@ -1066,10 +1066,16 @@ class AdvancedItemSearch extends FannieRESTfulPage
             $deptOpts .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
         }
 
-        $subdepts = $dbc->query('SELECT subdept_no, subdept_name FROM subdepts ORDER BY subdept_no');
+        $subdepts = $dbc->query('SELECT s.subdept_no, s.subdept_name, d.dept_name
+            FROM subdepts AS s LEFT JOIN departments AS d ON s.dept_ID=d.dept_no
+            ORDER BY s.subdept_no');
         $subdeptOpts = '';
         while ($row = $dbc->fetchRow($subdepts)) {
-            $subdeptOpts .= sprintf('<option value="%d">%d %s</option>', $row['subdept_no'], $row['subdept_no'], $row['subdept_name']);
+            $label = $row['subdept_no'] . ' ' . $row['subdept_name'];
+            if ($row['dept_name']) {
+                $label .= ' (' . $row['dept_name'] . ')';
+            }
+            $subdeptOpts .= sprintf('<option value="%d">%s</option>', $row['subdept_no'], $label);
         }
 
         $model = new VendorsModel($dbc);
