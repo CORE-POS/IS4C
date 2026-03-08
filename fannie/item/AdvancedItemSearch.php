@@ -47,6 +47,7 @@ class AdvancedItemSearch extends FannieRESTfulPage
         'searchBrand',
         'searchSuperDepartment',
         'searchDepartments',
+        'searchSubDepartment',
         'searchServiceScale',
         'searchModifiedDate',
         'searchVendor',
@@ -281,6 +282,17 @@ class AdvancedItemSearch extends FannieRESTfulPage
             // add dept lower then higher
             $search->args[] = $dept1 < $dept2 ? $dept1 : $dept2;
             $search->args[] = $dept2 > $dept1 ? $dept2 : $dept1;
+        }
+
+        return $search;
+    }
+
+    private function searchSubDepartment($search, $form)
+    {
+        $subdept = $form->subdept;
+        if ($subdept !== '') {
+            $search->where .= ' AND p.subdept=? ';
+            $search->args[] = $subdept;
         }
 
         return $search;
@@ -1052,6 +1064,12 @@ class AdvancedItemSearch extends FannieRESTfulPage
         $deptOpts = '';
         while ($row = $dbc->fetchRow($depts)) {
             $deptOpts .= sprintf('<option value="%d">%d %s</option>', $row['dept_no'], $row['dept_no'], $row['dept_name']);
+        }
+
+        $subdepts = $dbc->query('SELECT subdept_no, subdept_name FROM subdepts ORDER BY subdept_no');
+        $subdeptOpts = '';
+        while ($row = $dbc->fetchRow($subdepts)) {
+            $subdeptOpts .= sprintf('<option value="%d">%d %s</option>', $row['subdept_no'], $row['subdept_no'], $row['subdept_name']);
         }
 
         $model = new VendorsModel($dbc);

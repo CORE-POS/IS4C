@@ -63,6 +63,18 @@ return <<<HTML
             </td>
         </tr>
         <tr>
+            <td class="text-right">
+                <label class="control-label small">Sub Dept</label>
+            </td>
+            <td>
+                <select name="subdept" class="form-control input-sm">
+                    <option value="">Any</option>
+                    {$subdeptOpts}
+                </select>
+            </td>
+            <td colspan="4"></td>
+        </tr>
+        <tr>
             <td>
                 <select class="form-control input-sm" name="modOp">
                     <option>Modified On</option>
