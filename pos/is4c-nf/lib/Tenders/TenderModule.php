@@ -226,6 +226,17 @@ class TenderModule
         return true;
     }
 
+    /**
+      Whether this module's errorCheck() runs the base checks itself
+      (via parent::errorCheck()), so the plain TenderModule need not
+      run separately before it
+      @return boolean
+    */
+    public static function includesBaseChecks()
+    {
+        return false;
+    }
+
     public function endsTransaction()
     {
         return $this->ends_trans;
