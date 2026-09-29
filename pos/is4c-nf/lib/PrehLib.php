@@ -68,6 +68,10 @@ static private function getTenderMods($right)
     if (is_array($map) && isset($map[$right])) {
         $class = $map[$right];
         if ($class != 'COREPOS\\pos\\lib\\Tenders\\TenderModule') {
+            $full = class_exists($class) ? $class : 'COREPOS\\pos\\lib\\Tenders\\' . $class;
+            if (class_exists($full) && method_exists($full, 'includesBaseChecks') && $full::includesBaseChecks()) {
+                $ret = array(); // module runs the base checks itself via parent::errorCheck()
+            }
             $ret[] = $class;
         }
     }
